@@ -1,0 +1,35 @@
+﻿<h:Window
+    x:Class="FMO.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:h="https://handyorg.github.io/handycontrol"
+    xmlns:local="clr-namespace:FMO"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="基金中台"
+    Width="800"
+    Height="450"
+    mc:Ignorable="d">
+    <Window.DataContext>
+        <local:MainWindowViewModel />
+    </Window.DataContext>
+    <Grid>
+        <Button Command="{Binding testCommand}" />
+        
+        <DockPanel>
+            <h:SideMenu Width="60">
+                <h:SideMenuItem Header="管理人" />
+                <h:SideMenuItem Header="基金" />
+                <h:SideMenuItem Header="客户" />
+                <h:SideMenuItem Header="TA" />
+            </h:SideMenu>
+
+            <TabControl />
+        </DockPanel>
+
+        <TextBlock
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Bottom"
+            Text="{Binding Toast}" />
+    </Grid>
+</h:Window>
