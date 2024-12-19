@@ -163,4 +163,10 @@ public class ManagerInfo
     /// </summary>
     [JsonPropertyName("orgForm")]
     public string? OrgForm { get; set; }
+
+
+    public override string ToString()
+    {
+        return ManagerName??"";
+    }
 }

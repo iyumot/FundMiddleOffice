@@ -6,13 +6,13 @@ public class SortItem
     /// 
     /// </summary>
     [JsonPropertyName("direction")]
-    public string Direction { get; set; }
+    public string? Direction { get; set; }
 
     /// <summary>
     /// 
     /// </summary>
     [JsonPropertyName("property")]
-    public string Property { get; set; }
+    public string? Property { get; set; }
 
     /// <summary>
     /// 
@@ -24,7 +24,7 @@ public class SortItem
     /// 
     /// </summary>
     [JsonPropertyName("nullHandling")]
-    public string NullHandling { get; set; }
+    public string? NullHandling { get; set; }
 
     /// <summary>
     /// 

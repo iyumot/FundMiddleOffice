@@ -9,13 +9,14 @@
     Title="基金中台"
     Width="800"
     Height="450"
+    WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
     <Window.DataContext>
         <local:MainWindowViewModel />
     </Window.DataContext>
     <Grid>
         <Button Command="{Binding testCommand}" />
-        
+
         <DockPanel>
             <h:SideMenu Width="60">
                 <h:SideMenuItem Header="管理人" />

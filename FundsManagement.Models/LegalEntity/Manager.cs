@@ -31,17 +31,17 @@ public class Manager : Institution
     /// <summary>
     /// 有没有信用提示
     /// </summary>
-    public bool HasCreditTips { get; internal set; }
+    public bool HasCreditTips { get;  set; }
     
     /// <summary>
     /// 有没有特殊提示
     /// </summary>
-    public bool HasSpecialTips { get; internal set; }
+    public bool HasSpecialTips { get;  set; }
 
     /// <summary>
     /// 会员类型
     /// </summary>
-    public string? MemberType { get; internal set; }
+    public string? MemberType { get;  set; }
 
     // 是否可以是投顾
     public bool Advisorable { get; set; }

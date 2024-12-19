@@ -6,7 +6,7 @@ public class QueryManagers
     /// 
     /// </summary>
     [JsonPropertyName("content")]
-    public List<ManagerInfo> Content { get; set; }
+    public List<ManagerInfo>? Content { get; set; }
 
     /// <summary>
     /// 
@@ -36,7 +36,7 @@ public class QueryManagers
     /// 
     /// </summary>
     [JsonPropertyName("sort")]
-    public List<SortItem> Sort { get; set; }
+    public List<SortItem>? Sort { get; set; }
 
     /// <summary>
     /// 

@@ -4,7 +4,7 @@
     /// <summary>
     /// 此类用于初始化程序，从AMAC获取公示中的基金基本信息
     /// </summary>
-    internal class FundBasicInfo
+    public class FundBasicInfo
     {
         public string? Name { get; set; }
 
@@ -19,6 +19,9 @@
         /// </summary>
         public bool IsAdvisor { get; set; }
 
+        /// <summary>
+        /// /fund/.....html
+        /// </summary>
         public string? Url { get; set; }
     }
 }

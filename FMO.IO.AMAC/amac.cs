@@ -8,8 +8,34 @@ using System.Text.RegularExpressions;
 
 namespace FMO.IO.AMAC;
 
+
+/// <summary>
+/// 程序初始化的第2步
+/// </summary>
+public class InitStep2Info
+{
+    /// <summary>
+    /// 进度
+    /// </summary>
+    public double Progress { get; set; }
+
+    /// <summary>
+    /// 管理规模
+    /// </summary>
+    public string? CurrentScale { get; set; }
+
+    public int? PreRuleCount { get; set; }
+
+    public int? NormalCount { get; set; }
+
+    public int? AdviseCount { get; set; }
+}
+
+
 public static class AmacAssist
 {
+    public const string MessageToken = "AMAC.CrawleManagerInfo";
+
 
     /// <summary>
     /// 通过关键字获取在AMAC中的管理人名称
@@ -96,19 +122,30 @@ public static class AmacAssist
     }
 
 
-    private static async Task<FundBasicInfo[]> ExtractFund(IPage page)
+    private static async Task<FundBasicInfo[]> ExtractFund(IPage page, InitStep2Info info)
     {
         var lc = page.Locator("//*[contains(text(),'产品信息')]/../..");
 
         // type a
         var lf = lc.Locator("//td[text()='暂行办法实施前成立的基金']/..").Locator("tbody > tr");
         var lf2 = lc.Locator("//td[text()='暂行办法实施后成立的基金']/..").Locator("tbody > tr");
-        var lf3 = lc.Locator("//td[text()='投资顾问类产品\t']/..").Locator("tbody > tr");
-        int cnt = await lf.CountAsync() + await lf2.CountAsync() + await lf3.CountAsync();
-        double step = 50.0 / cnt;
+        var lf3 = lc.Locator("//td[text()='投资顾问类产品']/..").Locator("tbody > tr");
+
+        info.PreRuleCount = await lf.CountAsync();
+        info.NormalCount = await lf2.CountAsync();
+        info.AdviseCount = await lf3.CountAsync();
+
+        int cnt = info.PreRuleCount.Value + info.NormalCount.Value + info.AdviseCount.Value;
+        double step = 50.0 / Math.Max(1, cnt);
+        info.Progress = 50;
+        WeakReferenceMessenger.Default.Send(info, MessageToken);
+        info.PreRuleCount = null;
+        info.NormalCount = null;
+        info.NormalCount = null;
 
         List<FundBasicInfo> list = new List<FundBasicInfo>();
 
+       
         foreach (var item in await lf.AllAsync())
         {
             LocatorInnerTextOptions options = new LocatorInnerTextOptions { Timeout = 100 };
@@ -125,7 +162,10 @@ public static class AmacAssist
                 return Array.Empty<FundBasicInfo>();
             }
 
-            list.Add(new FundBasicInfo { Name = name, Url = url, IsPreRule = true });
+            list.Add(new FundBasicInfo { Name = name, Url = url[2..], IsPreRule = true });
+
+            info.Progress += step;
+            WeakReferenceMessenger.Default.Send(info, MessageToken);
         }
         foreach (var item in await lf2.AllAsync())
         {
@@ -143,7 +183,9 @@ public static class AmacAssist
                 return Array.Empty<FundBasicInfo>();
             }
 
-            list.Add(new FundBasicInfo { Name = name, Url = url, IsPreRule = false });
+            list.Add(new FundBasicInfo { Name = name, Url = url[2..], IsPreRule = false });
+            info.Progress += step;
+            WeakReferenceMessenger.Default.Send(info, MessageToken);
         }
         foreach (var item in await lf3.AllAsync())
         {
@@ -161,24 +203,85 @@ public static class AmacAssist
                 return Array.Empty<FundBasicInfo>();
             }
 
-            list.Add(new FundBasicInfo { Name = name, Url = url, IsAdvisor = true });
+            list.Add(new FundBasicInfo { Name = name, Url = url[2..], IsAdvisor = true });
+            info.Progress += step;
+            WeakReferenceMessenger.Default.Send(info, MessageToken);
         }
 
+
+        info.Progress = 100;
+        WeakReferenceMessenger.Default.Send(info, MessageToken);
         return list.ToArray();
     }
 
 
-    public static async Task<bool> CrawleManagerInfo(string name, string amacid)
+    //public static async Task<(Manager, FundBasicInfo[])?> CrawleManagerInfo(string name, string amacid)
+    //{
+    //    try
+    //    {
+    //        using IPlaywright pw = await Playwright.CreateAsync();
+    //        var browser = await pw.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Channel = "msedge" });
+    //        var page = await browser.NewPageAsync();
+    //        await page.GotoAsync($"https://gs.amac.org.cn/amac-infodisc/res/pof/manager/{amacid}.html");
+
+    //        object InitProgress = 20;
+    //        WeakReferenceMessenger.Default.Send(InitProgress, MessageToken);
+
+
+    //        var sec = page.Locator(".section");
+    //        var basic = page.Locator(".section[0]");
+    //        var fvs = await page.Locator(".section").First.Locator(".table > tbody > tr").AllAsync();
+
+    //        var dict = new Dictionary<string, string>();
+    //        LocatorInnerTextOptions options = new LocatorInnerTextOptions { Timeout = 100 };
+
+    //        foreach (var item in fvs)
+    //        {
+    //            var nlc = item.Locator("td");
+    //            var cnt = await nlc.CountAsync();
+    //            if (cnt > 3) continue;
+
+    //            dict.Add(await nlc.Nth(0).InnerTextAsync(), await nlc.Nth(1).InnerTextAsync());
+    //        }
+
+    //        var id = dict.First(x => x.Key.Contains("组织机构代码")).Value;
+    //        var regno = dict.First(x => x.Key.Contains("登记编号")).Value;
+
+    //        Manager manager = new Manager() { Name = name, AmacId = amacid, RegisterNo = regno, Id = id };
+
+    //        manager.RegisterCapital = decimal.Parse(dict.FirstOrDefault(x => x.Key.Contains("注册资本")).Value);
+    //        manager.RealCapital = decimal.Parse(dict.FirstOrDefault(x => x.Key.Contains("实缴资本")).Value);
+    //        manager.Advisorable = dict.FirstOrDefault(x => x.Key.Contains("提供投资建议")).Value?.Contains("是") ?? false;
+    //        manager.ScaleRange = dict.FirstOrDefault(x => x.Key.Contains("管理规模区间")).Value;
+    //        InitProgress = 30;
+    //        WeakReferenceMessenger.Default.Send(InitProgress, MessageToken);
+
+
+    //        /////////////////////////////////////////////////////////////////////////////
+
+    //        var nus = await ExtractFund(page);
+
+    //        return (manager, nus);
+    //    }
+    //    catch (Exception e)
+    //    {
+    //        Log.Error(e, $"CrawleManagerInfo. Fund Url is Empty");
+    //        return null;
+    //    } 
+    //}
+
+    public static async Task<FundBasicInfo[]> CrawleManagerInfo(Manager manager)
     {
         try
         {
             using IPlaywright pw = await Playwright.CreateAsync();
             var browser = await pw.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Channel = "msedge" });
             var page = await browser.NewPageAsync();
-            await page.GotoAsync($"https://gs.amac.org.cn/amac-infodisc/res/pof/manager/{amacid}.html");
+            await page.GotoAsync($"https://gs.amac.org.cn/amac-infodisc/res/pof/manager/{manager.AmacId}.html");
 
-            object InitProgress = 20;
-            WeakReferenceMessenger.Default.Send(InitProgress, "AMAC.CrawleManagerInfo");
+            InitStep2Info info = new();
+            info.Progress = 20;
+            WeakReferenceMessenger.Default.Send(info, MessageToken);
 
 
             var sec = page.Locator(".section");
@@ -200,26 +303,27 @@ public static class AmacAssist
             var id = dict.First(x => x.Key.Contains("组织机构代码")).Value;
             var regno = dict.First(x => x.Key.Contains("登记编号")).Value;
 
-            Manager manager = new Manager() { Name = name, AmacId = amacid, RegisterNo = regno, Id = id };
-
+            //Manager manager = new Manager() { Name = name, AmacId = amacid, RegisterNo = regno, Id = id };
+            manager.Id = id;
             manager.RegisterCapital = decimal.Parse(dict.FirstOrDefault(x => x.Key.Contains("注册资本")).Value);
             manager.RealCapital = decimal.Parse(dict.FirstOrDefault(x => x.Key.Contains("实缴资本")).Value);
             manager.Advisorable = dict.FirstOrDefault(x => x.Key.Contains("提供投资建议")).Value?.Contains("是") ?? false;
             manager.ScaleRange = dict.FirstOrDefault(x => x.Key.Contains("管理规模区间")).Value;
-            InitProgress = 30;
-            WeakReferenceMessenger.Default.Send(InitProgress, "AMAC.CrawleManagerInfo");
-
+            info.Progress = 30;
+            info.CurrentScale = manager.ScaleRange;
+            WeakReferenceMessenger.Default.Send(info, MessageToken);
+            info.CurrentScale = null;
 
             /////////////////////////////////////////////////////////////////////////////
 
-            var nus = await ExtractFund(page);
+            var nus = await ExtractFund(page, info);
 
+            return nus;
         }
         catch (Exception e)
         {
             Log.Error(e, $"CrawleManagerInfo. Fund Url is Empty");
-            return false;
+            return Array.Empty<FundBasicInfo>();
         }
-        return true;
     }
 }
