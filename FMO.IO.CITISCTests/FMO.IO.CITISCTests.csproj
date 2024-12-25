@@ -10,10 +10,11 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageReference Include="MSTest" Version="3.6.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.21" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FMO.IO.CITISC\FMO.IO.CITISC.csproj" />
+    <ProjectReference Include="..\FMO.InterOp\FMO.IO.CITISC\FMO.IO.Trustee.CITISC.csproj" />
   </ItemGroup>
 
   <ItemGroup>

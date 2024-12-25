@@ -1,5 +1,23 @@
 ﻿namespace FMO.Models;
 
+
+
+
+
+public enum CustomerType
+{
+    Natural,
+
+    Institution,
+
+    Product
+}
+
+
+
+/// <summary>
+/// 存储在base
+/// </summary>
 public interface ICustomer
 {
     int _id { get; set; }
@@ -12,9 +30,9 @@ public interface ICustomer
     /// <summary>
     /// 证件
     /// </summary>
-    Credential Credential { get; set; }
+    Identity Identity { get; set; }
 
-     
+    CustomerType CustomerType => this switch { NaturalCustomer => CustomerType.Natural, InstitutionCustomer => CustomerType.Institution, ProductCustomer => CustomerType.Product, _ => throw new NotImplementedException() };
 }
 
 
@@ -28,12 +46,12 @@ public class NaturalCustomer : ICustomer
 
     public required string Name { get; set; }
 
-    public required Credential Credential { get; set; }
+    public required Identity Identity { get; set; }
 
     /// <summary>
     /// 性别
     /// </summary>
-    public Gender Gender { get; set; }
+    public Gender? Gender { get; set; }
 
 
     /// <summary>
@@ -66,7 +84,12 @@ public class InstitutionCustomer : ICustomer
 
     public required string Name { get; set; }
 
-    public required Credential Credential { get; set; }
+    public required Identity Identity { get; set; }
+
+    public required InstitutionCustomerType InstitutionType { get; set; }
+
+
+
 }
 
 
@@ -79,6 +102,8 @@ public class ProductCustomer : ICustomer
 
     public required string Name { get; set; }
 
-    public required Credential Credential { get; set; }
+    public required Identity Identity { get; set; }
 
+
+    public required ProductCustomerType ProductType { get; set; }
 }

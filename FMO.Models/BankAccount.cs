@@ -4,6 +4,9 @@ namespace FMO.Models;
 
 public class BankAccount
 {
+    public int _id { get; set; }
+
+
     public int OwnerId { get; set; }
 
 
@@ -50,11 +53,12 @@ public class BankAccount
     private void SetDeposit(string? str)
     {
         if (string.IsNullOrWhiteSpace(str)) return;
-        var m = Regex.Match(str, @"(\w+银行)(?:.*公司)?(\w+)");
+        var m = Regex.Match(str, @"(\w+银行)(?:.*公司)?(\w+)?");
         if (!m.Success) return;
 
         Bank = m.Groups[1].Value;
-        Branch = m.Groups[2].Value;
+        if (m.Groups.Count > 2)
+            Branch = m.Groups[2].Value;
     }
 
     public static BankAccount? FromString(string str)

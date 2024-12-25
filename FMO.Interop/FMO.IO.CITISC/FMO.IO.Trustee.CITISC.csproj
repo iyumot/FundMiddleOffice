@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="LiteDB" Version="5.0.21" />
     <PackageReference Include="Microsoft.Playwright" Version="1.49.0" />
     <PackageReference Include="Serilog" Version="4.2.0" />
@@ -14,7 +18,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FMO.IO.Trustee\FMO.IO.Trustee.csproj" />
-    <ProjectReference Include="..\FMO.Utilities\FMO.Utilities.csproj" />
+    <ProjectReference Include="..\..\FMO.Utilities\FMO.Utilities.csproj" />
+    <ProjectReference Include="..\..\FMO.Models\FMO.Models.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="logo.png" />
   </ItemGroup>
 
 </Project>

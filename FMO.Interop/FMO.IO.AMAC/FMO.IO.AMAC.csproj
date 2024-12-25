@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FundsManagement.Models\FMO.Models.csproj" />
+    <ProjectReference Include="..\..\FMO.Models\FMO.Models.csproj" />
   </ItemGroup>
 
 </Project>

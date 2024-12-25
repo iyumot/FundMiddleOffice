@@ -1,0 +1,379 @@
+﻿//using FMO.IO.Trustee.Json.FundRasing;
+using FMO.IO.Trustee;
+using FMO.IO.Trustee.CITISC;
+using FMO.Models;
+using FMO.Utilities;
+using Microsoft.Playwright;
+using Serilog;
+using System.Text.Json;
+
+
+namespace FMO.IO.Trustee;
+
+/// <summary>
+/// 托管接口
+/// </summary>
+public class CSTISCAssist : TrusteeAssistBase
+{
+
+    public override string Identifier => "cstisc";
+
+    public override string Name => "中信证券托管外包";
+
+
+    public override string Domain => "https://iservice.citics.com/";
+
+    ///
+    //public override async Task<bool> StrongLoginValidationAsync(IPage page)
+    //{
+    //    // 验证
+    //    await page.GotoAsync("https://iservice.citics.com/Settings/PersonalCenter");
+
+    //    for (int i = 0; i < 5; i++)
+    //    {
+    //        await Task.Delay(1000);
+
+    //        var content = await page.ContentAsync();
+    //        var suc = content is not null && content.Contains("姓名") && content.Contains("证件类型") && content.Contains("证件号");
+
+    //        if (suc) return true;
+    //    }
+
+    //    return false;
+    //}
+    //public override async Task<bool> WeakLoginValidationAsync(IPage page, int tryCount = 5)
+    //{
+    //    for (var i = 0; i < tryCount; i++)
+    //    {
+    //        await Task.Delay(1000);
+
+    //        if (await page.GetByText("首页").CountAsync() > 0)
+    //            return true;
+    //    }
+    //    return false;
+    //}
+
+    public override async Task<bool> LoginValidationAsync(IPage page, int wait_seconds)
+    {
+        for (var i = 0; i < wait_seconds; i++)
+        {
+            await Task.Delay(1000);
+
+            if (await page.GetByText("首页").CountAsync() > 0)
+                return true;
+        }
+        return false;
+    }
+
+
+
+    #region 同步募集户流水
+
+    /// <summary>
+    /// 获取对应时间内的流水
+    /// </summary>
+    /// <param name="page"></param>
+    /// <param name="start"></param>
+    /// <param name="end"></param>
+    /// <returns></returns>
+    private async Task<BankTransaction[]?> FundRaisingRecordAsync(IPage page, DateTime start, DateTime end)
+    {
+        try
+        {
+            List<BankTransaction> data = new();
+
+            var from = start.ToString("yyyy-MM-dd");
+            var to = end.ToString("yyyy-MM-dd");
+
+            // 设置日期
+            var loc = page.GetByPlaceholder("开始日期");
+            if (await loc.CountAsync() == 0)
+            {
+                Log.Warning($"{nameof(CSTISCAssist)}.{nameof(FundRaisingRecordAsync)}->未找到日期设置框");
+                return null;
+            }
+
+            await loc.EvaluateAsync("node => node.setAttribute('type', 'text')");
+            await loc.First.EvaluateAsync("element =>{element.removeAttribute('readonly');}");
+            await loc.First.FillAsync(from);
+
+            loc = page.GetByPlaceholder("结束日期");
+            if (await loc.CountAsync() == 0)
+            {
+                Log.Warning($"{nameof(CSTISCAssist)}.{nameof(FundRaisingRecordAsync)}->未找到日期设置框");
+                return null;
+            }
+
+            await loc.EvaluateAsync("node => node.setAttribute('type', 'text')");
+            await loc.First.EvaluateAsync("element =>{element.removeAttribute('readonly');}");
+            await loc.First.FillAsync(to);
+
+
+            loc = page.Locator("[id=\"__qiankun_microapp_wrapper_for_iservice__\"]").GetByText("100 条/页");
+            var lcnt = await loc.CountAsync();
+            if (lcnt > 1)
+                loc = page.Locator("form.ivu-form.ivu-form-label-right.ivu-form-inline > div.kr-tableFilter >> span.search-button > button");//GetByRole(AriaRole.Button, new() { NameRegex = new Regex( "查询") });
+            else
+                await page.Locator("[id=\"__qiankun_microapp_wrapper_for_iservice__\"] span").Filter(new() { HasText = "条/页" }).ClickAsync();
+
+
+            //lcnt = await loc.CountAsync();
+
+            IResponse? response = null;
+
+            /// 尝试3次
+            for (int i = 0; i < 3; i++)
+            {
+                try
+                {
+                    await page.RunAndWaitForResponseAsync(async () => await loc.ClickAsync(), resp =>
+                    {
+                        if (resp.Url != "https://iservice.citics.com/api/sys/midPlatformCommonMethod?funcId=307") return false;
+                        response = resp;
+                        return true;
+                    }, new PageRunAndWaitForResponseOptions { Timeout = 5000 });
+                }
+                catch { }
+
+                if (response is not null) break;
+            }
+
+
+
+            if (response is null)
+            {
+                Log.Warning($"{nameof(CSTISCAssist)}.{nameof(FundRaisingRecordAsync)}->获取json数据异常，可能托管修改了流程");
+                return null;
+            }
+            var json = await response.TextAsync();
+
+            JsonSerializerOptions options = new JsonSerializerOptions();
+            options.Converters.Add(new DateTimeConverterUsingDateTimeParse());
+
+            try
+            {
+                var obj = JsonSerializer.Deserialize<CITISC.Json.FundRasing.JsonRootDto>(json, options);
+                if (obj?.Data?.Total == 0)
+                {
+                    Log.Information($"{nameof(CSTISCAssist)}.{nameof(FundRaisingRecordAsync)}->未解析到流水");
+                    return Array.Empty<BankTransaction>();
+                }
+
+                // 中信开发真逆天
+                foreach (var item in obj!.Data!.List)
+                {
+                    data.Add(item.ToTransaction(Identifier));
+                }
+
+                /// 下一页的数据
+                while (obj.Data.HasNextPage)
+                {
+                    await Task.Delay(500);
+
+                    loc = page.GetByRole(AriaRole.Listitem, new() { Name = "下一页" }).Locator("a");
+
+                    await page.RunAndWaitForResponseAsync(async () => await loc.ClickAsync(), resp =>
+                    {
+                        if (resp.Url != "https://iservice.citics.com/api/sys/midPlatformCommonMethod?funcId=307") return false;
+                        response = resp;
+                        return true;
+                    });
+
+                    if (response is null)
+                    {
+                        Log.Warning($"{nameof(CSTISCAssist)}.{nameof(FundRaisingRecordAsync)}->获取json数据异常，可能托管修改了流程");
+                        return null;
+                    }
+
+                    json = await response.TextAsync();
+
+
+                    obj = JsonSerializer.Deserialize<CITISC.Json.FundRasing.JsonRootDto>(json, options);
+                    if (obj?.Data?.Total == 0)
+                    {
+                        Log.Information($"{nameof(CSTISCAssist)}.{nameof(FundRaisingRecordAsync)}->未解析“下一页”中的流水");
+                        return null;
+                    }
+
+                    foreach (var item in obj!.Data!.List)
+                    {
+                        data.Add(item.ToTransaction(Identifier));
+                    }
+                }
+
+
+                return data.ToArray();
+            }
+            catch (JsonException ex)
+            {
+                Log.Warning($"{nameof(CSTISCAssist)}.{nameof(FundRaisingRecordAsync)}->json解析异常，可能托管修改了模型：{ex.Message}");
+                return null;
+            }
+
+
+
+
+        }
+        catch (Exception e)
+        {
+            Log.Warning($"{nameof(CSTISCAssist)}.{nameof(FundRaisingRecordAsync)}->设置日期异常：{e.Message}");
+            return null;
+        }
+
+    }
+
+    /// <summary>
+    /// 同步募集户流水
+    /// </summary>
+    /// <returns></returns>
+    public override async Task<bool> SynchronizeFundRaisingRecord()
+    {
+        // 判断登陆状态
+        if (!IsLogedIn && !await LoginAsync())
+            return false;
+
+        // 获取已保存的流水最新日期
+        var db = new BaseDatabase();
+        var last = db.GetCollection<BankTransaction>().Query().Where(x => x.Origin == Identifier).OrderByDescending(x => x.Time).FirstOrDefault();
+        // var bankaccs = db.GetCollection<BankAccount>().FindAll();
+        db.Dispose();
+        if (last is null)
+            Log.Information($"{nameof(CSTISCAssist)}.{nameof(FundRaisingRecordAsync)}->初始建档");
+
+        string url = $"https://iservice.citics.com/iservice/mjzj/mjzhlscx?refresh={DateTime.Now.TimeStampBySeconds()}";
+
+        var context = await GetBrowserContext();
+        var page = await context!.NewPageAsync();
+
+
+        IResponse? response = null;
+        await page.RunAndWaitForResponseAsync(async () => await page.GotoAsync(url), resp =>
+        {
+            if (resp.Url != "https://iservice.citics.com/api/sys/midPlatformCommonMethod?funcId=307") return false;
+            response = resp;
+            return true;
+        });
+
+        if (response is null)
+        {
+            Log.Warning($"{nameof(CSTISCAssist)}.{nameof(FundRaisingRecordAsync)}->获取json数据异常，可能托管修改了流程");
+            return false;
+        }
+
+
+        //
+        DateTime ori = last?.Time ?? new DateTime(1970, 1, 1), start = DateTime.Today.AddYears(-1), end = DateTime.Today;
+
+        int empty_year = 0;
+        List<BankTransaction> transactions = new List<BankTransaction>();
+        while (end >= ori)
+        {
+            if (ori > start)
+                start = ori;
+
+            var vals = await FundRaisingRecordAsync(page, start, end);
+            if (vals is not null)
+            {
+                transactions.AddRange(vals);
+
+                if (vals.Length == 0) ++empty_year;
+            }
+
+            if (empty_year > 2) break;
+
+            end = start.AddDays(-1);
+            start = end.AddYears(-1);
+        }
+
+        // 保存到数据库
+        db = new BaseDatabase();
+        db.GetCollection<BankTransaction>().Insert(transactions);
+        db.Dispose();
+
+        return true;
+    }
+
+
+    #endregion
+
+    /// <summary>
+    /// 从托管外包机构同步客户资料
+    /// </summary>
+    /// <returns></returns>
+    public override async Task<bool> SynchronizeCustomer()
+    {
+        // 判断登陆状态
+        if (!IsLogedIn && !await LoginAsync())
+            return false;
+
+        var context = await GetBrowserContext();
+        var page = await context!.NewPageAsync();
+
+        IResponse? response = null;
+        await page.RunAndWaitForResponseAsync(async () => await page.GotoAsync($"https://iservice.citics.com/ds/account/searchcustomer?refresh={DateTime.Now.TimeStampBySeconds()}"), x =>
+        {
+            if (x.Request.PostData?.Contains("queryCustInfoList") ?? false)
+            {
+                response = x;
+                return true;
+            }
+            return false;
+        });
+
+        if (response is null)
+        {
+            Log.Error($"{Identifier}.{nameof(SynchronizeCustomer)} 未获取到数据json的response");
+            return false;
+        }
+        var json = await response.TextAsync();
+
+        var obj = JsonSerializer.Deserialize<CITISC.Json.Customer.JsonRootDto>(json);
+        if (obj is null)
+        {
+            Log.Error($"{Identifier}.{nameof(SynchronizeCustomer)} json数据解析失败");
+            return false;
+        }
+
+        try
+        {
+            var data = obj.Data.Select(x => x.ToCustomer()).ToArray();
+
+            using var db = new BaseDatabase();
+
+            // 获取已存在的
+            var exist_ids = db.GetCollection<ICustomer>().Query().Select(x => new { id = x._id, identity = x.Identity }).ToList();//.Where(x => data.Any(y => y.Item1.Identity == x.Identity)).ToArray();
+            var accounts = db.GetCollection<BankAccount>().FindAll();
+            //
+            foreach (var item in data)
+            {
+                int idx = exist_ids.FindIndex(0, x=>x.identity == item.customer.Identity);
+
+                if (idx == -1)
+                {
+                    db.GetCollection<ICustomer>().Insert(item.customer);
+                    item.account.OwnerId = item.customer._id;
+                    db.GetCollection<BankAccount>().Insert(item.account);
+                }
+                else
+                {
+                    item.account.OwnerId = exist_ids[idx].id;
+                    if (accounts.Any(x => x.Bank == item.account.Bank && x.Number == item.account.Number))
+                        continue;
+
+                    db.GetCollection<BankAccount>().Insert(item.account);
+                }
+            }
+
+            
+        }
+        catch (Exception e)
+        {
+            Log.Error($"{Identifier}.{nameof(SynchronizeCustomer)} 数据转换失败：{e.Message}");
+        }
+
+
+        await page.CloseAsync();
+        return true;
+    }
+
+}

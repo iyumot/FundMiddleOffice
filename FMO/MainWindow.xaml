@@ -18,11 +18,18 @@
         <Button Command="{Binding testCommand}" />
 
         <DockPanel>
-            <h:SideMenu Width="60">
-                <h:SideMenuItem Header="管理人" />
+            <h:SideMenu AutoSelect="True">
+                <h:SideMenuItem h:IconElement.Geometry="{StaticResource G.XMark}" Header="管理人">
+                    <h:SideMenuItem.Icon>
+                        <Viewbox Width="16" Height="16">
+                            <Path Data="{StaticResource G.Check}" Fill="Black" />
+                        </Viewbox>
+                    </h:SideMenuItem.Icon>
+                </h:SideMenuItem>
                 <h:SideMenuItem Header="基金" />
                 <h:SideMenuItem Header="客户" />
                 <h:SideMenuItem Header="TA" />
+                <h:SideMenuItem Header="托管" />
             </h:SideMenu>
 
             <TabControl />

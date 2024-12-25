@@ -1,4 +1,5 @@
-﻿using LiteDB;
+﻿using FMO.Models;
+using LiteDB;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,8 +8,19 @@ using System.Threading.Tasks;
 
 namespace FMO.Utilities;
 
-internal class DbHelper
+public static class DatabaseAssist
 {
+    /// <summary>
+    /// 自检
+    /// </summary>
+    public static void SystemValidation()
+    {
+        using (var db = new BaseDatabase())
+        {
+            db.GetCollection<ICustomer>().EnsureIndex(x => x.Identity);
+            
+        }
+    }
 }
 
 
