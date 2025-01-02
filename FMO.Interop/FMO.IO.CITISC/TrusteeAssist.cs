@@ -18,7 +18,7 @@ public class CSTISCAssist : TrusteeAssistBase
 
     public override string Identifier => "cstisc";
 
-    public override string Name => "中信证券托管外包";
+    public override string Name => "中信证券股份有限公司";
 
 
     public override string Domain => "https://iservice.citics.com/";
@@ -241,9 +241,8 @@ public class CSTISCAssist : TrusteeAssistBase
             Log.Information($"{nameof(CSTISCAssist)}.{nameof(FundRaisingRecordAsync)}->初始建档");
 
         string url = $"https://iservice.citics.com/iservice/mjzj/mjzhlscx?refresh={DateTime.Now.TimeStampBySeconds()}";
-
-        var context = await GetBrowserContext();
-        var page = await context!.NewPageAsync();
+         
+        var page = await GetPageAsync();
 
 
         IResponse? response = null;
@@ -289,6 +288,7 @@ public class CSTISCAssist : TrusteeAssistBase
         db = new BaseDatabase();
         db.GetCollection<BankTransaction>().Insert(transactions);
         db.Dispose();
+        await page.CloseAsync();
 
         return true;
     }
@@ -305,9 +305,8 @@ public class CSTISCAssist : TrusteeAssistBase
         // 判断登陆状态
         if (!IsLogedIn && !await LoginAsync())
             return false;
-
-        var context = await GetBrowserContext();
-        var page = await context!.NewPageAsync();
+         
+        var page = await GetPageAsync();
 
         IResponse? response = null;
         await page.RunAndWaitForResponseAsync(async () => await page.GotoAsync($"https://iservice.citics.com/ds/account/searchcustomer?refresh={DateTime.Now.TimeStampBySeconds()}"), x =>

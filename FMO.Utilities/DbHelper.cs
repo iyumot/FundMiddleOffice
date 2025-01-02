@@ -42,6 +42,6 @@ public class TrusteeDatabase : LiteDatabase
     private const string connectionString = @"FileName=data\trustee.db;Password=f34902ufdisuf8s1;Connection=Shared";
 
     public TrusteeDatabase() : base(connectionString, null)
-    {
+    { 
     }
 }

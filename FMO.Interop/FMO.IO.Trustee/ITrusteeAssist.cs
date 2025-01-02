@@ -22,7 +22,7 @@ public interface ITrusteeAssist : IDisposable
 
 
     /// <summary>
-    /// 名称
+    /// 公司名称
     /// </summary>
     string Name { get; }
 

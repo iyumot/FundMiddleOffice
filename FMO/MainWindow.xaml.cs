@@ -19,8 +19,8 @@ public partial class MainWindow : HandyControl.Controls.Window
     {
         InitializeComponent();
 
-        Width = SystemParameters.FullPrimaryScreenWidth * 0.8;
-        Height = SystemParameters.FullPrimaryScreenHeight * 0.8;
+        Width = SystemParameters.FullPrimaryScreenWidth * 0.9;
+        Height = SystemParameters.FullPrimaryScreenHeight * 0.85;
 
     }
 }
