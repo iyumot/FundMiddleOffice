@@ -1,28 +1,96 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using FMO.Models;
+using FMO.Utilities;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
-namespace FMO
+namespace FMO;
+
+/// <summary>
+/// HomePage.xaml 的交互逻辑
+/// </summary>
+public partial class HomePage : UserControl
+{
+    public HomePage()
+    {
+        InitializeComponent();
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+public partial class HomePageViewModel : ObservableObject
 {
     /// <summary>
-    /// HomePage.xaml 的交互逻辑
+    /// 是否正在同步
     /// </summary>
-    public partial class HomePage : UserControl
+    [ObservableProperty]
+    public partial bool IsSynchronizing { get; set; }
+
+
+
+    public HomePageViewModel()
     {
-        public HomePage()
+
+        Task.Run(async () =>
         {
-            InitializeComponent();
-        }
+            await Task.Delay(2000);
+
+            IsSynchronizing = true;
+
+            await Task.Delay(22222);
+
+            IsSynchronizing = false;
+            //Initialize();
+        });
     }
+
+
+
+    /// <summary>
+    /// 数据自检
+    /// </summary>
+    public void DataSelfTest()
+    {
+        var db = new BaseDatabase();
+        var c = db.GetCollection<Fund>().FindAll().ToArray();
+        db.Dispose();
+        foreach (var f in c)
+        {
+            //if(f.PublicDisclosureSynchronizeTime == default)
+        }
+
+
+
+
+
+
+
+
+
+    }
+
+
 }

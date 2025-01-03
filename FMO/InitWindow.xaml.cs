@@ -6,7 +6,6 @@ using FMO.Models;
 using FMO.Utilities;
 using Microsoft.Win32;
 using System.Net.NetworkInformation;
-using System.Reflection;
 using System.Windows;
 
 namespace FMO;
@@ -115,11 +114,20 @@ public partial class InitWindowViewModel : ObservableRecipient, IRecipient<InitS
 
         var db = new BaseDatabase();
         db.GetCollection<Manager>().Insert(Manager);
+
         db.GetCollection<FundBasicInfo>().InsertBulk(funds);
+
+        db.GetCollection<Fund>().InsertBulk(funds.Select(x => new Fund
+        {
+            Name = new Mutable<string>(nameof(Fund.Name), x.Name!),
+            ShortName = new Mutable<string>(nameof(Fund.ShortName), Fund.GetDefaultShortName(x.Name!)),
+            Url = "https://gs.amac.org.cn/amac-infodisc/res/pof" + x.Url,
+            AsAdvisor = x.IsAdvisor
+        }));
 
 
         Restart();
-       
+
     }
 
     [RelayCommand]
@@ -127,7 +135,7 @@ public partial class InitWindowViewModel : ObservableRecipient, IRecipient<InitS
     {
         OpenFolderDialog dialog = new OpenFolderDialog();
         var r = dialog.ShowDialog();
-        if(r ?? false)
+        if (r ?? false)
         {
             Config.Default.WorkFolder = dialog.FolderName;
             Config.Default.Save();
@@ -136,7 +144,9 @@ public partial class InitWindowViewModel : ObservableRecipient, IRecipient<InitS
         }
     }
 
-
+    /// <summary>
+    /// 重启程序
+    /// </summary>
     public void Restart()
     {
         var field = App.Current.GetType().GetField("mutex", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);

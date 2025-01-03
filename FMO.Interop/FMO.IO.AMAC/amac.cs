@@ -122,6 +122,80 @@ public static class AmacAssist
     }
 
 
+    /// <summary>
+    /// 从基金公示信息同步数据 
+    /// </summary>
+    /// <param name="fund"></param>
+    /// <param name="client"></param>
+    /// <returns></returns>
+    public static async Task<bool> SyncFundInfoAsync(Fund fund, HttpClient client)
+    {
+        //
+        if (string.IsNullOrWhiteSpace(fund.Url))
+            return false;
+
+        var content = await client.GetStringAsync(fund.Url);
+
+        var idx = content.IndexOf("基金名称");
+        if (idx < 0)
+        {
+            Log.Error("获取基金公示信息错误 1");
+            return default;
+        }
+
+        var s = content.LastIndexOf("tbody", idx);
+        var e = content.IndexOf("tbody", idx);
+        if (e <= s)
+        {
+            Log.Error("获取基金公示信息错误 2");
+            return default;
+        }
+
+        var table = content.Substring(s - 1, e - s + 7);
+
+        var ms = Regex.Matches(table, "<tr>.*?</tr>", RegexOptions.Singleline);
+
+        foreach (Match m in ms)
+        {
+            var tds = Regex.Matches(m.Value, "<td.*?>.*?</td>", RegexOptions.Singleline).Select(x => x.Value).ToArray();
+
+            if (tds.Length < 2)
+            {
+                Log.Error("获取基金公示信息错误 3");
+                return default;
+            }
+
+            var match = Regex.Match(tds[0], ">.*?<");
+            if (!match.Success)
+            {
+                Log.Error("获取基金公示信息错误 4");
+                return default;
+            }
+
+            var field = match.Value[1..^1];
+            
+            match = Regex.Match(tds[1], "(?s)>.*?<");
+            if (!match.Success)
+            {
+                Log.Error("获取基金公示信息错误 5");
+                return default;
+            }
+            var value = match.Value[1..^1].Trim();
+
+
+            Fill(fund, field, value);
+
+        }
+        return true;
+    }
+
+    private static void Fill(Fund fund, string field, string value)
+    {
+        if (field.Contains("基金名称") && value != fund.Name.Value)
+            throw new Exception("从基金公示信息同步数据错误，基金名称不匹配");
+        else if(field.Contains("成立时间") )
+    }
+
     private static async Task<FundBasicInfo[]> ExtractFund(IPage page, InitStep2Info info)
     {
         var lc = page.Locator("//*[contains(text(),'产品信息')]/../..");
@@ -145,7 +219,7 @@ public static class AmacAssist
 
         List<FundBasicInfo> list = new List<FundBasicInfo>();
 
-       
+
         foreach (var item in await lf.AllAsync())
         {
             LocatorInnerTextOptions options = new LocatorInnerTextOptions { Timeout = 100 };
@@ -326,4 +400,9 @@ public static class AmacAssist
             return Array.Empty<FundBasicInfo>();
         }
     }
+
+
+
+
+
 }

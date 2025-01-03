@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.IO.Automation", "FMO.IO
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.UtilitiesTests", "FMO.UtilitiesTests\FMO.UtilitiesTests.csproj", "{F2A67F3B-5692-4964-91A9-D38C1B66C52F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.IO.AMACTests1", "FMO.InterOp\FMO.IO.AMACTests1\FMO.IO.AMACTests1.csproj", "{5FD3BAEF-5B1C-4E9D-A463-BA367474A2BC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,6 +75,10 @@ Global
 		{F2A67F3B-5692-4964-91A9-D38C1B66C52F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2A67F3B-5692-4964-91A9-D38C1B66C52F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2A67F3B-5692-4964-91A9-D38C1B66C52F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FD3BAEF-5B1C-4E9D-A463-BA367474A2BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FD3BAEF-5B1C-4E9D-A463-BA367474A2BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FD3BAEF-5B1C-4E9D-A463-BA367474A2BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FD3BAEF-5B1C-4E9D-A463-BA367474A2BC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

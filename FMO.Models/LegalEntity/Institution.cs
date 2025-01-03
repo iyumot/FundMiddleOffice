@@ -68,13 +68,6 @@ public class Institution : LegalEntity
  
 }
 
-/// <summary>
-/// 产品
-/// </summary>
-public class Fund : LegalEntity
-{
-    public override EntityType Type => EntityType.Fund;
-}
 
 
 public class ShareHolder

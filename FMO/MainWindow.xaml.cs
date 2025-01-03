@@ -29,6 +29,7 @@ public partial class MainWindow : HandyControl.Controls.Window
 
 public partial class MainWindowViewModel : ObservableObject, IRecipient<string>
 {
+
     [ObservableProperty]
     public partial string? Title { get; set; }
 
@@ -40,12 +41,30 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<string>
 
 
     [ObservableProperty]
-    public partial ObservableCollection<TabItem> Pages { get; private set; } = new([new TabItem { Header = "首页", Content = new HomePage() }]);
+    public partial ObservableCollection<TabItem> Pages { get; private set; }
 
+    public MainWindowViewModel()
+    {
+        Pages = new ObservableCollection<TabItem>([GenerateHomePageTab()]);
+    }
 
     public void Receive(string message)
     {
 
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    private TabItem GenerateHomePageTab()
+    {
+        var ti = new TabItem();
+        var page = new HomePage(); 
+        ti.Header = new HomePageHeader();
+        ti.Content = page;
+        ti.DataContext = new HomePageViewModel();
+        return ti;
     }
 
     private DockPanel GenerateHeader(string head)
@@ -69,17 +88,45 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<string>
         switch (id)
         {
             case "Trustee":
-
-                var page = Pages.FirstOrDefault(x => x.Content is TrusteePage);
-                if (page is null)
                 {
-                    page = new TabItem { Header = GenerateHeader("托管平台"), Content = new TrusteePage() };
-                    Pages.Add(page);
+                    var page = Pages.FirstOrDefault(x => x.Content is TrusteePage);
+                    if (page is null)
+                    {
+                        page = new TabItem { Header = GenerateHeader("托管平台"), Content = new TrusteePage() };
+                        Pages.Add(page);
+                    }
+
+                    page.IsSelected = true;
+                    break;
                 }
 
-                page.IsSelected = true;
-                break;
+            case "Funds":
+                {
+                    var page = Pages.FirstOrDefault(x => x.Content is FundsPage);
+                    if (page is null)
+                    {
+                        page = new TabItem { Header = GenerateHeader("基金总览"), Content = new FundsPage() };
+                        Pages.Add(page);
+                    }
+
+                    page.IsSelected = true;
+                    break;
+                }
             default:
+                {
+                    Type? type = Type.GetType($"FMO.{id}");
+                    if (type is null) break;
+
+                    var page = Pages.FirstOrDefault(x => x.Content?.GetType() == type);
+                    if (page is null)
+                    {
+                        var obj = Activator.CreateInstance(type) as UserControl;
+                        page = new TabItem { Header = GenerateHeader(obj?.Tag as string ?? "新标签"), Content = obj };
+                        Pages.Add(page);
+                    }
+
+                    page.IsSelected = true;
+                }
                 break;
         }
 
