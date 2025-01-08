@@ -11,7 +11,7 @@ public enum FundStatus
 
     [Description("备案")] Registration,
 
-    [Description("正在运行")] Normal,
+    [Description("正在运作")] Normal,
 
     [Description("提前清算")] EarlyLiquidation,
 

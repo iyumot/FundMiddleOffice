@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.ComponentModel;
+using System.Text.RegularExpressions;
 
 namespace FMO.Models;
 
@@ -97,6 +98,68 @@ public class Fund
     public Mutable<ShareClass>? ShareClass { get; set; }
 
 
+    /// <summary>
+    /// 基金类型
+    /// </summary>
+    public FundType Type { get; set; }
+
+    /// <summary>
+    /// 管理类型
+    /// </summary>
+    public ManageType ManageType { get; set; }
+
+    /// <summary>
+    /// 托管人
+    /// </summary>
+    public string? Trustee { get; set; }
 
     public static string GetDefaultShortName(string name) =>  Regex.Replace(name, @"私募\w+基金|集合\w+计划", "");
+}
+
+
+
+
+
+
+[TypeConverter(nameof(EnumDescriptionTypeConverter))]
+public enum FundType
+{
+
+    Unk,
+
+    [Description("私募证券投资基金")]
+    PrivateSecuritiesInvestmentFund,
+
+
+    [Description("私募股权投资基金")]
+    PrivateEquityFund,
+
+    [Description("信托计划")]
+    TrustPlan,
+
+
+
+
+}
+
+
+/// <summary>
+/// 管理类型
+/// </summary>
+[TypeConverter(nameof(EnumDescriptionTypeConverter))]
+public enum ManageType
+{
+
+    Unk,
+
+    [Description("受托管理")]
+    Fiduciary,
+
+
+    [Description("顾问管理")]
+    Advisory,
+
+
+
+
 }

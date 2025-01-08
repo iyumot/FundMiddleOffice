@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
+using FMO.Utilities;
 using Microsoft.Playwright;
 using Serilog;
 using System.Text;
@@ -173,7 +174,7 @@ public static class AmacAssist
             }
 
             var field = match.Value[1..^1];
-            
+
             match = Regex.Match(tds[1], "(?s)>.*?<");
             if (!match.Success)
             {
@@ -186,14 +187,63 @@ public static class AmacAssist
             Fill(fund, field, value);
 
         }
+
+        fund.PublicDisclosureSynchronizeTime = DateTime.Now;
         return true;
     }
 
     private static void Fill(Fund fund, string field, string value)
     {
-        if (field.Contains("基金名称") && value != fund.Name.Value)
-            throw new Exception("从基金公示信息同步数据错误，基金名称不匹配");
-        else if(field.Contains("成立时间") )
+
+
+        switch (field)
+        {
+            case string s when s.Contains("基金名称"):
+                if (value != fund.Name.Value)
+                    throw new Exception("从基金公示信息同步数据错误，基金名称不匹配");
+                break;
+            case string s when s.Contains("成立时间"):
+                if (DateOnly.TryParse(value, out DateOnly d))
+                    fund.SetupDate = d;
+                else throw new Exception($"未识别的日期格式：{value}");
+                break;
+            case string s when s.Contains("备案时间"):
+                if (DateOnly.TryParse(value, out d))
+                    fund.AuditDate = d;
+                else throw new Exception($"未识别的日期格式：{value}");
+                break;
+
+            case string s when s.Contains("基金编号"):
+                fund.Code = value.Trim();
+                break;
+
+            case string s when s.Contains("基金类型"):
+                fund.Type = EnumHelper.FromDescription<FundType>(value.Trim());
+                break;
+
+            case string s when s.Contains("管理类型"):
+                fund.ManageType = EnumHelper.FromDescription<ManageType>(value.Trim());
+                break;
+
+            case string s when s.Contains("托管人名称"):
+                fund.Trustee = value.Trim();
+                break;
+
+            case string s when s.Contains("运作状态"):
+                fund.Status = EnumHelper.FromDescription<FundStatus>(value.Trim());
+                break;
+
+
+            case string s when s.Contains("基金信息最后更新时间"):
+                if (DateTime.TryParse(value, out DateTime dt))
+                    fund.LastUpdate = dt;
+                break;
+
+
+            default:
+                break;
+        }
+
     }
 
     private static async Task<FundBasicInfo[]> ExtractFund(IPage page, InitStep2Info info)
