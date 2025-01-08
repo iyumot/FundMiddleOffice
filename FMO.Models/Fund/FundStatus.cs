@@ -17,5 +17,7 @@ public enum FundStatus
 
     [Description("正常清算")] Liquidation,
 
-    [Description("延期清算")] LateLiquidation
+    [Description("延期清算")] LateLiquidation, 
+
+    [Description("投顾协议已终止")] AdvisoryTerminated,
 }

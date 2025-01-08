@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.IO.AMAC;
 using FMO.Models;
 using FMO.Utilities;
@@ -94,24 +95,30 @@ public partial class HomePageViewModel : ObservableObject
                 HandyControl.Controls.Growl.Warning($"发现{ned.Length}个基金未同步公示信息");
 
                 using HttpClient client = new HttpClient();
-                foreach (var (i, f) in c.Index())
+                foreach (var (i, set) in ned.Chunk(50).Index())
                 {
-                    await AmacAssist.SyncFundInfoAsync(f, client);
+                    foreach (var (j, f) in set.Index())
+                    {
+                        await AmacAssist.SyncFundInfoAsync(f, client);
 
-                    if (i % 50 == 49)
-                        HandyControl.Controls.Growl.Success($"已同步{i + 1}个基金，剩余{ned.Length - i - 1}个");
-                    await Task.Delay(200);
+                        WeakReferenceMessenger.Default.Send(f);
+
+                        await Task.Delay(200);
+                    }
+
+                    HandyControl.Controls.Growl.Success($"已同步{i * 50 + set.Length}个基金，剩余{ned.Length - i * 50 - set.Length - 1}个");
+
+                    db = new BaseDatabase();
+                    db.GetCollection<Fund>().Update(set);
+                    db.Dispose();
                 }
 
-                db = new BaseDatabase();
-                db.GetCollection<Fund>().Update(ned);
-
-                HandyControl.Controls.Growl.Warning($"基金同步公示信息完成");
+                HandyControl.Controls.Growl.Success($"基金同步公示信息完成");
             }
             catch (Exception ex)
             {
                 Log.Error($"同步公示信息失败：{ex.Message}");
-                HandyControl.Controls.Growl.Success($"同步基金公示信息失败");
+                HandyControl.Controls.Growl.Error($"同步基金公示信息失败");
             }
         }
 

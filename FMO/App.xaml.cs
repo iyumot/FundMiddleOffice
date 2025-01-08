@@ -39,6 +39,7 @@ public partial class App : Application
         Log.Logger = new LoggerConfiguration().WriteTo.File("log.txt").CreateLogger();
 
         Directory.CreateDirectory("data");
+        Directory.CreateDirectory("config");
 
 
         if (CheckIsFirstRun())

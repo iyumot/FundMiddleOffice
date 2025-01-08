@@ -113,7 +113,7 @@ public class Fund
     /// </summary>
     public string? Trustee { get; set; }
 
-    public static string GetDefaultShortName(string name) =>  Regex.Replace(name, @"私募\w+基金|集合\w+计划", "");
+    public static string GetDefaultShortName(string name) => Regex.Replace(name, @"私募\w+基金|集合\w+计划", "");
 }
 
 
@@ -137,7 +137,12 @@ public enum FundType
     [Description("信托计划")]
     TrustPlan,
 
+    [Description("期货公司及其子公司的资产管理计划")]
+    ManagementPlansOfFuture,
 
+
+    [Description("证券公司及其子公司的资产管理计划")]
+    ManagementPlansOfSecurity,
 
 
 }

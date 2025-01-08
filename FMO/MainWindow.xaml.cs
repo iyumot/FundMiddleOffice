@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using FMO.Models;
+using FMO.Utilities;
 using Serilog;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -22,6 +24,10 @@ public partial class MainWindow : HandyControl.Controls.Window
         Width = SystemParameters.FullPrimaryScreenWidth * 0.9;
         Height = SystemParameters.FullPrimaryScreenHeight * 0.85;
 
+
+        // 管理人名称
+        using var db = new BaseDatabase();
+        Title += " - " + db.GetCollection<Manager>().FindOne(x => x.IsMaster)?.Name;
     }
 }
 

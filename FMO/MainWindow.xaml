@@ -57,7 +57,7 @@
                     <hc:SideMenuItem.Header>
                         <hc:Badge
                             Width="50"
-                            Content="托管"
+                            Content="托管外包"
                             ShowBadge="False"
                             Status="Dot" />
                     </hc:SideMenuItem.Header>
