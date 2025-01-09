@@ -1,0 +1,94 @@
+﻿using System.ComponentModel;
+
+namespace FMO.Models;
+
+
+/// <summary>
+/// 交易申请
+/// </summary>
+public class TransferRequest
+{
+    public int Id { get; set; }
+
+    /// <summary>
+    /// 在托管外包系统中的id
+    /// </summary>
+    public string? ExternalId { get; set; }
+
+    /// <summary>
+    /// 平台identifier
+    /// </summary>
+    public string? PID { get; set; }
+
+
+    /// <summary>
+    /// 内部id
+    /// </summary>
+    public int CustomerId { get; set; }
+
+    /// <summary>
+    /// 名称
+    /// </summary>
+    public required string CustomerName { get; set; }
+
+    /// <summary>
+    /// 客户证件
+    /// </summary>
+    public required string CustomerIdentity { get; set; }
+
+    /// <summary>
+    /// 创建日期
+    /// </summary>
+    public DateOnly CreateDate { get; set; }
+
+    /// <summary>
+    /// 申请日期（开放日）
+    /// </summary>
+    public DateOnly RequestDate { get; set; }
+
+    /// <summary>
+    /// 内部Id
+    /// </summary>
+    public int FundId { get; set; }
+
+    /// <summary>
+    /// 基金名称
+    /// </summary>
+    public required string FundName { get; set; }
+
+    /// <summary>
+    /// 代码
+    /// </summary>
+    public string? FundCode { get; set; }
+
+    /// <summary>
+    /// 业务类型
+    /// </summary>
+    public RequestType RequestType { get; set; }
+
+    /// <summary>
+    /// 申请份额
+    /// </summary> 
+    public decimal RequestShare { get; set; }
+
+    /// <summary>
+    /// 申请金额
+    /// </summary> 
+    public decimal RequestAmount { get; set; }
+
+    /// <summary>
+    /// 巨额赎回处理方式
+    /// </summary>
+    public LargeRedemptionFlag LargeRedemptionFlag { get; set; }
+
+    /// <summary>
+    /// 费用折扣
+    /// </summary>
+    public decimal FeeDiscount { get; set; }
+
+    /// <summary>
+    /// 销售机构
+    /// </summary>
+    public string? Agency { get; set; }
+}
+

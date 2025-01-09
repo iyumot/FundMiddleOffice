@@ -14,6 +14,37 @@
     </UserControl.DataContext>
     <UserControl.Resources />
     <DockPanel>
+        <DockPanel Margin="5" DockPanel.Dock="Top">
+            <TextBlock VerticalAlignment="Center" Text="同步说明" />
+
+
+            <ListBox
+                BorderThickness="0"
+                ItemsSource="{Binding Trustees[0].Buttons}"
+                Style="{StaticResource ListBoxCustom}">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel IsItemsHost="True" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel Margin="5,0">
+                            <Viewbox
+                                Width="16"
+                                Height="16"
+                                Margin="2,0">
+                                <Path Data="{Binding Icon}" Fill="Black" />
+                            </Viewbox>
+                            <TextBlock Text="{Binding Description}" />
+                        </DockPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+        </DockPanel>
+
+
 
         <ListBox ItemsSource="{Binding Trustees}" Style="{StaticResource WrapPanelHorizontalListBox}">
             <ListBox.ItemsPanel>
@@ -23,22 +54,111 @@
             </ListBox.ItemsPanel>
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <DockPanel Width="250" Margin="5,0">
+                    <StackPanel Width="250" Margin="5,0">
                         <Image
                             Margin="0,5"
                             DockPanel.Dock="Top"
                             Source="{Binding Icon}" />
                         <!--<TextBlock Text="{Binding Name}" />-->
 
-                        <DockPanel>
+                        <DockPanel LastChildFill="False">
                             <CheckBox Content="启用" IsChecked="{Binding IsEnabled}" />
                             <TextBlock
-                                Margin="10,0,0,0"
+                                Margin="10,0,5,0"
                                 VerticalAlignment="Center"
                                 Text="{Binding LoginStatus}" />
+
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource G.RightToBracket}"
+                                Command="{Binding LoginCommand}"
+                                Style="{StaticResource ButtonDefault.Small}"
+                                ToolTip="登陆" />
                         </DockPanel>
 
-                    </DockPanel>
+                        <ListBox ItemsSource="{Binding Buttons}" Style="{StaticResource ListBoxCustom}">
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel IsItemsHost="True" />
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Width="26" Height="26">
+                                        <hc:LoadingCircle
+                                            Width="24"
+                                            Height="24"
+                                            DotDiameter="3"
+                                            Visibility="{Binding IsRunning, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                                        <Button
+                                            Padding="0"
+                                            hc:IconElement.Geometry="{Binding Icon}"
+                                            Command="{Binding Command}"
+                                            CommandParameter="{Binding .}"
+                                            Style="{StaticResource ButtonIcon.Small}"
+                                            ToolTip="{Binding Description}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <!--<DockPanel IsEnabled="{Binding IsLogin}" LastChildFill="False">
+                            <DockPanel.Resources>
+                                <Style BasedOn="{StaticResource ButtonIcon.Small}" TargetType="Button" />
+                            </DockPanel.Resources>
+                            <Grid>
+                                <hc:LoadingCircle
+                                    Width="24"
+                                    Height="24"
+                                    DotDiameter="3"
+                                    Visibility="{Binding SyncCustomersCommand.IsRunning, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                                <Button
+                                    hc:IconElement.Geometry="{StaticResource G.PeopelGroup}"
+                                    Command="{Binding SyncCustomersCommand}"
+                                    ToolTip="同步客户资料" />
+                            </Grid>
+                            <Grid>
+                                <hc:LoadingCircle
+                                    Width="24"
+                                    Height="24"
+                                    DotDiameter="3"
+                                    Visibility="{Binding SyncTACommand.IsRunning, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                                <Button
+                                    hc:IconElement.Geometry="{StaticResource G.FileWave}"
+                                    Command="{Binding SyncTACommand}"
+                                    ToolTip="同步交易申请数据" />
+                            </Grid>
+
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource G.FileWave}"
+                                Command="{Binding SyncTACommand}"
+                                ToolTip="同步TA数据" />
+
+
+                            <Grid>
+                                <hc:LoadingCircle
+                                    Width="24"
+                                    Height="24"
+                                    DotDiameter="3"
+                                    Visibility="{Binding SyncFundRaisingRecordCommand.IsRunning, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                                <Button
+                                    hc:IconElement.Geometry="{StaticResource f.landmark}"
+                                    Command="{Binding SyncFundRaisingRecordCommand}"
+                                    ToolTip="同步募集户流水" />
+                            </Grid>
+
+                            <Grid>
+                                <hc:LoadingCircle
+                                    Width="24"
+                                    Height="24"
+                                    DotDiameter="3"
+                                    Visibility="{Binding SyncBankRecordCommand.IsRunning, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                                <Button
+                                    hc:IconElement.Geometry="{StaticResource f.record-vinyl}"
+                                    Command="{Binding SyncBankRecordCommand}"
+                                    ToolTip="同步托管户流水" />
+                            </Grid>
+                        </DockPanel>-->
+                    </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>

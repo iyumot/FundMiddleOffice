@@ -29,6 +29,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.UtilitiesTests", "FMO.U
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.IO.AMACTests1", "FMO.InterOp\FMO.IO.AMACTests1\FMO.IO.AMACTests1.csproj", "{5FD3BAEF-5B1C-4E9D-A463-BA367474A2BC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0A3B0F7D-448A-4943-B590-A8B98FF38EF0}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +96,7 @@ Global
 		{9756F9DE-16C7-472E-AC89-08BD1A6A0D79} = {2DD8BA92-BC83-426F-A5A9-B93B29AFB63B}
 		{11B61C6C-A520-42DB-BB72-54BECEFF1D2C} = {6B648140-571B-4297-A871-AB606EF6681A}
 		{F2A67F3B-5692-4964-91A9-D38C1B66C52F} = {2DD8BA92-BC83-426F-A5A9-B93B29AFB63B}
+		{5FD3BAEF-5B1C-4E9D-A463-BA367474A2BC} = {2DD8BA92-BC83-426F-A5A9-B93B29AFB63B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E8FF6F9B-A37B-4335-B135-EEEB33A830B1}

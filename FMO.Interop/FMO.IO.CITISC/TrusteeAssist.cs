@@ -1,11 +1,11 @@
 ﻿//using FMO.IO.Trustee.Json.FundRasing;
-using FMO.IO.Trustee;
 using FMO.IO.Trustee.CITISC;
 using FMO.Models;
 using FMO.Utilities;
 using Microsoft.Playwright;
 using Serilog;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 
 namespace FMO.IO.Trustee;
@@ -23,37 +23,27 @@ public class CSTISCAssist : TrusteeAssistBase
 
     public override string Domain => "https://iservice.citics.com/";
 
-    ///
-    //public override async Task<bool> StrongLoginValidationAsync(IPage page)
-    //{
-    //    // 验证
-    //    await page.GotoAsync("https://iservice.citics.com/Settings/PersonalCenter");
 
-    //    for (int i = 0; i < 5; i++)
-    //    {
-    //        await Task.Delay(1000);
 
-    //        var content = await page.ContentAsync();
-    //        var suc = content is not null && content.Contains("姓名") && content.Contains("证件类型") && content.Contains("证件号");
+    /// <summary>
+    /// 获取每页数据条数
+    /// </summary>
+    /// <param name="page"></param>
+    /// <returns></returns>
+    private ILocator ItemCountPerPageLocator(IPage page) => page.Locator("div.main-page-box.main-select-content.ivu-row >> div.ivu-select-selection >> ivu-select-selected-value");
 
-    //        if (suc) return true;
-    //    }
 
-    //    return false;
-    //}
-    //public override async Task<bool> WeakLoginValidationAsync(IPage page, int tryCount = 5)
-    //{
-    //    for (var i = 0; i < tryCount; i++)
-    //    {
-    //        await Task.Delay(1000);
 
-    //        if (await page.GetByText("首页").CountAsync() > 0)
-    //            return true;
-    //    }
-    //    return false;
-    //}
 
-    public override async Task<bool> LoginValidationAsync(IPage page, int wait_seconds)
+
+
+
+
+
+
+     
+
+    public override async Task<bool> LoginValidationOverrideAsync(IPage page, int wait_seconds)
     {
         for (var i = 0; i < wait_seconds; i++)
         {
@@ -241,7 +231,7 @@ public class CSTISCAssist : TrusteeAssistBase
             Log.Information($"{nameof(CSTISCAssist)}.{nameof(FundRaisingRecordAsync)}->初始建档");
 
         string url = $"https://iservice.citics.com/iservice/mjzj/mjzhlscx?refresh={DateTime.Now.TimeStampBySeconds()}";
-         
+
         var page = await GetPageAsync();
 
 
@@ -300,12 +290,12 @@ public class CSTISCAssist : TrusteeAssistBase
     /// 从托管外包机构同步客户资料
     /// </summary>
     /// <returns></returns>
-    public override async Task<bool> SynchronizeCustomer()
+    public override async Task<bool> SynchronizeCustomerAsync()
     {
         // 判断登陆状态
         if (!IsLogedIn && !await LoginAsync())
             return false;
-         
+
         var page = await GetPageAsync();
 
         IResponse? response = null;
@@ -321,7 +311,7 @@ public class CSTISCAssist : TrusteeAssistBase
 
         if (response is null)
         {
-            Log.Error($"{Identifier}.{nameof(SynchronizeCustomer)} 未获取到数据json的response");
+            Log.Error($"{Identifier}.{nameof(SynchronizeCustomerAsync)} 未获取到数据json的response");
             return false;
         }
         var json = await response.TextAsync();
@@ -329,7 +319,7 @@ public class CSTISCAssist : TrusteeAssistBase
         var obj = JsonSerializer.Deserialize<CITISC.Json.Customer.JsonRootDto>(json);
         if (obj is null)
         {
-            Log.Error($"{Identifier}.{nameof(SynchronizeCustomer)} json数据解析失败");
+            Log.Error($"{Identifier}.{nameof(SynchronizeCustomerAsync)} json数据解析失败");
             return false;
         }
 
@@ -345,7 +335,7 @@ public class CSTISCAssist : TrusteeAssistBase
             //
             foreach (var item in data)
             {
-                int idx = exist_ids.FindIndex(0, x=>x.identity == item.customer.Identity);
+                int idx = exist_ids.FindIndex(0, x => x.identity == item.customer.Identity);
 
                 if (idx == -1)
                 {
@@ -363,16 +353,286 @@ public class CSTISCAssist : TrusteeAssistBase
                 }
             }
 
-            
+
         }
         catch (Exception e)
         {
-            Log.Error($"{Identifier}.{nameof(SynchronizeCustomer)} 数据转换失败：{e.Message}");
+            Log.Error($"{Identifier}.{nameof(SynchronizeCustomerAsync)} 数据转换失败：{e.Message}");
         }
 
 
-        await page.CloseAsync();
+        //await page.CloseAsync();
         return true;
     }
 
+
+    /// <summary>
+    /// 获取对应json数据
+    /// </summary>
+    /// <param name="page"></param>
+    /// <param name="func"></param>
+    /// <param name="funcid"></param>
+    /// <param name="start"></param>
+    /// <param name="end"></param>
+    /// <returns></returns>
+    private async Task<TD[]?> GetFuncResultAsync<T, TD>(IPage page, string func, int funcid, DateOnly start, DateOnly end, Func<T, int> getdatacount, Func<T, IEnumerable<TD>> getdata, Func<T, bool> hasnext)
+    {
+
+        List<TD> data = new();
+        Regex text = new Regex(@"100\s*条/页");
+
+        var from = start.ToString("yyyy-MM-dd");
+        var to = end.ToString("yyyy-MM-dd");
+
+        // 设置日期
+        var loc = page.GetByPlaceholder("开始日期");
+        if (await loc.CountAsync() == 0)
+        {
+            //Log.Warning($"{nameof(CSTISCAssist)}.{func}->未找到日期设置框");
+            //return null;
+            throw new Exception($"{nameof(CSTISCAssist)}.{func}->未找到日期设置框");
+        }
+
+        await loc.EvaluateAsync("node => node.setAttribute('type', 'text')");
+        await loc.First.EvaluateAsync("element =>{element.removeAttribute('readonly');}");
+        await loc.First.FillAsync(from);
+
+        loc = page.GetByPlaceholder("结束日期");
+        if (await loc.CountAsync() == 0)
+        {
+            throw new Exception($"{nameof(CSTISCAssist)}.{func}->未找到日期设置框");
+            //Log.Warning($"{nameof(CSTISCAssist)}.{func}->未找到日期设置框");
+            //return null;
+        }
+
+        await loc.EvaluateAsync("node => node.setAttribute('type', 'text')");
+        await loc.First.EvaluateAsync("element =>{element.removeAttribute('readonly');}");
+        await loc.First.FillAsync(to);
+
+        /// 检查每页条数，设为100条#app > div > div > div.main-container.ivu-row.ivu-row-flex > div > div.newTabStyle.new-container > div:nth-child(2) > div > div > div.main-page-box.main-select-content.ivu-row > div > ul > div > div > div > div.ivu-select-selection > div > span
+        loc = page.Locator("div.main-page-box.main-select-content.ivu-row >> div.ivu-select-selection >> .ivu-select-selected-value");//("[id=\"__qiankun_microapp_wrapper_for_iservice__\"]").GetByText("100 条/页");
+        loc = await FirstVisible(loc);
+        var lcnt = await loc.CountAsync();
+
+        if (lcnt == 1 && text.IsMatch(await loc.InnerTextAsync()))
+            loc = page.Locator("form.ivu-form.ivu-form-label-right.ivu-form-inline > div.kr-tableFilter >> span.search-button > button");//.GetByText("查询");//GetByRole(AriaRole.Button, new() { NameRegex = new Regex( "查询") });
+        else
+        {
+            await page.Locator("[id=\"__qiankun_microapp_wrapper_for_iservice__\"] span").Filter(new() { HasText = "条/页" }).Last.ClickAsync();
+            loc = page.Locator("div.main-page-box.main-select-content.ivu-row >> div.ivu-select-dropdown >> ul.ivu-select-dropdown-list").GetByText(text);
+        }
+
+        IResponse? response = null;
+
+        /// 尝试3次
+        for (int i = 0; i < 3; i++)
+        {
+            try
+            {
+                loc = await FirstVisible(loc);
+                await page.RunAndWaitForResponseAsync(async () => await loc.ClickAsync(), resp =>
+                {
+                    if (resp.Url != $"https://iservice.citics.com/api/sys/midPlatformCommonMethod?funcId={funcid}") return false;
+                    response = resp;
+                    return true;
+                }, new PageRunAndWaitForResponseOptions { Timeout = 5000 });
+            }
+            catch { }
+
+            if (response is not null) break;
+        }
+
+
+        if (response is null)
+        {
+            throw new Exception($"{nameof(CSTISCAssist)}.{func}->获取json数据异常，可能托管修改了流程");
+            //Log.Warning($"{nameof(CSTISCAssist)}.{func}->获取json数据异常，可能托管修改了流程");
+            //return null;
+        }
+        var json = await response.TextAsync();
+
+
+        JsonSerializerOptions options = new JsonSerializerOptions();
+        options.Converters.Add(new DateTimeConverterUsingDateTimeParse());
+
+        T? obj = JsonSerializer.Deserialize<T>(json, options);
+
+        if (obj is null)
+        {
+            throw new Exception($"{nameof(CSTISCAssist)}.{func}->json 空对象");
+            //Log.Information($"{nameof(CSTISCAssist)}.{func}->json 空对象");
+            //return Array.Empty<TD>();
+        }
+
+
+        if (getdatacount(obj) == 0)
+        {
+            //throw new Exception($"{nameof(CSTISCAssist)}.{func}->未解析到数据");
+            Log.Information($"{nameof(CSTISCAssist)}.{func}->未解析到数据");
+            return Array.Empty<TD>();
+        }
+
+        data.AddRange(getdata(obj));
+
+        //var hasnext = //Regex.IsMatch(json, "\"hasNextPage\":\\s+true");
+        /// 下一页的数据
+        while (hasnext(obj))
+        {
+            await Task.Delay(500);
+
+            loc = page.GetByRole(AriaRole.Listitem, new() { Name = "下一页" }).Locator("a");
+
+            await page.RunAndWaitForResponseAsync(async () => await loc.ClickAsync(), resp =>
+            {
+                if (resp.Url != $"https://iservice.citics.com/api/sys/midPlatformCommonMethod?funcId={funcid}") return false;
+                response = resp;
+                return true;
+            });
+
+            if (response is null)
+            {
+                throw new Exception($"{nameof(CSTISCAssist)}.{func}->获取json数据异常，可能托管修改了流程");
+                //Log.Warning($"{nameof(CSTISCAssist)}.{func}->获取json数据异常，可能托管修改了流程");
+                //return null;
+            }
+
+            json = await response.TextAsync();
+
+            obj = JsonSerializer.Deserialize<T>(json, options);
+            if (obj is null)
+            {
+                throw new Exception($"{nameof(CSTISCAssist)}.{func}->json 空对象");
+                //Log.Information($"{nameof(CSTISCAssist)}.{func}->json 空对象");
+                //return Array.Empty<TD>();
+            }
+
+            data.AddRange(getdata(obj));
+        }
+
+
+        return data.ToArray();
+    }
+
+
+
+    public async override Task<bool> SynchronizeTAAsync()
+    {
+        // 判断登陆状态
+        //if (!IsLogedIn && !await LoginAsync())
+        //    return false;
+
+        int fid = 291;
+        var page = await GetPageAsync();
+
+        if (!await LoginValidationAsync(page, 5))
+        {
+            IsLogedIn = false;
+            return false;
+        }
+
+        await page.GotoAsync($"https://iservice.citics.com/iservice/zcdj/jyqrcx?refresh={DateTime.Now.TimeStampBySeconds()}");
+
+
+
+
+        try
+        {
+            var db = new BaseDatabase();
+            var last = db.GetCollection<TransferRequest>().Query().OrderByDescending(x => x.RequestDate).FirstOrDefault();
+            db.Dispose();
+
+            if (last is null)
+                Log.Information($"{nameof(CSTISCAssist)}.{nameof(SynchronizeTAAsync)}->初始建档");
+
+            string url = $"https://iservice.citics.com/iservice/zcdj/jysqcx?refresh={DateTime.Now.TimeStampBySeconds()}";
+
+            IResponse? response = null;
+            await page.RunAndWaitForResponseAsync(async () => await page.GotoAsync(url), resp =>
+            {
+                if (resp.Url != $"https://iservice.citics.com/api/sys/midPlatformCommonMethod?funcId={fid}") return false;
+                response = resp;
+                return true;
+            });
+
+            if (response is null)
+            {
+                Log.Warning($"{nameof(CSTISCAssist)}.{nameof(SynchronizeTAAsync)}->获取json数据异常，可能托管修改了流程");
+                return false;
+            }
+
+
+            //
+            DateOnly ori = last?.RequestDate ?? new DateOnly(1970, 1, 1), start = DateOnly.FromDateTime(DateTime.Today.AddYears(-5)), end = DateOnly.FromDateTime(DateTime.Today);
+            if (ori != end)
+            {
+                await page.GetByText("历史交易申请查询").First.ClickAsync();
+            }
+
+
+            int empty_year = 0;
+            List<TransferRequest> data = new();
+            while (end >= ori)
+            {
+                if (ori > start)
+                    start = ori;
+
+                var vals = await GetFuncResultAsync<CITISC.Json.TransferRequest.JsonRootDto, CITISC.Json.TransferRequest.DataItem>(page, nameof(SynchronizeTAAsync), fid, start, end, x => x.Data.Total, x => x.Data.List, x => x.Data.HasNextPage);
+                if (vals is not null)
+                {
+
+                    data.AddRange(vals.Select(x => x.ToObject(Identifier)));
+
+
+                    if (vals.Length == 0) ++empty_year;
+                }
+
+                if (empty_year > 0) break;
+
+                end = start.AddDays(-1);
+                start = end.AddYears(-5);
+            }
+
+            data = data.OrderBy(x => x.CustomerIdentity).ToList();
+
+            // 保存到数据库
+            db = new BaseDatabase();
+            // 客户映射
+            var ids = data.Select(x => x.CustomerIdentity).Distinct().ToList();
+
+            var customers = db.GetCollection<ICustomer>().Query().ToArray();
+            ICustomer? lastc = null;
+            foreach (var item in data)
+            {
+                if (lastc is not null && lastc.Name == item.CustomerName && lastc.Identity.Id == item.CustomerIdentity)
+                {
+                    item.CustomerId = lastc._id;
+                    continue;
+                }
+
+                lastc = customers.FirstOrDefault(x => x.Name == item.CustomerName && x.Identity.Id == item.CustomerIdentity);
+                if (lastc is not null)
+                    item.CustomerId = lastc._id;
+                else Log.Error("");
+            }
+
+            db.GetCollection<TransferRequest>().Insert(data);
+            db.Dispose();
+
+            return true;
+        }
+        catch (JsonException e)
+        {
+            Log.Error($"{Identifier}.{nameof(SynchronizeTAAsync)} 同步失败：Json 解析异常 {e.Path} {e.InnerException?.Message}");
+            return false;
+        }
+        catch (Exception e)
+        {
+            Log.Error($"{Identifier}.{nameof(SynchronizeTAAsync)} 同步失败：{e.Message}");
+            return false;
+        }
+
+
+
+        return true;
+    }
 }

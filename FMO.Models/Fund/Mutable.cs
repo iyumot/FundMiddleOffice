@@ -18,7 +18,7 @@ public class Mutable<T>
     public T? InitalValue { get; set; }
 
 
-    private  SortedDictionary<DateTime, T> _changes { get; } = new ();
+    private SortedDictionary<DateTime, T> _changes { get; } = new();
 
 
     /// <summary>
@@ -41,5 +41,13 @@ public class Mutable<T>
         _changes[time] = value;
     }
 
+    public static implicit operator T?(Mutable<T> mutable)
+    {
+        return mutable.Value;
+    }
 
+    public override string? ToString()
+    {
+        return Value?.ToString() ?? base.ToString();
+    }
 }

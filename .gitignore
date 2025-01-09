@@ -361,3 +361,11 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/FMO.IO.CITISCTests/FMO.IO.CITISCTests.csproj
+/FMO.UtilitiesTests/FMO.UtilitiesTests.csproj
+/TestAmac/TestAmac.csproj
+/FMO.InterOp/FMO.IO.AMACTests1/FMO.IO.AMACTests1.csproj
+/FMO.InterOp/FMO.IO.AMACTests1/FMO.IO.AMACTests1.csproj
+/FMO.InterOp/FMO.IO.AMACTests1/FMO.IO.AMACTests1.csproj
+/FMO.InterOp/FMO.IO.AMACTests1/FMO.IO.AMACTests1.csproj
+/FMO.InterOp/FMO.IO.AMACTests1/AmacAssistTests.cs

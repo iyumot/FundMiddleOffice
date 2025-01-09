@@ -6,7 +6,7 @@ namespace FMO.IO.Trustee.CITISC;
 
 internal static class DtoHelper
 {
-    public static BankTransaction ToTransaction(this TransactionRecord item, string Identifier)
+    public static BankTransaction ToTransaction(this Root item, string Identifier)
     {
         return new BankTransaction
         {

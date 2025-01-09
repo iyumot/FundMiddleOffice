@@ -1,4 +1,5 @@
-﻿using Microsoft.Playwright;
+﻿using LiteDB;
+using Microsoft.Playwright;
 
 
 namespace FMO.IO.Trustee;
@@ -59,6 +60,36 @@ public interface ITrusteeAssist : IDisposable
     /// 从托管外包机构同步客户资料，单向
     /// </summary>
     /// <returns></returns>
-    Task<bool> SynchronizeCustomer();
+    Task<bool> SynchronizeCustomerAsync();
 
+
+    /// <summary>
+    /// 同步TA
+    /// </summary>
+    /// <returns></returns>
+    Task<bool> SynchronizeTAAsync();
+
+
+
+
+
+
+}
+
+
+public class TrusteeSynchronizeTime
+{
+    [BsonId]
+    public required string Identifier { get; set; }
+
+
+    /// <summary>
+    /// 客户同步时间
+    /// </summary>
+    public DateTime Customer { get; set; }
+
+    /// <summary>
+    /// TA同步时间
+    /// </summary>
+    public DateTime TA { get; set; }
 }

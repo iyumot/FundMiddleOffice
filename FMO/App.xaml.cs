@@ -40,6 +40,7 @@ public partial class App : Application
 
         Directory.CreateDirectory("data");
         Directory.CreateDirectory("config");
+        Directory.CreateDirectory("files\\funds");
 
 
         if (CheckIsFirstRun())

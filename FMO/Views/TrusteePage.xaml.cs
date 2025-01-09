@@ -1,4 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.IO.Trustee;
 using FMO.Utilities;
 using System.Collections.ObjectModel;
@@ -6,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
@@ -24,10 +27,13 @@ public partial class TrusteePage : UserControl
 }
 
 
+/// <summary>
+/// Page的vm
+/// </summary>
 public partial class TrusteePageViewModel : ObservableObject
 {
 
-    private bool _firstLoad = true;
+    private static bool _firstLoad = true;
 
     public ObservableCollection<TrusteePageViewModelTrustee> Trustees { get; } = new();
 
@@ -66,18 +72,24 @@ public partial class TrusteePageViewModel : ObservableObject
 
                 Trustees.Add(new TrusteePageViewModelTrustee(trusteeAssist, trusteeAssist.Name, icon));
             }
+
+            _firstLoad = false;
         }
 
 
 
-        using var db = new TrusteeDatabase();
+        // using var db = new TrusteeDatabase();
 
 
     }
 }
 
 
-public partial class TrusteePageViewModelTrustee : ObservableObject
+
+/// <summary>
+/// 单个项的vm
+/// </summary>
+public partial class TrusteePageViewModelTrustee : ObservableRecipient, IRecipient<string>
 {
     [SetsRequiredMembers]
     public TrusteePageViewModelTrustee(ITrusteeAssist assist, string name, ImageSource? icon)
@@ -87,58 +99,82 @@ public partial class TrusteePageViewModelTrustee : ObservableObject
         Assist = assist;
 
 
+        Buttons = [ new SyncButtonData((Geometry)App.Current.Resources["f.receipt"]  , SynchronizeDataCommand, SyncFundRaisingRecord, "募集户流水"),
+            new SyncButtonData((Geometry)App.Current.Resources["f.file-invoice"]  , SynchronizeDataCommand, SyncBankRecord,"托管户流水"),
+            new SyncButtonData((Geometry)App.Current.Resources["f.address-card"]  , SynchronizeDataCommand, SyncCustomers,"客户资料"),
+            new SyncButtonData((Geometry)App.Current.Resources["f.rectangle-list"]  , SynchronizeDataCommand, SyncTA,"交易申请"),
+            new SyncButtonData((Geometry)App.Current.Resources["f.list-check"]  , SynchronizeDataCommand, SyncTA,"交易确认"),            ];
+
         using var db = new TrusteeDatabase();
-        var config = db.GetCollection<TrusteeConfig>().FindOne(x => x.Identifier == Assist.Identifier);
-        if (config is not null)
-        {
-            IsEnabled = config.IsEnabled;
-        }
+        Config = db.GetCollection<TrusteeConfig>().FindOne(x => x.Id == Assist.Identifier) ?? new TrusteeConfig { Id = assist.Identifier };
+
+        IsActive = true;
+
+        WeakReferenceMessenger.Default.Register(this, "Trustee.LogOut");
+
+        NeedLogin = !IsLogin;
+        if (IsEnabled) Task.Run(async () => { await Task.Delay(2000); StartWork(); });
+
+
     }
 
-
+    /// <summary>
+    /// 图标
+    /// </summary>
     public ImageSource? Icon { get; set; }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public required string Name { get; set; }
 
+    /// <summary>
+    /// 托管助手 
+    /// </summary>
     public required ITrusteeAssist Assist { get; set; }
 
+    /// <summary>
+    /// 配置文件
+    /// </summary>
+    private TrusteeConfig Config { get; set; }
+
+    /// <summary>
+    /// 同步项
+    /// </summary>
+    public SyncButtonData[] Buttons { get; set; }
 
     /// <summary>
     /// 是否启用
     /// </summary>
-    [ObservableProperty]
-    public partial bool IsEnabled { get; set; }
+    //[ObservableProperty]
+    public bool IsEnabled { get { return Config.IsEnabled; } set { if (Config.IsEnabled == value) return; Config.IsEnabled = value; OnPropertyChanged(); SaveConfig(); if (value) StartWork(); } }
 
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(LoginStatus))]
-    public partial bool IsLogin { get; set; }
+    public bool IsLogin { get => Config.IsLogedIn; set { if (Config.IsLogedIn == value) return; Config.IsLogedIn = value; OnPropertyChanged(); OnPropertyChanged(nameof(LoginStatus)); SaveConfig(); } }
 
 
     public string LoginStatus => IsLogin ? "已登陆" : "未登陆";
 
 
 
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SynchronizeDataCommand))]
+    public partial bool SyncCommandCanExecute { get; set; } = true;
 
 
+    /// <summary>
+    /// 未登陆，需要登陆
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
+    public partial bool NeedLogin { get; set; }
 
-
-    partial void OnIsEnabledChanged(bool value)
+    protected void SaveConfig()
     {
         using var db = new TrusteeDatabase();
         LiteDB.ILiteCollection<TrusteeConfig> c = db.GetCollection<TrusteeConfig>();
 
-        var config = c.FindOne(x => x.Identifier == Assist.Identifier);
-
-        if (config is null)
-            config = new TrusteeConfig { Identifier = Assist.Identifier };
-
-        config.IsEnabled = value;
-        c.Upsert(config);
-
-
-        if (value)
-            StartWork();
+        c.Upsert(Config);
     }
 
     /// <summary>
@@ -147,14 +183,14 @@ public partial class TrusteePageViewModelTrustee : ObservableObject
     /// <exception cref="NotImplementedException"></exception>
     private async void StartWork()
     {
-        if (IsEnabled && !await Assist.LoginAsync())
-        {
-            IsLogin = false;
-            return;
-        }
+        //if (IsEnabled && !await Assist.LoginAsync())
+        //{
+        //    IsLogin = false;
+        //    return;
+        //}
 
-
-        HandyControl.Controls.Growl.Success($"托管平台【{Assist.Name}】登陆成功");
+        //IsLogin = true;
+        //HandyControl.Controls.Growl.Success($"托管平台【{Assist.Name}】登陆成功");
 
 
         /// 同步募集户流水
@@ -167,4 +203,107 @@ public partial class TrusteePageViewModelTrustee : ObservableObject
 
 
     }
+
+    #region 同步
+    /// <summary>
+    /// 同步函数
+    /// </summary>
+    /// <returns></returns>
+    public delegate Task SyncProcess();
+
+
+    [RelayCommand(CanExecute = nameof(SyncCommandCanExecute))]
+    public async Task SynchronizeData(SyncButtonData btn)
+    {
+        SyncCommandCanExecute = false;
+
+        btn.IsRunning = true;
+        try { await btn.SyncProcess(); } catch (Exception ex) { }
+        btn.IsRunning = false;
+
+        SyncCommandCanExecute = true;
+    }
+
+    public async Task SyncCustomers()
+    {
+        await Assist.SynchronizeCustomerAsync();
+
+    }
+
+    public async Task SyncTA()
+    {
+
+        await Assist.SynchronizeTAAsync();
+
+
+    }
+
+    public async Task SyncFundRaisingRecord()
+    {
+        await Task.Delay(10000);
+
+    }
+
+
+
+    public async Task SyncBankRecord()
+    {
+        await Task.Delay(10000);
+
+    }
+
+    #endregion
+
+
+
+    [RelayCommand(CanExecute = nameof(NeedLogin))]
+    public async Task Login()
+    {
+        NeedLogin = false;
+
+        IsLogin = await Assist.LoginAsync();
+
+        NeedLogin = true;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public void Receive(string message)
+    {
+        if (message == Assist.Identifier)
+        {
+            IsLogin = false;
+
+            using var db = new TrusteeDatabase();
+            var config = db.GetCollection<TrusteeConfig>().FindOne(x => x.Id == Assist.Identifier) ?? new TrusteeConfig { Id = Assist.Identifier };
+
+            config.IsLogedIn = false;
+
+            db.GetCollection<TrusteeConfig>().Upsert(config);
+        }
+    }
+}
+
+public partial class SyncButtonData(Geometry Icon, ICommand Command, TrusteePageViewModelTrustee.SyncProcess SyncProcess, string Description) : ObservableObject
+{
+    [ObservableProperty]
+    public partial bool IsRunning { get; set; }
+
+    public Geometry Icon { get; } = Icon;
+
+    public ICommand Command { get; } = Command;
+
+    public TrusteePageViewModelTrustee.SyncProcess SyncProcess { get; } = SyncProcess;
+
+    public string Description { get; } = Description;
 }

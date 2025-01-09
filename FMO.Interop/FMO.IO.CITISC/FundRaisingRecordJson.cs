@@ -9,7 +9,7 @@ namespace FMO.IO.Trustee.CITISC.Json.FundRasing;
 
 
 #pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑添加 "required" 修饰符或声明为可为 null。
-internal class TransactionRecord
+internal class Root
 {
     /// <summary>
     /// 
@@ -210,7 +210,7 @@ internal class Data
     /// 
     /// </summary>
     [JsonPropertyName("list")]
-    public List<TransactionRecord> List { get; set; }
+    public List<Root> List { get; set; }
 
     /// <summary>
     /// 

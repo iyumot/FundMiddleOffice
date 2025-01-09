@@ -55,7 +55,7 @@ public static class Automation
     /// </summary>
     /// <param name="browser"></param>
     /// <returns></returns>
-    public static async Task<IBrowserContext> LoadContect(IBrowser browser)
+    public static async Task<IBrowserContext> LoadContext(IBrowser browser)
     {
         return !File.Exists("context") ? await browser.NewContextAsync() : await browser.NewContextAsync(new BrowserNewContextOptions { StorageStatePath = "context" });
     }

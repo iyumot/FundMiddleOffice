@@ -4,6 +4,7 @@ using FMO.IO.AMAC;
 using FMO.Models;
 using FMO.Utilities;
 using Serilog;
+using System.IO;
 using System.Net.Http;
 using System.Windows.Controls;
 
@@ -87,6 +88,7 @@ public partial class HomePageViewModel : ObservableObject
         db.Dispose();
 
 
+
         var ned = c.Where(x => x.PublicDisclosureSynchronizeTime == default).ToArray();
         if (ned.Length > 0)
         {
@@ -123,6 +125,33 @@ public partial class HomePageViewModel : ObservableObject
         }
 
 
+
+        // 基金文件夹
+        var dis = new DirectoryInfo(@"files\funds").GetDirectories();
+        foreach (var f in c)
+        {
+            if(f.Code?.Length > 4)
+            {
+                var di = dis.FirstOrDefault(x => x.Name.StartsWith(f.Code));
+
+                var name = $"{f.Code}.{f.Name}";
+
+                string folder = $"files\\funds\\{name}";
+
+                if (di is null)
+                {
+                    Directory.CreateDirectory(folder);
+                    continue;
+                }
+                if (di.Name != name)
+                {
+                    Directory.Move(di.FullName, folder);
+                    Log.Warning($"基金 {f.Code} 名称已更新 [{di.Name}] -> [{f.Name}]");
+                }
+
+                FundHelper.Map(f, folder);
+            }
+        }
 
 
 
