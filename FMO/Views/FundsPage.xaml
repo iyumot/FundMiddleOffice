@@ -88,11 +88,12 @@
                     <Setter Property="Padding" Value="5" />
                     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                     <Setter Property="Margin" Value="8" />
+                    <EventSetter Event="MouseDoubleClick" Handler="OnOpenFund" />
                 </Style>
             </ListBox.ItemContainerStyle>
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <DockPanel>
+                    <DockPanel Background="Transparent">
                         <DockPanel DockPanel.Dock="Top">
                             <Viewbox
                                 Width="12"

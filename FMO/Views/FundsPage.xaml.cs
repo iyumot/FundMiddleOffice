@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
@@ -7,6 +8,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 
@@ -23,6 +25,11 @@ public partial class FundsPage : UserControl
     }
 
 
+    private void OnOpenFund(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (sender is FrameworkElement element && element.DataContext is FundsPageViewModel.FundViewModel vm)
+            WeakReferenceMessenger.Default.Send(new OpenFundMessage { Id = vm.Id });
+    }
 }
 
 /// <summary>
@@ -121,12 +128,16 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
 
 
 
+    [RelayCommand]
+    public void OpenFund()
+    {
 
+    }
 
 
     private void UiConfig_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-     
+
         switch (e.PropertyName)
         {
             case nameof(UiConfig.ShowCleared):
@@ -168,7 +179,7 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
 
 
         public FundPageUiConfig()
-        { 
+        {
         }
 
 
@@ -177,7 +188,7 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
             if (!File.Exists("config\\fundpage.json")) return new();
 
             using var fs = new FileStream("config\\fundpage.json", FileMode.Open);
-            
+
             var obj = JsonSerializer.Deserialize<FundPageUiConfig>(fs) ?? new();
             obj.DeferSave = false;
             return obj;
@@ -254,3 +265,8 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
     }
 }
 
+public class OpenFundMessage
+{
+    public int Id { get; init; }
+
+}

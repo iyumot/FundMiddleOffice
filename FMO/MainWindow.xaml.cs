@@ -33,7 +33,7 @@ public partial class MainWindow : HandyControl.Controls.Window
 
 
 
-public partial class MainWindowViewModel : ObservableObject, IRecipient<string>
+public partial class MainWindowViewModel : ObservableRecipient, IRecipient<string>, IRecipient<OpenFundMessage>
 {
 
     [ObservableProperty]
@@ -51,12 +51,35 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<string>
 
     public MainWindowViewModel()
     {
+        IsActive = true;
         Pages = new ObservableCollection<TabItem>([GenerateHomePageTab()]);
     }
 
     public void Receive(string message)
     {
 
+    }
+
+    protected override void OnActivated()
+    {
+        WeakReferenceMessenger.Default.Register<OpenFundMessage>(this);
+    }
+
+    public void Receive(OpenFundMessage message)
+    {
+        var db = new BaseDatabase();
+        var fund = db.GetCollection<Fund>().FindById(message.Id);
+        db.Dispose();
+        if (fund is null) return;
+
+        var page = Pages.FirstOrDefault(x => x.Content is FundInfoPage p && p.Tag.ToString() == fund.Name);
+        if (page is null)
+        {
+            var obj = new FundInfoPage() { Tag = fund.Name.Value,DataContext = new FundInfoPageViewModel(fund) };
+            page = new TabItem { Header = GenerateHeader(fund.ShortName ?? fund.Name ?? "Fund"), Content = obj };
+            Pages.Add(page);
+        }
+        page.IsSelected = true;
     }
 
     /// <summary>
@@ -66,7 +89,7 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<string>
     private TabItem GenerateHomePageTab()
     {
         var ti = new TabItem();
-        var page = new HomePage(); 
+        var page = new HomePage();
         ti.Header = new HomePageHeader();
         ti.Content = page;
         ti.DataContext = new HomePageViewModel();
@@ -152,4 +175,6 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<string>
     {
         Log.Warning(DateTime.Now.ToString());
     }
+
 }
+

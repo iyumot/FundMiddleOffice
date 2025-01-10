@@ -113,12 +113,43 @@ public class Fund
     /// </summary>
     public string? Trustee { get; set; }
 
+
+    public Mutable<RiskLevel>? RiskLevel { get; set; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public static string GetDefaultShortName(string name) => Regex.Replace(name, @"私募\w+基金|集合\w+计划", "");
 }
 
 
 
 
+
+
+public enum RiskLevel { R1, R2, R3, R4, R5 }
+
+
+public enum RiskEvaluation { C1, C2, C3, C4, C5 }
 
 
 [TypeConverter(nameof(EnumDescriptionTypeConverter))]

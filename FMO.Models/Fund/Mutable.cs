@@ -41,9 +41,9 @@ public class Mutable<T>
         _changes[time] = value;
     }
 
-    public static implicit operator T?(Mutable<T> mutable)
+    public static implicit operator T?(Mutable<T>? mutable)
     {
-        return mutable.Value;
+        return mutable is null ? default : mutable.Value;
     }
 
     public override string? ToString()

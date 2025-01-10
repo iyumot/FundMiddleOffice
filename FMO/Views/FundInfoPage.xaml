@@ -1,0 +1,137 @@
+﻿<UserControl
+    x:Class="FMO.FundInfoPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:local="clr-namespace:FMO"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DataContext="{d:DesignData Type=local:FundInfoPage}"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <DockPanel Margin="8">
+        <StackPanel>
+            <StackPanel.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Padding" Value="6,0" />
+                </Style>
+                <Style BasedOn="{StaticResource TextBoxExtend.Small}" TargetType="TextBox">
+                    <Setter Property="Padding" Value="12,0" />
+                    <Setter Property="IsReadOnly" Value="{Binding IsEditable, Converter={StaticResource Boolean2BooleanReConverter}}" />
+                </Style>
+                <Style TargetType="local:CopyableControl">
+                    <Setter Property="TextElement.FontSize" Value="14" />
+                </Style>
+            </StackPanel.Resources>
+
+            <local:CopyableControl>
+                <TextBlock
+                    FontSize="16"
+                    FontWeight="Black"
+                    Text="{Binding FundName}" />
+            </local:CopyableControl>
+
+            <DockPanel Margin="0,0,0,10">
+                <local:CopyableControl>
+                    <TextBlock
+                        Margin="12,0,0,0"
+                        FontWeight="Bold"
+                        Text="{Binding RiskLevel}" />
+                </local:CopyableControl>
+                <local:CopyableControl>
+                    <TextBlock Text="{Binding FundShortName}" />
+                </local:CopyableControl>
+            </DockPanel>
+
+            <UniformGrid Rows="1">
+                <BulletDecorator>
+                    <BulletDecorator.Bullet>
+                        <TextBlock Text="成立日期" />
+                    </BulletDecorator.Bullet>
+                    <local:CopyableControl>
+                        <TextBlock Text="{Binding SetupDate, StringFormat=yyyy-MM-dd}" />
+                    </local:CopyableControl>
+                </BulletDecorator>
+                <BulletDecorator>
+                    <BulletDecorator.Bullet>
+                        <TextBlock Text="备案日期" />
+                    </BulletDecorator.Bullet>
+                    <local:CopyableControl>
+                        <TextBlock Text="{Binding RegistDate, StringFormat=yyyy-MM-dd}" />
+                    </local:CopyableControl>
+                </BulletDecorator>
+            </UniformGrid>
+
+            <BulletDecorator>
+                <BulletDecorator.Bullet>
+                    <TextBlock Text="投资范围" />
+                </BulletDecorator.Bullet>
+                <local:CopyableControl>
+                    <TextBlock Text="{Binding InvestmentScope, StringFormat=yyyy-MM-dd}" TextWrapping="Wrap" />
+                </local:CopyableControl>
+            </BulletDecorator>
+
+            <BulletDecorator>
+                <BulletDecorator.Bullet>
+                    <TextBlock Text="募集账户" />
+                </BulletDecorator.Bullet>
+                <local:CopyableControl>
+                    <TextBlock Text="{Binding CollectionAccount, StringFormat=yyyy-MM-dd}" />
+                </local:CopyableControl>
+            </BulletDecorator>
+
+        </StackPanel>
+
+        <StackPanel>
+            <StackPanel.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="VerticalAlignment" Value="Center" />
+                </Style>
+            </StackPanel.Resources>
+            <hc:StepBar Dock="Left" StepIndex="9">
+
+                <hc:StepBarItem>
+                    <TextBlock Text="项目发起" />
+                </hc:StepBarItem>
+                <hc:StepBarItem>
+                    <DockPanel>
+                        <DockPanel DockPanel.Dock="Top">
+                            <local:CopyableControl DockPanel.Dock="Right">
+                                <TextBlock Text="{Binding SetupDate, StringFormat=yyyy-MM-dd}" />
+                            </local:CopyableControl>
+                            <TextBlock Margin="5,0" Text="基金成立" />
+                        </DockPanel>
+
+                        <StackPanel>
+                            <BulletDecorator>
+                                <BulletDecorator.Bullet>
+                                    <TextBlock Text="基金合同" />
+                                </BulletDecorator.Bullet>
+                                <local:CopyableControl>
+                                    <Hyperlink NavigateUri="file:///E:/附件1-2.1：机构投资者私募基金业务授权书.docx" RequestNavigate="Hyperlink_RequestNavigate">基金合同</Hyperlink>
+                                </local:CopyableControl>
+                            </BulletDecorator>
+
+                        </StackPanel>
+                        <!--<GroupBox Header="基金合同" Style="{StaticResource GroupBoxOriginal}">
+                            <TextBlock
+                                Width="60"
+                                Height="60"
+                                Background="Red" />
+                        </GroupBox>-->
+
+                    </DockPanel>
+                </hc:StepBarItem>
+                <hc:StepBarItem>
+                    <TextBlock Text="基金备案" />
+                </hc:StepBarItem>
+                <hc:StepBarItem>
+                    <TextBlock Text="基金清算" />
+                </hc:StepBarItem>
+            </hc:StepBar>
+
+        </StackPanel>
+        <TextBlock />
+    </DockPanel>
+</UserControl>
