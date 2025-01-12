@@ -87,7 +87,11 @@ public partial class FundInfoPageViewModel : ObservableObject
     [ObservableProperty]
     public partial string? CollectionAccount { get; set; }
 
-
+    /// <summary>
+    /// 初始要素文件
+    /// </summary>
+    [ObservableProperty]
+    public partial string? InitiateElementFile { get; set; }
 
 
 

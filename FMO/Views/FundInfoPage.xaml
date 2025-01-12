@@ -6,7 +6,7 @@
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DataContext="{d:DesignData Type=local:FundInfoPage}"
+    d:DataContext="{d:DesignData Type=local:FundInfoPageViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
@@ -129,7 +129,7 @@
 
 
 
-                            <local:FileDisplay Header="要素" />
+                            <local:FileDisplay FilePath="{Binding InitiateElementFile}" Header="要素" />
                         </DockPanel>
                     </hc:StepBarItem>
                     <hc:StepBarItem>
