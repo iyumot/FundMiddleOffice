@@ -31,6 +31,8 @@ public partial class FundInfoPageViewModel : ObservableObject
         FundShortName = fund.ShortName;
         SetupDate = fund.SetupDate;
         RegistDate = fund.AuditDate;
+        InitiateDate = fund.InitiateDate == default ? null:fund.InitiateDate; 
+
 
         CollectionAccount = 
             """
@@ -61,12 +63,16 @@ public partial class FundInfoPageViewModel : ObservableObject
 
 
     [ObservableProperty]
-    public partial DateOnly SetupDate { get; set; }
+    public partial DateOnly? SetupDate { get; set; }
 
 
 
     [ObservableProperty]
-    public partial DateOnly RegistDate { get; set; }
+    public partial DateOnly? RegistDate { get; set; }
+
+
+    [ObservableProperty]
+    public partial DateOnly? InitiateDate { get; set; }
 
     /// <summary>
     /// 投资范围

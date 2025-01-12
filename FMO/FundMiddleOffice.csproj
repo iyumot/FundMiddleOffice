@@ -13,6 +13,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="PageView.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="res\logo.ico" />
   </ItemGroup>
 

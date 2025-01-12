@@ -22,6 +22,11 @@ public class Fund
     public Mutable<string>? ShortName { get; set; }
 
     /// <summary>
+    /// 发起日期
+    /// </summary>
+    public DateOnly InitiateDate { get; set; }
+
+    /// <summary>
     /// 成立日期
     /// </summary>
     public DateOnly SetupDate { get; set; }

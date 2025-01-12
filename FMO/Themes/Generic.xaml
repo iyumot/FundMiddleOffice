@@ -5,7 +5,7 @@
     xmlns:local="clr-namespace:FMO">
 
 
-    <Style TargetType="{x:Type local:PageView}">
+    <!--<Style TargetType="{x:Type local:PageView}">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:PageView}">
@@ -16,10 +16,10 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-    </Style>
+    </Style>-->
 
 
-    <Style TargetType="{x:Type local:CloseablePageView}">
+    <!--<Style TargetType="{x:Type local:CloseablePageView}">
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
         <Setter Property="Background" Value="{DynamicResource RegionBrush}" />
@@ -96,6 +96,83 @@
                             <Setter TargetName="contentPresenter" Property="TextElement.Foreground" Value="{DynamicResource PrimaryBrush}" />
                             <Setter TargetName="mainBorder" Property="BorderThickness" Value="2,0,0,0" />
                         </MultiDataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>-->
+
+    <Style TargetType="{x:Type local:FileDisplay}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:FileDisplay}">
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                        <DockPanel Background="Transparent">
+                            <TextBlock VerticalAlignment="Center" Text="{Binding Header, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+
+                            <Viewbox
+                                Width="14"
+                                Height="14"
+                                Margin="0,-2,0,0"
+                                VerticalAlignment="Center">
+                                <Path
+                                    Data="{DynamicResource f.angle-right}"
+                                    Fill="Black"
+                                    Stroke="Black" />
+                            </Viewbox>
+                            <Grid DockPanel.Dock="Right" Visibility="{Binding FilePath, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource FileExistsToVisibilityConverter}}">
+                                <DockPanel x:Name="p" Visibility="Hidden">
+                                    <Button
+                                        x:Name="PART_View"
+                                        Margin="-2"
+                                        hc:IconElement.Geometry="{StaticResource f.book-open-reader}"
+                                        Foreground="Lime"
+                                        Style="{StaticResource ButtonIcon.Small}"
+                                        ToolTip="查看" />
+                                    <Button
+                                        x:Name="PART_SaveAs"
+                                        Margin="-2"
+                                        hc:IconElement.Geometry="{StaticResource f.file-export}"
+                                        Style="{StaticResource ButtonIcon.Small}"
+                                        ToolTip="另存为" />
+                                    <Button
+                                        x:Name="PART_Modify"
+                                        Margin="-2"
+                                        hc:IconElement.Geometry="{StaticResource f.gear}"
+                                        Foreground="Red"
+                                        Style="{StaticResource ButtonIcon.Small}"
+                                        ToolTip="更换" />
+                                </DockPanel>
+                            </Grid>
+                            <Button
+                                x:Name="PART_Modify2"
+                                Margin="-2"
+                                hc:IconElement.Geometry="{StaticResource f.gear}"
+                                DockPanel.Dock="Right"
+                                Style="{StaticResource ButtonIcon.Small}"
+                                ToolTip="更换"
+                                Visibility="{Binding FilePath, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource FileExistsToVisibilityConverter}, ConverterParameter=true}" />
+                            <TextBlock
+                                Margin="5,0"
+                                Foreground="Blue"
+                                Text="{Binding FilePath, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource FilePathToNameConverter}}" />
+                            <!--<hc:RunningBlock
+                                Margin="5,0"
+                                Padding="3,0"
+                                VerticalAlignment="Center"
+                                BorderThickness="0"
+                                Content="{Binding}"
+                                Speed="1" />-->
+                        </DockPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="p" Property="Visibility" Value="Visible" />
+                        </Trigger>
+
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

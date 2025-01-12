@@ -7,7 +7,9 @@ public enum FundStatus
 {
     Unk,
 
-    [Description("发行")] Setup,
+    [Description("发起")] Initiate,
+
+    [Description("成立")] Setup,
 
     [Description("备案")] Registration,
 
@@ -17,7 +19,7 @@ public enum FundStatus
 
     [Description("正常清算")] Liquidation,
 
-    [Description("延期清算")] LateLiquidation, 
+    [Description("延期清算")] LateLiquidation,
 
     [Description("投顾协议已终止")] AdvisoryTerminated,
 }

@@ -165,7 +165,14 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
     public void ClosePage(TabItem tabItem)
     {
         if (tabItem is not null)
+        {
+            if(tabItem.Content is FrameworkElement e && e.DataContext is not null)
+                e.DataContext = null;
+
+            tabItem.Content = null;
+            tabItem.DataContext = null;
             Pages.Remove(tabItem);
+        }
     }
 
 

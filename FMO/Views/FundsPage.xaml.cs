@@ -30,6 +30,7 @@ public partial class FundsPage : UserControl
         if (sender is FrameworkElement element && element.DataContext is FundsPageViewModel.FundViewModel vm)
             WeakReferenceMessenger.Default.Send(new OpenFundMessage { Id = vm.Id });
     }
+
 }
 
 /// <summary>

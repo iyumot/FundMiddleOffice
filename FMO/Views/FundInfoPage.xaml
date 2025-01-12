@@ -44,7 +44,7 @@
                 </local:CopyableControl>
             </DockPanel>
 
-            <UniformGrid Rows="1">
+            <!--<UniformGrid Rows="1">
                 <BulletDecorator>
                     <BulletDecorator.Bullet>
                         <TextBlock Text="成立日期" />
@@ -61,7 +61,7 @@
                         <TextBlock Text="{Binding RegistDate, StringFormat=yyyy-MM-dd}" />
                     </local:CopyableControl>
                 </BulletDecorator>
-            </UniformGrid>
+            </UniformGrid>-->
 
             <BulletDecorator>
                 <BulletDecorator.Bullet>
@@ -81,57 +81,97 @@
                 </local:CopyableControl>
             </BulletDecorator>
 
-        </StackPanel>
 
-        <StackPanel>
-            <StackPanel.Resources>
-                <Style TargetType="TextBlock">
-                    <Setter Property="VerticalAlignment" Value="Center" />
-                </Style>
-            </StackPanel.Resources>
-            <hc:StepBar Dock="Left" StepIndex="9">
 
-                <hc:StepBarItem>
-                    <TextBlock Text="项目发起" />
-                </hc:StepBarItem>
-                <hc:StepBarItem>
-                    <DockPanel>
-                        <DockPanel DockPanel.Dock="Top">
-                            <local:CopyableControl DockPanel.Dock="Right">
-                                <TextBlock Text="{Binding SetupDate, StringFormat=yyyy-MM-dd}" />
-                            </local:CopyableControl>
-                            <TextBlock Margin="5,0" Text="基金成立" />
+            <StackPanel>
+                <StackPanel.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="VerticalAlignment" Value="Center" />
+                    </Style>
+                </StackPanel.Resources>
+                <hc:StepBar Dock="Left" StepIndex="9">
+                    <hc:StepBar.Resources>
+                        <Style x:Key="Style.TextBlock.Items" TargetType="TextBlock">
+                            <Setter Property="FontFamily" Value="等线" />
+                            <Setter Property="FontWeight" Value="Bold" />
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                            <Setter Property="FontSize" Value="16" />
+                        </Style>
+                    </hc:StepBar.Resources>
+                    <hc:StepBarItem>
+                        <DockPanel>
+                            <DockPanel DockPanel.Dock="Top">
+                                <Grid DockPanel.Dock="Right">
+                                    <UserControl>
+                                        <UserControl.Template>
+                                            <ControlTemplate TargetType="UserControl">
+                                                <Grid>
+                                                    <ToggleButton x:Name="tb" Content="设置日期" />
+
+                                                    <Popup
+                                                        AllowsTransparency="True"
+                                                        IsOpen="{Binding ElementName=tb, Path=IsChecked}"
+                                                        StaysOpen="False">
+                                                        <Border Background="White">
+                                                            <hc:DatePicker MinWidth="120" />
+                                                        </Border>
+                                                    </Popup>
+                                                </Grid>
+                                            </ControlTemplate>
+                                        </UserControl.Template>
+                                    </UserControl>
+                                    <local:CopyableControl Margin="5,0">
+                                        <TextBlock Text="{Binding InitiateDate, StringFormat=yyyy-MM-dd}" />
+                                    </local:CopyableControl>
+                                </Grid>
+                                <TextBlock Style="{StaticResource Style.TextBlock.Items}" Text="项目发起" />
+                            </DockPanel>
+
+
+
+                            <local:FileDisplay Header="要素" />
                         </DockPanel>
-
-                        <StackPanel>
-                            <BulletDecorator>
-                                <BulletDecorator.Bullet>
-                                    <TextBlock Text="基金合同" />
-                                </BulletDecorator.Bullet>
-                                <local:CopyableControl>
-                                    <!--<Hyperlink NavigateUri="file:///E:/附件1-2.1：机构投资者私募基金业务授权书.docx" RequestNavigate="Hyperlink_RequestNavigate">基金合同</Hyperlink>-->
+                    </hc:StepBarItem>
+                    <hc:StepBarItem>
+                        <DockPanel>
+                            <DockPanel DockPanel.Dock="Top">
+                                <local:CopyableControl Margin="5,0" DockPanel.Dock="Right">
+                                    <TextBlock Text="{Binding SetupDate, StringFormat=yyyy-MM-dd}" />
                                 </local:CopyableControl>
-                            </BulletDecorator>
+                                <TextBlock Style="{StaticResource Style.TextBlock.Items}" Text="基金成立" />
+                            </DockPanel>
 
-                        </StackPanel>
-                        <!--<GroupBox Header="基金合同" Style="{StaticResource GroupBoxOriginal}">
+                            <StackPanel>
+                                <BulletDecorator>
+                                    <BulletDecorator.Bullet>
+                                        <TextBlock Text="基金合同" />
+                                    </BulletDecorator.Bullet>
+                                    <local:CopyableControl>
+                                        <!--<Hyperlink NavigateUri="file:///E:/附件1-2.1：机构投资者私募基金业务授权书.docx" RequestNavigate="Hyperlink_RequestNavigate">基金合同</Hyperlink>-->
+                                    </local:CopyableControl>
+                                </BulletDecorator>
+
+                            </StackPanel>
+                            <!--<GroupBox Header="基金合同" Style="{StaticResource GroupBoxOriginal}">
                             <TextBlock
                                 Width="60"
                                 Height="60"
                                 Background="Red" />
                         </GroupBox>-->
 
-                    </DockPanel>
-                </hc:StepBarItem>
-                <hc:StepBarItem>
-                    <TextBlock Text="基金备案" />
-                </hc:StepBarItem>
-                <hc:StepBarItem>
-                    <TextBlock Text="基金清算" />
-                </hc:StepBarItem>
-            </hc:StepBar>
+                        </DockPanel>
+                    </hc:StepBarItem>
+                    <hc:StepBarItem>
+                        <TextBlock Style="{StaticResource Style.TextBlock.Items}" Text="基金备案" />
+                    </hc:StepBarItem>
+                    <hc:StepBarItem>
+                        <TextBlock Style="{StaticResource Style.TextBlock.Items}" Text="基金清算" />
+                    </hc:StepBarItem>
+                </hc:StepBar>
 
+            </StackPanel>
         </StackPanel>
+
         <TextBlock />
     </DockPanel>
 </UserControl>

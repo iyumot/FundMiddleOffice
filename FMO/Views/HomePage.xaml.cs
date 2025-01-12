@@ -108,8 +108,10 @@ public partial class HomePageViewModel : ObservableObject
                         await Task.Delay(200);
                     }
 
-                    HandyControl.Controls.Growl.Success($"已同步{i * 50 + set.Length}个基金，剩余{ned.Length - i * 50 - set.Length - 1}个");
-
+                    int finished = i * 50 + set.Length;
+                    if (finished < ned.Length)
+                        HandyControl.Controls.Growl.Success($"已同步{finished}个基金，剩余{ned.Length - finished}个");
+                    
                     db = new BaseDatabase();
                     db.GetCollection<Fund>().Update(set);
                     db.Dispose();
@@ -130,7 +132,7 @@ public partial class HomePageViewModel : ObservableObject
         var dis = new DirectoryInfo(@"files\funds").GetDirectories();
         foreach (var f in c)
         {
-            if(f.Code?.Length > 4)
+            if (f.Code?.Length > 4)
             {
                 var di = dis.FirstOrDefault(x => x.Name.StartsWith(f.Code));
 
