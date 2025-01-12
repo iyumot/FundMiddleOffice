@@ -109,7 +109,7 @@
                                     <TextBlock Text="基金合同" />
                                 </BulletDecorator.Bullet>
                                 <local:CopyableControl>
-                                    <Hyperlink NavigateUri="file:///E:/附件1-2.1：机构投资者私募基金业务授权书.docx" RequestNavigate="Hyperlink_RequestNavigate">基金合同</Hyperlink>
+                                    <!--<Hyperlink NavigateUri="file:///E:/附件1-2.1：机构投资者私募基金业务授权书.docx" RequestNavigate="Hyperlink_RequestNavigate">基金合同</Hyperlink>-->
                                 </local:CopyableControl>
                             </BulletDecorator>
 

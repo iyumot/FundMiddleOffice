@@ -175,7 +175,11 @@ public enum FundType
     [Description("证券公司及其子公司的资产管理计划")]
     ManagementPlansOfSecurity,
 
+    [Description("创业投资基金")]
+    VentureCapitalFund,
 
+    [Description("股权投资基金")]
+    EquityFund
 }
 
 
