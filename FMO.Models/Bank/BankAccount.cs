@@ -4,7 +4,7 @@ namespace FMO.Models;
 
 public class BankAccount
 {
-    public int _id { get; set; }
+    public int Id { get; set; }
 
 
     public int OwnerId { get; set; }
@@ -102,5 +102,11 @@ public class BankAccount
 
         m = Regex.Match(str, @"大额支付号?\s*[:：]*(\w+)");
         if (m.Success) LargePayNo = m.Groups[1].Value;
+    }
+
+
+    public override string ToString()
+    {
+        return $"账号：{Number}\n户名：{Name}\n开户行:{BankOfDeposit}" + (string.IsNullOrWhiteSpace(LargePayNo) ? string.Empty : $"\n大额支付号：{LargePayNo}") + (string.IsNullOrWhiteSpace(SwiftCode) ? string.Empty : $"SWIFT：{SwiftCode}");
     }
 }
