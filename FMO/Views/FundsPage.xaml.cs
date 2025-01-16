@@ -96,25 +96,32 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
     /// 基金信息更新
     /// </summary>
     /// <param name="message"></param>
-    public void Receive(Fund message)
+    public void Receive(Fund fund)
     {
-        var fvm = Funds.FirstOrDefault(x => x.Id == message.Id);
+        var fvm = Funds.FirstOrDefault(x => x.Id == fund.Id);
         if (fvm is not null)
         {
-            if (!fvm.IsEnable && message.PublicDisclosureSynchronizeTime != default)
+            if (!fvm.IsEnable && fund.PublicDisclosureSynchronizeTime != default)
                 fvm.IsEnable = true;
 
-            if (fvm.Name != message.Name.Value)
-                fvm.Name = message.Name.Value;
+            if (fvm.Name != fund.Name)
+                fvm.Name = fund.Name;
 
-            if (fvm.Code != message.Code)
-                fvm.Code = message.Code;
+            if (fvm.Code != fund.Code)
+                fvm.Code = fund.Code;
 
-            fvm.IsCleared = message.Status switch { FundStatus.Liquidation or FundStatus.EarlyLiquidation or FundStatus.LateLiquidation => true, _ => false };
+            if (fvm.SetupDate != fund.SetupDate)
+                fvm.SetupDate = fund.SetupDate;
+
+            if (fvm.AuditDate != fund.AuditDate)
+                fvm.AuditDate = fund.AuditDate;
+
+
+            fvm.IsCleared = fund.Status switch { FundStatus.Liquidation or FundStatus.EarlyLiquidation or FundStatus.LateLiquidation => true, _ => false };
         }
         else
         {
-            Funds.Add(FundViewModel.FromFund(message));
+            Funds.Add(FundViewModel.FromFund(fund));
 
             TotalCount = Funds.Count();
         }
@@ -128,12 +135,6 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
 
 
 
-
-    [RelayCommand]
-    public void OpenFund()
-    {
-
-    }
 
 
     private void UiConfig_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -255,7 +256,7 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
             return new FundViewModel
             {
                 Id = x.Id,
-                Name = x.Name.Value,
+                Name = x.Name,
                 IsEnable = x.PublicDisclosureSynchronizeTime != default,
                 IsCleared = x.Status switch { FundStatus.Liquidation or FundStatus.EarlyLiquidation or FundStatus.LateLiquidation or FundStatus.AdvisoryTerminated => true, _ => false },
                 SetupDate = x.SetupDate,
