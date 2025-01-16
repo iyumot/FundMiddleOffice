@@ -47,20 +47,49 @@ namespace FMO
 
         // Using a DependencyProperty as the backing store for Header.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty HeaderProperty =
-            DependencyProperty.Register("Header", typeof(string), typeof(FileDisplay), new PropertyMetadata("文件名"));
+            DependencyProperty.Register("Header", typeof(string), typeof(FileDisplay), new FrameworkPropertyMetadata("文件名",  FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
 
 
 
-        public string? FilePath
+        //public string? FilePath
+        //{
+        //    get { return (string?)GetValue(FilePathProperty); }
+        //    set { SetValue(FilePathProperty, value); }
+        //}
+
+        //// Using a DependencyProperty as the backing store for FilePath.  This enables animation, styling, binding, etc...
+        //public static readonly DependencyProperty FilePathProperty =
+        //    DependencyProperty.Register("FilePath", typeof(string), typeof(FileDisplay), new PropertyMetadata(null));
+
+
+
+
+        public FileInfo? FileInfo
         {
-            get { return (string?)GetValue(FilePathProperty); }
-            set { SetValue(FilePathProperty, value); }
+            get { return (FileInfo?)GetValue(FileInfoProperty); }
+            set { SetValue(FileInfoProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for FilePath.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty FilePathProperty =
-            DependencyProperty.Register("FilePath", typeof(string), typeof(FileDisplay), new PropertyMetadata(null));
+        // Using a DependencyProperty as the backing store for FileInfo.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty FileInfoProperty =
+            DependencyProperty.Register("FileInfo", typeof(FileInfo), typeof(FileDisplay), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+
+
+
+        public bool IsReadOnly
+        {
+            get { return (bool)GetValue(IsReadOnlyProperty); }
+            set { SetValue(IsReadOnlyProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for IsReadOnly.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsReadOnlyProperty =
+            DependencyProperty.Register("IsReadOnly", typeof(bool), typeof(FileDisplay), new PropertyMetadata(false));
+
+
+
 
 
 
@@ -69,6 +98,13 @@ namespace FMO
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(FileDisplay), new FrameworkPropertyMetadata(typeof(FileDisplay)));
         }
+
+
+        protected override Size MeasureOverride(Size constraint)
+        {
+            return base.MeasureOverride(constraint);
+        }
+
 
         public override void OnApplyTemplate()
         {
@@ -89,18 +125,46 @@ namespace FMO
             btn = Template.FindName("PART_Modify2", this) as Button;
             if (btn is not null)
                 btn.Click += Modify_Click;
+
+
+            btn = Template.FindName("PART_Print", this) as Button;
+            if (btn is not null)
+                btn.Click += Print_Click;
+        }
+
+        private void Print_Click(object sender, RoutedEventArgs e)
+        {
+            if (FileInfo is null || !FileInfo.Exists) return;
+
+            PrintDialog printDialog = new PrintDialog();
+            if (printDialog.ShowDialog() == true)
+            {
+                // 获取默认打印机名称
+                string printerName = printDialog.PrintQueue.Name;
+
+                // 使用系统默认的PDF阅读器打印PDF文档
+                System.Diagnostics.Process process = new System.Diagnostics.Process();
+                process.StartInfo.FileName = FileInfo.FullName;
+                process.StartInfo.Verb = "print";
+                //process.StartInfo.CreateNoWindow = true;
+                //process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                process.Start();
+
+                // 等待打印任务完成
+                process.WaitForExit();
+            }
         }
 
         private void SaveAs_Click(object sender, RoutedEventArgs e)
-        { 
-            if (!File.Exists(FilePath)) return;
+        {
+            if (FileInfo is null || !FileInfo.Exists) return;
 
             try
             {
                 var d = new SaveFileDialog();
-                d.FileName = Path.GetFileName(FilePath) + Path.GetExtension(FilePath);
+                d.FileName = FileInfo.Name;// Path.GetFileName(FilePath) + Path.GetExtension(FilePath);
                 if (d.ShowDialog() == true)
-                    File.Copy(FilePath, d.FileName);
+                    File.Copy(FileInfo.FullName, d.FileName);
             }
             catch (Exception ex)
             {
@@ -112,14 +176,14 @@ namespace FMO
         {
             var fd = new OpenFileDialog();
             if (fd.ShowDialog() == true)
-                FilePath = fd.FileName;
+                FileInfo = new FileInfo(fd.FileName);
         }
 
         private void ViewFile_Click(object sender, RoutedEventArgs e)
         {
-            if (!File.Exists(FilePath)) return;
+            if (FileInfo is null || !FileInfo.Exists) return;
 
-            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(FilePath) {  UseShellExecute = true }); } catch { }
+            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(FileInfo.FullName) { UseShellExecute = true }); } catch { }
         }
     }
 }
