@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace FMO.Models;
 
@@ -12,7 +11,7 @@ public class Fund
     /// <summary>
     /// bson id
     /// </summary>
-    public int _id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// 名称
@@ -100,7 +99,7 @@ public class Fund
     public Mutable<bool>? IsStructured { get; set; } //= new Mutable<bool>(nameof(IsStructured), false);
 
 
-    public Mutable<ShareClass>? ShareClass { get; set; }
+    public Mutable<ShareClass[]>? ShareClasses { get; set; }
 
 
     /// <summary>
@@ -118,26 +117,40 @@ public class Fund
     /// </summary>
     public string? Trustee { get; set; }
 
-
+    /// <summary>
+    /// 风险等级
+    /// </summary>
     public Mutable<RiskLevel>? RiskLevel { get; set; }
 
 
 
 
+    /// <summary>
+    /// 主募集账户
+    /// </summary>
+    public Mutable<BankAccount>? CollectionAccount { get; set; }
+
+
+    /// <summary>
+    /// 主托管账户
+    /// </summary>
+    public Mutable<BankAccount>? CustodyAccount { get; set; }
 
 
 
+    /// <summary>
+    /// 要素
+    /// 与份额类别相关的聚合在这里
+    /// 与产品相关的放在上面
+    /// </summary>
+    public Mutable<Factors>? Factors { get; set; }
 
 
 
-
-
-
-
-
-
-
-
+    /// <summary>
+    /// 管理费
+    /// </summary>
+    public Mutable<PortionFactor<string>>? ManagerFee { get; set; }
 
 
 
@@ -147,64 +160,3 @@ public class Fund
 }
 
 
-
-
-
-
-public enum RiskLevel { R1, R2, R3, R4, R5 }
-
-
-public enum RiskEvaluation { C1, C2, C3, C4, C5 }
-
-
-[TypeConverter(nameof(EnumDescriptionTypeConverter))]
-public enum FundType
-{
-
-    Unk,
-
-    [Description("私募证券投资基金")]
-    PrivateSecuritiesInvestmentFund,
-
-
-    [Description("私募股权投资基金")]
-    PrivateEquityFund,
-
-    [Description("信托计划")]
-    TrustPlan,
-
-    [Description("期货公司及其子公司的资产管理计划")]
-    ManagementPlansOfFuture,
-
-
-    [Description("证券公司及其子公司的资产管理计划")]
-    ManagementPlansOfSecurity,
-
-    [Description("创业投资基金")]
-    VentureCapitalFund,
-
-    [Description("股权投资基金")]
-    EquityFund
-}
-
-
-/// <summary>
-/// 管理类型
-/// </summary>
-[TypeConverter(nameof(EnumDescriptionTypeConverter))]
-public enum ManageType
-{
-
-    Unk,
-
-    [Description("受托管理")]
-    Fiduciary,
-
-
-    [Description("顾问管理")]
-    Advisory,
-
-
-
-
-}

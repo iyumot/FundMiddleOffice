@@ -9,16 +9,20 @@ public static class FundHelper
 
     public static DirectoryInfo Folder(this Fund fund)
     {
-        return new DirectoryInfo(FundStorageMap[fund._id]);
+        return new DirectoryInfo(FundStorageMap[fund.Id]);
     }
 
+    public static DirectoryInfo GetFolder(int fundId)
+    {
+        return new DirectoryInfo(FundStorageMap[fundId]);
+    }
 
 
 
 
     public static void Map(Fund fund, string folder)
     {
-        FundStorageMap[fund._id] = folder;
+        FundStorageMap[fund.Id] = folder;
     }
 
 

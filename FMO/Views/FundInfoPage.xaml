@@ -10,11 +10,33 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
-    <DockPanel Margin="8">
+    <Grid Margin="8">
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="3*" />
+        </Grid.ColumnDefinitions>
+
+        <TabControl
+            Grid.Column="1"
+            MaxWidth="1200"
+            BorderThickness="0">
+            <TabItem Header="总览">
+                <local:FundLifeTimeView />
+            </TabItem>
+            <TabItem Header="净值" />
+            <TabItem Header="曲线" />
+            <TabItem Header="要素" />
+            <TabItem Header="合同" />
+            <TabItem Header="净值" />
+        </TabControl>
+
+
         <StackPanel>
             <StackPanel.Resources>
                 <Style TargetType="TextBlock">
                     <Setter Property="Padding" Value="6,0" />
+                    <Setter Property="VerticalAlignment" Value="Center" />
                 </Style>
                 <Style BasedOn="{StaticResource TextBoxExtend.Small}" TargetType="TextBox">
                     <Setter Property="Padding" Value="12,0" />
@@ -22,6 +44,9 @@
                 </Style>
                 <Style TargetType="local:CopyableControl">
                     <Setter Property="TextElement.FontSize" Value="14" />
+                </Style>
+                <Style BasedOn="{StaticResource {x:Type local:FileDisplay}}" TargetType="local:FileDisplay">
+                    <Setter Property="MaxWidth" Value="340" />
                 </Style>
             </StackPanel.Resources>
 
@@ -33,18 +58,28 @@
             </local:CopyableControl>
 
             <DockPanel Margin="0,0,0,10">
+                <Button
+                    hc:IconElement.Geometry="{StaticResource f.arrow-up-right-from-square}"
+                    Command="{Binding NavigateToAmacCommand}"
+                    DockPanel.Dock="Right"
+                    Style="{StaticResource ButtonIcon.Small}" />
+
+
                 <local:CopyableControl>
-                    <TextBlock
-                        Margin="12,0,0,0"
-                        FontWeight="Bold"
-                        Text="{Binding RiskLevel}" />
+                    <TextBlock FontWeight="Bold" Text="{Binding FundCode}" />
                 </local:CopyableControl>
+
+                <local:CopyableControl>
+                    <TextBlock FontWeight="Bold" Text="{Binding RiskLevel}" />
+                </local:CopyableControl>
+
+
                 <local:CopyableControl>
                     <TextBlock Text="{Binding FundShortName}" />
                 </local:CopyableControl>
             </DockPanel>
 
-            <!--<UniformGrid Rows="1">
+            <UniformGrid Rows="1">
                 <BulletDecorator>
                     <BulletDecorator.Bullet>
                         <TextBlock Text="成立日期" />
@@ -61,7 +96,7 @@
                         <TextBlock Text="{Binding RegistDate, StringFormat=yyyy-MM-dd}" />
                     </local:CopyableControl>
                 </BulletDecorator>
-            </UniformGrid>-->
+            </UniformGrid>
 
             <BulletDecorator>
                 <BulletDecorator.Bullet>
@@ -77,19 +112,53 @@
                     <TextBlock Text="募集账户" />
                 </BulletDecorator.Bullet>
                 <local:CopyableControl>
-                    <TextBlock Text="{Binding CollectionAccount, StringFormat=yyyy-MM-dd}" />
+                    <TextBlock Text="{Binding CollectionAccount}" />
+                </local:CopyableControl>
+            </BulletDecorator>
+
+            <BulletDecorator>
+                <BulletDecorator.Bullet>
+                    <TextBlock Text="托管账户" />
+                </BulletDecorator.Bullet>
+                <local:CopyableControl>
+                    <TextBlock Text="{Binding CustodyAccount}" />
                 </local:CopyableControl>
             </BulletDecorator>
 
 
 
-            <StackPanel>
+            <Rectangle
+                Height="2"
+                Margin="0,10"
+                Fill="Red" />
+
+            <local:FileDisplay Header="备案函" />
+
+            <BulletDecorator>
+                <BulletDecorator.Bullet>
+                    <TextBlock Text="备案函" />
+                </BulletDecorator.Bullet>
+                <local:CopyableControl>
+                    <TextBlock Text="{Binding CollectionAccount}" />
+                </local:CopyableControl>
+            </BulletDecorator>
+
+
+
+            <StackPanel Visibility="Collapsed">
                 <StackPanel.Resources>
                     <Style TargetType="TextBlock">
                         <Setter Property="VerticalAlignment" Value="Center" />
                     </Style>
+                    <Style x:Key="Style.TextBlock.FlowName" TargetType="TextBlock">
+                        <Setter Property="VerticalAlignment" Value="Center" />
+                        <Setter Property="FontWeight" Value="Black" />
+                        <Setter Property="FontSize" Value="16" />
+                        <Setter Property="Width" Value="32" />
+                    </Style>
                 </StackPanel.Resources>
-                <hc:StepBar Dock="Left" StepIndex="9">
+                <!--#region NewRegion-->
+                <!--<hc:StepBar Dock="Left" StepIndex="9">
                     <hc:StepBar.Resources>
                         <Style x:Key="Style.TextBlock.Items" TargetType="TextBlock">
                             <Setter Property="FontFamily" Value="等线" />
@@ -106,7 +175,13 @@
                                         <UserControl.Template>
                                             <ControlTemplate TargetType="UserControl">
                                                 <Grid>
-                                                    <ToggleButton x:Name="tb" Content="设置日期" />
+                                                    <ToggleButton
+                                                        x:Name="tb"
+                                                        Height="18"
+                                                        Margin="5,0"
+                                                        Padding="8,0"
+                                                        Content="设置日期"
+                                                        FontSize="9" />
 
                                                     <Popup
                                                         AllowsTransparency="True"
@@ -129,35 +204,33 @@
 
 
 
-                            <local:FileDisplay FilePath="{Binding InitiateElementFile}" Header="要素" />
+                            <local:FileDisplay FileInfo="{Binding InitiateElementFile}" Header="要素" />
                         </DockPanel>
                     </hc:StepBarItem>
+
                     <hc:StepBarItem>
                         <DockPanel>
                             <DockPanel DockPanel.Dock="Top">
-                                <local:CopyableControl Margin="5,0" DockPanel.Dock="Right">
+                                <TextBlock Style="{StaticResource Style.TextBlock.Items}" Text="基金成立" />
+                                <local:CopyableControl Margin="10,0">
                                     <TextBlock Text="{Binding SetupDate, StringFormat=yyyy-MM-dd}" />
                                 </local:CopyableControl>
-                                <TextBlock Style="{StaticResource Style.TextBlock.Items}" Text="基金成立" />
                             </DockPanel>
 
                             <StackPanel>
-                                <BulletDecorator>
-                                    <BulletDecorator.Bullet>
-                                        <TextBlock Text="基金合同" />
-                                    </BulletDecorator.Bullet>
-                                    <local:CopyableControl>
-                                        <!--<Hyperlink NavigateUri="file:///E:/附件1-2.1：机构投资者私募基金业务授权书.docx" RequestNavigate="Hyperlink_RequestNavigate">基金合同</Hyperlink>-->
-                                    </local:CopyableControl>
-                                </BulletDecorator>
+                                <local:FileDisplay FileInfo="{Binding InitiateFundContractFile}" Header="基金合同" />
+                                <local:FileDisplay FileInfo="{Binding InitiateFundContractFile}" Header="托管账户信息" />
+                                <local:FileDisplay FileInfo="{Binding InitiateFundContractFile}" Header="募集账户信息" />
 
                             </StackPanel>
-                            <!--<GroupBox Header="基金合同" Style="{StaticResource GroupBoxOriginal}">
+                -->
+                <!--<GroupBox Header="基金合同" Style="{StaticResource GroupBoxOriginal}">
                             <TextBlock
                                 Width="60"
                                 Height="60"
                                 Background="Red" />
                         </GroupBox>-->
+                <!--
 
                         </DockPanel>
                     </hc:StepBarItem>
@@ -167,11 +240,113 @@
                     <hc:StepBarItem>
                         <TextBlock Style="{StaticResource Style.TextBlock.Items}" Text="基金清算" />
                     </hc:StepBarItem>
-                </hc:StepBar>
+                </hc:StepBar>-->
+                <!--#endregion-->
+
+
+                <DockPanel>
+                    <DockPanel DockPanel.Dock="Top">
+                        <Border Background="{StaticResource PrimaryBrush}" CornerRadius="2">
+                            <TextBlock
+                                Margin="4"
+                                Foreground="{StaticResource DefaultBrush}"
+                                Style="{StaticResource Style.TextBlock.FlowName}"
+                                Text="项目发起"
+                                TextWrapping="Wrap" />
+                        </Border>
+
+                        <Grid DockPanel.Dock="Right">
+                            <UserControl>
+                                <UserControl.Template>
+                                    <ControlTemplate TargetType="UserControl">
+                                        <Grid>
+                                            <ToggleButton
+                                                x:Name="tb"
+                                                Height="18"
+                                                Margin="5,0"
+                                                Padding="8,0"
+                                                Content="设置日期"
+                                                FontSize="9" />
+
+                                            <Popup
+                                                AllowsTransparency="True"
+                                                IsOpen="{Binding ElementName=tb, Path=IsChecked}"
+                                                StaysOpen="False">
+                                                <Border Background="White">
+                                                    <hc:DatePicker MinWidth="120" />
+                                                </Border>
+                                            </Popup>
+                                        </Grid>
+                                    </ControlTemplate>
+                                </UserControl.Template>
+                            </UserControl>
+                            <local:CopyableControl Margin="5,0">
+                                <TextBlock Text="{Binding InitiateDate, StringFormat=yyyy-MM-dd}" />
+                            </local:CopyableControl>
+                        </Grid>
+                    </DockPanel>
+
+
+                </DockPanel>
+
+
+
+                <DockPanel DockPanel.Dock="Top">
+
+                    <Border
+                        Margin="2"
+                        VerticalAlignment="Top"
+                        Background="{StaticResource PrimaryBrush}"
+                        CornerRadius="2">
+                        <TextBlock
+                            Margin="4"
+                            Foreground="{StaticResource DefaultBrush}"
+                            Style="{StaticResource Style.TextBlock.FlowName}"
+                            Text="基金成立"
+                            TextWrapping="Wrap" />
+                    </Border>
+
+                    <Grid DockPanel.Dock="Top">
+                        <UserControl>
+                            <UserControl.Template>
+                                <ControlTemplate TargetType="UserControl">
+                                    <Grid Visibility="{Binding SetupDate, Converter={StaticResource ValueIsEffectToVisibilityConverter}, ConverterParameter=true}">
+                                        <ToggleButton
+                                            x:Name="tb"
+                                            Height="18"
+                                            Margin="5,0"
+                                            Padding="8,0"
+                                            Content="设置日期"
+                                            FontSize="9" />
+
+                                        <Popup
+                                            AllowsTransparency="True"
+                                            IsOpen="{Binding ElementName=tb, Path=IsChecked}"
+                                            StaysOpen="False">
+                                            <Border Background="White">
+                                                <hc:DatePicker MinWidth="120" />
+                                            </Border>
+                                        </Popup>
+                                    </Grid>
+                                </ControlTemplate>
+                            </UserControl.Template>
+                        </UserControl>
+                        <local:CopyableControl Margin="5,0">
+                            <TextBlock Text="{Binding SetupDate, StringFormat=yyyy-MM-dd}" />
+                        </local:CopyableControl>
+                    </Grid>
+
+
+                    <StackPanel>
+                        <local:FileDisplay FileInfo="{Binding InitiateFundContractFile}" Header="基金合同" />
+                        <local:FileDisplay FileInfo="{Binding InitiateFundContractFile}" Header="托管账户信息" />
+                        <local:FileDisplay FileInfo="{Binding InitiateFundContractFile}" Header="募集账户信息" />
+
+                    </StackPanel>
+                </DockPanel>
 
             </StackPanel>
         </StackPanel>
 
-        <TextBlock />
-    </DockPanel>
+    </Grid>
 </UserControl>

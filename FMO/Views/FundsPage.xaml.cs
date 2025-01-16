@@ -98,7 +98,7 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
     /// <param name="message"></param>
     public void Receive(Fund message)
     {
-        var fvm = Funds.FirstOrDefault(x => x.Id == message._id);
+        var fvm = Funds.FirstOrDefault(x => x.Id == message.Id);
         if (fvm is not null)
         {
             if (!fvm.IsEnable && message.PublicDisclosureSynchronizeTime != default)
@@ -254,7 +254,7 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
         {
             return new FundViewModel
             {
-                Id = x._id,
+                Id = x.Id,
                 Name = x.Name.Value,
                 IsEnable = x.PublicDisclosureSynchronizeTime != default,
                 IsCleared = x.Status switch { FundStatus.Liquidation or FundStatus.EarlyLiquidation or FundStatus.LateLiquidation or FundStatus.AdvisoryTerminated => true, _ => false },

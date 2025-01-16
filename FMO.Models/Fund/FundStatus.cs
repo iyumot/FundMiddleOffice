@@ -7,15 +7,17 @@ public enum FundStatus
 {
     Unk,
 
-    [Description("发起")] Initiate,
+    [Description("项目发起")] Initiate,
 
-    [Description("成立")] Setup,
+    [Description("合同定稿")] ContractFinalized,
 
-    [Description("备案")] Registration,
+    [Description("基金成立")] Setup,
 
-    [Description("正在运作")] Normal,
+    [Description("中基协备案")] Registration,
 
-    [Description("提前清算")] EarlyLiquidation,
+    [Description("正在运作")] Normal = 11,
+
+    [Description("提前清算")] EarlyLiquidation = 21,
 
     [Description("正常清算")] Liquidation,
 
