@@ -69,13 +69,20 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
     {
         var db = new BaseDatabase();
         var fund = db.GetCollection<Fund>().FindById(message.Id);
+        var ele = db.GetCollection<FundElements>().FindOne(x => x.FundId == message.Id);
+        if (ele is null)
+        {
+            ele = FundElements.Create(message.Id);
+            db.GetCollection<FundElements>().Insert(ele);
+        } 
+        if(ele.Init()) db.GetCollection<FundElements>().Update(ele);
         db.Dispose();
         if (fund is null) return;
 
         var page = Pages.FirstOrDefault(x => x.Content is FundInfoPage p && p.Tag.ToString() == fund.Name);
         if (page is null)
         {
-            var obj = new FundInfoPage() { Tag = fund.Name.Value,DataContext = new FundInfoPageViewModel(fund) };
+            var obj = new FundInfoPage() { Tag = fund.Name, DataContext = new FundInfoPageViewModel(fund, ele) };
             page = new TabItem { Header = GenerateHeader(fund.ShortName ?? fund.Name ?? "Fund"), Content = obj };
             Pages.Add(page);
         }
@@ -166,7 +173,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
     {
         if (tabItem is not null)
         {
-            if(tabItem.Content is FrameworkElement e && e.DataContext is not null)
+            if (tabItem.Content is FrameworkElement e && e.DataContext is not null)
                 e.DataContext = null;
 
             tabItem.Content = null;
