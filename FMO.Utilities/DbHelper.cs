@@ -18,7 +18,8 @@ public static class DatabaseAssist
         using (var db = new BaseDatabase())
         {
             db.GetCollection<ICustomer>().EnsureIndex(x => x.Identity);
-            
+            db.GetCollection<FundElements>().EnsureIndex(x => x.FundId);
+
         }
     }
 }
