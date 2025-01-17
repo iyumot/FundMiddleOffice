@@ -16,9 +16,9 @@ public class Fund
     /// <summary>
     /// 名称
     /// </summary>
-    public required Mutable<string> Name { get; set; }
+    public required string Name { get; set; }
 
-    public Mutable<string>? ShortName { get; set; }
+    public string? ShortName { get; set; }
 
     /// <summary>
     /// 发起日期
@@ -85,12 +85,12 @@ public class Fund
     /// <summary>
     /// 结束日期
     /// </summary>
-    public Mutable<DateOnly>? ExpirationDate { get; set; }
+    //public Mutable<DateOnly>? ExpirationDate { get; set; }
 
     /// <summary>
     /// 存续期
     /// </summary>
-    public Mutable<string>? SurvivalPeriod { get; set; }
+    //public Mutable<string>? SurvivalPeriod { get; set; }
 
 
     /// <summary>
@@ -99,7 +99,7 @@ public class Fund
     public Mutable<bool>? IsStructured { get; set; } //= new Mutable<bool>(nameof(IsStructured), false);
 
 
-    public Mutable<ShareClass[]>? ShareClasses { get; set; }
+    //public Mutable<ShareClass[]>? ShareClasses { get; set; }
 
 
     /// <summary>
@@ -117,40 +117,35 @@ public class Fund
     /// </summary>
     public string? Trustee { get; set; }
 
-    /// <summary>
-    /// 风险等级
-    /// </summary>
-    public Mutable<RiskLevel>? RiskLevel { get; set; }
-
 
 
 
     /// <summary>
     /// 主募集账户
     /// </summary>
-    public Mutable<BankAccount>? CollectionAccount { get; set; }
+    //public Mutable<BankAccount>? CollectionAccount { get; set; }
 
 
     /// <summary>
     /// 主托管账户
     /// </summary>
-    public Mutable<BankAccount>? CustodyAccount { get; set; }
+    //public Mutable<BankAccount>? CustodyAccount { get; set; }
 
 
 
-    /// <summary>
-    /// 要素
-    /// 与份额类别相关的聚合在这里
-    /// 与产品相关的放在上面
-    /// </summary>
-    public Mutable<Factors>? Factors { get; set; }
+    ///// <summary>
+    ///// 要素
+    ///// 与份额类别相关的聚合在这里
+    ///// 与产品相关的放在上面
+    ///// </summary>
+    //public Mutable<Factors>? Factors { get; set; }
 
 
 
-    /// <summary>
-    /// 管理费
-    /// </summary>
-    public Mutable<PortionFactor<string>>? ManagerFee { get; set; }
+    ///// <summary>
+    ///// 管理费
+    ///// </summary>
+    //public Mutable<PortionFactor<string>>? ManagerFee { get; set; }
 
 
 
