@@ -2,6 +2,12 @@
 
 
 
+public class DataExtra<T> where T : struct
+{
+    public T? Data { get; set; }
+
+    public string? Extra { get; set; }
+}
 
 
 
@@ -22,6 +28,21 @@ public class FundElements
     /// 简称
     /// </summary>
     public Mutable<string>? ShortName { get; set; }
+
+
+
+    /// <summary>
+    /// 动作方式
+    /// </summary> 
+    public Mutable<DataExtra<FundMode>>? FundModeInfo { get; set; }
+
+    /// <summary>
+    /// 封闭期
+    /// </summary>
+    public Mutable<DataExtra<int>>? ClosurePeriodInfo { get; set; }
+
+
+
 
     /// <summary>
     /// 风险等级
@@ -54,8 +75,23 @@ public class FundElements
     public Mutable<BankAccount>? CustodyAccount { get; set; }
 
 
-
+    /// <summary>
+    /// 份额类别
+    /// </summary>
     public Mutable<ShareClass[]>? ShareClasses { get; set; }
+
+    /// <summary>
+    /// 止损线
+    /// </summary>
+    public Mutable<decimal?>? StopLine { get; set; }
+
+    /// <summary>
+    /// 预警线
+    /// </summary>
+    public Mutable<decimal?>? WarningLine { get; set; }
+
+
+
 
 
 
@@ -97,6 +133,27 @@ public class FundElements
 
         if (ShareClasses is null)
         { changed = true; ShareClasses = new Mutable<ShareClass[]>(nameof(ShareClasses), "份额类别"); }
+
+
+        if (StopLine is null)
+        { changed = true; StopLine = new Mutable<decimal?>(nameof(StopLine), "止损线"); }
+
+
+        if (WarningLine is null)
+        { changed = true; WarningLine = new Mutable<decimal?>(nameof(WarningLine), "预警线"); } 
+
+        if (FundModeInfo is null)
+        { changed = true; FundModeInfo = new Mutable<DataExtra<FundMode>>(nameof(FundModeInfo), "动作方式"); }
+
+        if (ClosurePeriodInfo is null)
+        { changed = true; ClosurePeriodInfo = new Mutable<DataExtra<int>>(nameof(ClosurePeriodInfo), "封闭方式"); }
+
+
+
+
+
+
+
 
 
         return changed;

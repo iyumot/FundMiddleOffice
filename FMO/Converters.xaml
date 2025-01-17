@@ -8,4 +8,5 @@
     <local:ValueIsEffectToVisibilityConverter x:Key="ValueIsEffectToVisibilityConverter" />
     <local:ValueIsSameConverter x:Key="ValueIsSameConverter" />
     <local:DataTimeDateOnlySwitchConverter x:Key="DataTimeDateOnlySwitchConverter" />
+    <local:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
 </ResourceDictionary>

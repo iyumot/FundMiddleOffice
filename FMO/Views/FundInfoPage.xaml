@@ -60,7 +60,7 @@
         </TabControl>
 
 
-        <StackPanel>
+        <StackPanel Margin="0,0,10,0">
             <StackPanel.Resources>
                 <Style TargetType="TextBlock">
                     <Setter Property="Padding" Value="6,0" />
@@ -85,7 +85,7 @@
                     Text="{Binding FundName}" />
             </local:CopyableControl>
 
-            <DockPanel Margin="0,0,10,10">
+            <DockPanel Margin="0,0,0,10">
                 <Button
                     hc:IconElement.Geometry="{StaticResource f.arrow-up-right-from-square}"
                     Command="{Binding NavigateToAmacCommand}"

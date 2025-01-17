@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Data;
@@ -117,5 +118,36 @@ public class DataTimeDateOnlySwitchConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
         return value switch { DateTime d => DateOnly.FromDateTime(d), DateOnly d => new DateTime(d, new TimeOnly()), _ => value };
+    }
+}
+
+
+
+public class EnumDescriptionConverter : IValueConverter
+{
+    public object? Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if(value is Enum e)
+        {
+            var fieldInfo = value.GetType().GetField(e.ToString());
+            var descriptionAttribute = Attribute.GetCustomAttribute(fieldInfo!, typeof(DescriptionAttribute)) as DescriptionAttribute;
+            return descriptionAttribute?.Description ?? value.ToString();
+        }
+        return value;
+    }
+
+    public object? ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        //if (value is Enum e)
+        //{
+        //    var c = TypeDescriptor.GetConverter(value.GetType());
+        //    return c.ConvertTo(value, typeof(string));
+        //}
+        //else if (value is string s && targetType.IsEnum)
+        //{
+        //    var c = TypeDescriptor.GetConverter(targetType);
+        //    return c.ConvertFrom(value);
+        //}
+        return value;
     }
 }

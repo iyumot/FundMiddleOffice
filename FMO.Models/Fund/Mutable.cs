@@ -44,6 +44,11 @@ public class Mutable<T>
         Changes[flowid] = value;
     }
 
+    public void RemoveValue(int flowid)
+    {
+        Changes.Remove(flowid);
+    }
+
     //public T? GetValue(int flowid, bool exact = false)
     //{
 

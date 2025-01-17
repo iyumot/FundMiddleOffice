@@ -1,8 +1,10 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace FMO.Models;
 
+ 
 public class EnumDescriptionTypeConverter : EnumConverter
 {
     public EnumDescriptionTypeConverter(Type type) : base(type)
@@ -21,6 +23,12 @@ public class EnumDescriptionTypeConverter : EnumConverter
         if (value is Enum)
             return GetEnumDescription((Enum)value);
         return base.ConvertFrom(context, culture, value);
+    }
+
+
+    public override bool CanConvertTo(ITypeDescriptorContext? context, [NotNullWhen(true)] Type? destinationType)
+    {
+        return base.CanConvertTo(context, destinationType);
     }
 
     public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)

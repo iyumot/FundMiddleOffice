@@ -1,7 +1,41 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Security.AccessControl;
+using System.Text.RegularExpressions;
 
 namespace FMO.Models;
 
+
+
+
+
+public class BankAccountStringConverter : TypeConverter
+{
+    public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
+    {
+        return sourceType == typeof(string);
+    }
+
+    public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
+    {
+        return value is string s ? BankAccount.FromString(s) : base.ConvertFrom(context, culture, value);
+    }
+
+    public override bool CanConvertTo(ITypeDescriptorContext? context, [NotNullWhen(true)] Type? destinationType)
+    {
+        return destinationType == typeof(string);
+    }
+
+    public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
+    {
+        return destinationType == typeof(string) ? value?.ToString() : base.ConvertTo(context, culture, value, destinationType);
+    }
+}
+
+
+
+[TypeConverter(typeof(BankAccountStringConverter))]
 public class BankAccount
 {
     public int Id { get; set; }
@@ -68,7 +102,7 @@ public class BankAccount
         if (!m.Success) return null;
         account.Number = m.Groups[1].Value;
 
-        m = Regex.Match(str, @"账户名称?\s*[:：]*(\w+)");
+        m = Regex.Match(str, @"(?:账)?户名(?:称)?\s*[:：]*(\w+)");
         if (!m.Success) return null;
         account.Name = m.Groups[1].Value;
 
@@ -92,7 +126,7 @@ public class BankAccount
         if (m.Success)
             Number = m.Groups[1].Value;
 
-        m = Regex.Match(str, @"账户名称?\s*[:：]*(\w+)");
+        m = Regex.Match(str, @"(?:账)?户名(?:称)?\s*[:：]*(\w+)");
         if (m.Success)
             Name = m.Groups[1].Value;
 
@@ -107,6 +141,6 @@ public class BankAccount
 
     public override string ToString()
     {
-        return $"账号：{Number}\n户名：{Name}\n开户行:{BankOfDeposit}" + (string.IsNullOrWhiteSpace(LargePayNo) ? string.Empty : $"\n大额支付号：{LargePayNo}") + (string.IsNullOrWhiteSpace(SwiftCode) ? string.Empty : $"SWIFT：{SwiftCode}");
+        return $"账号：{Number}\n户名：{Name}\n开户行：{BankOfDeposit}" + (string.IsNullOrWhiteSpace(LargePayNo) ? string.Empty : $"\n大额支付号：{LargePayNo}") + (string.IsNullOrWhiteSpace(SwiftCode) ? string.Empty : $"SWIFT：{SwiftCode}");
     }
 }
