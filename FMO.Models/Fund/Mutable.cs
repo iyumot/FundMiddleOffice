@@ -2,6 +2,7 @@
 
 namespace FMO.Models;
 
+
 public class Mutable<T>
 {
     /// <summary>
@@ -15,31 +16,53 @@ public class Mutable<T>
     public string? Description { get; set; }
 
 
-    public T? InitalValue { get; set; }
 
+    public SortedDictionary<int, T> Changes { get; set; } = new();
 
-    private SortedDictionary<DateTime, T> _changes { get; } = new();
-
-
-    /// <summary>
-    /// 值
-    /// </summary>
-    public IReadOnlyDictionary<DateTime, T> Changes => _changes;
-
-    public T? Value => Changes.Count == 0 ? InitalValue : Changes.LastOrDefault().Value;
+    public T? Value => Changes.LastOrDefault().Value;
 
     [SetsRequiredMembers]
     public Mutable(string name, T value, string? description = null)
     {
         Name = name;
         Description = description;
-        InitalValue = value;
+        //_changes = new();
+
+        //_changes.Add(-1, value);
     }
 
-    public void SetValue(T value, DateTime time)
+    [SetsRequiredMembers]
+    public Mutable(string name, string? description = null)
     {
-        _changes[time] = value;
+        Name = name;
+        Description = description;
+        //_changes = new();
     }
+
+    public void SetValue(T value, int flowid)
+    {
+        Changes[flowid] = value;
+    }
+
+    //public T? GetValue(int flowid, bool exact = false)
+    //{
+
+    //    return exact ? (Changes.ContainsKey(flowid) ? Changes[flowid] : default) : Changes.LastOrDefault(x => x.Key <= flowid).Value;
+    //}
+
+    public (int FlowId, T? Value) GetValue(int flowid)
+    {
+        foreach (var x in Changes.Reverse())
+        {
+            if (x.Key <= flowid)
+            {
+                return (x.Key, x.Value);
+            }
+        }
+        return (-1, default);
+    }
+
+
 
     public static implicit operator T?(Mutable<T>? mutable)
     {

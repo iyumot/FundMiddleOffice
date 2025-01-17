@@ -42,6 +42,8 @@ public partial class App : Application
         Directory.CreateDirectory("config");
         Directory.CreateDirectory("files\\funds");
 
+        ///数据库自检等操作
+        DatabaseAssist.SystemValidation();
 
         if (CheckIsFirstRun())
             StartupUri = new Uri("InitWindow.xaml", UriKind.Relative);

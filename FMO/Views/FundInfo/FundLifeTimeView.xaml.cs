@@ -31,12 +31,18 @@ public class FlowTemplateSelector : DataTemplateSelector
                 return (DataTemplate)element.TryFindResource("DT.InitiateFlow");
 
 
+            case ContractModifyFlowViewModel vm:
+                return (DataTemplate)element.TryFindResource("DT.ContractModifyFlow");
+
+
             case ContractFinalizeFlowViewModel vm:
                 return (DataTemplate)element.TryFindResource("DT.ContractFinalizeFlow");
 
 
             case SetupFlowViewModel vm:
                 return (DataTemplate)element.TryFindResource("DT.SetupFlow");
+
+
             default:
                 break;
         }

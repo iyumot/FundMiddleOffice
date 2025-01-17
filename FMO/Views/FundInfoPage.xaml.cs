@@ -4,8 +4,10 @@ using FMO.Models;
 using FMO.Utilities;
 using Serilog;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace FMO;
 
@@ -28,7 +30,12 @@ public partial class FundInfoPageViewModel : ObservableObject
 
     private bool _initialized;
 
-    public FundInfoPageViewModel(Fund fund)
+    [SetsRequiredMembers]
+#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑添加 "required" 修饰符或声明为可为 null。
+#pragma warning disable CS9264 // 退出构造函数时，不可为 null 的属性必须包含非 null 值。请考虑添加 ‘required’ 修饰符，或将属性声明为可为 null，或添加 ‘[field: MaybeNull, AllowNull]’ 特性。
+    public FundInfoPageViewModel(Fund fund, FundElements ele)
+#pragma warning restore CS9264 // 退出构造函数时，不可为 null 的属性必须包含非 null 值。请考虑添加 ‘required’ 修饰符，或将属性声明为可为 null，或添加 ‘[field: MaybeNull, AllowNull]’ 特性。
+#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑添加 "required" 修饰符或声明为可为 null。
     {
         this.Fund = fund;
 
@@ -39,9 +46,19 @@ public partial class FundInfoPageViewModel : ObservableObject
         InitiateDate = fund.InitiateDate == default ? null : fund.InitiateDate;
         FundCode = fund.Code;
 
-        CollectionAccount = fund.CollectionAccount?.ToString();
+        //CollectionAccount = fund.CollectionAccount?.ToString();
 
 
+        InitFlows(fund, ele);
+
+        RiskLevel = ele.RiskLevel?.Value;
+
+        _initialized = true;
+    }
+
+
+    private void InitFlows(Fund fund, FundElements ele)
+    {
         var db = new BaseDatabase();
         var flows = db.GetCollection<FundFlow>().Find(x => x.FundId == fund.Id).ToList();
         if (!flows.Any(x => x is InitiateFlow))
@@ -51,14 +68,14 @@ public partial class FundInfoPageViewModel : ObservableObject
             db.GetCollection<FundFlow>().Insert(f);
         }
 
-        if(fund.Status >= FundStatus.ContractFinalized && !flows.Any(x=> x is ContractFinalizeFlow))
+        if (fund.Status >= FundStatus.ContractFinalized && !flows.Any(x => x is ContractFinalizeFlow))
         {
-            var f = new ContractFinalizeFlow { FundId = fund.Id,  ContractFile = new FundFileInfo { Name = "基金合同" }, CustomFiles = new() };
+            var f = new ContractFinalizeFlow { FundId = fund.Id, ContractFile = new FundFileInfo { Name = "基金合同" }, CustomFiles = new() };
             flows.Insert(1, f);
             db.GetCollection<FundFlow>().Insert(f);
         }
 
-        if(fund.Status >= FundStatus.Setup && !flows.Any(x => x is SetupFlow))
+        if (fund.Status >= FundStatus.Setup && !flows.Any(x => x is SetupFlow))
         {
             var f = new SetupFlow { FundId = fund.Id, PaidInCapitalProof = new FundFileInfo { Name = "实缴出资证明" }, CustomFiles = new() };
             flows.Insert(2, f);
@@ -66,10 +83,11 @@ public partial class FundInfoPageViewModel : ObservableObject
         }
 
 
+
         db.Dispose();
 
 
-        Flows = new ObservableCollection<ObservableObject>();
+        Flows = new ObservableCollection<FlowViewModel>();
         foreach (var f in flows)
         {
             switch (f)
@@ -78,24 +96,39 @@ public partial class FundInfoPageViewModel : ObservableObject
                     Flows.Add(new InitiateFlowViewModel(d));
                     break;
 
+                case ContractModifyFlow d:
+                    Flows.Add(new ContractModifyFlowViewModel(d, ele.ShareClasses));
+                    break;
+
                 case ContractFinalizeFlow d:
-                    Flows.Add(new ContractFinalizeFlowViewModel(d, fund.ShareClasses)); 
+                    Flows.Add(new ContractFinalizeFlowViewModel(d, ele.ShareClasses));
                     break;
 
                 case SetupFlow d:
                     Flows.Add(new SetupFlowViewModel(d));
                     break;
+
                 default:
                     break;
             }
         }
 
 
+        FlowsSource = new CollectionViewSource { Source = Flows };
+        FlowsSource.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(FlowViewModel.FlowId), System.ComponentModel.ListSortDirection.Descending));
+        FlowsSource.Filter += FlowsSource_Filter;
 
 
-        _initialized = true;
+        ElementsViewDataContext = new ElementsViewModel { FundId = Fund.Id };
+
+        SelectedFlowInElements = Flows.LastOrDefault(x => x is IElementChangable);
     }
 
+
+    private void FlowsSource_Filter(object sender, FilterEventArgs e)
+    {
+        e.Accepted = e.Item switch { ContractFinalizeFlowViewModel or ContractModifyFlowViewModel => true, _ => false };
+    }
 
     [ObservableProperty]
     public partial bool IsEditable { get; set; }
@@ -113,7 +146,7 @@ public partial class FundInfoPageViewModel : ObservableObject
 
 
     [ObservableProperty]
-    public partial RiskLevel RiskLevel { get; set; }
+    public partial RiskLevel? RiskLevel { get; set; }
 
 
 
@@ -160,20 +193,72 @@ public partial class FundInfoPageViewModel : ObservableObject
     [ObservableProperty]
     public partial FileInfo? InitiateFundContractFile { get; set; }
 
-
+    /// <summary>
+    /// 流程
+    /// </summary>
     [ObservableProperty]
-    public partial ObservableCollection<ObservableObject> Flows { get; set; }
+    public partial ObservableCollection<FlowViewModel> Flows { get; set; }
+
+    /// <summary>
+    /// 流程，在要素页中
+    /// </summary>
+    public CollectionViewSource FlowsSource { get; set; }
+
+    /// <summary>
+    /// 选中的要素对应流程
+    /// </summary>
+    [ObservableProperty]
+    public partial FlowViewModel? SelectedFlowInElements { get; set; }
+
+    /// <summary>
+    /// 要素 上下文
+    /// </summary>
+    [ObservableProperty]
+    public partial ElementsViewModel ElementsViewDataContext { get; set; }
 
 
-
-
-
-
+    /// <summary>
+    /// 打开基金公示
+    /// </summary>
     [RelayCommand]
     public void NavigateToAmac()
     {
         try { if (Fund.Url is not null) System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(Fund.Url) { UseShellExecute = true }); } catch { }
     }
+
+    /// <summary>
+    /// 发起合同变更 
+    /// </summary>
+    [RelayCommand]
+    public void CreateContractModify()
+    {
+        var flow = new ContractModifyFlow { FundId = Fund.Id };
+        var db = new BaseDatabase();
+        db.GetCollection<FundFlow>().Insert(flow);
+        var ele = db.GetCollection<FundElements>().FindOne(ele => ele.Id == Fund.Id);
+        db.Dispose();
+        Flows.Add(new ContractModifyFlowViewModel(flow, ele.ShareClasses));
+    }
+
+    /// <summary>
+    /// 废除流程
+    /// </summary>
+    /// <param name="flow"></param>
+    [RelayCommand]
+    public void DeleteFlow(FlowViewModel flow)
+    {
+        using var db = new BaseDatabase();
+        db.GetCollection<FundFlow>().Delete(flow.FlowId);
+
+        Flows.Remove(flow);
+    }
+
+
+
+
+
+
+
 
 
     partial void OnInitiateFundContractFileChanged(FileInfo? oldValue, FileInfo? newValue)
@@ -198,5 +283,11 @@ public partial class FundInfoPageViewModel : ObservableObject
 
 
 
+    }
+
+
+    partial void OnSelectedFlowInElementsChanged(FlowViewModel? oldValue, FlowViewModel? newValue)
+    {
+        ElementsViewDataContext.FlowId = newValue!.FlowId;
     }
 }

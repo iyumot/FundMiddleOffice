@@ -8,9 +8,17 @@ using System.IO;
 
 namespace FMO;
 
-public partial class ContractFinalizeFlowViewModel : FlowViewModel, IElementChangable
+public partial class ContractModifyFlowViewModel : FlowViewModel, IElementChangable
 {
+
     private const string SingleShareName = "单一份额";
+
+
+    [ObservableProperty]
+    public partial bool ModifyName { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<FileInfo>? SupplementaryFile { get; set; }
 
     /// <summary>
     /// 定稿合同
@@ -46,8 +54,14 @@ public partial class ContractFinalizeFlowViewModel : FlowViewModel, IElementChan
 
 
 
+
+
+
+
+
+
     [SetsRequiredMembers]
-    public ContractFinalizeFlowViewModel(ContractFinalizeFlow flow, Mutable<ShareClass[]>? shareClass) : base(flow)
+    public ContractModifyFlowViewModel(ContractModifyFlow flow, Mutable<ShareClass[]>? shareClass) : base(flow)
     {
         if (!string.IsNullOrWhiteSpace(flow.ContractFile?.Path))
             Contract = new FileInfo(flow.ContractFile.Path);
@@ -66,22 +80,55 @@ public partial class ContractFinalizeFlowViewModel : FlowViewModel, IElementChan
         else
             Shares = new ObservableCollection<string>([SingleShareName]);
 
+        ///补充协议
+        SupplementaryFile = new(flow.SupplementaryFile?.Files.Select(x => new FileInfo(x.Path))??Array.Empty<FileInfo>());
+        SupplementaryFile.CollectionChanged += SupplementaryFile_CollectionChanged;
 
         Initialized = true;
     }
 
-
-
-
-    partial void OnCollectionAccountChanged(FileInfo? oldValue, FileInfo? newValue)
+    private void SupplementaryFile_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
-        if (!Initialized) return;
-
-        if (newValue?.Exists ?? false)
+        if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
         {
+            using var db = new BaseDatabase();
+            var fund = db.GetCollection<Fund>().FindById(FundId);
 
-            SaveFile<ContractFinalizeFlow>(newValue, "Accounts", x => x.CollectionAccountFile, x => x.CollectionAccountFile = new FundFileInfo { Name = "募集账户函" });
+            foreach (FileInfo item in e.NewItems)
+            {
+                string hash = item.ComputeHash()!;
 
+                // 保存副本
+                var dir = fund.Folder();
+                dir = dir.CreateSubdirectory("Supplementary");
+                var tar = FileHelper.CopyFile(item, dir.FullName);
+
+                FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
+
+                var flow = db.GetCollection<FundFlow>().FindById(FlowId) as ContractModifyFlow;
+
+                if (flow!.SupplementaryFile is null) 
+                    flow.SupplementaryFile = new VersionedFileInfo { Name = nameof(flow.SupplementaryFile) };
+
+                flow!.SupplementaryFile.Files.Add(fileVersion);
+                db.GetCollection<FundFlow>().Update(flow);
+            }
+        }
+        else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
+        {
+            using var db = new BaseDatabase();
+            var flow = db.GetCollection<FundFlow>().FindById(FlowId) as ContractModifyFlow;
+
+
+            foreach (FileInfo item in e.OldItems)
+            {
+                var rp = Path.GetRelativePath(Directory.GetCurrentDirectory(), item.FullName);
+                var file = flow!.SupplementaryFile?.Files.FirstOrDefault(x => rp == x.Path || x.Path == item.FullName);
+                if (file is not null)
+                    flow.SupplementaryFile!.Files.Remove(file);
+            }
+
+            db.GetCollection<FundFlow>().Update(flow!);
         }
 
     }
@@ -127,5 +174,4 @@ public partial class ContractFinalizeFlowViewModel : FlowViewModel, IElementChan
 
         db.GetCollection<FundElements>().Update(elements);
     }
-
 }

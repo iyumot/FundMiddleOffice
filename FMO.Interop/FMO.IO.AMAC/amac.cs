@@ -199,10 +199,10 @@ public static class AmacAssist
         switch (field)
         {
             case string s when s.Contains("基金名称"):
-                if (value != fund.Name.Value)
+                if (value != fund.Name)
                 {
-                    fund.Name.SetValue(value, DateTime.Now);
-                    fund.ShortName?.SetValue(Fund.GetDefaultShortName(value), DateTime.Now);
+                    fund.Name = value;
+                    fund.ShortName = Fund.GetDefaultShortName(value);
                 }
                 //   throw new Exception($"从基金公示信息同步数据错误，基金名称不匹配[{fund.Name.Value}]，公示为[{value}] {fund.Url}");
                 break;

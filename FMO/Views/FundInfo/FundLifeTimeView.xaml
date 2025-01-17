@@ -174,6 +174,10 @@
                             Header="定稿合同"
                             IsReadOnly="{Binding IsReadOnly}" />
                         <local:FileDisplay
+                            FileInfo="{Binding RiskDisclosureDocument}"
+                            Header="风险揭示书"
+                            IsReadOnly="{Binding IsReadOnly}" />
+                        <local:FileDisplay
                             FileInfo="{Binding CollectionAccount}"
                             Header="募集账户函"
                             IsReadOnly="{Binding IsReadOnly}" />
@@ -284,6 +288,121 @@
 
         </DataTemplate>
 
+        <DataTemplate x:Key="DT.ContractModifyFlow">
+            <UserControl Template="{StaticResource FlowShell}">
+                <DockPanel>
+                    <Button
+                        Command="{Binding DataContext.DeleteFlowCommand, RelativeSource={RelativeSource AncestorType=local:FundLifeTimeView}}"
+                        CommandParameter="{Binding .}"
+                        Content="废除"
+                        DockPanel.Dock="Right" />
+
+                    <StackPanel VerticalAlignment="Center">
+                        <DockPanel>
+                            <CheckBox Content="产品更名" IsChecked="{Binding ModifyName}" />
+                        </DockPanel>
+                        <local:MultiFileDisplay
+                            Files="{Binding SupplementaryFile}"
+                            Header="补充协议"
+                            IsReadOnly="{Binding IsReadOnly}" />
+                        <local:FileDisplay
+                            FileInfo="{Binding Contract}"
+                            Header="定稿合同"
+                            IsReadOnly="{Binding IsReadOnly}" />
+                        <local:FileDisplay
+                            FileInfo="{Binding CollectionAccount}"
+                            Header="募集账户函"
+                            IsReadOnly="{Binding IsReadOnly}"
+                            Visibility="{Binding ModifyName, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                        <local:FileDisplay
+                            FileInfo="{Binding CustodyAccount}"
+                            Header="托管账户函"
+                            IsReadOnly="{Binding IsReadOnly}"
+                            Visibility="{Binding ModifyName, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                        <ListBox
+                            BorderThickness="0"
+                            ItemTemplate="{StaticResource DT.CustomFile}"
+                            ItemsSource="{Binding CustomFiles}"
+                            Style="{StaticResource ListBoxCustom}" />
+                    </StackPanel>
+
+                    <DockPanel DockPanel.Dock="Top" LastChildFill="False">
+                        <TextBlock VerticalAlignment="Center" Text="基金份额" />
+
+                        <Button
+                            Command="{Binding DivideSharesCommand}"
+                            Content="拆分"
+                            Style="{StaticResource ButtonDefault.Small}"
+                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                        <Button
+                            Command="{Binding ConfirmSharesCommand}"
+                            Content="确认"
+                            Style="{StaticResource ButtonDefault.Small}"
+                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                        <ListBox
+                            VerticalAlignment="Center"
+                            BorderThickness="0"
+                            ItemsSource="{Binding Shares}"
+                            Style="{StaticResource ListBoxCustom}">
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel IsItemsHost="True" />
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                            <ListBox.ItemContainerStyle>
+                                <Style BasedOn="{StaticResource ListBoxItemCustom}" TargetType="ListBoxItem">
+                                    <Setter Property="Height" Value="24" />
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border
+                                        x:Name="border"
+                                        Margin="1,0"
+                                        BorderBrush="Gray"
+                                        BorderThickness="0,0,0,1">
+                                        <DockPanel>
+                                            <Button
+                                                x:Name="btn"
+                                                hc:IconElement.Geometry="{StaticResource f.xmark}"
+                                                Command="{Binding DataContext.DeleteShareCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding .}"
+                                                DockPanel.Dock="Right"
+                                                Style="{StaticResource ButtonIcon.Small}" />
+                                            <TextBox
+                                                x:Name="tb"
+                                                MinWidth="50"
+                                                HorizontalContentAlignment="Center"
+                                                BorderThickness="0"
+                                                Style="{StaticResource TextBox.Small}"
+                                                Text="{Binding .}" />
+                                        </DockPanel>
+                                    </Border>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding .}" Value="普通份额">
+                                            <Setter TargetName="tb" Property="IsReadOnly" Value="True" />
+                                            <Setter TargetName="btn" Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+
+                                        <DataTrigger Binding="{Binding DataContext.IsDividingShare, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False">
+                                            <Setter TargetName="tb" Property="IsReadOnly" Value="True" />
+                                            <Setter TargetName="btn" Property="Visibility" Value="Collapsed" />
+                                            <Setter TargetName="border" Property="BorderThickness" Value="1" />
+                                            <Setter TargetName="border" Property="CornerRadius" Value="4" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </DockPanel>
+
+                    <TextBlock />
+                </DockPanel>
+            </UserControl>
+
+        </DataTemplate>
 
     </UserControl.Resources>
 
@@ -291,7 +410,12 @@
 
     <DockPanel>
 
-        <DockPanel DockPanel.Dock="Top" />
+        <DockPanel DockPanel.Dock="Top" LastChildFill="False">
+            <Button
+                Command="{Binding CreateContractModifyCommand}"
+                Content="发起合同变更"
+                Style="{StaticResource ButtonDashed}" />
+        </DockPanel>
 
         <ListBox
             BorderThickness="0"

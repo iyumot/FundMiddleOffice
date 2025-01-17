@@ -119,8 +119,8 @@ public partial class InitWindowViewModel : ObservableRecipient, IRecipient<InitS
 
         db.GetCollection<Fund>().InsertBulk(funds.Select(x => new Fund
         {
-            Name = new Mutable<string>(nameof(Fund.Name), x.Name!),
-            ShortName = new Mutable<string>(nameof(Fund.ShortName), Fund.GetDefaultShortName(x.Name!)),
+            Name = x.Name!,
+            ShortName = Fund.GetDefaultShortName(x.Name!),
             Url = "https://gs.amac.org.cn/amac-infodisc/res/pof" + x.Url,
             AsAdvisor = x.IsAdvisor
         }));

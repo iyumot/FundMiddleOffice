@@ -58,8 +58,7 @@ public partial class FlowViewModel : ObservableObject
 
         Name = flow.Name;
 
-        // 未初始化是null，初始化是default，初始化不会触发保存
-        Date = flow.Date?.ToDateTime(default) ?? default(DateTime);
+        Date = flow.Date?.ToDateTime(default) ?? null;
 
         CustomFiles = flow.CustomFiles is not null ? new(flow.CustomFiles.Select(x => new CustomFileInfo { Id = x.Id, Name = x.Name, FileInfo = x.Path is null ? null : new FileInfo(x.Path) })) : new();
         foreach (var item in CustomFiles)
@@ -82,7 +81,7 @@ public partial class FlowViewModel : ObservableObject
 
     partial void OnDateChanged(DateTime? oldValue, DateTime? newValue)
     {
-        if (oldValue is null || newValue is null) return;
+        if (oldValue is null || newValue is null || !Initialized) return; 
 
         using var db = new BaseDatabase();
         var flow = db.GetCollection<FundFlow>().FindById(FlowId);

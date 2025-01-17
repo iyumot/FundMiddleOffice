@@ -6,4 +6,6 @@
     <local:FileExistsToVisibilityConverter x:Key="FileExistsToVisibilityConverter" />
     <local:FilePathToNameConverter x:Key="FilePathToNameConverter" />
     <local:ValueIsEffectToVisibilityConverter x:Key="ValueIsEffectToVisibilityConverter" />
+    <local:ValueIsSameConverter x:Key="ValueIsSameConverter" />
+    <local:DataTimeDateOnlySwitchConverter x:Key="DataTimeDateOnlySwitchConverter" />
 </ResourceDictionary>

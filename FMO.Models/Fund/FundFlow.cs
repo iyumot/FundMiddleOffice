@@ -1,6 +1,11 @@
 ﻿namespace FMO.Models;
 
 
+public interface IElementChangable
+{
+
+}
+
 /// <summary>
 /// 流程
 /// </summary>
@@ -70,6 +75,11 @@ public class ContractFinalizeFlow : FundFlow
     public FundFileInfo? ContractFile { get; set; }
 
     /// <summary>
+    /// 风险揭示书
+    /// </summary>
+    public FundFileInfo? RiskDisclosureDocument { get; set; }
+
+    /// <summary>
     /// 募集账户函
     /// </summary>
     public FundFileInfo? CollectionAccountFile { get; set; }
@@ -107,4 +117,37 @@ public class SetupFlow : FundFlow
 
 
     public override string Name { get => "基金成立"; set { } }
+}
+
+
+
+/// <summary>
+/// 合同变更工作流
+/// </summary>
+public class ContractModifyFlow : FundFlow
+{
+    /// <summary>
+    /// 定稿合同文件
+    /// </summary>
+    public FundFileInfo? ContractFile { get; set; }
+
+
+    /// <summary>
+    /// 补充协议
+    /// </summary>
+    public VersionedFileInfo? SupplementaryFile { get; set; }
+
+    /// <summary>
+    /// 募集账户函
+    /// </summary>
+    public FundFileInfo? CollectionAccountFile { get; set; }
+
+    /// <summary>
+    /// 托管账户函
+    /// </summary>
+    public FundFileInfo? CustodyAccountFile { get; set; }
+
+    //份额、要素
+
+    public override string Name { get => "合同变更"; set { } }
 }
