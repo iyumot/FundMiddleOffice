@@ -2,6 +2,8 @@
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using FMO.Utilities;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows.Controls;
 
 namespace FMO;
@@ -22,27 +24,44 @@ public interface IDatabaseUpdater
     void Update();
 }
 
-public abstract partial class DataItem<T, TEntity> : ObservableObject
-{
 
+
+
+public partial class ReadOnlyDataItem<T> : ObservableObject
+{
     public required string Label { get; set; }
 
+
+    [ObservableProperty]
+    //[NotifyPropertyChangedFor("IsChanged")]
+    public partial T? NewValue { get; set; }
+
+
+    public string? Format { get; set; }
+
+}
+
+
+public abstract partial class DataItem<T, TEntity> : ReadOnlyDataItem<T>
+{
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsChanged))]
     public partial T? OldValue { get; set; }
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsChanged))]
-    public partial T? NewValue { get; set; }
-      
-    public bool IsChanged => NewValue is not null && !NewValue.Equals(OldValue);
+     
+    public bool IsChanged => NewValue is not null && (NewValue is string s ? !string.IsNullOrWhiteSpace(s) : true) && !NewValue.Equals(OldValue);
 
     public required Action<T?, TEntity> Updater { get; set; }
 
-     
-    public string? Format { get; set; }
-
     public abstract void Update();
+
+
+    protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+
+        if (e.PropertyName == nameof(NewValue))
+            OnPropertyChanged(nameof(IsChanged));
+    }
 }
 
 public partial class ManagerDataItem<T> : DataItem<T, Manager>, IDatabaseUpdater
@@ -54,12 +73,16 @@ public partial class ManagerDataItem<T> : DataItem<T, Manager>, IDatabaseUpdater
         var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
         Updater(NewValue, manager);
         db.GetCollection<Manager>().Update(manager);
+        OldValue = NewValue;
     }
 }
 
 
+
 public partial class ManagerPageViewModel : ObservableObject
 {
+    public string AmacPageUrl { get; set; }
+
     /// <summary>
     /// 管理人名称
     /// </summary>
@@ -71,12 +94,84 @@ public partial class ManagerPageViewModel : ObservableObject
     /// </summary>
     [ObservableProperty]
     public partial ManagerDataItem<string> ArtificialPerson { get; set; }
-     
+
 
     public string? RegisterNo { get; set; }
 
+    /// <summary>
+    /// 注册资本
+    /// </summary>
     [ObservableProperty]
     public partial ManagerDataItem<decimal> RegisterCapital { get; set; }
+
+    /// <summary>
+    /// 实缴
+    /// </summary>
+    [ObservableProperty]
+    public partial ManagerDataItem<decimal?> RealCapital { get; set; }
+
+
+    [ObservableProperty]
+    public partial ManagerDataItem<DateOnly> SetupDate { get; set; }
+
+    [ObservableProperty]
+    public partial ManagerDataItem<DateOnly?> ExpireDate { get; set; }
+
+
+    [ObservableProperty]
+    public partial ManagerDataItem<DateTime> RegisterDate { get; set; }
+
+
+    /// <summary>
+    /// 电话
+    /// </summary>
+    [ObservableProperty]
+    public partial ManagerDataItem<string> Telephone { get; set; }
+
+    /// <summary>
+    /// 传真
+    /// </summary>
+    [ObservableProperty]
+    public partial ManagerDataItem<string> Fax { get; set; }
+
+    /// <summary>
+    /// 统一信用代码
+    /// </summary> 
+    [ObservableProperty]
+    public partial ReadOnlyDataItem<string> InstitutionCode { get; set; }
+
+    /// <summary>
+    /// 注册地址
+    /// </summary>
+    [ObservableProperty]
+    public partial ReadOnlyDataItem<string> RegisterAddress { get; set; }
+
+
+
+    /// <summary>
+    /// 办公地址
+    /// </summary>
+    [ObservableProperty]
+    public partial ManagerDataItem<string?> OfficeAddress { get; set; }
+
+
+    /// <summary>
+    /// 经营范围
+    /// </summary>
+    [ObservableProperty]
+    public partial ManagerDataItem<string> BusinessScope { get; set; }
+
+
+    /// <summary>
+    /// 官网
+    /// </summary>
+    [ObservableProperty]
+    public partial ManagerDataItem<string> WebSite { get; set; }
+
+
+
+
+
 
 
     [ObservableProperty]
@@ -88,6 +183,8 @@ public partial class ManagerPageViewModel : ObservableObject
         using var db = new BaseDatabase();
         var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
 
+        AmacPageUrl = $"https://gs.amac.org.cn/amac-infodisc/res/pof/manager/{manager.AmacId}.html";
+
         ManagerName = new ManagerDataItem<string> { Label = "管理人", OldValue = manager.Name, NewValue = manager.Name, Updater = (a, b) => b.Name = a! };
 
         ArtificialPerson = new ManagerDataItem<string> { Label = "实控人", OldValue = manager.ArtificialPerson, NewValue = manager.ArtificialPerson, Updater = (a, b) => b.ArtificialPerson = a! };
@@ -96,7 +193,21 @@ public partial class ManagerPageViewModel : ObservableObject
 
 
 
-        RegisterCapital = new ManagerDataItem<decimal> { Label = "注册资金", OldValue = manager.RegisterCapital, NewValue = manager.RegisterCapital, Format="{0}万元", Updater = (a, b) => b.RegisterCapital = a! };
+        RegisterCapital = new ManagerDataItem<decimal> { Label = "注册资本", OldValue = manager.RegisterCapital, NewValue = manager.RegisterCapital, Format = "{0}万元", Updater = (a, b) => b.RegisterCapital = a! };
+        RealCapital = new ManagerDataItem<decimal?> { Label = "实缴资本", OldValue = manager.RealCapital, NewValue = manager.RealCapital, Format = "{0}万元", Updater = (a, b) => b.RegisterCapital = a ?? default };
+
+
+        SetupDate = new ManagerDataItem<DateOnly> { Label = "成立日期", OldValue = manager.SetupDate, NewValue = manager.SetupDate, Format = "yyyy-MM-dd", Updater = (a, b) => b.SetupDate = a };
+        ExpireDate = new ManagerDataItem<DateOnly?> { Label = "核销日期", OldValue = manager.ExpireDate == default ? null : manager.ExpireDate, NewValue = manager.ExpireDate == default ? null : manager.ExpireDate, Format = "yyyy-MM-dd", Updater = (a, b) => b.ExpireDate = a ?? default };
+        RegisterDate = new ManagerDataItem<DateTime> { Label = "登记日期", OldValue = manager.RegisterDate, NewValue = manager.RegisterDate, Format = "yyyy-MM-dd", Updater = (a, b) => b.RegisterDate = a };
+
+        Telephone = new ManagerDataItem<string> { Label = "固定电话", OldValue = manager.Telephone, NewValue = manager.Telephone, Updater = (a, b) => b.Telephone = a };
+        Fax = new ManagerDataItem<string> { Label = "传真", OldValue = manager.Fax, NewValue = manager.Fax, Updater = (a, b) => b.Fax = a };
+
+        InstitutionCode = new ReadOnlyDataItem<string> { Label = "统一信用代码", NewValue = manager.Id, };
+        RegisterAddress = new ReadOnlyDataItem<string> { Label = "注册地址", NewValue = manager.RegisterAddress, };
+        OfficeAddress = new ManagerDataItem<string?> { Label = "办公地址", OldValue = manager.OfficeAddress, NewValue = manager.OfficeAddress, Updater = (a, b) => b.OfficeAddress = a };
+        BusinessScope = new ManagerDataItem<string> { Label = "经营范围", OldValue = manager.BusinessScope, NewValue = manager.BusinessScope, Updater = (a, b) => b.BusinessScope = a };
 
     }
 
@@ -105,5 +216,11 @@ public partial class ManagerPageViewModel : ObservableObject
     public void UpdateManagerInfo(IDatabaseUpdater dataItem)
     {
         dataItem.Update();
+    }
+
+    [RelayCommand]
+    public void OpenAmacPage()
+    {
+        try { Process.Start(new ProcessStartInfo(AmacPageUrl) { UseShellExecute = true }); } catch { }
     }
 }
