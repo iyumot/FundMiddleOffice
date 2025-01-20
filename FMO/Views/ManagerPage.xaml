@@ -3,11 +3,215 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DataContext="{d:DesignInstance Type=local:ManagerPageViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
     Tag="管理人"
     mc:Ignorable="d">
-    <Grid />
+    <UserControl.Resources>
+        <ControlTemplate x:Key="ManagerDataItem" TargetType="ContentControl">
+            <DockPanel>
+                <TextBlock
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center"
+                    Text="{Binding Label}" />
+
+                <local:CopyableControl Margin="8,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    <Label
+                        VerticalAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        BorderThickness="0"
+                        Content="{Binding NewValue}"
+                        ContentStringFormat="{Binding Format}"
+                        Style="{StaticResource LabelDefault.Small}" />
+                </local:CopyableControl>
+
+                <DockPanel LastChildFill="False" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                    <TextBox
+                        MinWidth="120"
+                        Padding="15,0"
+                        HorizontalAlignment="Stretch"
+                        Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                    <Button
+                        hc:IconElement.Geometry="{StaticResource f.check}"
+                        Command="{Binding RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Path=DataContext.UpdateManagerInfoCommand}"
+                        CommandParameter="{Binding .}"
+                        Visibility="{Binding IsChanged, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                </DockPanel>
+            </DockPanel>
+        </ControlTemplate>
+        <ControlTemplate x:Key="ManagerDataItem.ReadOnly" TargetType="ContentControl">
+            <DockPanel>
+                <TextBlock
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center"
+                    Text="{Binding Label}" />
+
+                <local:CopyableControl Margin="8,0">
+                    <Label
+                        VerticalAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        BorderThickness="0"
+                        Content="{Binding NewValue}"
+                        ContentStringFormat="{Binding Format}"
+                        Style="{StaticResource LabelDefault.Small}" />
+                </local:CopyableControl>
+
+            </DockPanel>
+        </ControlTemplate>
+        <ControlTemplate x:Key="ManagerDataItem.Date" TargetType="ContentControl">
+            <DockPanel>
+                <TextBlock
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center"
+                    Text="{Binding Label}" />
+
+                <local:CopyableControl Margin="8,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    <Label
+                        VerticalAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        BorderThickness="0"
+                        Content="{Binding NewValue}"
+                        ContentStringFormat="{Binding Format}"
+                        Style="{StaticResource LabelDefault.Small}" />
+                </local:CopyableControl>
+
+                <DockPanel LastChildFill="False" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                    <DatePicker Padding="15,0" SelectedDate="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                    <Button
+                        hc:IconElement.Geometry="{StaticResource f.check}"
+                        Command="{Binding RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Path=DataContext.UpdateManagerInfoCommand}"
+                        CommandParameter="{Binding .}"
+                        Visibility="{Binding IsChanged, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                </DockPanel>
+            </DockPanel>
+        </ControlTemplate>
+
+
+        <ControlTemplate x:Key="ManagerDataItem.ML" TargetType="ContentControl">
+            <DockPanel>
+                <TextBlock
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center"
+                    Text="{Binding Label}" />
+
+                <local:CopyableControl Margin="8,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Text="{Binding NewValue}"
+                        TextWrapping="Wrap" />
+                </local:CopyableControl>
+
+                <DockPanel Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                    <Button
+                        hc:IconElement.Geometry="{StaticResource f.check}"
+                        Command="{Binding RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Path=DataContext.UpdateManagerInfoCommand}"
+                        CommandParameter="{Binding .}"
+                        DockPanel.Dock="Right"
+                        Visibility="{Binding IsChanged, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                    <TextBox
+                        MinWidth="120"
+                        Padding="15,0"
+                        HorizontalAlignment="Stretch"
+                        AcceptsReturn="True"
+                        Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+
+                </DockPanel>
+            </DockPanel>
+        </ControlTemplate>
+
+        <ControlTemplate x:Key="ManagerDataItem.ML.ReadOnly" TargetType="ContentControl">
+            <DockPanel>
+                <TextBlock
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center"
+                    Text="{Binding Label}" />
+
+                <local:CopyableControl Margin="8,0">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Text="{Binding NewValue}"
+                        TextWrapping="Wrap" />
+                </local:CopyableControl>
+
+            </DockPanel>
+        </ControlTemplate>
+    </UserControl.Resources>
+    <UserControl.DataContext>
+        <local:ManagerPageViewModel />
+    </UserControl.DataContext>
+    <DockPanel>
+
+        <Grid MinWidth="400" Margin="0,10">
+            <StackPanel TextElement.FontSize="14">
+                <StackPanel.Resources>
+                    <Style TargetType="ContentControl">
+                        <Setter Property="Margin" Value="0,3" />
+                    </Style>
+                </StackPanel.Resources>
+
+                <DockPanel>
+                    <ContentControl DataContext="{Binding ManagerName}" Template="{StaticResource ManagerDataItem}" />
+                </DockPanel>
+
+
+                <UniformGrid Margin="0,0,30,0" Columns="2">
+                    <ContentControl DataContext="{Binding ArtificialPerson}" Template="{StaticResource ManagerDataItem}" />
+
+                    <local:CopyableControl HorizontalAlignment="Center">
+                        <TextBlock VerticalAlignment="Center" Text="{Binding RegisterNo}" />
+                    </local:CopyableControl>
+
+                    <ContentControl DataContext="{Binding RegisterCapital}" Template="{StaticResource ManagerDataItem}" />
+                    <ContentControl DataContext="{Binding RealCapital}" Template="{StaticResource ManagerDataItem}" />
+
+
+                    <ContentControl DataContext="{Binding SetupDate}" Template="{StaticResource ManagerDataItem.Date}" />
+                    <ContentControl DataContext="{Binding ExpireDate}" Template="{StaticResource ManagerDataItem.Date}" />
+                    <ContentControl DataContext="{Binding RegisterDate}" Template="{StaticResource ManagerDataItem.Date}" />
+                    <TextBlock />
+
+
+                    <ContentControl DataContext="{Binding Telephone}" Template="{StaticResource ManagerDataItem}" />
+                    <ContentControl DataContext="{Binding Fax}" Template="{StaticResource ManagerDataItem}" />
+
+
+                </UniformGrid>
+
+
+                <ContentControl DataContext="{Binding InstitutionCode}" Template="{StaticResource ManagerDataItem.ReadOnly}" />
+                <ContentControl
+                    MaxWidth="500"
+                    DataContext="{Binding RegisterAddress}"
+                    Template="{StaticResource ManagerDataItem.ML.ReadOnly}" />
+                <ContentControl DataContext="{Binding OfficeAddress}" Template="{StaticResource ManagerDataItem}" />
+
+                <ContentControl DataContext="{Binding BusinessScope}" Template="{StaticResource ManagerDataItem.ML}" />
+
+            </StackPanel>
+
+            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top">
+                <ToggleButton
+                    hc:IconElement.Geometry="{StaticResource f.pencil}"
+                    DockPanel.Dock="Right"
+                    IsChecked="{Binding IsReadOnly}" />
+
+                <Button Height="50" Command="{Binding OpenAmacPageCommand}">
+                    <TextBlock
+                        MaxWidth="30"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="公示信息"
+                        TextWrapping="Wrap" />
+                </Button>
+            </StackPanel>
+        </Grid>
+
+
+        <TextBlock />
+    </DockPanel>
 </UserControl>
