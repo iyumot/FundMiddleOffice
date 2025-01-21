@@ -136,8 +136,6 @@
                 </DockPanel>
             </DockPanel>
         </ControlTemplate>
-
-
         <ControlTemplate x:Key="ManagerDataItem.ML" TargetType="ContentControl">
             <DockPanel>
                 <TextBlock
@@ -171,7 +169,6 @@
                 </DockPanel>
             </DockPanel>
         </ControlTemplate>
-
         <ControlTemplate x:Key="ManagerDataItem.ML.ReadOnly" TargetType="ContentControl">
             <DockPanel>
                 <TextBlock
@@ -186,6 +183,47 @@
                         TextWrapping="Wrap" />
                 </local:CopyableControl>
 
+            </DockPanel>
+        </ControlTemplate>
+        <ControlTemplate x:Key="ManagerDataItem.Link" TargetType="ContentControl">
+            <DockPanel>
+                <TextBlock
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center"
+                    Text="{Binding Label}" />
+
+                <DockPanel Margin="8,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    <local:CopyableControl>
+                        <Label
+                            VerticalAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            BorderThickness="0"
+                            Content="{Binding NewValue}"
+                            ContentStringFormat="{Binding Format}"
+                            Style="{StaticResource LabelDefault.Small}" />
+                    </local:CopyableControl>
+
+                    <Button
+                        hc:IconElement.Geometry="{StaticResource f.arrow-up-right-from-square}"
+                        Command="{Binding RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Path=DataContext.OpenLinkCommand}"
+                        CommandParameter="{Binding .}"
+                        Foreground="{StaticResource PrimaryBrush}"
+                        Style="{StaticResource ButtonIcon.Small}"
+                        Visibility="{Binding NewValue, Converter={StaticResource ValueIsEffectToVisibilityConverter}}" />
+                </DockPanel>
+
+                <DockPanel LastChildFill="False" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                    <TextBox
+                        MinWidth="320"
+                        Padding="15,0"
+                        HorizontalAlignment="Stretch"
+                        Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                    <Button
+                        hc:IconElement.Geometry="{StaticResource f.check}"
+                        Command="{Binding RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Path=DataContext.UpdateManagerInfoCommand}"
+                        CommandParameter="{Binding .}"
+                        Visibility="{Binding IsChanged, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                </DockPanel>
             </DockPanel>
         </ControlTemplate>
     </UserControl.Resources>
@@ -210,9 +248,7 @@
                 <UniformGrid Margin="0,0,30,0" Columns="2">
                     <ContentControl DataContext="{Binding ArtificialPerson}" Template="{StaticResource ManagerDataItem}" />
 
-                    <local:CopyableControl HorizontalAlignment="Center">
-                        <TextBlock VerticalAlignment="Center" Text="{Binding RegisterNo}" />
-                    </local:CopyableControl>
+                    <ContentControl DataContext="{Binding RegisterNo}" Template="{StaticResource ManagerDataItem.ReadOnly}" />
 
                     <ContentControl DataContext="{Binding RegisterCapital}" Template="{StaticResource ManagerDataItem}" />
                     <ContentControl DataContext="{Binding RealCapital}" Template="{StaticResource ManagerDataItem}" />
@@ -230,6 +266,7 @@
 
                 </UniformGrid>
 
+                <ContentControl DataContext="{Binding WebSite}" Template="{StaticResource ManagerDataItem.Link}" />
 
                 <ContentControl DataContext="{Binding InstitutionCode}" Template="{StaticResource ManagerDataItem.ReadOnly}" />
                 <ContentControl
@@ -240,15 +277,31 @@
 
                 <ContentControl DataContext="{Binding BusinessScope}" Template="{StaticResource ManagerDataItem.ML}" />
 
+
+
+                <Border Margin="0,20,0,0" Background="WhiteSmoke">
+                    <StackPanel>
+                        <local:MultiFileDisplay Files="{Binding BusinessLicense}" Header="营业执照正本" />
+                        <local:MultiFileDisplay Files="{Binding BusinessLicense2}" Header="营业执照副本" />
+                        <local:MultiFileDisplay Files="{Binding AccountOpeningLicense}" Header="开户许可证" />
+                        <local:MultiFileDisplay Files="{Binding CharterDocument}" Header="章程/合伙协议" />
+                        <local:MultiFileDisplay Files="{Binding LegalPersonIdCard}" Header="法人/委派代表身份证" />
+                    </StackPanel>
+                </Border>
             </StackPanel>
 
             <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top">
                 <ToggleButton
                     hc:IconElement.Geometry="{StaticResource f.pencil}"
+                    BorderThickness="0"
                     DockPanel.Dock="Right"
-                    IsChecked="{Binding IsReadOnly}" />
+                    IsChecked="{Binding IsReadOnly}"
+                    Style="{StaticResource ToggleButtonDefault.Small}" />
 
-                <Button Height="50" Command="{Binding OpenAmacPageCommand}">
+                <Button
+                    Height="50"
+                    Margin="0,10"
+                    Command="{Binding OpenAmacPageCommand}">
                     <TextBlock
                         MaxWidth="30"
                         HorizontalAlignment="Center"

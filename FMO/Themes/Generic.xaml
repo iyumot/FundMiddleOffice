@@ -287,6 +287,7 @@
                                 </Border>
                             </Popup>
 
+
                         </DockPanel>
                     </Border>
                     <ControlTemplate.Triggers>
