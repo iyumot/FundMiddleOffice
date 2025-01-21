@@ -64,6 +64,14 @@ public class Institution : LegalEntity
     /// </summary>
     public string? Fax { get; set; }
 
+
+
+    /// <summary>
+    /// 官网
+    /// </summary>
+    public string? WebSite { get; set; }
+
+
     public override EntityType Type => EntityType.Institution;
  
 }

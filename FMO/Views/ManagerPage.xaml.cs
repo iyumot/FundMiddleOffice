@@ -2,8 +2,10 @@
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using FMO.Utilities;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Windows.Controls;
 
 namespace FMO;
@@ -84,18 +86,25 @@ public partial class ManagerDateExItem : DataItem<DateOnly?, Manager>, IDatabase
     /// 无固定期限
     /// </summary>
     [ObservableProperty]
-    public partial bool IsLongTerm { get; set; }
+    public partial bool? IsLongTerm { get; set; }
 
     public override void Update()
     {
         using var db = new BaseDatabase();
         var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
-        if (IsLongTerm)
+        if (IsLongTerm ?? false)
             Updater(DateOnly.MaxValue, manager);
         else
             Updater(NewValue, manager);
         db.GetCollection<Manager>().Update(manager);
         OldValue = NewValue;
+    }
+
+
+    partial void OnIsLongTermChanged(bool? oldValue, bool? newValue)
+    {
+        if (oldValue is not null)
+            Update();
     }
 }
 
@@ -103,6 +112,8 @@ public partial class ManagerDateExItem : DataItem<DateOnly?, Manager>, IDatabase
 
 public partial class ManagerPageViewModel : ObservableObject
 {
+    private int FilesId;
+
     public string AmacPageUrl { get; set; }
 
     /// <summary>
@@ -118,7 +129,7 @@ public partial class ManagerPageViewModel : ObservableObject
     public partial ManagerDataItem<string> ArtificialPerson { get; set; }
 
 
-    public string? RegisterNo { get; set; }
+    public ReadOnlyDataItem<string> RegisterNo { get; set; }
 
     /// <summary>
     /// 注册资本
@@ -193,8 +204,36 @@ public partial class ManagerPageViewModel : ObservableObject
     public partial ManagerDataItem<string> WebSite { get; set; }
 
 
+    /// <summary>
+    /// 营业执照正本
+    /// </summary>
+    [ObservableProperty]
+    public partial ObservableCollection<FileInfo>? BusinessLicense { get; set; }
+
+    /// <summary>
+    /// 营业执照副本
+    /// </summary>
+    [ObservableProperty]
+    public partial ObservableCollection<FileInfo>? BusinessLicense2 { get; set; }
+
+    /// <summary>
+    /// 开户许可证
+    /// </summary>
+    [ObservableProperty]
+    public partial ObservableCollection<FileInfo>? AccountOpeningLicense { get; set; }
 
 
+    /// <summary>
+    /// 章程
+    /// </summary>
+    [ObservableProperty]
+    public partial ObservableCollection<FileInfo>? CharterDocument { get; set; }
+
+    /// <summary>
+    /// 法人身份证
+    /// </summary>
+    [ObservableProperty]
+    public partial ObservableCollection<FileInfo>? LegalPersonIdCard { get; set; }
 
 
 
@@ -204,8 +243,16 @@ public partial class ManagerPageViewModel : ObservableObject
 
     public ManagerPageViewModel()
     {
-        using var db = new BaseDatabase();
+        var db = new BaseDatabase();
         var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
+        var mfile = db.GetCollection<InstitutionFiles>().FindOne(x => x.InstitutionId == manager.Id);
+        if (mfile is null)
+        {
+            mfile = new InstitutionFiles { InstitutionId = manager.Id };
+            db.GetCollection<InstitutionFiles>().Insert(mfile);
+        }
+        FilesId = mfile.Id;
+        db.Dispose();
 
         AmacPageUrl = $"https://gs.amac.org.cn/amac-infodisc/res/pof/manager/{manager.AmacId}.html";
 
@@ -213,7 +260,7 @@ public partial class ManagerPageViewModel : ObservableObject
 
         ArtificialPerson = new ManagerDataItem<string> { Label = "实控人", OldValue = manager.ArtificialPerson, NewValue = manager.ArtificialPerson, Updater = (a, b) => b.ArtificialPerson = a! };
 
-        RegisterNo = manager.RegisterNo;//new ManagerDataItem<string> { Label = "实控人", OldValue = manager.RegisterNo, NewValue = manager.RegisterNo, Updater = (a, b) => b.RegisterNo = a! };
+        RegisterNo = new ReadOnlyDataItem<string> { Label = "编码", NewValue = manager.RegisterNo };//new ManagerDataItem<string> { Label = "实控人", OldValue = manager.RegisterNo, NewValue = manager.RegisterNo, Updater = (a, b) => b.RegisterNo = a! };
 
 
 
@@ -234,6 +281,28 @@ public partial class ManagerPageViewModel : ObservableObject
         OfficeAddress = new ManagerDataItem<string?> { Label = "办公地址", OldValue = manager.OfficeAddress, NewValue = manager.OfficeAddress, Updater = (a, b) => b.OfficeAddress = a };
         BusinessScope = new ManagerDataItem<string> { Label = "经营范围", OldValue = manager.BusinessScope, NewValue = manager.BusinessScope, Updater = (a, b) => b.BusinessScope = a };
 
+        WebSite = new ManagerDataItem<string> { Label = "官网", OldValue = manager.WebSite, NewValue = manager.WebSite, Updater = (a, b) => b.WebSite = a };
+
+
+
+
+        BusinessLicense = mfile?.BusinessLicense is null ? new() : new ObservableCollection<FileInfo>(mfile.BusinessLicense.Files.Select(x => new FileInfo(x.Path)));
+        BusinessLicense.CollectionChanged += BusinessLicense_CollectionChanged;
+
+
+        BusinessLicense2 = mfile?.BusinessLicense2 is null ? new() : new ObservableCollection<FileInfo>(mfile.BusinessLicense2.Files.Select(x => new FileInfo(x.Path)));
+        BusinessLicense2.CollectionChanged += BusinessLicense2_CollectionChanged;
+
+
+        AccountOpeningLicense = mfile?.AccountOpeningLicense is null ? new() : new ObservableCollection<FileInfo>(mfile.AccountOpeningLicense.Files.Select(x => new FileInfo(x.Path)));
+        AccountOpeningLicense.CollectionChanged += AccountOpeningLicense_CollectionChanged;
+
+        CharterDocument = mfile?.CharterDocument is null ? new() : new ObservableCollection<FileInfo>(mfile.CharterDocument.Files.Select(x => new FileInfo(x.Path)));
+        CharterDocument.CollectionChanged += CharterDocument_CollectionChanged;
+
+
+        LegalPersonIdCard = mfile?.LegalPersonIdCard is null ? new() : new ObservableCollection<FileInfo>(mfile.LegalPersonIdCard.Files.Select(x => new FileInfo(x.Path)));
+        LegalPersonIdCard.CollectionChanged += LegalPersonIdCard_CollectionChanged;
     }
 
 
@@ -244,8 +313,225 @@ public partial class ManagerPageViewModel : ObservableObject
     }
 
     [RelayCommand]
+    public void OpenLink(ManagerDataItem<string> obj)
+    {
+        if (!string.IsNullOrWhiteSpace(obj.NewValue))
+            try { Process.Start(new ProcessStartInfo(obj.NewValue) { UseShellExecute = true }); } catch { }
+    }
+
+    [RelayCommand]
     public void OpenAmacPage()
     {
         try { Process.Start(new ProcessStartInfo(AmacPageUrl) { UseShellExecute = true }); } catch { }
     }
+    
+    
+    #region MyRegion
+
+    private void BusinessLicense_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
+        {
+            using var db = new BaseDatabase();
+
+            foreach (FileInfo item in e.NewItems)
+            {
+                string hash = item.ComputeHash()!;
+
+                // 保存副本
+                var dir = Directory.CreateDirectory("Manager");
+                var tar = FileHelper.CopyFile(item, dir.FullName);
+
+                FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
+
+                var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
+                if (files.BusinessLicense is null)
+                    files.BusinessLicense = new VersionedFileInfo { Name = nameof(BusinessLicense), Files = new() };
+                files!.BusinessLicense.Files.Add(fileVersion);
+                db.GetCollection<InstitutionFiles>().Update(files);
+            }
+        }
+        else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
+        {
+            using var db = new BaseDatabase();
+            var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
+
+
+            foreach (FileInfo item in e.OldItems)
+            {
+                var rp = Path.GetRelativePath(Directory.GetCurrentDirectory(), item.FullName);
+                var file = files!.BusinessLicense?.Files.FirstOrDefault(x => rp == x.Path || x.Path == item.FullName);
+                if (file is not null)
+                    files.BusinessLicense!.Files.Remove(file);
+            }
+
+            db.GetCollection<InstitutionFiles>().Update(files!);
+        }
+
+    }
+    private void BusinessLicense2_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
+        {
+            using var db = new BaseDatabase();
+
+            foreach (FileInfo item in e.NewItems)
+            {
+                string hash = item.ComputeHash()!;
+
+                // 保存副本
+                var dir = Directory.CreateDirectory("Manager");
+                var tar = FileHelper.CopyFile(item, dir.FullName);
+
+                FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
+
+                var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
+                if (files.BusinessLicense2 is null)
+                    files.BusinessLicense2 = new VersionedFileInfo { Name = nameof(BusinessLicense2), Files = new() };
+                files!.BusinessLicense2.Files.Add(fileVersion);
+                db.GetCollection<InstitutionFiles>().Update(files);
+            }
+        }
+        else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
+        {
+            using var db = new BaseDatabase();
+            var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
+
+
+            foreach (FileInfo item in e.OldItems)
+            {
+                var rp = Path.GetRelativePath(Directory.GetCurrentDirectory(), item.FullName);
+                var file = files!.BusinessLicense2?.Files.FirstOrDefault(x => rp == x.Path || x.Path == item.FullName);
+                if (file is not null)
+                    files.BusinessLicense2!.Files.Remove(file);
+            }
+
+            db.GetCollection<InstitutionFiles>().Update(files!);
+        }
+
+    }
+    private void AccountOpeningLicense_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
+        {
+            using var db = new BaseDatabase();
+
+            foreach (FileInfo item in e.NewItems)
+            {
+                string hash = item.ComputeHash()!;
+
+                // 保存副本
+                var dir = Directory.CreateDirectory("Manager");
+                var tar = FileHelper.CopyFile(item, dir.FullName);
+
+                FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
+
+                var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
+                if (files.AccountOpeningLicense is null)
+                    files.AccountOpeningLicense = new VersionedFileInfo { Name = nameof(AccountOpeningLicense), Files = new() };
+                files!.AccountOpeningLicense.Files.Add(fileVersion);
+                db.GetCollection<InstitutionFiles>().Update(files);
+            }
+        }
+        else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
+        {
+            using var db = new BaseDatabase();
+            var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
+
+
+            foreach (FileInfo item in e.OldItems)
+            {
+                var rp = Path.GetRelativePath(Directory.GetCurrentDirectory(), item.FullName);
+                var file = files!.AccountOpeningLicense?.Files.FirstOrDefault(x => rp == x.Path || x.Path == item.FullName);
+                if (file is not null)
+                    files.AccountOpeningLicense!.Files.Remove(file);
+            }
+
+            db.GetCollection<InstitutionFiles>().Update(files!);
+        }
+
+    }
+    private void CharterDocument_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
+        {
+            using var db = new BaseDatabase();
+
+            foreach (FileInfo item in e.NewItems)
+            {
+                string hash = item.ComputeHash()!;
+
+                // 保存副本
+                var dir = Directory.CreateDirectory("Manager");
+                var tar = FileHelper.CopyFile(item, dir.FullName);
+
+                FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
+
+                var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
+                if (files.CharterDocument is null)
+                    files.CharterDocument = new VersionedFileInfo { Name = nameof(CharterDocument), Files = new() };
+                files!.CharterDocument.Files.Add(fileVersion);
+                db.GetCollection<InstitutionFiles>().Update(files);
+            }
+        }
+        else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
+        {
+            using var db = new BaseDatabase();
+            var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
+
+
+            foreach (FileInfo item in e.OldItems)
+            {
+                var rp = Path.GetRelativePath(Directory.GetCurrentDirectory(), item.FullName);
+                var file = files!.CharterDocument?.Files.FirstOrDefault(x => rp == x.Path || x.Path == item.FullName);
+                if (file is not null)
+                    files.CharterDocument!.Files.Remove(file);
+            }
+
+            db.GetCollection<InstitutionFiles>().Update(files!);
+        }
+
+    }
+    private void LegalPersonIdCard_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
+        {
+            using var db = new BaseDatabase();
+
+            foreach (FileInfo item in e.NewItems)
+            {
+                string hash = item.ComputeHash()!;
+
+                // 保存副本
+                var dir = Directory.CreateDirectory("Manager");
+                var tar = FileHelper.CopyFile(item, dir.FullName);
+
+                FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
+
+                var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
+                if (files.LegalPersonIdCard is null)
+                    files.LegalPersonIdCard = new VersionedFileInfo { Name = nameof(LegalPersonIdCard), Files = new() };
+                files!.LegalPersonIdCard.Files.Add(fileVersion);
+                db.GetCollection<InstitutionFiles>().Update(files);
+            }
+        }
+        else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
+        {
+            using var db = new BaseDatabase();
+            var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
+
+
+            foreach (FileInfo item in e.OldItems)
+            {
+                var rp = Path.GetRelativePath(Directory.GetCurrentDirectory(), item.FullName);
+                var file = files!.LegalPersonIdCard?.Files.FirstOrDefault(x => rp == x.Path || x.Path == item.FullName);
+                if (file is not null)
+                    files.LegalPersonIdCard!.Files.Remove(file);
+            }
+
+            db.GetCollection<InstitutionFiles>().Update(files!);
+        }
+
+    }
+    #endregion
 }
