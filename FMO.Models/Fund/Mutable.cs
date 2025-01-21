@@ -3,6 +3,15 @@
 namespace FMO.Models;
 
 
+public class DataExtra<T> where T : struct
+{
+    public T? Data { get; set; }
+
+    public string? Extra { get; set; }
+}
+
+
+
 public class Mutable<T>
 {
     /// <summary>
@@ -19,7 +28,7 @@ public class Mutable<T>
 
     public SortedDictionary<int, T> Changes { get; set; } = new();
 
-    public T? Value => Changes.LastOrDefault().Value;
+    public T Value => Changes.LastOrDefault().Value;
 
     [SetsRequiredMembers]
     public Mutable(string name, T value, string? description = null)
@@ -60,9 +69,7 @@ public class Mutable<T>
         foreach (var x in Changes.Reverse())
         {
             if (x.Key <= flowid)
-            {
                 return (x.Key, x.Value);
-            }
         }
         return (-1, default);
     }

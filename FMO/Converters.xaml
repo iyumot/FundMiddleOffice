@@ -9,4 +9,5 @@
     <local:ValueIsSameConverter x:Key="ValueIsSameConverter" />
     <local:DataTimeDateOnlySwitchConverter x:Key="DataTimeDateOnlySwitchConverter" />
     <local:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
+    <local:EnumIsOtherToVisibilityConverter x:Key="EnumIsOtherToVisibilityConverter" />
 </ResourceDictionary>

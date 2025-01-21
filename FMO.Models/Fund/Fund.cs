@@ -151,5 +151,5 @@ public class Fund
 
 
 
-    public static string GetDefaultShortName(string name) => Regex.Replace(name, @"私募\w+基金|集合\w+计划", "");
+    public static string? GetDefaultShortName(string? name) => string.IsNullOrWhiteSpace(name) ? null : Regex.Replace(name, @"私募\w+基金|集合\w+计划", "");
 }

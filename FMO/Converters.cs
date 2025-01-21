@@ -164,3 +164,17 @@ public class EnumDescriptionConverter : IValueConverter
         return value;
     }
 }
+
+
+public class EnumIsOtherToVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value is Enum e && e.ToString() == "Other" ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}

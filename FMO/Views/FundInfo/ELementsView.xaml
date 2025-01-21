@@ -12,48 +12,38 @@
     d:DesignWidth="800"
     mc:Ignorable="d">
     <UserControl.Resources>
+
         <ControlTemplate x:Key="Element" TargetType="ContentControl">
             <DockPanel>
                 <TextBlock VerticalAlignment="Center" Text="{Binding Label}" />
                 <Button
-                    x:Name="btn"
                     hc:IconElement.Geometry="{StaticResource f.circle-check}"
                     Command="{Binding DataContext.ModifyCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
                     CommandParameter="{Binding .}"
-                    DockPanel.Dock="Right" />
+                    DockPanel.Dock="Right"
+                    Visibility="{Binding CanConfirm, Converter={StaticResource Boolean2VisibilityConverter}}" />
                 <ContentPresenter
                     Margin="4,0"
                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                     Content="{TemplateBinding Content}" />
             </DockPanel>
-            <ControlTemplate.Triggers>
-                <DataTrigger Value="True">
-                    <DataTrigger.Binding>
-                        <MultiBinding Converter="{StaticResource ValueIsSameConverter}">
-                            <Binding Path="OldValue" />
-                            <Binding Path="Data" />
-                        </MultiBinding>
-                    </DataTrigger.Binding>
-                    <Setter TargetName="btn" Property="Visibility" Value="Collapsed" />
-                </DataTrigger>
-            </ControlTemplate.Triggers>
         </ControlTemplate>
 
         <ControlTemplate x:Key="FundMode" TargetType="ContentControl">
             <DockPanel>
-                <TextBlock VerticalAlignment="Center" Text="{Binding FundMode.Label}" />
+                <TextBlock VerticalAlignment="Center" Text="{Binding Label}" />
                 <Button
-                    x:Name="btn"
                     hc:IconElement.Geometry="{StaticResource f.circle-check}"
                     Command="{Binding DataContext.ModifyCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
-                    CommandParameter="{Binding FundMode}"
-                    DockPanel.Dock="Right" />
+                    CommandParameter="{Binding .}"
+                    DockPanel.Dock="Right"
+                    Visibility="{Binding CanConfirm, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
                 <ComboBox
                     Width="80"
                     Margin="4,0"
                     ItemsSource="{Binding Source={x:Static local:ElementsViewModel.FundModes}}"
-                    SelectedItem="{Binding FundMode.Data}">
+                    SelectedItem="{Binding Data.New}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
@@ -64,43 +54,50 @@
                 <TextBox
                     x:Name="other"
                     MinWidth="100"
-                    Text="{Binding OtherFundMode.Data, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                    Text="{Binding Extra.New, UpdateSourceTrigger=PropertyChanged, Delay=300}"
                     Visibility="Collapsed" />
             </DockPanel>
             <ControlTemplate.Triggers>
-                <DataTrigger Binding="{Binding FundMode.Data}" Value="Other">
+                <DataTrigger Binding="{Binding Data.New}" Value="Other">
                     <Setter TargetName="other" Property="Visibility" Value="Visible" />
                 </DataTrigger>
 
-                <DataTrigger Value="True">
-                    <DataTrigger.Binding>
-                        <MultiBinding Converter="{StaticResource ValueIsSameConverter}">
-                            <Binding Path="FundMode.OldValue" />
-                            <Binding Path="FundMode.Data" />
-                        </MultiBinding>
-                    </DataTrigger.Binding>
-                    <Setter TargetName="btn" Property="Visibility" Value="Collapsed" />
-                </DataTrigger>
-
-                <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding FundMode.Data}" Value="Other" />
-                        <Condition Binding="{Binding OtherFundMode.Data}" Value="{x:Null}" />
-                    </MultiDataTrigger.Conditions>
-                    <Setter TargetName="btn" Property="Visibility" Value="Collapsed" />
-                </MultiDataTrigger>
-                <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding FundMode.Data}" Value="Other" />
-                        <Condition Binding="{Binding OtherFundMode.Data}" Value="" />
-                    </MultiDataTrigger.Conditions>
-                    <Setter TargetName="btn" Property="Visibility" Value="Collapsed" />
-                </MultiDataTrigger>
             </ControlTemplate.Triggers>
         </ControlTemplate>
 
 
         <ControlTemplate x:Key="ExItem" TargetType="ContentControl">
+            <DockPanel>
+                <TextBlock VerticalAlignment="Center" Text="{Binding Label}" />
+                <Button
+                    hc:IconElement.Geometry="{StaticResource f.circle-check}"
+                    Command="{Binding DataContext.ModifyCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
+                    CommandParameter="{Binding .}"
+                    DockPanel.Dock="Right"
+                    Visibility="{Binding CanConfirm, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                <ComboBox
+                    Width="80"
+                    Margin="4,0"
+                    ItemsSource="{Binding Source={x:Static local:ElementsViewModel.FundModes}}"
+                    SelectedItem="{Binding Data.New}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <TextBox
+                    x:Name="other"
+                    MinWidth="100"
+                    Text="{Binding Extra.New, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                    Visibility="Collapsed" />
+            </DockPanel>
+        </ControlTemplate>
+
+
+        <ControlTemplate x:Key="Sealing" TargetType="ContentControl">
             <DockPanel>
                 <TextBlock VerticalAlignment="Center" Text="{Binding Label}" />
                 <Button
@@ -112,10 +109,10 @@
                     Visibility="{Binding CanConfirm, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
                 <ComboBox
-                    Width="80"
+                    Width="70"
                     Margin="4,0"
-                    ItemsSource="{Binding Source={x:Static local:ElementsViewModel.FundModes}}"
-                    SelectedItem="{Binding Data}">
+                    ItemsSource="{Binding DataContext.SealingTypes, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
+                    SelectedItem="{Binding Type.New}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
@@ -123,35 +120,48 @@
                     </ComboBox.ItemTemplate>
                 </ComboBox>
 
+
+                <TextBox
+                    x:Name="mon"
+                    MinWidth="40"
+                    Text="{Binding Month.New, UpdateSourceTrigger=PropertyChanged, Delay=300, StringFormat={}{0}个月}"
+                    Visibility="Collapsed" />
+
                 <TextBox
                     x:Name="other"
                     MinWidth="100"
-                    Text="{Binding Extra, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                    Text="{Binding Extra.New, UpdateSourceTrigger=PropertyChanged, Delay=300}"
                     Visibility="Collapsed" />
             </DockPanel>
             <ControlTemplate.Triggers>
-                <DataTrigger Binding="{Binding Data}" Value="Other">
+                <DataTrigger Binding="{Binding Type.New}" Value="Other">
                     <Setter TargetName="other" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Type.New}" Value="Has">
+                    <Setter TargetName="mon" Property="Visibility" Value="Visible" />
                 </DataTrigger>
             </ControlTemplate.Triggers>
         </ControlTemplate>
+
+
+
     </UserControl.Resources>
 
-    <StackPanel>
+    <StackPanel Margin="0,10">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*" />
                 <ColumnDefinition Width="2*" />
             </Grid.ColumnDefinitions>
             <ContentControl DataContext="{Binding FullName}" Template="{StaticResource Element}">
-                <TextBox Text="{Binding Data, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
+                <TextBox Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
             </ContentControl>
 
             <ContentControl
                 Grid.Column="1"
                 DataContext="{Binding ShortName}"
                 Template="{StaticResource Element}">
-                <TextBox Text="{Binding Data, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
+                <TextBox Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
             </ContentControl>
         </Grid>
 
@@ -160,16 +170,36 @@
             <!--<ContentControl Template="{StaticResource FundMode}" />-->
 
 
-            <ContentControl DataContext="{Binding FundModeInfo}" Template="{StaticResource ExItem}" />
+            <ContentControl DataContext="{Binding FundModeInfo}" Template="{StaticResource FundMode}" />
+
 
             <ContentControl
-                Margin="20,0,0,0"
-                DataContext="{Binding RiskLevel}"
-                Template="{StaticResource Element}">
+                Margin="10,0"
+                DataContext="{Binding SealingRule}"
+                Template="{StaticResource Sealing}"
+                Visibility="{Binding DataContext.IsSealingFund, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+
+            <ContentControl
+                Margin="10,0"
+                DataContext="{Binding LockingRule}"
+                Template="{StaticResource Sealing}"
+                Visibility="{Binding DataContext.IsSealingFund, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+
+
+        </DockPanel>
+
+
+        <DockPanel Margin="0,5" LastChildFill="False">
+
+
+
+            <ContentControl DataContext="{Binding RiskLevel}" Template="{StaticResource Element}">
                 <ComboBox
                     Width="60"
                     ItemsSource="{Binding Source={x:Static local:ElementsViewModel.RiskLevels}}"
-                    SelectedItem="{Binding Data}" />
+                    SelectedItem="{Binding Data.New}" />
             </ContentControl>
             <ContentControl
                 Margin="20,0,0,0"
@@ -178,14 +208,14 @@
                 <TextBox
                     Width="50"
                     HorizontalContentAlignment="Center"
-                    Text="{Binding Data, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
+                    Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
             </ContentControl>
 
             <ContentControl
                 Margin="8,0"
                 DataContext="{Binding ExpirationDate}"
                 Template="{StaticResource Element}">
-                <DatePicker Width="120" SelectedDate="{Binding Data, UpdateSourceTrigger=PropertyChanged, Delay=100, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
+                <DatePicker Width="120" SelectedDate="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
             </ContentControl>
 
             <ContentControl
@@ -195,7 +225,7 @@
                 <TextBox
                     Width="50"
                     HorizontalContentAlignment="Center"
-                    Text="{Binding Data, UpdateSourceTrigger=PropertyChanged, Delay=400}" />
+                    Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=400}" />
             </ContentControl>
 
             <ContentControl
@@ -205,10 +235,11 @@
                 <TextBox
                     Width="50"
                     HorizontalContentAlignment="Center"
-                    Text="{Binding Data, UpdateSourceTrigger=PropertyChanged, Delay=400}" />
+                    Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=400}" />
             </ContentControl>
         </DockPanel>
 
+        <!--  账户  -->
         <UniformGrid Rows="1">
             <ContentControl DataContext="{Binding CollectionAccount}" Template="{StaticResource Element}">
                 <TextBox
@@ -219,7 +250,7 @@
                     VerticalAlignment="Stretch"
                     HorizontalContentAlignment="Left"
                     AcceptsReturn="True"
-                    Text="{Binding Data, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
+                    Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
             </ContentControl>
             <ContentControl
                 VerticalContentAlignment="Stretch"
@@ -232,7 +263,7 @@
                     HorizontalAlignment="Left"
                     HorizontalContentAlignment="Left"
                     AcceptsReturn="True"
-                    Text="{Binding Data, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
+                    Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
             </ContentControl>
         </UniformGrid>
 
