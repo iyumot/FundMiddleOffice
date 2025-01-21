@@ -122,6 +122,19 @@ public class DataTimeDateOnlySwitchConverter : IValueConverter
 }
 
 
+public class ToDataTimeConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value switch { DateTime d => d, DateOnly d => new DateTime(d, new TimeOnly()), _ => value };
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value switch { DateTime d => DateOnly.FromDateTime(d), DateOnly d => new DateTime(d, new TimeOnly()), _ => value };
+    }
+}
+
 
 public class EnumDescriptionConverter : IValueConverter
 {
