@@ -21,7 +21,7 @@ public class Manager : Institution
     /// <summary>
     /// 注册日期
     /// </summary>
-    public DateTime RegisterDate { get; set; }
+    public DateOnly RegisterDate { get; set; }
 
     /// <summary>
     /// 基金数

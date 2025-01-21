@@ -47,7 +47,7 @@ public abstract partial class DataItem<T, TEntity> : ReadOnlyDataItem<T>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsChanged))]
     public partial T? OldValue { get; set; }
-     
+
     public bool IsChanged => NewValue is not null && (NewValue is string s ? !string.IsNullOrWhiteSpace(s) : true) && !NewValue.Equals(OldValue);
 
     public required Action<T?, TEntity> Updater { get; set; }
@@ -72,6 +72,28 @@ public partial class ManagerDataItem<T> : DataItem<T, Manager>, IDatabaseUpdater
         using var db = new BaseDatabase();
         var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
         Updater(NewValue, manager);
+        db.GetCollection<Manager>().Update(manager);
+        OldValue = NewValue;
+    }
+}
+
+public partial class ManagerDateExItem : DataItem<DateOnly?, Manager>, IDatabaseUpdater
+{
+
+    /// <summary>
+    /// 无固定期限
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsLongTerm { get; set; }
+
+    public override void Update()
+    {
+        using var db = new BaseDatabase();
+        var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
+        if (IsLongTerm)
+            Updater(DateOnly.MaxValue, manager);
+        else
+            Updater(NewValue, manager);
         db.GetCollection<Manager>().Update(manager);
         OldValue = NewValue;
     }
@@ -115,11 +137,13 @@ public partial class ManagerPageViewModel : ObservableObject
     public partial ManagerDataItem<DateOnly> SetupDate { get; set; }
 
     [ObservableProperty]
-    public partial ManagerDataItem<DateOnly?> ExpireDate { get; set; }
+    public partial ManagerDateExItem ExpireDate { get; set; }
+
+
 
 
     [ObservableProperty]
-    public partial ManagerDataItem<DateTime> RegisterDate { get; set; }
+    public partial ManagerDataItem<DateOnly> RegisterDate { get; set; }
 
 
     /// <summary>
@@ -198,8 +222,9 @@ public partial class ManagerPageViewModel : ObservableObject
 
 
         SetupDate = new ManagerDataItem<DateOnly> { Label = "成立日期", OldValue = manager.SetupDate, NewValue = manager.SetupDate, Format = "yyyy-MM-dd", Updater = (a, b) => b.SetupDate = a };
-        ExpireDate = new ManagerDataItem<DateOnly?> { Label = "核销日期", OldValue = manager.ExpireDate == default ? null : manager.ExpireDate, NewValue = manager.ExpireDate == default ? null : manager.ExpireDate, Format = "yyyy-MM-dd", Updater = (a, b) => b.ExpireDate = a ?? default };
-        RegisterDate = new ManagerDataItem<DateTime> { Label = "登记日期", OldValue = manager.RegisterDate, NewValue = manager.RegisterDate, Format = "yyyy-MM-dd", Updater = (a, b) => b.RegisterDate = a };
+        DateOnly? ed = manager.ExpireDate == default || manager.ExpireDate == DateOnly.MaxValue ? null : manager.ExpireDate;
+        ExpireDate = new ManagerDateExItem { Label = "核销日期", OldValue = ed, NewValue = ed, IsLongTerm = manager.ExpireDate == DateOnly.MaxValue, Format = "yyyy-MM-dd", Updater = (a, b) => b.ExpireDate = a ?? default };
+        RegisterDate = new ManagerDataItem<DateOnly> { Label = "登记日期", OldValue = manager.RegisterDate, NewValue = manager.RegisterDate, Format = "yyyy-MM-dd", Updater = (a, b) => b.RegisterDate = a };
 
         Telephone = new ManagerDataItem<string> { Label = "固定电话", OldValue = manager.Telephone, NewValue = manager.Telephone, Updater = (a, b) => b.Telephone = a };
         Fax = new ManagerDataItem<string> { Label = "传真", OldValue = manager.Fax, NewValue = manager.Fax, Updater = (a, b) => b.Fax = a };

@@ -194,7 +194,7 @@ public partial class InitWindowViewModel : ObservableRecipient, IRecipient<InitS
             Name = sel.ManagerName!,
             AmacId = sel.Id!,
             RegisterAddress = sel.RegisterAddress,
-            RegisterDate = new DateTime(1970, 1, 1).AddMilliseconds(sel.RegisterDate).ToLocalTime(),
+            RegisterDate = DateOnly.FromDateTime(new DateTime(1970, 1, 1).AddMilliseconds(sel.RegisterDate).ToLocalTime()),
             OfficeAddress = sel.OfficeAddress,
             SetupDate = DateOnly.FromDateTime(new DateTime(1970, 1, 1).AddMilliseconds(sel.EstablishDate).ToLocalTime()),
             RegisterNo = sel.RegisterNo!,
