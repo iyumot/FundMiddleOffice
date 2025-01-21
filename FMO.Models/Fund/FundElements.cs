@@ -1,15 +1,34 @@
-﻿namespace FMO.Models;
+﻿using System.ComponentModel;
+
+namespace FMO.Models;
 
 
-
-public class DataExtra<T> where T : struct
+public enum SealingType
 {
-    public T? Data { get; set; }
+    [Description("无")] No,
 
-    public string? Extra { get; set; }
+    [Description("有")] Has,
+
+    [Description("其它")] Other,
 }
 
+public class SealingRule
+{
+    /// <summary>
+    /// 封闭类型
+    /// </summary>
+    public SealingType Type { get; set; }
 
+    /// <summary>
+    /// 封闭月数
+    /// </summary>
+    public int Month { get; set; }
+
+    /// <summary>
+    /// 其它
+    /// </summary>
+    public string? Extra { get; set; }
+}
 
 
 public class FundElements
@@ -32,15 +51,19 @@ public class FundElements
 
 
     /// <summary>
-    /// 动作方式
+    /// 运作方式
     /// </summary> 
     public Mutable<DataExtra<FundMode>>? FundModeInfo { get; set; }
 
     /// <summary>
     /// 封闭期
     /// </summary>
-    public Mutable<DataExtra<int>>? ClosurePeriodInfo { get; set; }
+    public Mutable<SealingRule>? SealingRule { get; set; }
 
+    /// <summary>
+    /// 锁定期
+    /// </summary>
+    public Mutable<SealingRule>? LockingRule { get; set; }
 
 
 
@@ -143,12 +166,14 @@ public class FundElements
         { changed = true; WarningLine = new Mutable<decimal?>(nameof(WarningLine), "预警线"); } 
 
         if (FundModeInfo is null)
-        { changed = true; FundModeInfo = new Mutable<DataExtra<FundMode>>(nameof(FundModeInfo), "动作方式"); }
+        { changed = true; FundModeInfo = new Mutable<DataExtra<FundMode>>(nameof(FundModeInfo), "运作方式"); }
 
-        if (ClosurePeriodInfo is null)
-        { changed = true; ClosurePeriodInfo = new Mutable<DataExtra<int>>(nameof(ClosurePeriodInfo), "封闭方式"); }
+        if (SealingRule is null)
+        { changed = true; SealingRule = new Mutable<SealingRule>(nameof(SealingRule), "封闭期"); }
 
 
+        if (LockingRule is null)
+        { changed = true; LockingRule = new Mutable<SealingRule>(nameof(LockingRule), "锁定期"); }
 
 
 
