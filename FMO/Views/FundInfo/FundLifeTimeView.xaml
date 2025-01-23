@@ -193,13 +193,26 @@
                     </StackPanel>
 
                     <DockPanel DockPanel.Dock="Top" LastChildFill="False">
-                        <TextBlock VerticalAlignment="Center" Text="基金份额" />
+                        <TextBlock
+                            Margin="0,0,10,0"
+                            VerticalAlignment="Center"
+                            Text="基金份额" />
 
-                        <Button
-                            Command="{Binding DivideSharesCommand}"
-                            Content="拆分"
-                            Style="{StaticResource ButtonDefault.Small}"
+                        <ToggleButton
+                            hc:IconElement.Geometry="{StaticResource f.pencil}"
+                            Content="修改"
+                            IsChecked="{Binding IsDividingShare}"
+                            Style="{StaticResource ToggleButtonDefault.Small}"
                             Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+
+                        <Grid Visibility="{Binding IsDividingShare, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <Button
+                                Command="{Binding DivideSharesCommand}"
+                                Content="拆分"
+                                Style="{StaticResource ButtonDefault.Small}"
+                                Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                        </Grid>
 
                         <Button
                             Command="{Binding ConfirmSharesCommand}"
@@ -247,7 +260,7 @@
                                         </DockPanel>
                                     </Border>
                                     <DataTemplate.Triggers>
-                                        <DataTrigger Binding="{Binding .}" Value="普通份额">
+                                        <DataTrigger Binding="{Binding .}" Value="单一份额">
                                             <Setter TargetName="tb" Property="IsReadOnly" Value="True" />
                                             <Setter TargetName="btn" Property="Visibility" Value="Collapsed" />
                                         </DataTrigger>

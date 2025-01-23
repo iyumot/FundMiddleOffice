@@ -1,10 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Windows;
 
 namespace FMO;
 
@@ -38,12 +40,17 @@ public partial class ContractFinalizeFlowViewModel : FlowViewModel, IElementChan
 
 
 
-    public ObservableCollection<string> Shares { get; set; }
+    [ObservableProperty]
+    public partial ObservableCollection<string> Shares { get; set; }
 
 
     [ObservableProperty]
     public partial bool IsDividingShare { get; set; }
 
+    /// <summary>
+    /// 如何删除后，留下的
+    /// </summary>
+    private string? RemainShare { get; set; }
 
 
     [SetsRequiredMembers]
@@ -108,7 +115,10 @@ public partial class ContractFinalizeFlowViewModel : FlowViewModel, IElementChan
 
         Shares.Remove(s);
         if (Shares.Count == 1)
+        {
+            RemainShare = Shares[0];
             Shares[0] = SingleShareName;
+        }
     }
 
     [RelayCommand]
@@ -117,15 +127,44 @@ public partial class ContractFinalizeFlowViewModel : FlowViewModel, IElementChan
         IsDividingShare = false;
 
         using var db = new BaseDatabase();
-        var elements = db.GetCollection<FundElements>().FindById(FundId);
+        var elements = db.GetCollection<FundElements>().FindOne(x=>x.FundId == FundId);
+
+        if(elements.ShareClasses is not null && elements.ShareClasses.GetValue(FlowId) is var d && d.Value is not null && d.Value.Length>= Shares.Count && (!d.Value?.Select(x=>x.Name).ToArray().SequenceEqual(Shares)?? false ))
+        {
+            if(MessageBoxResult.Cancel == MessageBox.Show("减少份额种类将会删除对应份额相关的要素", "", MessageBoxButton.OKCancel))
+            {  
+                if (d.Value is ShareClass[] shares)
+                    Shares = new ObservableCollection<string>(shares.Select(x => x.Name));
+                else
+                    Shares = new ObservableCollection<string>([SingleShareName]);
+
+                return;
+            }
+        }
+
+
+
+
 
         if (elements.ShareClasses is null)
             elements.ShareClasses = new(nameof(FundElements.ShareClasses), Shares.Select(x => new ShareClass { Name = x }).ToArray());
-
         else
             elements.ShareClasses.SetValue(Shares.Select(x => new ShareClass { Name = x }).ToArray(), FlowId);
 
+        //elements.Remove()
+
         db.GetCollection<FundElements>().Update(elements);
+
+        WeakReferenceMessenger.Default.Send(new FundShareChangedMessage { FundId = FundId, FlowId = FlowId });
     }
+
+}
+
+
+public class FundShareChangedMessage
+{
+    public int FundId { get; set; }
+
+    public int FlowId { get; set; }
 
 }
