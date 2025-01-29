@@ -14,12 +14,12 @@ public class ElementItemFundModeViewModel : ElementItemViewModel
 
 
     [SetsRequiredMembers]
-    public ElementItemFundModeViewModel(FundElements elements, string property, int flowid)
+    public ElementItemFundModeViewModel(FundElements elements, string property, int flowid, string label)
     {
         Property = property;
         var mutable = elements.FundModeInfo!;
 
-        Label = mutable.Description!;
+        Label = label;// mutable.Description!;
         (int fid, var dec) = mutable.GetValue(flowid);
         Data.Old = fid == flowid ? dec?.Data : fid == -1 ? null : dec?.Data;
         Data.New = fid == flowid ? dec?.Data : fid == -1 ? null : dec?.Data;

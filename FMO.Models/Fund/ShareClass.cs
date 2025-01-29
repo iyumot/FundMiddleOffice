@@ -20,32 +20,17 @@ public class ShareClass
 /// <summary>
 /// 与份额相关的要素
 /// </summary>
-public class PortionFactors
+public class PortionElements
 {
+    /// <summary>
+    /// 份额
+    /// </summary>
     public ShareClass? Class { get; set; }
 
-
-    public Mutable<string> MyProperty { get; set; }
+    /// <summary>
+    /// 锁定期
+    /// </summary>
+    public Mutable<SealingRule>? LockingRule { get; set; }
 
 }
 
-
-public class Factors
-{
-    public required PortionFactors[] Data { get; set; }
-}
-
-
-
-public class FactorValue<T>
-{
-    public string? ShareClass { get; set; }
-
-    public T? Data { get; set; }
-}
-
-
-public class PortionFactor<T>
-{
-    public FactorValue<T>[]? Value { get; set; }
-}

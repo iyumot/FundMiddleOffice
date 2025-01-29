@@ -12,7 +12,7 @@ namespace FMO;
 
 public partial class ContractFinalizeFlowViewModel : FlowViewModel, IElementChangable
 {
-    private const string SingleShareName = "单一份额";
+   // private const string SingleShareName = "单一份额";
 
     /// <summary>
     /// 定稿合同
@@ -71,7 +71,7 @@ public partial class ContractFinalizeFlowViewModel : FlowViewModel, IElementChan
         if (shareClass is not null && shareClass.GetValue(FlowId).Value is ShareClass[] shares)
             Shares = new ObservableCollection<string>(shares.Select(x => x.Name));
         else
-            Shares = new ObservableCollection<string>([SingleShareName]);
+            Shares = new ObservableCollection<string>([FundElements.SingleShareKey]);
 
 
         Initialized = true;
@@ -110,14 +110,14 @@ public partial class ContractFinalizeFlowViewModel : FlowViewModel, IElementChan
     [RelayCommand]
     public void DeleteShare(string s)
     {
-        if (s == SingleShareName)
+        if (s == FundElements.SingleShareKey)
             return;
 
         Shares.Remove(s);
         if (Shares.Count == 1)
         {
             RemainShare = Shares[0];
-            Shares[0] = SingleShareName;
+            Shares[0] = FundElements.SingleShareKey;
         }
     }
 
@@ -127,29 +127,54 @@ public partial class ContractFinalizeFlowViewModel : FlowViewModel, IElementChan
         IsDividingShare = false;
 
         using var db = new BaseDatabase();
-        var elements = db.GetCollection<FundElements>().FindOne(x=>x.FundId == FundId);
+        var elements = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
 
-        if(elements.ShareClasses is not null && elements.ShareClasses.GetValue(FlowId) is var d && d.Value is not null && d.Value.Length>= Shares.Count && (!d.Value?.Select(x=>x.Name).ToArray().SequenceEqual(Shares)?? false ))
+        //if (elements.ShareClasses is not null && elements.ShareClasses.GetValue(FlowId) is var d && d.Value is not null && d.Value.Length >= Shares.Count && (!d.Value?.Select(x => x.Name).ToArray().SequenceEqual(Shares) ?? false))
+        //{
+        //    if (MessageBoxResult.Cancel == MessageBox.Show("减少份额种类将会删除对应份额相关的要素", "", MessageBoxButton.OKCancel))
+        //    {
+        //        if (d.Value is ShareClass[] shares)
+        //            Shares = new ObservableCollection<string>(shares.Select(x => x.Name));
+        //        else
+        //            Shares = new ObservableCollection<string>([SingleShareName]);
+
+        //        return;
+        //    }
+        //}
+
+        //// 同步份额相关的要素 
+        var rem = Shares.Count == 1 ? [RemainShare ?? Shares[0]] : Shares.ToArray();
+        var old = elements.ShareClasses is null ? [] : elements.ShareClasses.GetValue(FlowId) is var dd && dd.FlowId != FlowId ? [] : dd.Value?.Select(x => x.Name).ToArray() ?? [];
+
+        var remove = old.Except(rem).ToArray();
+        var add = rem.Except(old).ToArray();
+
+        //foreach (var item in remove) 
+        //    elements.RemoveShareRelated(FlowId, item);
+
+        //foreach (var item in add)
+        //    elements.AddShareRelated(FlowId, item);
+       
+ 
+        if(remove.Any() && MessageBoxResult.Cancel == HandyControl.Controls.MessageBox.Show("减少份额种类将会删除对应份额相关的要素", "", MessageBoxButton.OKCancel))
         {
-            if(MessageBoxResult.Cancel == MessageBox.Show("减少份额种类将会删除对应份额相关的要素", "", MessageBoxButton.OKCancel))
-            {  
-                if (d.Value is ShareClass[] shares)
-                    Shares = new ObservableCollection<string>(shares.Select(x => x.Name));
-                else
-                    Shares = new ObservableCollection<string>([SingleShareName]);
+            if (elements.ShareClasses is not null && elements.ShareClasses.GetValue(FlowId) is var d && d.Value is ShareClass[] shares)
+                Shares = new ObservableCollection<string>(shares.Select(x => x.Name));
+            else
+                Shares = new ObservableCollection<string>([FundElements.SingleShareKey]);
 
-                return;
-            }
+            return;
         }
 
 
+        elements.ShareClassChange(FlowId, Shares.ToArray(), add, remove);
+        //// 同步份额相关的要素 
 
 
-
-        if (elements.ShareClasses is null)
-            elements.ShareClasses = new(nameof(FundElements.ShareClasses), Shares.Select(x => new ShareClass { Name = x }).ToArray());
-        else
-            elements.ShareClasses.SetValue(Shares.Select(x => new ShareClass { Name = x }).ToArray(), FlowId);
+        //if (elements.ShareClasses is null)
+        //    elements.ShareClasses = new(nameof(FundElements.ShareClasses), Shares.Select(x => new ShareClass { Name = x }).ToArray());
+        //else
+        //    elements.ShareClasses.SetValue(Shares.Select(x => new ShareClass { Name = x }).ToArray(), FlowId);
 
         //elements.Remove()
 
