@@ -28,7 +28,7 @@ public partial class ValueViewModel<T> : ObservableObject, IValueViewModel where
     /// </summary>
     public bool IsChanged => New is not null && !New.Equals(Old);
 
-    public bool IsSetted => New is not null && New.Value.Equals(default);
+    public bool IsSetted => New is not null && New.Value switch { Enum e => true, _ => !New.Value.Equals(default(T)) };
 
     /// <summary>
     /// 值被应用
@@ -48,7 +48,7 @@ public partial class RefrenceViewModel<T> : ObservableObject, IValueViewModel wh
     /// <summary>
     /// 有变化
     /// </summary>
-    public bool IsChanged => New is not null && !New.Equals(Old);
+    public bool IsChanged => New switch { string s => !string.IsNullOrWhiteSpace(s), var v => v is not null } && !New!.Equals(Old);
 
     public bool IsSetted => New switch { string s => !string.IsNullOrWhiteSpace(s), var v => v is not null };
 

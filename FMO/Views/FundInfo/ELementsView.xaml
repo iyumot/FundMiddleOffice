@@ -57,6 +57,35 @@
             </ControlTemplate.Triggers>
         </ControlTemplate>
 
+        <ControlTemplate x:Key="Element.Left" TargetType="ContentControl">
+            <DockPanel Background="Transparent" LastChildFill="False">
+                <TextBlock VerticalAlignment="Center" Text="{Binding Label}" />
+
+                <ContentPresenter
+                    Margin="4,0"
+                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                    Content="{TemplateBinding Content}" />
+                <Button
+                    hc:IconElement.Geometry="{StaticResource f.circle-check}"
+                    Command="{Binding DataContext.ModifyCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
+                    CommandParameter="{Binding .}"
+                    Visibility="{Binding CanConfirm, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                <Grid x:Name="x" Visibility="Collapsed">
+                    <Button
+                        hc:IconElement.Geometry="{StaticResource f.xmark}"
+                        Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
+                        CommandParameter="{Binding .}"
+                        Style="{StaticResource DeleteElement}"
+                        Visibility="{Binding CanDelete, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                </Grid>
+            </DockPanel>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="x" Property="Visibility" Value="Visible" />
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+
         <ControlTemplate x:Key="FundMode" TargetType="ContentControl">
             <DockPanel>
                 <TextBlock VerticalAlignment="Center" Text="{Binding Label}" />
@@ -250,6 +279,90 @@
             </ControlTemplate.Triggers>
         </ControlTemplate>
 
+
+        <ControlTemplate x:Key="Element.FundFee.G" TargetType="ContentControl">
+            <DockPanel LastChildFill="False">
+                <TextBlock VerticalAlignment="Center" Text="{Binding Label}" />
+                <Button
+                    Margin="4,0"
+                    hc:IconElement.Geometry="{StaticResource f.circle-check}"
+                    Command="{Binding DataContext.ModifyCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
+                    CommandParameter="{Binding .}"
+                    DockPanel.Dock="Right"
+                    Visibility="{Binding CanConfirm, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                <ComboBox
+                    Width="90"
+                    Margin="4,0"
+                    ItemsSource="{Binding DataContext.FundFeeTypes, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
+                    SelectedItem="{Binding Type.New}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+
+                <TextBox
+                    x:Name="mon"
+                    MinWidth="40"
+                    HorizontalContentAlignment="Center"
+                    Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                <TextBlock
+                    x:Name="a"
+                    Margin="4,0"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    Text="%"
+                    Visibility="Collapsed" />
+                <TextBlock
+                    x:Name="b"
+                    Margin="4,0"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    Text="元"
+                    Visibility="Collapsed" />
+                <TextBox
+                    x:Name="other"
+                    MinWidth="300"
+                    Text="{Binding Extra.New, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                    Visibility="Collapsed" />
+                <CheckBox
+                    Margin="4,0"
+                    Content="保底"
+                    IsChecked="{Binding IsAdopted.New}" />
+
+
+                <TextBox
+                    x:Name="gr"
+                    MinWidth="40"
+                    HorizontalContentAlignment="Center"
+                    Text="{Binding Data2.New, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                    Visibility="{Binding IsAdopted.New, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                <TextBlock
+                    x:Name="ad"
+                    Margin="4,0"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    Text="元"
+                    Visibility="{Binding IsAdopted.New, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+            </DockPanel>
+            <ControlTemplate.Triggers>
+                <DataTrigger Binding="{Binding Type.New}" Value="Other">
+                    <Setter TargetName="other" Property="Visibility" Value="Visible" />
+                    <Setter TargetName="mon" Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Type.New}" Value="Ratio">
+                    <Setter TargetName="a" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Type.New}" Value="Fix">
+                    <Setter TargetName="b" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
 
         <ControlTemplate x:Key="Element.Bool" TargetType="ContentControl">
             <DockPanel LastChildFill="False">
@@ -475,8 +588,8 @@
         <!--  费用  -->
         <DockPanel Margin="0,2" LastChildFill="False">
 
-            <ContentControl DataContext="{Binding TrusteeFee}" Template="{StaticResource Element.FundFee}" />
-            <ContentControl DataContext="{Binding TrusteeGuaranteedFee}" Template="{StaticResource Element.Bool}" />
+            <ContentControl DataContext="{Binding TrusteeFee}" Template="{StaticResource Element.FundFee.G}" />
+            <!--<ContentControl DataContext="{Binding TrusteeGuaranteedFee}" Template="{StaticResource Element.Bool}" />-->
 
             <Separator Width="2" Margin="20,0" />
 
@@ -490,7 +603,7 @@
 
         <!--  账户  -->
         <UniformGrid Rows="1">
-            <ContentControl DataContext="{Binding CollectionAccount}" Template="{StaticResource Element}">
+            <ContentControl DataContext="{Binding CollectionAccount}" Template="{StaticResource Element.Left}">
                 <TextBox
                     MinWidth="300"
                     MinHeight="60"
@@ -504,7 +617,7 @@
             <ContentControl
                 VerticalContentAlignment="Stretch"
                 DataContext="{Binding CustodyAccount}"
-                Template="{StaticResource Element}">
+                Template="{StaticResource Element.Left}">
                 <TextBox
                     MinWidth="300"
                     MinHeight="60"
