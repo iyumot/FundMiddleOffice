@@ -1,16 +1,18 @@
 ﻿using FMO.Models;
 using System.Diagnostics.CodeAnalysis;
+using System.Security.Cryptography;
 
 namespace FMO;
 
 public class ElementItemFundModeViewModel : ElementItemViewModel
 {
-    public ValueViewModel<FundMode?> Data { get; } = new();
+    public ValueViewModel<FundMode> Data { get; } = new();
 
-    public ValueViewModel<string?> Extra { get; } = new();
+    public RefrenceViewModel<string> Extra { get; } = new();
 
     public override bool CanConfirm => Data.New switch { FundMode.Other => Extra.IsChanged && !string.IsNullOrWhiteSpace(Extra.New), _ => Data.IsChanged };
 
+    public override bool CanDelete => !CanConfirm && Data.New is not null;
 
 
     [SetsRequiredMembers]
@@ -39,6 +41,15 @@ public class ElementItemFundModeViewModel : ElementItemViewModel
         else
             elements.FundModeInfo!.SetValue(val, fid);
     }
+
+    public override void RemoveValue(FundElements elements, int flowid)
+    { 
+        elements.FundModeInfo!.RemoveValue(flowid);
+        Data.New = null;
+        Extra.New = null;
+    }
+
+
 
     public override void Init(FundElements elements, int flowid)
     {

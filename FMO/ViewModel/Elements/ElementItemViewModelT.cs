@@ -3,17 +3,17 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace FMO;
 
-public class ElementItemViewModel<T> : ElementItemViewModel
+public class ElementValueViewModel<T> : ElementItemViewModel where T : struct
 {
     public ValueViewModel<T> Data { get; } = new();
 
 
     public override bool CanConfirm => Data.IsChanged;
 
-    public override bool CanDelete => Data.New is not null;
+    public override bool CanDelete => !CanConfirm && Data.New is not null;
 
     [SetsRequiredMembers]
-    public ElementItemViewModel(FundElements elements, string property, int flowid, string label)
+    public ElementValueViewModel(FundElements elements, string property, int flowid, string label)
     {
         Property = property;
         var obj = elements.GetType().GetProperty(property)?.GetValue(elements);
@@ -22,13 +22,6 @@ public class ElementItemViewModel<T> : ElementItemViewModel
         {
             Label = label;
             (int fid, T? dec) = mutable.GetValue(flowid);
-            Data.Old = fid == flowid ? dec : fid == -1 ? default : dec;
-            Data.New = fid == flowid ? dec : default;
-        }
-        else if (obj is Mutable<T?> mutable2)
-        {
-            Label = label;
-            (int fid, T? dec) = mutable2.GetValue(flowid);
             Data.Old = fid == flowid ? dec : fid == -1 ? default : dec;
             Data.New = fid == flowid ? dec : default;
         }
@@ -66,11 +59,22 @@ public class ElementItemViewModel<T> : ElementItemViewModel
         if (Data.New is null) return;
 
         if (obj is Mutable<T> mutable)
-            mutable.SetValue(Data.New, flowid);
-
-        else if (obj is Mutable<T?> mutable2)
-            mutable2.SetValue(Data.New, flowid);
+            mutable.SetValue(Data.New.Value, flowid);
     }
+
+
+    public override void RemoveValue(FundElements elements, int flowid)
+    {
+        var obj = elements.GetType().GetProperty(Property)?.GetValue(elements);
+
+        if (Data.New is null) return;
+
+        if (obj is Mutable<T> mutable)
+            mutable.RemoveValue(flowid);
+
+        Data.New = null;
+    }
+
 
     public override void Apply()
     {
@@ -80,20 +84,95 @@ public class ElementItemViewModel<T> : ElementItemViewModel
 }
 
 
+public class ElementRefrenceViewModel<T> : ElementItemViewModel where T : class
+{
+    public RefrenceViewModel<T> Data { get; } = new();
+
+
+    public override bool CanConfirm => Data.IsChanged;
+
+    public override bool CanDelete => !CanConfirm && Data.New is not null;
+
+
+    [SetsRequiredMembers]
+    public ElementRefrenceViewModel(FundElements elements, string property, int flowid, string label)
+    {
+        Property = property;
+        var obj = elements.GetType().GetProperty(property)?.GetValue(elements);
+
+        if (obj is Mutable<T> mutable)
+        {
+            Label = label;
+            (int fid, T? dec) = mutable.GetValue(flowid);
+            Data.Old = fid == flowid ? dec : fid == -1 ? default : dec;
+            Data.New = fid == flowid ? dec : default;
+        }
+        else
+            throw new NotImplementedException();
+
+        Data.PropertyChanged += ItemPropertyChanged;
+    }
+
+
+    public override void Init(FundElements elements, int flowid)
+    {
+        var obj = elements.GetType().GetProperty(Property)?.GetValue(elements);
+
+        if (obj is Mutable<T> mutable)
+        {
+            (int fid, T? dec) = mutable.GetValue(flowid);
+            Data.Old = fid == flowid ? dec : fid == -1 ? default : dec;
+            Data.New = fid == flowid ? dec : default;
+        }
+
+        Init();
+    }
+
+    public override void UpdateEntity(FundElements elements, int flowid)
+    {
+        var obj = elements.GetType().GetProperty(Property)?.GetValue(elements);
+
+        if (Data.New is null) return;
+
+        if (obj is Mutable<T> mutable)
+            mutable.SetValue(Data.New, flowid);
+    }
+
+    public override void RemoveValue(FundElements elements, int flowid)
+    {
+        var obj = elements.GetType().GetProperty(Property)?.GetValue(elements);
+
+        if (Data.New is null) return;
+
+        if (obj is Mutable<T> mutable)
+            mutable.RemoveValue(flowid);
+
+
+        Data.New = null;
+    }
+
+
+    public override void Apply()
+    {
+        Data.Apply();
+        OnPropertyChanged(nameof(CanConfirm));
+    }
+}
+
 
 public class ElementItemWithEnumViewModel<TEnum, TValue> : ElementItemViewModel where TEnum : struct, Enum where TValue : struct
 {
     public ValueViewModel<TEnum> Type { get; } = new();
 
-    public ValueViewModel<TValue?> Data { get; } = new();
+    public ValueViewModel<TValue> Data { get; } = new();
 
-    public ValueViewModel<string> Extra { get; } = new();
+    public RefrenceViewModel<string> Extra { get; } = new();
 
 
 
     public override bool CanConfirm => Data.IsChanged;
 
-    public override bool CanDelete => 
+    public override bool CanDelete => !CanConfirm && (Data.New is not null || Type.New is not null);
 
 
 
@@ -144,16 +223,33 @@ public class ElementItemWithEnumViewModel<TEnum, TValue> : ElementItemViewModel 
     {
         var obj = elements.GetType().GetProperty(Property)?.GetValue(elements);
 
-        if (Data.New is null) return;
+        if (Data.New is null || Type.New is null) return;
 
         if (obj is Mutable<ValueWithEnum<TEnum, TValue>> mutable)
-            mutable.SetValue(new ValueWithEnum<TEnum, TValue> { Type = Type.New, Value = Data.New.Value, Extra = Extra.New }, flowid);
+            mutable.SetValue(new ValueWithEnum<TEnum, TValue> { Type = Type.New.Value, Value = Data.New.Value, Extra = Extra.New }, flowid);
 
         //else if (obj is Mutable<T?> mutable2)
         //    mutable.SetValue(new ValueWithEnum<TEnum, TValue> { Type = Type.New, Value = Data.New, Extra = Extra.New }, flowid);
 
         else throw new NotImplementedException();
     }
+
+
+    public override void RemoveValue(FundElements elements, int flowid)
+    {
+        var obj = elements.GetType().GetProperty(Property)?.GetValue(elements);
+
+        if (Data.New is null) return;
+
+        if (obj is Mutable<ValueWithEnum<TEnum, TValue>> mutable)
+            mutable.RemoveValue(flowid);
+
+
+        Type.New = null;
+        Data.New = null;
+        Extra.New = null;
+    }
+
 
     public override void Init(FundElements elements, int flowid)
     {
@@ -175,15 +271,15 @@ public class ElementRefItemWithEnumViewModel<TEnum, TValue> : ElementItemViewMod
 {
     public ValueViewModel<TEnum> Type { get; } = new();
 
-    public ValueViewModel<TValue?> Data { get; } = new();
+    public RefrenceViewModel<TValue> Data { get; } = new();
 
-    public ValueViewModel<string> Extra { get; } = new();
+    public RefrenceViewModel<string> Extra { get; } = new();
 
 
 
     public override bool CanConfirm => Data.IsChanged;
 
-
+    public override bool CanDelete => !CanConfirm && (Data.New is not null || Type.New is not null);
 
 
     [SetsRequiredMembers]
@@ -233,16 +329,32 @@ public class ElementRefItemWithEnumViewModel<TEnum, TValue> : ElementItemViewMod
     {
         var obj = elements.GetType().GetProperty(Property)?.GetValue(elements);
 
-        if (Data.New is null) return;
+        if (Data.New is null || Type.New is null) return;
 
         if (obj is Mutable<ValueWithEnum<TEnum, TValue>> mutable)
-            mutable.SetValue(new ValueWithEnum<TEnum, TValue> { Type = Type.New, Value = Data.New, Extra = Extra.New }, flowid);
+            mutable.SetValue(new ValueWithEnum<TEnum, TValue> { Type = Type.New.Value, Value = Data.New, Extra = Extra.New }, flowid);
 
         //else if (obj is Mutable<T?> mutable2)
         //    mutable.SetValue(new ValueWithEnum<TEnum, TValue> { Type = Type.New, Value = Data.New, Extra = Extra.New }, flowid);
 
         else throw new NotImplementedException();
     }
+
+    public override void RemoveValue(FundElements elements, int flowid)
+    {
+        var obj = elements.GetType().GetProperty(Property)?.GetValue(elements);
+
+        if (Data.New is null) return;
+
+        if (obj is Mutable<ValueWithEnum<TEnum, TValue>> mutable)
+            mutable.RemoveValue(flowid);
+
+
+        Type.New = null;
+        Data.New = null;
+        Extra.New = null;
+    }
+
 
     public override void Init(FundElements elements, int flowid)
     {
@@ -266,13 +378,16 @@ public class ElementWithBooleanViewModel<T> : ElementItemViewModel where T : str
     /// </summary>
     public ValueViewModel<bool> IsAdopted { get; } = new();
 
-    public ValueViewModel<T?> Data { get; } = new();
+    public ValueViewModel<T> Data { get; } = new();
 
 
 
-    public override bool CanConfirm => (IsAdopted.New && Data.IsChanged) || (!IsAdopted.New && IsAdopted.Old);
+    public override bool CanConfirm => (IsAdopted.New.HasValue && IsAdopted.New.Value && Data.IsChanged) || (!(IsAdopted.New ?? false) && (IsAdopted.Old ?? false));
 
-
+    /// <summary>
+    /// 当不采用或者采用且有值时
+    /// </summary>
+    public override bool CanDelete => !CanConfirm && ((!IsAdopted.New ?? false) || ((IsAdopted.New ?? false) && Data.New.HasValue));
 
 
     [SetsRequiredMembers]
@@ -315,14 +430,29 @@ public class ElementWithBooleanViewModel<T> : ElementItemViewModel where T : str
     {
         var obj = elements.GetType().GetProperty(Property)?.GetValue(elements);
 
+        if (Data.New is null || IsAdopted.New is null) return;
+
+        if (obj is Mutable<ValueWithBoolean<T>> mutable)
+            mutable.SetValue(new ValueWithBoolean<T> { IsAdopted = IsAdopted.New.Value, Value = Data.New.Value }, flowid);
+        else if (obj is Mutable<ValueWithBoolean<T?>> mutable2)
+            mutable2.SetValue(new ValueWithBoolean<T?> { IsAdopted = IsAdopted.New.Value, Value = Data.New.Value }, flowid);
+        else throw new NotImplementedException();
+    }
+
+    public override void RemoveValue(FundElements elements, int flowid)
+    {
+        var obj = elements.GetType().GetProperty(Property)?.GetValue(elements);
+
         if (Data.New is null) return;
 
         if (obj is Mutable<ValueWithBoolean<T>> mutable)
-            mutable.SetValue(new ValueWithBoolean<T> { IsAdopted = IsAdopted.New, Value = Data.New.Value }, flowid);
-        else if (obj is Mutable<ValueWithBoolean<T?>> mutable2)
-            mutable2.SetValue(new ValueWithBoolean<T?> { IsAdopted = IsAdopted.New, Value = Data.New.Value }, flowid);
-        else throw new NotImplementedException();
+            mutable.RemoveValue(flowid);
+
+
+        Data.New = null;
+        IsAdopted.New = null;
     }
+
 
     public override void Init(FundElements elements, int flowid)
     {
@@ -339,17 +469,19 @@ public class ElementWithBooleanViewModel<T> : ElementItemViewModel where T : str
 }
 
 
-public class PortionElementItemWithEnumViewModel<TEnum, TValue> : ElementItemViewModel where TEnum : struct, Enum
+public class PortionElementItemWithEnumViewModel<TEnum, TValue> : ElementItemViewModel where TEnum : struct, Enum where TValue : struct
 {
     public ValueViewModel<TEnum> Type { get; } = new();
 
     public ValueViewModel<TValue> Data { get; } = new();
 
-    public ValueViewModel<string> Extra { get; } = new();
+    public RefrenceViewModel<string> Extra { get; } = new();
 
 
 
     public override bool CanConfirm => Data.IsChanged;
+
+    public override bool CanDelete => !CanConfirm && (Type.New is not null || Data.New is not null);
 
     public string Share { get; }
 
@@ -447,15 +579,30 @@ public class PortionElementItemWithEnumViewModel<TEnum, TValue> : ElementItemVie
     {
         var obj = elements.GetType().GetProperty(Property)?.GetValue(elements);
 
+        if (Data.New is null || Type.New is null) return;
+
+        if (obj is PortionMutable<ValueWithEnum<TEnum, TValue>> mutable)
+            mutable.SetValue(Share, new ValueWithEnum<TEnum, TValue> { Type = Type.New.Value, Value = Data.New.Value, Extra = Extra.New }, flowid);
+
+        // else if (obj is PortionMutable<ValueWithEnum<TEnum, TValue>?> mutable2)
+        //     mutable2.SetValue(Share, new ValueWithEnum<TEnum, TValue> { Type = Type.New.Value, Value = Data.New.Value, Extra = Extra.New }, flowid);
+
+        else throw new NotImplementedException();
+    }
+
+    public override void RemoveValue(FundElements elements, int flowid)
+    {
+        var obj = elements.GetType().GetProperty(Property)?.GetValue(elements);
+
         if (Data.New is null) return;
 
         if (obj is PortionMutable<ValueWithEnum<TEnum, TValue>> mutable)
-            mutable.SetValue(Share, new ValueWithEnum<TEnum, TValue> { Type = Type.New, Value = Data.New, Extra = Extra.New }, flowid);
+            mutable.RemoveValue(flowid);
 
-        else if (obj is PortionMutable<ValueWithEnum<TEnum, TValue>?> mutable2)
-            mutable2.SetValue(Share, new ValueWithEnum<TEnum, TValue> { Type = Type.New, Value = Data.New, Extra = Extra.New }, flowid);
 
-        else throw new NotImplementedException();
+        Type.New = null;
+        Data.New = null;
+        Extra.New = null;
     }
 
     public override void Init(FundElements elements, int flowid)

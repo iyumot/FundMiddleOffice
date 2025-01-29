@@ -15,6 +15,9 @@ public abstract class ElementItemViewModel : ObservableObject
 
     public abstract void UpdateEntity(FundElements elements, int fid);
 
+    public abstract void RemoveValue(FundElements elements, int flowid);
+
+
     protected virtual void Init()
     {
         foreach (var p in GetType().GetProperties())

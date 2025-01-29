@@ -90,46 +90,46 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
     #region 要素
 
     [ObservableProperty]
-    public partial ElementItemViewModel<string>? FullName { get; set; }
+    public partial ElementRefrenceViewModel<string>? FullName { get; set; }
 
 
 
     [ObservableProperty]
-    public partial ElementItemViewModel<string>? ShortName { get; set; }
+    public partial ElementRefrenceViewModel<string>? ShortName { get; set; }
 
 
     [ObservableProperty]
-    public partial ElementItemViewModel<RiskLevel?> RiskLevel { get; set; }
+    public partial ElementValueViewModel<RiskLevel> RiskLevel { get; set; }
 
 
-
-
-
-    [ObservableProperty]
-    public partial ElementItemViewModel<int?>? DurationInMonths { get; set; }
-
-    [ObservableProperty]
-    public partial ElementItemViewModel<DateOnly?>? ExpirationDate { get; set; }
 
 
 
     [ObservableProperty]
-    public partial ElementItemViewModel<BankAccount?>? CollectionAccount { get; set; }
+    public partial ElementValueViewModel<int>? DurationInMonths { get; set; }
+
+    [ObservableProperty]
+    public partial ElementValueViewModel<DateOnly>? ExpirationDate { get; set; }
 
 
 
     [ObservableProperty]
-    public partial ElementItemViewModel<BankAccount?>? CustodyAccount { get; set; }
+    public partial ElementRefrenceViewModel<BankAccount>? CollectionAccount { get; set; }
 
 
 
     [ObservableProperty]
-    public partial ElementItemViewModel<decimal?>? StopLine { get; set; }
+    public partial ElementRefrenceViewModel<BankAccount>? CustodyAccount { get; set; }
 
 
 
     [ObservableProperty]
-    public partial ElementItemViewModel<decimal?>? WarningLine { get; set; }
+    public partial ElementValueViewModel<decimal>? StopLine { get; set; }
+
+
+
+    [ObservableProperty]
+    public partial ElementValueViewModel<decimal>? WarningLine { get; set; }
 
 
 
@@ -155,14 +155,14 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
 
 
     [ObservableProperty]
-    public partial ElementItemViewModel<string?>? OpenDayInfo { get; set; }
+    public partial ElementRefrenceViewModel<string>? OpenDayInfo { get; set; }
 
 
 
 
 
     [ObservableProperty]
-    public  partial ElementItemWithEnumViewModel<FundFeeType, decimal>? TrusteeFee { get; set; }
+    public partial ElementItemWithEnumViewModel<FundFeeType, decimal>? TrusteeFee { get; set; }
 
 
 
@@ -211,8 +211,8 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
         var type = GetType();
         SetupDate = fund.SetupDate;
 
-        FullName = new ElementItemViewModel<string>(elements, nameof(FullName), FlowId, "基金全称");
-        ShortName = new ElementItemViewModel<string>(elements, nameof(ShortName), FlowId, "基金简称");
+        FullName = new(elements, nameof(FullName), FlowId, "基金全称");
+        ShortName = new(elements, nameof(ShortName), FlowId, "基金简称");
 
         if (isori)
         {
@@ -226,19 +226,19 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
         }
 
 
-        RiskLevel = new ElementItemViewModel<RiskLevel?>(elements, nameof(FundElements.RiskLevel), FlowId, "风险等级");
+        RiskLevel = new(elements, nameof(FundElements.RiskLevel), FlowId, "风险等级");
 
-        DurationInMonths = new ElementItemViewModel<int?>(elements, nameof(FundElements.DurationInMonths), FlowId, "存续期（月）");
-        ExpirationDate = new ElementItemViewModel<DateOnly?>(elements, nameof(FundElements.ExpirationDate), FlowId, "到期日");
-
-
-
-        CollectionAccount = new ElementItemViewModel<BankAccount?>(elements, nameof(FundElements.CollectionAccount), FlowId, "募集账户");
-        CustodyAccount = new ElementItemViewModel<BankAccount?>(elements, nameof(FundElements.CustodyAccount), FlowId, "托管账户");
+        DurationInMonths = new(elements, nameof(FundElements.DurationInMonths), FlowId, "存续期（月）");
+        ExpirationDate = new(elements, nameof(FundElements.ExpirationDate), FlowId, "到期日");
 
 
-        WarningLine = new ElementItemViewModel<decimal?>(elements, nameof(FundElements.WarningLine), FlowId, "止损线");
-        StopLine = new ElementItemViewModel<decimal?>(elements, nameof(FundElements.StopLine), FlowId, "预警线");
+
+        CollectionAccount = new(elements, nameof(FundElements.CollectionAccount), FlowId, "募集账户");
+        CustodyAccount = new(elements, nameof(FundElements.CustodyAccount), FlowId, "托管账户");
+
+
+        WarningLine = new(elements, nameof(FundElements.WarningLine), FlowId, "止损线");
+        StopLine = new(elements, nameof(FundElements.StopLine), FlowId, "预警线");
 
         FundModeInfo = new ElementItemFundModeViewModel(elements, nameof(FundElements.FundModeInfo), FlowId, "运作方式");
 
@@ -250,7 +250,7 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
         IsSealingFund = FundModeInfo.Data.New == Models.FundMode.Close;
 
 
-        OpenDayInfo = new ElementItemViewModel<string?>(elements, nameof(FundElements.OpenDayInfo), FlowId, "开放日规则");
+        OpenDayInfo = new(elements, nameof(FundElements.OpenDayInfo), FlowId, "开放日规则");
 
         TrusteeFee = new(elements, nameof(FundElements.TrusteeFee), FlowId, "托管费");
         TrusteeGuaranteedFee = new(elements, nameof(FundElements.TrusteeGuaranteedFee), FlowId, "托管费保底");
@@ -329,6 +329,43 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
         }
 
     }
+
+
+    [RelayCommand]
+    public void Delete(ElementItemViewModel s)
+    {
+        switch (s)
+        {
+
+            case ElementItemViewModelSealing v:
+                using (var db = new BaseDatabase())
+                {
+                    var elements = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
+                    v.RemoveValue(elements, FlowId);
+                    db.GetCollection<FundElements>().Update(elements);
+                }
+                v.Apply();
+                break;
+
+
+            case ElementItemViewModel v:
+                using (var db = new BaseDatabase())
+                {
+                    var elements = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
+                    v.RemoveValue(elements, FlowId);
+
+                    db.GetCollection<FundElements>().Update(elements);
+                }
+                v.Apply();
+
+                break;
+            default:
+
+
+                break;
+        }
+    }
+
 
     public void Receive(FundShareChangedMessage message)
     {
