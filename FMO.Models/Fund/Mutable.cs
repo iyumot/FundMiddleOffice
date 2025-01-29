@@ -12,7 +12,7 @@ public class DataExtra<T> where T : struct
 
 
 
-public class Mutable<T>
+public class Mutable<T> where T : notnull
 {
     /// <summary>
     /// 名字
@@ -88,7 +88,7 @@ public class Mutable<T>
 //}
 
 
-public class PortionMutable<T> : Mutable<Dictionary<string, T>>
+public class PortionMutable<T> : Mutable<Dictionary<string, T>> where T : notnull
 {
     [SetsRequiredMembers]
     public PortionMutable(string name) : base(name, new())
@@ -105,13 +105,13 @@ public class PortionMutable<T> : Mutable<Dictionary<string, T>>
         dic[share] = value;
     }
 
-    public (int FlowId, T? Value) GetValue(string share , int flowid)
+    public (int FlowId, T? Value) GetValue(string share, int flowid)
     {
-        foreach(var x in Changes.Reverse())
+        foreach (var x in Changes.Reverse())
         {
             if (x.Key > flowid) continue;
 
-            if(x.Value.ContainsKey(share))
+            if (x.Value.ContainsKey(share))
                 return (x.Key, x.Value[share]);
 
             /// 如果只有一个值

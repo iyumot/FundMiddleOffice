@@ -41,12 +41,12 @@ public class FundElements
     /// <summary>
     /// 风险等级
     /// </summary>
-    public Mutable<RiskLevel?>? RiskLevel { get; set; }
+    public Mutable<RiskLevel>? RiskLevel { get; set; }
 
     /// <summary>
     /// 存续期
     /// </summary>
-    public Mutable<int?>? DurationInMonths { get; set; }
+    public Mutable<int>? DurationInMonths { get; set; }
 
 
 
@@ -54,7 +54,7 @@ public class FundElements
     /// <summary>
     /// 结束日期
     /// </summary>
-    public Mutable<DateOnly?>? ExpirationDate { get; set; }
+    public Mutable<DateOnly>? ExpirationDate { get; set; }
 
 
     /// <summary>
@@ -77,12 +77,12 @@ public class FundElements
     /// <summary>
     /// 止损线
     /// </summary>
-    public Mutable<decimal?>? StopLine { get; set; }
+    public Mutable<decimal>? StopLine { get; set; }
 
     /// <summary>
     /// 预警线
     /// </summary>
-    public Mutable<decimal?>? WarningLine { get; set; }
+    public Mutable<decimal>? WarningLine { get; set; }
 
     /// <summary>
     /// 开放日规则
@@ -148,13 +148,13 @@ public class FundElements
         { changed = true; ShortName = new Mutable<string>(nameof(ShortName)); }
 
         if (RiskLevel is null)
-        { changed = true; RiskLevel = new Mutable<RiskLevel?>(nameof(RiskLevel)); }
+        { changed = true; RiskLevel = new Mutable<RiskLevel>(nameof(RiskLevel)); }
 
         if (DurationInMonths is null)
-        { changed = true; DurationInMonths = new Mutable<int?>(nameof(DurationInMonths)); }
+        { changed = true; DurationInMonths = new Mutable<int>(nameof(DurationInMonths)); }
 
         if (ExpirationDate is null)
-        { changed = true; ExpirationDate = new Mutable<DateOnly?>(nameof(ExpirationDate)); }
+        { changed = true; ExpirationDate = new Mutable<DateOnly>(nameof(ExpirationDate)); }
 
         if (CollectionAccount is null)
         { changed = true; CollectionAccount = new Mutable<BankAccount>(nameof(CollectionAccount)); }
@@ -168,11 +168,11 @@ public class FundElements
 
 
         if (StopLine is null)
-        { changed = true; StopLine = new Mutable<decimal?>(nameof(StopLine)); }
+        { changed = true; StopLine = new Mutable<decimal>(nameof(StopLine)); }
 
 
         if (WarningLine is null)
-        { changed = true; WarningLine = new Mutable<decimal?>(nameof(WarningLine)); }
+        { changed = true; WarningLine = new Mutable<decimal>(nameof(WarningLine)); }
 
         if (FundModeInfo is null)
         { changed = true; FundModeInfo = new Mutable<DataExtra<FundMode>>(nameof(FundModeInfo)); }
