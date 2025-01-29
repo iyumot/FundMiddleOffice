@@ -162,7 +162,8 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
 
 
     [ObservableProperty]
-    public partial ElementItemWithEnumViewModel<FundFeeType, decimal>? TrusteeFee { get; set; }
+    //public partial ElementItemWithEnumViewModel<FundFeeType, decimal>? TrusteeFee { get; set; }
+    public partial ElementItemWithEnumViewModel<FundFeeType, decimal, decimal>? TrusteeFee { get; set; }
 
 
 
@@ -252,8 +253,8 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
 
         OpenDayInfo = new(elements, nameof(FundElements.OpenDayInfo), FlowId, "开放日规则");
 
-        TrusteeFee = new(elements, nameof(FundElements.TrusteeFee), FlowId, "托管费");
-        TrusteeGuaranteedFee = new(elements, nameof(FundElements.TrusteeGuaranteedFee), FlowId, "托管费保底");
+        TrusteeFee = new(elements, nameof(FundElements.TrusteeFee), nameof(FundElements.TrusteeGuaranteedFee), FlowId, "托管费");
+        //TrusteeGuaranteedFee = new(elements, nameof(FundElements.TrusteeGuaranteedFee), FlowId, "托管费保底");
         OutsourcingFee = new(elements, nameof(FundElements.OutsourcingFee), FlowId, "外包费");
         OutsourcingGuaranteedFee = new(elements, nameof(FundElements.OutsourcingGuaranteedFee), FlowId, "外包费保底");
 

@@ -98,7 +98,7 @@ public class BankAccount
     public static BankAccount? FromString(string str)
     {
         BankAccount account = new BankAccount();
-        var m = Regex.Match(str, @"账号\s*[:：]*(\d+)");
+        var m = Regex.Match(str, @"[账号|账户号码]\s*[:：]*(\d+)");
         if (!m.Success) return null;
         account.Number = m.Groups[1].Value;
 
@@ -122,7 +122,7 @@ public class BankAccount
     {
         if (string.IsNullOrWhiteSpace(str)) return;
 
-        var m = Regex.Match(str, @"账号\s*[:：]*(\d+)");
+        var m = Regex.Match(str, @"[账号|账户号码]\s*[:：]*(\d+)");
         if (m.Success)
             Number = m.Groups[1].Value;
 
