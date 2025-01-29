@@ -5,6 +5,7 @@ namespace FMO;
 
 public class ElementItemViewModelSealing : ElementItemViewModel
 {
+
     public ValueViewModel<SealingType?> Type { get; } = new();
 
     public ValueViewModel<int> Month { get; } = new();
@@ -24,12 +25,12 @@ public class ElementItemViewModelSealing : ElementItemViewModel
     public override bool CanConfirm => Type.New switch { SealingType.No => Type.New != Type.Old, SealingType.Has => Month.New > 0 && Month.New != Month.Old, SealingType.Other => !string.IsNullOrWhiteSpace(Extra.New) && Extra.New != Extra.Old, _ => false };
 
     [SetsRequiredMembers]
-    public ElementItemViewModelSealing(FundElements elements, string property, int flowid)
+    public ElementItemViewModelSealing(FundElements elements, string property, int flowid, string v)
     {
         Property = property;
-        var mutable = property switch { nameof(FundElements.SealingRule) => elements.SealingRule!, nameof(FundElements.LockingRule) => elements.LockingRule!, _ => throw new Exception() };
+        var mutable = elements.SealingRule!;//property switch { nameof(FundElements.SealingRule) => elements.SealingRule!, nameof(FundElements.LockingRule) => elements.LockingRule!, _ => throw new Exception() };
 
-        Label = mutable.Description!;
+        Label = v;// mutable.Description!;
         (int fid, var dec) = mutable.GetValue(flowid);
         Type.Old = fid == flowid ? dec?.Type : fid == -1 ? null : dec?.Type;
         Type.New = fid == flowid ? dec?.Type : fid == -1 ? null : dec?.Type;
@@ -41,6 +42,7 @@ public class ElementItemViewModelSealing : ElementItemViewModel
         Extra.New = fid == flowid ? dec?.Extra : fid == -1 ? null : dec?.Extra;
 
         Type.PropertyChanged += ItemPropertyChanged;
+        Month.PropertyChanged += ItemPropertyChanged;
         Extra.PropertyChanged += ItemPropertyChanged;
     }
 

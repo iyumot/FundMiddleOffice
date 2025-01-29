@@ -1,8 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Controls;
 
 namespace FMO;
@@ -23,16 +25,53 @@ public partial class ElementsView : UserControl
 
 
 
+/// <summary>
+/// 与份额相关的
+/// </summary>
+public partial class ShareElementsViewModel : ObservableObject
+{
+
+    public required string Class { get; set; }
+
+    /// <summary>
+    /// 锁定期
+    /// </summary>
+    [ObservableProperty]
+    public partial PortionElementItemWithEnumViewModel<SealingType, int>? LockingRule { get; set; }
 
 
 
 
+    [ObservableProperty]
+    public partial PortionElementItemWithEnumViewModel<FundFeeType, decimal>? ManageFee { get; set; }
 
-public partial class ElementsViewModel : ObservableObject
+    [SetsRequiredMembers]
+    public ShareElementsViewModel(string share, FundElements elements, int flowid)
+    {
+        Class = share;
+
+        //(var id, var dic) = elements.LockingRule!.GetValue(flowid);
+
+        //LockingRule = new ElementItemViewModelSealing(elements, nameof(FundElements.LockingRule), flowid, "锁定期");
+
+        LockingRule = new PortionElementItemWithEnumViewModel<SealingType, int>(elements, share, nameof(FundElements.LockingRule), flowid, "锁定期");
+
+        ManageFee = new PortionElementItemWithEnumViewModel<FundFeeType, decimal>(elements, share, nameof(FundElements.ManageFee), flowid, "管理费");
+    }
+
+}
+
+
+
+public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundShareChangedMessage>
 {
     public static RiskLevel[] RiskLevels { get; } = [Models.RiskLevel.R1, Models.RiskLevel.R2, Models.RiskLevel.R3, Models.RiskLevel.R4, Models.RiskLevel.R5];
 
     public static FundMode[] FundModes { get; } = [Models.FundMode.Open, Models.FundMode.Close, Models.FundMode.Other];
+
+    public static FundFeeType[] FundFeeTypes { get; } = [FundFeeType.Ratio, FundFeeType.Fix, FundFeeType.Other];
+
+
 
 
     /// <summary>
@@ -116,13 +155,53 @@ public partial class ElementsViewModel : ObservableObject
 
 
     [ObservableProperty]
-    public partial ObservableCollection<string>? ManagerFee { get; set; }
+    public partial ElementItemViewModel<string?>? OpenDayInfo { get; set; }
+
+
+
+
+
+    [ObservableProperty]
+    public  partial ElementItemWithEnumViewModel<FundFeeType, decimal>? TrusteeFee { get; set; }
+
+
+
+    [ObservableProperty]
+    public partial ElementWithBooleanViewModel<decimal>? TrusteeGuaranteedFee { get; set; }
+
+
+
+    [ObservableProperty]
+    public partial ElementItemWithEnumViewModel<FundFeeType, decimal>? OutsourcingFee { get; set; }
+
+
+    [ObservableProperty]
+    public partial ElementWithBooleanViewModel<decimal>? OutsourcingGuaranteedFee { get; set; }
+
+
+
+
+
+    /// <summary>
+    /// 与份额相关的
+    /// </summary>
+    [ObservableProperty]
+    public partial ObservableCollection<ShareElementsViewModel> PortionElements { get; set; } = new();
+
+
+    [ObservableProperty]
+    public partial bool OnlyOneShare { get; set; }
+
+
+
 
 
     #endregion
 
     partial void OnFlowIdChanged(int oldValue, int newValue)
     {
+        IsActive = true;
+
         using var db = new BaseDatabase();
         var fund = db.GetCollection<Fund>().FindById(FundId);
         var flow = db.GetCollection<FundFlow>().FindById(newValue);
@@ -132,8 +211,8 @@ public partial class ElementsViewModel : ObservableObject
         var type = GetType();
         SetupDate = fund.SetupDate;
 
-        FullName = new ElementItemViewModel<string>(elements, nameof(FullName), FlowId);
-        ShortName = new ElementItemViewModel<string>(elements, nameof(ShortName), FlowId);
+        FullName = new ElementItemViewModel<string>(elements, nameof(FullName), FlowId, "基金全称");
+        ShortName = new ElementItemViewModel<string>(elements, nameof(ShortName), FlowId, "基金简称");
 
         if (isori)
         {
@@ -147,28 +226,52 @@ public partial class ElementsViewModel : ObservableObject
         }
 
 
-        RiskLevel = new ElementItemViewModel<RiskLevel?>(elements, nameof(FundElements.RiskLevel), FlowId);
+        RiskLevel = new ElementItemViewModel<RiskLevel?>(elements, nameof(FundElements.RiskLevel), FlowId, "风险等级");
 
-        DurationInMonths = new ElementItemViewModel<int?>(elements, nameof(FundElements.DurationInMonths), FlowId);
-        ExpirationDate = new ElementItemViewModel<DateOnly?>(elements, nameof(FundElements.ExpirationDate), FlowId);
-
-
-
-        CollectionAccount = new ElementItemViewModel<BankAccount?>(elements, nameof(FundElements.CollectionAccount), FlowId);
-        CustodyAccount = new ElementItemViewModel<BankAccount?>(elements, nameof(FundElements.CustodyAccount), FlowId);
+        DurationInMonths = new ElementItemViewModel<int?>(elements, nameof(FundElements.DurationInMonths), FlowId, "存续期（月）");
+        ExpirationDate = new ElementItemViewModel<DateOnly?>(elements, nameof(FundElements.ExpirationDate), FlowId, "到期日");
 
 
-        WarningLine = new ElementItemViewModel<decimal?>(elements, nameof(FundElements.WarningLine), FlowId);
-        StopLine = new ElementItemViewModel<decimal?>(elements, nameof(FundElements.StopLine), FlowId);
 
-        FundModeInfo = new ElementItemFundModeViewModel(elements, nameof(FundElements.FundModeInfo), FlowId);
+        CollectionAccount = new ElementItemViewModel<BankAccount?>(elements, nameof(FundElements.CollectionAccount), FlowId, "募集账户");
+        CustodyAccount = new ElementItemViewModel<BankAccount?>(elements, nameof(FundElements.CustodyAccount), FlowId, "托管账户");
 
-        SealingRule = new ElementItemViewModelSealing(elements, nameof(FundElements.SealingRule), FlowId);
-        LockingRule = new ElementItemViewModelSealing(elements, nameof(FundElements.LockingRule), FlowId);
+
+        WarningLine = new ElementItemViewModel<decimal?>(elements, nameof(FundElements.WarningLine), FlowId, "止损线");
+        StopLine = new ElementItemViewModel<decimal?>(elements, nameof(FundElements.StopLine), FlowId, "预警线");
+
+        FundModeInfo = new ElementItemFundModeViewModel(elements, nameof(FundElements.FundModeInfo), FlowId, "运作方式");
+
+        SealingRule = new ElementItemViewModelSealing(elements, nameof(FundElements.SealingRule), FlowId, "封闭期");
+        // LockingRule = new ElementItemViewModelSealing(elements, nameof(FundElements.LockingRule), FlowId, "锁定期");
 
 
         SealingTypes = FundModeInfo.Data.New switch { Models.FundMode.Close => [], _ => [SealingType.No, SealingType.Has, SealingType.Other], };
         IsSealingFund = FundModeInfo.Data.New == Models.FundMode.Close;
+
+
+        OpenDayInfo = new ElementItemViewModel<string?>(elements, nameof(FundElements.OpenDayInfo), FlowId, "开放日规则");
+
+        TrusteeFee = new(elements, nameof(FundElements.TrusteeFee), FlowId, "托管费");
+        TrusteeGuaranteedFee = new(elements, nameof(FundElements.TrusteeGuaranteedFee), FlowId, "托管费保底");
+        OutsourcingFee = new(elements, nameof(FundElements.OutsourcingFee), FlowId, "外包费");
+        OutsourcingGuaranteedFee = new(elements, nameof(FundElements.OutsourcingGuaranteedFee), FlowId, "外包费保底");
+
+
+        //////////////////////////////////////////////////////////////////////////////
+        var shares = elements.ShareClasses!.GetValue(FlowId);
+        if (shares.Value is not null)
+            PortionElements = new ObservableCollection<ShareElementsViewModel>(shares.Value.Select(x => new ShareElementsViewModel(x.Name, elements, FlowId)));
+        else
+            PortionElements = new ObservableCollection<ShareElementsViewModel>([new ShareElementsViewModel(FundElements.SingleShareKey, elements, FlowId)]);
+
+
+        OnlyOneShare = PortionElements.Count == 1;
+
+
+
+
+
     }
 
 
@@ -227,7 +330,9 @@ public partial class ElementsViewModel : ObservableObject
 
     }
 
-
-
-
+    public void Receive(FundShareChangedMessage message)
+    {
+        if (message.FundId == FundId && message.FlowId == FlowId)
+            OnFlowIdChanged(0, FlowId);
+    }
 }

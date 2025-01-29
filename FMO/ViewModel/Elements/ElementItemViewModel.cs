@@ -9,6 +9,8 @@ public abstract class ElementItemViewModel : ObservableObject
 
     public abstract bool CanConfirm { get; }
 
+    public abstract bool CanDelete { get; }
+
     public required string Property { get; set; }
 
     public abstract void UpdateEntity(FundElements elements, int fid);
@@ -29,7 +31,10 @@ public abstract class ElementItemViewModel : ObservableObject
     protected void ItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         if (sender is IValueViewModel x)
+        {
             OnPropertyChanged(nameof(CanConfirm));
+            OnPropertyChanged(nameof(CanDelete));
+        }
     }
 
     public virtual void Apply()
@@ -41,5 +46,6 @@ public abstract class ElementItemViewModel : ObservableObject
         }
 
         OnPropertyChanged(nameof(CanConfirm));
+        OnPropertyChanged(nameof(CanDelete));
     }
 }
