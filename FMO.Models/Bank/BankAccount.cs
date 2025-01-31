@@ -99,7 +99,7 @@ public class BankAccount
     {
         BankAccount account = new BankAccount();
         var m = Regex.Match(str, @"[账号|账户号码]\s*[:：]*(\d+)");
-        if (!m.Success) return null;
+        if (!m.Success) throw new NotImplementedException("不支持的账户信息");
         account.Number = m.Groups[1].Value;
 
         m = Regex.Match(str, @"(?:账)?户名(?:称)?\s*[:：]*(\w+)");

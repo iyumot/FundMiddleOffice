@@ -61,25 +61,29 @@ public partial class CopyableControl : UserControl
         {
             case TextBlock tb:
                 DependencyPropertyDescriptor d = DependencyPropertyDescriptor.FromProperty(TextBlock.TextProperty, typeof(TextBlock));
-                d.AddValueChanged(tb, (s, e) => CanCopy = !string.IsNullOrWhiteSpace(tb.Text));
-                CanCopy = !string.IsNullOrWhiteSpace(tb.Text);
+                d.AddValueChanged(tb, (s, e) => SetCanCopy(tb.Text));
+                SetCanCopy(tb.Text);
                 break;
 
             case TextBox tb:
                 d = DependencyPropertyDescriptor.FromProperty(TextBlock.TextProperty, typeof(TextBox));
-                d.AddValueChanged(tb, (s, e) => CanCopy = !string.IsNullOrWhiteSpace(tb.Text));
-                CanCopy = !string.IsNullOrWhiteSpace(tb.Text);
+                d.AddValueChanged(tb, (s, e) => SetCanCopy(tb.Text));
+                SetCanCopy(tb.Text);
                 break;
 
             case Label lb:
                 d = DependencyPropertyDescriptor.FromProperty(Label.ContentProperty, typeof(Label));
-                d.AddValueChanged(lb, (s, e) => CanCopy = !string.IsNullOrWhiteSpace(lb.Content?.ToString()));
-                CanCopy = !string.IsNullOrWhiteSpace(lb.Content?.ToString());
+                d.AddValueChanged(lb, (s, e) => SetCanCopy(lb.Content.ToString()));
+                SetCanCopy(lb.Content.ToString());
                 break;
 
 
         }
     }
 
+    private void SetCanCopy(string? str)
+    {
+        CanCopy = !string.IsNullOrWhiteSpace(str) && str != "-";
+    }
 
 }

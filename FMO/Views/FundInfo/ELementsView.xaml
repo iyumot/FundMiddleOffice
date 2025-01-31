@@ -14,6 +14,22 @@
     <UserControl.Resources>
 
         <Style
+            x:Key="SaveElement"
+            BasedOn="{StaticResource ButtonBaseStyle}"
+            TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Width" Value="18" />
+            <Setter Property="Height" Value="18" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Foreground" Value="Black" />
+            <Setter Property="hc:IconElement.Geometry" Value="{StaticResource f.circle-check}" />
+            <Setter Property="hc:IconElement.Width" Value="15" />
+            <Setter Property="Visibility" Value="{Binding CanConfirm, Converter={StaticResource Boolean2VisibilityConverter}}" />
+            <Setter Property="Command" Value="{Binding DataContext.ModifyCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}" />
+            <Setter Property="CommandParameter" Value="{Binding .}" />
+        </Style>
+        <Style
             x:Key="DeleteElement"
             BasedOn="{StaticResource ButtonBaseStyle}"
             TargetType="Button">
@@ -23,61 +39,167 @@
             <Setter Property="Width" Value="14" />
             <Setter Property="Height" Value="14" />
             <Setter Property="Padding" Value="1" />
+            <Setter Property="hc:IconElement.Geometry" Value="{StaticResource f.xmark}" />
+            <Setter Property="Visibility" Value="{Binding CanDelete, Converter={StaticResource Boolean2VisibilityConverter}}" />
+            <Setter Property="Command" Value="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}" />
+            <Setter Property="CommandParameter" Value="{Binding .}" />
         </Style>
+        <Style
+            x:Key="ResetElement"
+            BasedOn="{StaticResource ButtonBaseStyle}"
+            TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="Blue" />
+            <Setter Property="Width" Value="16" />
+            <Setter Property="Height" Value="16" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="hc:IconElement.Geometry" Value="{StaticResource f.rotate-left}" />
+            <Setter Property="hc:IconElement.Width" Value="12" />
+            <Setter Property="Visibility" Value="{Binding HasUnsavedValue, Converter={StaticResource Boolean2VisibilityConverter}}" />
+            <Setter Property="Command" Value="{Binding DataContext.ResetCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}" />
+            <Setter Property="CommandParameter" Value="{Binding .}" />
+        </Style>
+
+        <SolidColorBrush x:Key="LabelBrush">Gray</SolidColorBrush>
+
+
+
+
+
+        <Style x:Key="ElementContainer" TargetType="ContentControl">
+            <Setter Property="Content" Value="{Binding}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContentControl">
+                        <DockPanel Background="Transparent" LastChildFill="False">
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Foreground="{StaticResource LabelBrush}"
+                                Text="{Binding Label}" />
+                            <local:CopyableControl Margin="10,0,0,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                <TextBlock Text="{Binding Display}" />
+                            </local:CopyableControl>
+
+
+                            <DockPanel Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                                <ContentPresenter
+                                    Margin="4,0"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}" />
+
+                                <Button Style="{StaticResource ResetElement}" />
+                                <Button Style="{StaticResource SaveElement}" />
+                                <Grid x:Name="x" Visibility="Collapsed">
+                                    <Button Style="{StaticResource DeleteElement}" />
+                                </Grid>
+                            </DockPanel>
+                        </DockPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="x" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="HorizontalContentAlignment" Value="Stretch">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ContentControl">
+                                <DockPanel Background="Transparent">
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Foreground="{StaticResource LabelBrush}"
+                                        Text="{Binding Label}" />
+                                    <local:CopyableControl Margin="10,0,0,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                        <TextBlock Text="{Binding Display}" />
+                                    </local:CopyableControl>
+
+                                    <DockPanel Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                                        <Button DockPanel.Dock="Right" Style="{StaticResource SaveElement}" />
+
+                                        <Button DockPanel.Dock="Right" Style="{StaticResource ResetElement}" />
+
+                                        <Grid
+                                            x:Name="x"
+                                            DockPanel.Dock="Right"
+                                            Visibility="Collapsed">
+                                            <Button Style="{StaticResource DeleteElement}" />
+                                        </Grid>
+
+                                        <ContentPresenter
+                                            Margin="4,0"
+                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                            Content="{TemplateBinding Content}"
+                                            ContentTemplate="{TemplateBinding ContentTemplate}" />
+
+                                    </DockPanel>
+
+                                </DockPanel>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="x" Property="Visibility" Value="Visible" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+
 
         <ControlTemplate x:Key="Element" TargetType="ContentControl">
             <DockPanel Background="Transparent">
-                <TextBlock VerticalAlignment="Center" Text="{Binding Label}" />
-                <Button
-                    hc:IconElement.Geometry="{StaticResource f.circle-check}"
-                    Command="{Binding DataContext.ModifyCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
-                    CommandParameter="{Binding .}"
-                    DockPanel.Dock="Right"
-                    Visibility="{Binding CanConfirm, Converter={StaticResource Boolean2VisibilityConverter}}" />
-                <Grid
-                    x:Name="x"
-                    DockPanel.Dock="Right"
-                    Visibility="Collapsed">
-                    <Button
-                        hc:IconElement.Geometry="{StaticResource f.xmark}"
-                        Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
-                        CommandParameter="{Binding .}"
-                        Style="{StaticResource DeleteElement}"
-                        Visibility="{Binding CanDelete, Converter={StaticResource Boolean2VisibilityConverter}}" />
-                </Grid>
-                <ContentPresenter
-                    Margin="4,0"
-                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                    Content="{TemplateBinding Content}" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Foreground="{StaticResource LabelBrush}"
+                    Text="{Binding Label}" />
+                <local:CopyableControl Margin="10,0,0,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    <TextBlock Text="{Binding Display}" />
+                </local:CopyableControl>
+                <DockPanel Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityReConverter}}">
+
+                    <ContentPresenter
+                        Margin="4,0"
+                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                        Content="{TemplateBinding Content}" />
+                </DockPanel>
             </DockPanel>
-            <ControlTemplate.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter TargetName="x" Property="Visibility" Value="Visible" />
-                </Trigger>
-            </ControlTemplate.Triggers>
         </ControlTemplate>
+
 
         <ControlTemplate x:Key="Element.Left" TargetType="ContentControl">
             <DockPanel Background="Transparent" LastChildFill="False">
-                <TextBlock VerticalAlignment="Center" Text="{Binding Label}" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Foreground="{StaticResource LabelBrush}"
+                    Text="{Binding Label}" />
 
-                <ContentPresenter
-                    Margin="4,0"
-                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                    Content="{TemplateBinding Content}" />
-                <Button
-                    hc:IconElement.Geometry="{StaticResource f.circle-check}"
-                    Command="{Binding DataContext.ModifyCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
-                    CommandParameter="{Binding .}"
-                    Visibility="{Binding CanConfirm, Converter={StaticResource Boolean2VisibilityConverter}}" />
-                <Grid x:Name="x" Visibility="Collapsed">
-                    <Button
-                        hc:IconElement.Geometry="{StaticResource f.xmark}"
-                        Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
-                        CommandParameter="{Binding .}"
-                        Style="{StaticResource DeleteElement}"
-                        Visibility="{Binding CanDelete, Converter={StaticResource Boolean2VisibilityConverter}}" />
-                </Grid>
+                <local:CopyableControl Margin="10,0,0,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    <TextBlock Text="{Binding Data.Old}" />
+                </local:CopyableControl>
+
+                <DockPanel Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                    <ContentPresenter
+                        Margin="4,0"
+                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                        Content="{TemplateBinding Content}" />
+                    <Button DockPanel.Dock="Right" Style="{StaticResource SaveElement}" />
+
+                    <Button DockPanel.Dock="Right" Style="{StaticResource ResetElement}" />
+
+                    <Grid
+                        x:Name="x"
+                        DockPanel.Dock="Right"
+                        Visibility="Collapsed">
+                        <Button Style="{StaticResource DeleteElement}" />
+                    </Grid>
+                </DockPanel>
             </DockPanel>
             <ControlTemplate.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
@@ -86,30 +208,12 @@
             </ControlTemplate.Triggers>
         </ControlTemplate>
 
-        <ControlTemplate x:Key="FundMode" TargetType="ContentControl">
+
+        <DataTemplate x:Key="FundMode">
             <DockPanel>
-                <TextBlock VerticalAlignment="Center" Text="{Binding Label}" />
-                <Button
-                    hc:IconElement.Geometry="{StaticResource f.circle-check}"
-                    Command="{Binding DataContext.ModifyCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
-                    CommandParameter="{Binding .}"
-                    DockPanel.Dock="Right"
-                    Visibility="{Binding CanConfirm, Converter={StaticResource Boolean2VisibilityConverter}}" />
-                <Grid
-                    x:Name="x"
-                    Margin="-4"
-                    DockPanel.Dock="Right"
-                    Visibility="Collapsed">
-                    <Button
-                        hc:IconElement.Geometry="{StaticResource f.xmark}"
-                        Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
-                        CommandParameter="{Binding .}"
-                        Style="{StaticResource DeleteElement}"
-                        Visibility="{Binding CanDelete, Converter={StaticResource Boolean2VisibilityConverter}}" />
-                </Grid>
                 <ComboBox
                     Width="80"
-                    Margin="4,0"
+                    Margin="4,0,0,0"
                     ItemsSource="{Binding Source={x:Static local:ElementsViewModel.FundModes}}"
                     SelectedItem="{Binding Data.New}">
                     <ComboBox.ItemTemplate>
@@ -124,60 +228,59 @@
                     MinWidth="100"
                     Text="{Binding Extra.New, UpdateSourceTrigger=PropertyChanged, Delay=300}"
                     Visibility="Collapsed" />
+
             </DockPanel>
-            <ControlTemplate.Triggers>
+            <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding Data.New}" Value="Other">
                     <Setter TargetName="other" Property="Visibility" Value="Visible" />
                 </DataTrigger>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter TargetName="x" Property="Visibility" Value="Visible" />
-                </Trigger>
-
-            </ControlTemplate.Triggers>
-        </ControlTemplate>
+            </DataTemplate.Triggers>
+        </DataTemplate>
 
 
         <ControlTemplate x:Key="ExItem" TargetType="ContentControl">
             <DockPanel>
-                <TextBlock VerticalAlignment="Center" Text="{Binding Label}" />
-                <Button
-                    hc:IconElement.Geometry="{StaticResource f.circle-check}"
-                    Command="{Binding DataContext.ModifyCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
-                    CommandParameter="{Binding .}"
-                    DockPanel.Dock="Right"
-                    Visibility="{Binding CanConfirm, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Foreground="{StaticResource LabelBrush}"
+                    Text="{Binding Label}" />
 
-                <ComboBox
-                    Width="80"
-                    Margin="4,0"
-                    ItemsSource="{Binding Source={x:Static local:ElementsViewModel.FundModes}}"
-                    SelectedItem="{Binding Data.New}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
+                <local:CopyableControl Margin="10,0,0,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    <TextBlock Text="{Binding Data.Old}" />
+                </local:CopyableControl>
 
-                <TextBox
-                    x:Name="other"
-                    MinWidth="100"
-                    Text="{Binding Extra.New, UpdateSourceTrigger=PropertyChanged, Delay=300}"
-                    Visibility="Collapsed" />
+                <DockPanel Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                    <Button
+                        hc:IconElement.Geometry="{StaticResource f.circle-check}"
+                        Command="{Binding DataContext.ModifyCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
+                        CommandParameter="{Binding .}"
+                        DockPanel.Dock="Right"
+                        Visibility="{Binding CanConfirm, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                    <ComboBox
+                        Width="80"
+                        Margin="4,0"
+                        ItemsSource="{Binding Source={x:Static local:ElementsViewModel.FundModes}}"
+                        SelectedItem="{Binding Data.New}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <TextBox
+                        x:Name="other"
+                        MinWidth="100"
+                        Text="{Binding Extra.New, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                        Visibility="Collapsed" />
+                </DockPanel>
             </DockPanel>
         </ControlTemplate>
 
 
-        <ControlTemplate x:Key="Sealing" TargetType="ContentControl">
+        <DataTemplate x:Key="Sealing">
             <DockPanel LastChildFill="False">
-                <TextBlock VerticalAlignment="Center" Text="{Binding Label}" />
-                <Button
-                    Margin="4,0"
-                    hc:IconElement.Geometry="{StaticResource f.circle-check}"
-                    Command="{Binding DataContext.ModifyCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
-                    CommandParameter="{Binding .}"
-                    DockPanel.Dock="Right"
-                    Visibility="{Binding CanConfirm, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
                 <ComboBox
                     Width="70"
@@ -203,27 +306,21 @@
                     MinWidth="100"
                     Text="{Binding Extra.New, UpdateSourceTrigger=PropertyChanged, Delay=300}"
                     Visibility="Collapsed" />
+
             </DockPanel>
-            <ControlTemplate.Triggers>
+            <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding Type.New}" Value="Other">
                     <Setter TargetName="other" Property="Visibility" Value="Visible" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Type.New}" Value="Has">
                     <Setter TargetName="mon" Property="Visibility" Value="Visible" />
                 </DataTrigger>
-            </ControlTemplate.Triggers>
-        </ControlTemplate>
+            </DataTemplate.Triggers>
+        </DataTemplate>
 
-        <ControlTemplate x:Key="Element.FundFee" TargetType="ContentControl">
+        <DataTemplate x:Key="Element.FundFee">
             <DockPanel LastChildFill="False">
-                <TextBlock VerticalAlignment="Center" Text="{Binding Label}" />
-                <Button
-                    Margin="4,0"
-                    hc:IconElement.Geometry="{StaticResource f.circle-check}"
-                    Command="{Binding DataContext.ModifyCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
-                    CommandParameter="{Binding .}"
-                    DockPanel.Dock="Right"
-                    Visibility="{Binding CanConfirm, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
 
                 <ComboBox
                     Width="90"
@@ -242,7 +339,8 @@
                     x:Name="mon"
                     MinWidth="40"
                     HorizontalContentAlignment="Center"
-                    Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                    Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                    Visibility="Collapsed" />
                 <TextBlock
                     x:Name="a"
                     Margin="4,0"
@@ -264,33 +362,26 @@
                     MinWidth="300"
                     Text="{Binding Extra.New, UpdateSourceTrigger=PropertyChanged, Delay=300}"
                     Visibility="Collapsed" />
+
             </DockPanel>
-            <ControlTemplate.Triggers>
+            <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding Type.New}" Value="Other">
                     <Setter TargetName="other" Property="Visibility" Value="Visible" />
                     <Setter TargetName="mon" Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Type.New}" Value="Ratio">
+                    <Setter TargetName="mon" Property="Visibility" Value="Visible" />
                     <Setter TargetName="a" Property="Visibility" Value="Visible" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Type.New}" Value="Fix">
+                    <Setter TargetName="mon" Property="Visibility" Value="Visible" />
                     <Setter TargetName="b" Property="Visibility" Value="Visible" />
                 </DataTrigger>
-            </ControlTemplate.Triggers>
-        </ControlTemplate>
+            </DataTemplate.Triggers>
+        </DataTemplate>
 
-
-        <ControlTemplate x:Key="Element.FundFee.G" TargetType="ContentControl">
+        <DataTemplate x:Key="Element.FundFee.G">
             <DockPanel LastChildFill="False">
-                <TextBlock VerticalAlignment="Center" Text="{Binding Label}" />
-                <Button
-                    Margin="4,0"
-                    hc:IconElement.Geometry="{StaticResource f.circle-check}"
-                    Command="{Binding DataContext.ModifyCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
-                    CommandParameter="{Binding .}"
-                    DockPanel.Dock="Right"
-                    Visibility="{Binding CanConfirm, Converter={StaticResource Boolean2VisibilityConverter}}" />
-
                 <ComboBox
                     Width="90"
                     Margin="4,0"
@@ -348,9 +439,8 @@
                     FontSize="14"
                     Text="元"
                     Visibility="{Binding IsAdopted.New, Converter={StaticResource Boolean2VisibilityConverter}}" />
-
             </DockPanel>
-            <ControlTemplate.Triggers>
+            <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding Type.New}" Value="Other">
                     <Setter TargetName="other" Property="Visibility" Value="Visible" />
                     <Setter TargetName="mon" Property="Visibility" Value="Collapsed" />
@@ -361,55 +451,39 @@
                 <DataTrigger Binding="{Binding Type.New}" Value="Fix">
                     <Setter TargetName="b" Property="Visibility" Value="Visible" />
                 </DataTrigger>
-            </ControlTemplate.Triggers>
-        </ControlTemplate>
+            </DataTemplate.Triggers>
+        </DataTemplate>
 
-        <ControlTemplate x:Key="Element.Bool" TargetType="ContentControl">
+        <DataTemplate x:Key="Element.PerformanceBenchmarks">
             <DockPanel LastChildFill="False">
 
-                <Button
-                    Margin="4,0"
-                    hc:IconElement.Geometry="{StaticResource f.circle-check}"
-                    Command="{Binding DataContext.ModifyCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
-                    CommandParameter="{Binding .}"
-                    DockPanel.Dock="Right"
-                    Visibility="{Binding CanConfirm, Converter={StaticResource Boolean2VisibilityConverter}}" />
-
                 <CheckBox
+                    x:Name="ck"
                     Margin="4,0"
-                    Content="保底"
+                    VerticalAlignment="Center"
+                    Content="无"
                     IsChecked="{Binding IsAdopted.New}" />
 
 
                 <TextBox
                     x:Name="mon"
-                    MinWidth="40"
+                    MinWidth="140"
                     HorizontalContentAlignment="Center"
                     Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=300}"
                     Visibility="{Binding IsAdopted.New, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
-                <TextBlock
-                    x:Name="b"
-                    Margin="4,0"
-                    VerticalAlignment="Center"
-                    FontSize="14"
-                    Text="元"
-                    Visibility="{Binding IsAdopted.New, Converter={StaticResource Boolean2VisibilityConverter}}" />
-
             </DockPanel>
-        </ControlTemplate>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsAdopted.New}" Value="True">
+                    <Setter TargetName="ck" Property="Content" Value="有" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
 
 
-        <ControlTemplate x:Key="Portion.Sealing" TargetType="ContentControl">
+        <DataTemplate x:Key="Portion.Sealing">
             <DockPanel LastChildFill="False">
-                <TextBlock VerticalAlignment="Center" Text="{Binding Label}" />
-                <Button
-                    Margin="4,0"
-                    hc:IconElement.Geometry="{StaticResource f.circle-check}"
-                    Command="{Binding DataContext.ModifyCommand, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
-                    CommandParameter="{Binding .}"
-                    DockPanel.Dock="Right"
-                    Visibility="{Binding CanConfirm, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
 
                 <ComboBox
                     Width="70"
@@ -436,47 +510,78 @@
                     Text="{Binding Extra.New, UpdateSourceTrigger=PropertyChanged, Delay=300}"
                     Visibility="Collapsed" />
             </DockPanel>
-            <ControlTemplate.Triggers>
+            <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding Type.New}" Value="Other">
                     <Setter TargetName="other" Property="Visibility" Value="Visible" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Type.New}" Value="Has">
                     <Setter TargetName="mon" Property="Visibility" Value="Visible" />
                 </DataTrigger>
-            </ControlTemplate.Triggers>
-        </ControlTemplate>
+            </DataTemplate.Triggers>
+        </DataTemplate>
 
-        <DataTemplate x:Key="DT.Portion">
-            <StackPanel Margin="0,10">
+
+
+        <DataTemplate x:Key="DT.Portion" d:DataType="local:ShareElementsViewModel">
+            <DockPanel>
                 <Border
                     x:Name="bd"
-                    Margin="10,5"
-                    Background="WhiteSmoke">
-                    <TextBlock
-                        Margin="5"
-                        HorizontalAlignment="Center"
-                        Text="{Binding Class, StringFormat={}{0}类份额}" />
+                    Margin="0,0,10,0"
+                    Background="WhiteSmoke"
+                    Visibility="{Binding DataContext.OnlyOneShare, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                    <DockPanel Margin="8">
+                        <TextBlock DockPanel.Dock="Top" Text="份额" />
+                        <TextBlock HorizontalAlignment="Center" Text="{Binding Class}" />
+                    </DockPanel>
                 </Border>
 
 
+                <StackPanel>
+                    <WrapPanel>
+                        <ContentControl
+                            ContentTemplate="{StaticResource Element.FundFee}"
+                            DataContext="{Binding SubscriptionFee}"
+                            Style="{StaticResource ElementContainer}" />
 
-                <DockPanel LastChildFill="False">
-                    <ContentControl DataContext="{Binding ManageFee}" Template="{StaticResource Element.FundFee}" />
-                </DockPanel>
+                        <Border Margin="10,5" />
+
+                        <ContentControl
+                            ContentTemplate="{StaticResource Element.FundFee}"
+                            DataContext="{Binding PurchaseFee}"
+                            Style="{StaticResource ElementContainer}" />
+
+                        <Border Margin="10,5" />
+
+                        <ContentControl
+                            ContentTemplate="{StaticResource Element.FundFee}"
+                            DataContext="{Binding RedemptionFee}"
+                            Style="{StaticResource ElementContainer}" />
+
+                        <Border Margin="10,5" />
+
+                        <ContentControl
+                            ContentTemplate="{StaticResource Element.FundFee}"
+                            DataContext="{Binding ManageFee}"
+                            Style="{StaticResource ElementContainer}" />
+
+                    </WrapPanel>
+
+                    <StackPanel Margin="0,5" Orientation="Horizontal">
+
+                        <Border Margin="10,5" />
+
+                        <ContentControl
+                            ContentTemplate="{StaticResource Portion.Sealing}"
+                            DataContext="{Binding LockingRule}"
+                            Style="{StaticResource ElementContainer}"
+                            Visibility="{Binding DataContext.IsSealingFund, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
 
 
 
+                    </StackPanel>
+                </StackPanel>
 
-
-                <DockPanel LastChildFill="False">
-                    <ContentControl
-                        DataContext="{Binding LockingRule}"
-                        Template="{StaticResource Portion.Sealing}"
-                        Visibility="{Binding DataContext.IsSealingFund, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-
-                </DockPanel>
-
-            </StackPanel>
+            </DockPanel>
 
             <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding Class}" Value="{x:Static model:FundElements.SingleShareKey}">
@@ -488,47 +593,73 @@
 
 
         <ItemsPanelTemplate x:Key="PortionItemsPanel">
-            <UniformGrid IsItemsHost="True" Rows="1" />
+            <UniformGrid Columns="1" IsItemsHost="True" />
         </ItemsPanelTemplate>
 
     </UserControl.Resources>
 
+
     <StackPanel Margin="0,10">
+        <StackPanel.Resources>
+            <Style TargetType="Separator">
+                <Setter Property="Margin" Value="0,10" />
+            </Style>
+        </StackPanel.Resources>
+
         <Grid Margin="0,2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*" />
                 <ColumnDefinition Width="2*" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <ContentControl DataContext="{Binding FullName}" Template="{StaticResource Element}">
+
+            <ContentControl
+                HorizontalContentAlignment="Stretch"
+                DataContext="{Binding FullName}"
+                Style="{StaticResource ElementContainer}">
                 <TextBox Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
             </ContentControl>
 
             <ContentControl
                 Grid.Column="1"
+                HorizontalContentAlignment="Stretch"
                 DataContext="{Binding ShortName}"
-                Template="{StaticResource Element}">
+                Style="{StaticResource ElementContainer}">
                 <TextBox Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
             </ContentControl>
+
+            <ToggleButton
+                Grid.Column="2"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                IsChecked="{Binding IsReadOnly}"
+                Style="{StaticResource ToggleButtonFlip}">
+                <hc:StatusSwitchElement.CheckedElement>
+                    <Viewbox Width="16" Height="16">
+                        <Path Data="{StaticResource f.pen}" Fill="Green" />
+                    </Viewbox>
+                </hc:StatusSwitchElement.CheckedElement>
+                <Viewbox Width="18" Height="18">
+                    <Path Data="{StaticResource f.eye}" Fill="Black" />
+                </Viewbox>
+            </ToggleButton>
         </Grid>
 
         <DockPanel Margin="0,2" LastChildFill="False">
-
-            <!--<ContentControl Template="{StaticResource FundMode}" />-->
-
-
-            <ContentControl DataContext="{Binding FundModeInfo}" Template="{StaticResource FundMode}" />
-
+            <ContentControl
+                ContentTemplate="{StaticResource FundMode}"
+                DataContext="{Binding FundModeInfo}"
+                Style="{StaticResource ElementContainer}" />
 
             <ContentControl
-                Margin="10,0"
+                ContentTemplate="{StaticResource Sealing}"
                 DataContext="{Binding SealingRule}"
-                Template="{StaticResource Sealing}"
+                Style="{StaticResource ElementContainer}"
                 Visibility="{Binding DataContext.IsSealingFund, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
 
 
 
-
-            <ContentControl DataContext="{Binding OpenDayInfo}" Template="{StaticResource Element}">
+            <ContentControl DataContext="{Binding OpenDayInfo}" Style="{StaticResource ElementContainer}">
                 <TextBox MinWidth="300" Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
             </ContentControl>
 
@@ -540,33 +671,38 @@
 
 
 
-            <ContentControl DataContext="{Binding RiskLevel}" Template="{StaticResource Element}">
+            <ContentControl DataContext="{Binding RiskLevel}" Style="{StaticResource ElementContainer}">
                 <ComboBox
                     Width="60"
                     ItemsSource="{Binding Source={x:Static local:ElementsViewModel.RiskLevels}}"
                     SelectedItem="{Binding Data.New}" />
             </ContentControl>
+
             <ContentControl
                 Margin="20,0,0,0"
                 DataContext="{Binding DurationInMonths}"
-                Template="{StaticResource Element}">
-                <TextBox
-                    Width="50"
-                    HorizontalContentAlignment="Center"
-                    Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
+                Style="{StaticResource ElementContainer}">
+                <DockPanel>
+                    <TextBox
+                        Width="50"
+                        HorizontalContentAlignment="Center"
+                        Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
+                    <TextBlock VerticalAlignment="Center" Text="个月" />
+                </DockPanel>
             </ContentControl>
 
             <ContentControl
                 Margin="8,0"
                 DataContext="{Binding ExpirationDate}"
-                Template="{StaticResource Element}">
+                Style="{StaticResource ElementContainer}">
                 <DatePicker Width="120" SelectedDate="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
             </ContentControl>
+
 
             <ContentControl
                 Margin="20,0,0,0"
                 DataContext="{Binding StopLine}"
-                Template="{StaticResource Element}">
+                Style="{StaticResource ElementContainer}">
                 <TextBox
                     Width="50"
                     HorizontalContentAlignment="Center"
@@ -576,7 +712,7 @@
             <ContentControl
                 Margin="8,0"
                 DataContext="{Binding WarningLine}"
-                Template="{StaticResource Element}">
+                Style="{StaticResource ElementContainer}">
                 <TextBox
                     Width="50"
                     HorizontalContentAlignment="Center"
@@ -585,16 +721,67 @@
         </DockPanel>
 
 
+        <Separator />
+
+        <!--  投资相关  -->
+        <DockPanel Margin="0,2" LastChildFill="False">
+            <ContentControl
+                HorizontalContentAlignment="Stretch"
+                DataContext="{Binding InvestmentObjective}"
+                Style="{StaticResource ElementContainer}">
+                <TextBox MinWidth="300" Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
+            </ContentControl>
+
+            <ContentControl
+                Margin="20,0,0,0"
+                VerticalAlignment="Center"
+                ContentTemplate="{StaticResource Element.PerformanceBenchmarks}"
+                DataContext="{Binding PerformanceBenchmarks}"
+                Style="{StaticResource ElementContainer}" />
+
+        </DockPanel>
+
+        <UniformGrid Rows="1">
+            <ContentControl
+                HorizontalContentAlignment="Stretch"
+                DataContext="{Binding InvestmentScope}"
+                Style="{StaticResource ElementContainer}">
+                <TextBox
+                    MinWidth="300"
+                    AcceptsReturn="True"
+                    Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
+            </ContentControl>
+
+            <ContentControl
+                HorizontalContentAlignment="Stretch"
+                DataContext="{Binding InvestmentStrategy}"
+                Style="{StaticResource ElementContainer}">
+                <TextBox
+                    MinWidth="300"
+                    AcceptsReturn="True"
+                    Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
+            </ContentControl>
+        </UniformGrid>
+
+
+        <Separator />
+
         <!--  费用  -->
         <DockPanel Margin="0,2" LastChildFill="False">
 
-            <ContentControl DataContext="{Binding TrusteeFee}" Template="{StaticResource Element.FundFee.G}" />
+            <ContentControl
+                ContentTemplate="{StaticResource Element.FundFee.G}"
+                DataContext="{Binding TrusteeFee}"
+                Style="{StaticResource ElementContainer}" />
             <!--<ContentControl DataContext="{Binding TrusteeGuaranteedFee}" Template="{StaticResource Element.Bool}" />-->
 
             <Separator Width="2" Margin="20,0" />
 
-            <ContentControl DataContext="{Binding OutsourcingFee}" Template="{StaticResource Element.FundFee}" />
-            <ContentControl DataContext="{Binding OutsourcingGuaranteedFee}" Template="{StaticResource Element.Bool}" />
+            <ContentControl
+                ContentTemplate="{StaticResource Element.FundFee.G}"
+                DataContext="{Binding OutsourcingFee}"
+                Style="{StaticResource ElementContainer}" />
+            <!--<ContentControl DataContext="{Binding OutsourcingGuaranteedFee}" Template="{StaticResource Element.Bool}" />-->
 
 
         </DockPanel>
@@ -602,39 +789,65 @@
 
 
         <!--  账户  -->
-        <UniformGrid Rows="1">
-            <ContentControl DataContext="{Binding CollectionAccount}" Template="{StaticResource Element.Left}">
-                <TextBox
-                    MinWidth="300"
-                    MinHeight="60"
-                    Padding="30,8"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Stretch"
-                    HorizontalContentAlignment="Left"
-                    AcceptsReturn="True"
-                    Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
-            </ContentControl>
-            <ContentControl
-                VerticalContentAlignment="Stretch"
-                DataContext="{Binding CustodyAccount}"
-                Template="{StaticResource Element.Left}">
-                <TextBox
-                    MinWidth="300"
-                    MinHeight="60"
-                    Padding="30,8"
-                    HorizontalAlignment="Left"
-                    HorizontalContentAlignment="Left"
-                    AcceptsReturn="True"
-                    Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
-            </ContentControl>
-        </UniformGrid>
+        <DockPanel>
+
+            <TextBlock
+                Margin="10"
+                DockPanel.Dock="Right"
+                Foreground="Gray"
+                IsHitTestVisible="False"
+                Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                <Run>请使用如下格式</Run>
+                <LineBreak />
+                <Run>账户 | 账户名称：xxxxxx</Run>
+                <LineBreak />
+                <Run>账号：00000</Run>
+                <LineBreak />
+                <Run>开户行：xxxx</Run>
+                <LineBreak />
+                <Run>.....</Run>
+            </TextBlock>
+
+            <UniformGrid Rows="1">
+                <ContentControl
+                    VerticalContentAlignment="Stretch"
+                    DataContext="{Binding CollectionAccount}"
+                    Style="{StaticResource ElementContainer}">
+                    <TextBox
+                        MinWidth="300"
+                        MinHeight="60"
+                        Padding="30,8"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        AcceptsReturn="True"
+                        Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
+                </ContentControl>
+                <ContentControl
+                    VerticalContentAlignment="Stretch"
+                    DataContext="{Binding CustodyAccount}"
+                    Style="{StaticResource ElementContainer}">
+                    <TextBox
+                        MinWidth="300"
+                        MinHeight="60"
+                        Padding="30,8"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        AcceptsReturn="True"
+                        Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
+                </ContentControl>
+
+            </UniformGrid>
+        </DockPanel>
 
         <!--  与份额相关的要素  -->
         <Grid>
             <!--<Grid Visibility="{Binding OnlyOneShare, Converter={StaticResource Boolean2VisibilityConverter}}">
-                <ContentControl ContentTemplate="{StaticResource DT.Portion}" DataContext="{Binding PortionElements[0]}" />
+                <ContentControl Content="{Binding PortionElements[0]}" ContentTemplate="{StaticResource DT.Portion.Single}" />
             </Grid>-->
             <ListBox
+                Margin="0,20,0,0"
                 BorderThickness="0"
                 ItemTemplate="{StaticResource DT.Portion}"
                 ItemsPanel="{DynamicResource PortionItemsPanel}"
@@ -642,4 +855,5 @@
                 Style="{StaticResource ListBoxCustom}" />
         </Grid>
     </StackPanel>
+
 </UserControl>

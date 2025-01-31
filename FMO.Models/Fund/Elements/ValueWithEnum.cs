@@ -45,3 +45,54 @@ public class ValueWithBoolean<T>
 
     public T? Value { get; set; }
 }
+
+
+
+
+/// <summary>
+/// 收费规则
+/// </summary>
+public class FeeRule
+{
+
+}
+
+/// <summary>
+/// 数轴
+/// left .... right
+/// </summary>
+public class TieredRatesFeeRule : FeeRule
+{
+    public class Tier<T> where T : struct
+    {
+        public T Stop { get; set; }
+
+        public decimal Value { get; set; }
+    }
+
+    /// <summary>
+    /// true -> 从小到大排列 区间为 >= stop，对应value
+    /// false -> 从大到小排列
+    /// </summary>
+    public bool IsAccending { get; set; } = true;
+
+    /// <summary>
+    /// 标记点
+    /// </summary>
+    public List<int> Stops { get; set; }
+
+
+    /// <summary>
+    /// 区间值，count = stops.count - 1
+    /// </summary>
+    public List<decimal> Values { get; set; }
+
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public decimal? Left { get; set; }
+
+    public decimal? Right { get; set; }
+}

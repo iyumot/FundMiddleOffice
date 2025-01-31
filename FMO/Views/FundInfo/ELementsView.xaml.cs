@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Windows.Controls;
 
 namespace FMO;
@@ -22,47 +21,6 @@ public partial class ElementsView : UserControl
 
 
 
-
-
-
-/// <summary>
-/// 与份额相关的
-/// </summary>
-public partial class ShareElementsViewModel : ObservableObject
-{
-
-    public required string Class { get; set; }
-
-    /// <summary>
-    /// 锁定期
-    /// </summary>
-    [ObservableProperty]
-    public partial PortionElementItemWithEnumViewModel<SealingType, int>? LockingRule { get; set; }
-
-
-
-
-    [ObservableProperty]
-    public partial PortionElementItemWithEnumViewModel<FundFeeType, decimal>? ManageFee { get; set; }
-
-    [SetsRequiredMembers]
-    public ShareElementsViewModel(string share, FundElements elements, int flowid)
-    {
-        Class = share;
-
-        //(var id, var dic) = elements.LockingRule!.GetValue(flowid);
-
-        //LockingRule = new ElementItemViewModelSealing(elements, nameof(FundElements.LockingRule), flowid, "锁定期");
-
-        LockingRule = new PortionElementItemWithEnumViewModel<SealingType, int>(elements, share, nameof(FundElements.LockingRule), flowid, "锁定期");
-
-        ManageFee = new PortionElementItemWithEnumViewModel<FundFeeType, decimal>(elements, share, nameof(FundElements.ManageFee), flowid, "管理费");
-    }
-
-}
-
-
-
 public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundShareChangedMessage>
 {
     public static RiskLevel[] RiskLevels { get; } = [Models.RiskLevel.R1, Models.RiskLevel.R2, Models.RiskLevel.R3, Models.RiskLevel.R4, Models.RiskLevel.R5];
@@ -71,7 +29,8 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
 
     public static FundFeeType[] FundFeeTypes { get; } = [FundFeeType.Ratio, FundFeeType.Fix, FundFeeType.Other];
 
-
+    [ObservableProperty]
+    public partial bool IsReadOnly { get; set; } = true;
 
 
     /// <summary>
@@ -162,24 +121,36 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
 
 
     [ObservableProperty]
-    //public partial ElementItemWithEnumViewModel<FundFeeType, decimal>? TrusteeFee { get; set; }
     public partial ElementItemWithEnumViewModel<FundFeeType, decimal, decimal>? TrusteeFee { get; set; }
 
 
 
-    [ObservableProperty]
-    public partial ElementWithBooleanViewModel<decimal>? TrusteeGuaranteedFee { get; set; }
-
 
 
     [ObservableProperty]
-    public partial ElementItemWithEnumViewModel<FundFeeType, decimal>? OutsourcingFee { get; set; }
+    public partial ElementItemWithEnumViewModel<FundFeeType, decimal, decimal>? OutsourcingFee { get; set; }
+
+
+   // [ObservableProperty]
+    //public partial ObservableCollection<FundInvestmentManager>? InvestmentManagers { get; set; }
+
+
 
 
     [ObservableProperty]
-    public partial ElementWithBooleanViewModel<decimal>? OutsourcingGuaranteedFee { get; set; }
+    public partial ElementRefrenceWithBooleanViewModel<string> PerformanceBenchmarks { get; set; }
 
 
+    [ObservableProperty]
+    public partial ElementRefrenceViewModel<string>? InvestmentObjective { get; set; }
+
+
+    [ObservableProperty]
+    public partial ElementRefrenceViewModel<string>? InvestmentScope { get; set; }
+
+
+    [ObservableProperty]
+    public partial ElementRefrenceViewModel<string>? InvestmentStrategy { get; set; }
 
 
 
@@ -229,7 +200,8 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
 
         RiskLevel = new(elements, nameof(FundElements.RiskLevel), FlowId, "风险等级");
 
-        DurationInMonths = new(elements, nameof(FundElements.DurationInMonths), FlowId, "存续期（月）");
+        DurationInMonths = new(elements, nameof(FundElements.DurationInMonths), FlowId, "存续期");
+        DurationInMonths.DisplayGenerator = (a) => a % 12 == 0 ? $"{a/12}年": $"{a}个月";
         ExpirationDate = new(elements, nameof(FundElements.ExpirationDate), FlowId, "到期日");
 
 
@@ -254,10 +226,20 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
         OpenDayInfo = new(elements, nameof(FundElements.OpenDayInfo), FlowId, "开放日规则");
 
         TrusteeFee = new(elements, nameof(FundElements.TrusteeFee), nameof(FundElements.TrusteeGuaranteedFee), FlowId, "托管费");
+        TrusteeFee.DisplayGenerator = (a, b, c, d, e) => a switch { FundFeeType.Fix => $"每年固定{b}元", FundFeeType.Ratio => $"{b}%", FundFeeType.Other => "c", _ => throw new NotImplementedException() } + (d ? $" 保底{e}元" : "");
         //TrusteeGuaranteedFee = new(elements, nameof(FundElements.TrusteeGuaranteedFee), FlowId, "托管费保底");
-        OutsourcingFee = new(elements, nameof(FundElements.OutsourcingFee), FlowId, "外包费");
-        OutsourcingGuaranteedFee = new(elements, nameof(FundElements.OutsourcingGuaranteedFee), FlowId, "外包费保底");
+        OutsourcingFee = new(elements, nameof(FundElements.OutsourcingFee), nameof(FundElements.OutsourcingGuaranteedFee), FlowId, "外包费");
+        OutsourcingFee.DisplayGenerator = (a, b, c, d, e) => a switch { FundFeeType.Fix => $"每年固定{b}元", FundFeeType.Ratio => $"{b}%", FundFeeType.Other => "c", _ => throw new NotImplementedException() } + (d ? $" 保底{e}元" : "");
+        //OutsourcingGuaranteedFee = new(elements, nameof(FundElements.OutsourcingGuaranteedFee), FlowId, "外包费保底");
 
+
+        PerformanceBenchmarks = new(elements, nameof(FundElements.PerformanceBenchmarks), FlowId, "业绩比较基准");
+        PerformanceBenchmarks.DisplayGenerator = (a, b) => a switch { true => b, false => "无", _ => ElementItemViewModel.UnsetValue };
+
+
+        InvestmentObjective = new(elements, nameof(FundElements.InvestmentObjective), FlowId, "投资目标");
+        InvestmentScope = new(elements, nameof(FundElements.InvestmentScope), FlowId, "投资范围");
+        InvestmentStrategy = new(elements, nameof(FundElements.InvestmentStrategy), FlowId, "投资策略");
 
         //////////////////////////////////////////////////////////////////////////////
         var shares = elements.ShareClasses!.GetValue(FlowId);
@@ -364,6 +346,24 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
 
 
                 break;
+        }
+    }
+
+
+    [RelayCommand]
+    public void Reset(ElementItemViewModel s)
+    {
+        var ps = s.GetType().GetProperties();
+        foreach (var p in ps)
+        {
+            if (p.PropertyType.IsGenericType && (p.PropertyType.GetGenericTypeDefinition() == typeof(ValueViewModel<>) || p.PropertyType.GetGenericTypeDefinition() == typeof(RefrenceViewModel<>)))
+            {
+                var obj = p.GetValue(s);
+                if (obj is null) continue;
+
+                var old = obj.GetType().GetProperty("Old")!.GetValue(obj);
+                obj.GetType().GetProperty("New")!.SetValue(obj, old);
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 ﻿namespace FMO.Models;
 
+ 
 public class FundElements
 {
     public const string SingleShareKey = "单一份额";
@@ -113,6 +114,31 @@ public class FundElements
     public Mutable<ValueWithBoolean<decimal>>? OutsourcingGuaranteedFee { get; set; }
 
 
+    public Mutable<FundInvestmentManager[]>? InvestmentManagers { get; set; }
+
+    /// <summary>
+    /// 业绩比较基准
+    /// </summary>
+    public Mutable<ValueWithBoolean<string>>? PerformanceBenchmarks { get; set; }
+
+    /// <summary>
+    /// 投资目标
+    /// </summary>
+    public Mutable<string>? InvestmentObjective { get; set; }
+
+    /// <summary>
+    /// 投资范围
+    /// </summary>
+    public Mutable<string>? InvestmentScope { get; set; }
+
+    /// <summary>
+    /// 投资策略
+    /// </summary>
+    public Mutable<string>? InvestmentStrategy { get; set; }
+
+
+
+
     public PortionMutable<ValueWithEnum<SealingType, int>>? LockingRule { get; set; }
 
 
@@ -121,6 +147,21 @@ public class FundElements
     /// </summary>
     public PortionMutable<ValueWithEnum<FundFeeType, decimal>>? ManageFee { get; set; }
 
+    /// <summary>
+    /// 认购费
+    /// </summary>
+    public PortionMutable<ValueWithEnum<FundFeeType, decimal>>? SubscriptionFee { get; set; }
+
+    /// <summary>
+    /// 申购费
+    /// </summary>
+    public PortionMutable<ValueWithEnum<FundFeeType, decimal>>? PurchaseFee { get; set; }
+
+
+    /// <summary>
+    /// 赎回费
+    /// </summary>
+    public PortionMutable<ValueWithEnum<FundFeeType, decimal>>? RedemptionFee { get; set; }
 
 
 
@@ -182,7 +223,7 @@ public class FundElements
 
 
         if (LockingRule is null)
-        { changed = true; LockingRule = new (nameof(LockingRule)); }
+        { changed = true; LockingRule = new(nameof(LockingRule)); }
 
         if (OpenDayInfo is null)
         { changed = true; OpenDayInfo = new Mutable<string>(nameof(OpenDayInfo)); }
@@ -191,7 +232,7 @@ public class FundElements
 
 
         if (TrusteeFee is null)
-        { changed = true; TrusteeFee = new (nameof(TrusteeFee)); }
+        { changed = true; TrusteeFee = new(nameof(TrusteeFee)); }
 
 
         if (TrusteeGuaranteedFee is null)
@@ -205,9 +246,33 @@ public class FundElements
         { changed = true; OutsourcingGuaranteedFee = new(nameof(OutsourcingGuaranteedFee)); }
 
         if (ManageFee is null)
-        { changed = true; ManageFee = new PortionMutable<ValueWithEnum<FundFeeType, decimal>>(nameof(ManageFee)); }
+        { changed = true; ManageFee = new(nameof(ManageFee)); }
+
+        if (SubscriptionFee is null)
+        { changed = true; SubscriptionFee = new(nameof(SubscriptionFee)); }
+
+        if (PurchaseFee is null)
+        { changed = true; PurchaseFee = new(nameof(PurchaseFee)); }
+
+        if (RedemptionFee is null)
+        { changed = true; RedemptionFee = new(nameof(RedemptionFee)); }
+
+        if (InvestmentManagers is null)
+        { changed = true; InvestmentManagers = new(nameof(InvestmentManagers)); }
 
 
+        if (PerformanceBenchmarks is null)
+        { changed = true; PerformanceBenchmarks = new(nameof(PerformanceBenchmarks)); }
+
+        if (InvestmentObjective is null)
+        { changed = true; InvestmentObjective = new(nameof(InvestmentObjective)); }
+
+
+        if (InvestmentScope is null)
+        { changed = true; InvestmentScope = new(nameof(InvestmentScope)); }
+
+        if (InvestmentStrategy is null)
+        { changed = true; InvestmentStrategy = new(nameof(InvestmentStrategy)); }
 
         return changed;
     }
@@ -220,9 +285,28 @@ public class FundElements
     /// <param name="share"></param>
     public void RemoveShareRelated(int flowid, string share)
     {
-        LockingRule?.RemoveValue(share, flowid);
-        ManageFee?.RemoveValue(share, flowid);
+        foreach (var p in GetType().GetProperties())
+        {
+            if (p.PropertyType.IsGenericType && p.PropertyType.GetGenericTypeDefinition() == typeof(PortionMutable<>))
+            {
+                var genericArg = p.PropertyType.GetGenericArguments()[0];
+                var method = p.PropertyType.GetMethod(nameof(PortionMutable<object>.RemoveValue), System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance, new[] { typeof(string), typeof(int) });
+                var obj = p.GetValue(this);
+                method?.Invoke(obj, new object[] { share, flowid });
+            }
+        }
     }
+
+
+    private void AddShareRelated(int flowId, string[] add)
+    {
+        CopyFromDefault(ManageFee!, flowId, add);
+        CopyFromDefault(LockingRule!, flowId, add);
+        CopyFromDefault(SubscriptionFee!, flowId, add);
+        CopyFromDefault(PurchaseFee!, flowId, add);
+        CopyFromDefault(RedemptionFee!, flowId, add);
+    }
+
 
 
     private void CopyFromDefault<T1, T2>(PortionMutable<ValueWithEnum<T1, T2>> mutable, int flowId, string[] add) where T1 : struct, Enum
@@ -232,16 +316,7 @@ public class FundElements
                 d.Value[item] = r;
     }
 
-    private void AddShareRelated(int flowId, string[] add)
-    {
-        CopyFromDefault(ManageFee!, flowId, add);
-        CopyFromDefault(LockingRule!, flowId, add);
-
-    }
-
-
-
-    private void SetElementAsDefault<T>(PortionMutable<T>? portion, int flowid)
+    private void SetElementAsDefault<T>(PortionMutable<T>? portion, int flowid) where T : notnull
     {
         if (portion is null) return;
 
@@ -262,7 +337,7 @@ public class FundElements
             if (p.PropertyType.IsGenericType && p.PropertyType.GetGenericTypeDefinition() == typeof(PortionMutable<>))
             {
                 var genericArg = p.PropertyType.GetGenericArguments()[0];
-                var method = typeof(FundElements).GetMethod("SetElementAsDefault", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);//, new[] { typeof(PortionMutable<>), typeof(int) });
+                var method = typeof(FundElements).GetMethod(nameof(FundElements.SetElementAsDefault), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);//, new[] { typeof(PortionMutable<>), typeof(int) });
                 var genericMethod = method!.MakeGenericMethod(genericArg);
                 genericMethod.Invoke(this, new object[] { p.GetValue(this)!, flowid });
             }

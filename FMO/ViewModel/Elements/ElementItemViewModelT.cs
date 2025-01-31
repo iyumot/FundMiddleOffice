@@ -10,7 +10,14 @@ public class ElementValueViewModel<T> : ElementItemViewModel where T : struct
 
     public override bool CanConfirm => Data.IsChanged;
 
-    public override bool CanDelete => !CanConfirm && Data.New is not null;
+    public override bool CanDelete => !HasUnsavedValue && Data.New is not null;
+
+
+    public override bool HasUnsavedValue => Data.IsChanged;
+
+
+    public Func<T?, string?>? DisplayGenerator { get; set; }
+
 
     [SetsRequiredMembers]
     public ElementValueViewModel(FundElements elements, string property, int flowid, string label)
@@ -76,10 +83,15 @@ public class ElementValueViewModel<T> : ElementItemViewModel where T : struct
     }
 
 
-    public override void Apply()
+    public override void ApplyOverride()
     {
         Data.Apply();
         OnPropertyChanged(nameof(CanConfirm));
+    }
+
+    protected override string? DisplayOverride()
+    {
+        return DisplayGenerator is not null ? DisplayGenerator(Data.Old) : Data.Old?.ToString();
     }
 }
 
@@ -91,8 +103,12 @@ public class ElementRefrenceViewModel<T> : ElementItemViewModel where T : class
 
     public override bool CanConfirm => Data.IsChanged;
 
-    public override bool CanDelete => !CanConfirm && Data.New is not null;
+    public override bool CanDelete => !HasUnsavedValue && Data.New is not null;
 
+    public override bool HasUnsavedValue => Data.IsChanged;
+
+
+    public Func<T?, string?>? DisplayGenerator { get; set; }
 
     [SetsRequiredMembers]
     public ElementRefrenceViewModel(FundElements elements, string property, int flowid, string label)
@@ -152,11 +168,16 @@ public class ElementRefrenceViewModel<T> : ElementItemViewModel where T : class
     }
 
 
-    public override void Apply()
+    public override void ApplyOverride()
     {
         Data.Apply();
         OnPropertyChanged(nameof(CanConfirm));
     }
+
+    protected override string? DisplayOverride()
+    {
+        return DisplayGenerator is not null ? DisplayGenerator(Data.Old) : Data.Old?.ToString();
+    } 
 }
 
 
@@ -172,8 +193,9 @@ public class ElementItemWithEnumViewModel<TEnum, TValue> : ElementItemViewModel 
 
     public override bool CanConfirm => Data.IsChanged;
 
-    public override bool CanDelete => !CanConfirm && (Data.New is not null || Type.New is not null);
+    public override bool CanDelete => !HasUnsavedValue && (Data.New is not null || Type.New is not null);
 
+    public override bool HasUnsavedValue => Type.IsChanged || Data.IsChanged || Extra.IsChanged;
 
 
     [SetsRequiredMembers]
@@ -187,7 +209,7 @@ public class ElementItemWithEnumViewModel<TEnum, TValue> : ElementItemViewModel 
             Label = label;
             (int fid, ValueWithEnum<TEnum, TValue>? dec) = mutable.GetValue(flowid);
 
-            Type.Old = fid == -1 ? default : fid == flowid && dec is not null ? dec.Type : default;
+            Type.Old = fid == -1 ? null : fid == flowid && dec is not null ? dec.Type : null;
             Type.New = Type.Old;
 
             Data.Old = fid == -1 ? null : fid == flowid && dec is not null ? dec.Value : null;
@@ -256,11 +278,17 @@ public class ElementItemWithEnumViewModel<TEnum, TValue> : ElementItemViewModel 
         throw new NotImplementedException();
     }
 
-    public override void Apply()
+    public override void ApplyOverride()
     {
         Type.Apply();
         Data.Apply();
         Extra.Apply();
+    }
+
+
+    protected override string? DisplayOverride()
+    {
+        return Type.ToString() == "Other" ? Extra.Old : Type.Old is null ? null : $"{EnumDescriptionTypeConverter.GetEnumDescription(Type.Old)} {Data.Old}";
     }
 }
 
@@ -279,8 +307,9 @@ public class ElementRefItemWithEnumViewModel<TEnum, TValue> : ElementItemViewMod
 
     public override bool CanConfirm => Data.IsChanged;
 
-    public override bool CanDelete => !CanConfirm && (Data.New is not null || Type.New is not null);
+    public override bool CanDelete => !HasUnsavedValue && (Data.New is not null || Type.New is not null);
 
+    public override bool HasUnsavedValue => Type.IsChanged || Data.IsChanged || Extra.IsChanged;
 
     [SetsRequiredMembers]
     public ElementRefItemWithEnumViewModel(FundElements elements, string property, int flowid, string label) //: base(elements, property, flowid, label)
@@ -293,13 +322,13 @@ public class ElementRefItemWithEnumViewModel<TEnum, TValue> : ElementItemViewMod
             Label = label;
             (int fid, ValueWithEnum<TEnum, TValue>? dec) = mutable.GetValue(flowid);
 
-            Type.Old = fid == -1 ? default : fid == flowid && dec is not null ? dec.Type : default;
+            Type.Old = fid == -1 ? null : fid == flowid && dec is not null ? dec.Type : null;
             Type.New = Type.Old;
 
-            Data.Old = fid == -1 ? default : fid == flowid && dec is not null ? dec.Value : default;
+            Data.Old = fid == -1 ? null : fid == flowid && dec is not null ? dec.Value : null;
             Data.New = Data.Old;
 
-            Extra.Old = fid == -1 ? default : fid == flowid && dec is not null ? dec.Extra : default;
+            Extra.Old = fid == -1 ? null : fid == flowid && dec is not null ? dec.Extra : null;
             Extra.New = Extra.Old;
 
         }
@@ -308,13 +337,13 @@ public class ElementRefItemWithEnumViewModel<TEnum, TValue> : ElementItemViewMod
             Label = label;
             (int fid, ValueWithEnum<TEnum, TValue?>? dec) = mutable2.GetValue(flowid);
 
-            Type.Old = fid == -1 ? default : fid == flowid && dec is not null ? dec.Type : default;
+            Type.Old = fid == -1 ? null : fid == flowid && dec is not null ? dec.Type : null;
             Type.New = Type.Old;
 
-            Data.Old = fid == -1 ? default : fid == flowid && dec is not null ? dec.Value : default;
+            Data.Old = fid == -1 ? null : fid == flowid && dec is not null ? dec.Value : null;
             Data.New = Data.Old;
 
-            Extra.Old = fid == -1 ? default : fid == flowid && dec is not null ? dec.Extra : default;
+            Extra.Old = fid == -1 ? null : fid == flowid && dec is not null ? dec.Extra : null;
             Extra.New = Extra.Old;
         }
         else
@@ -361,11 +390,17 @@ public class ElementRefItemWithEnumViewModel<TEnum, TValue> : ElementItemViewMod
         throw new NotImplementedException();
     }
 
-    public override void Apply()
+    public override void ApplyOverride()
     {
         Type.Apply();
         Data.Apply();
         Extra.Apply();
+    }
+
+
+    protected override string? DisplayOverride()
+    {
+        return Type.ToString() == "Other" ? Extra.Old : Type.Old is null ? null : $"{EnumDescriptionTypeConverter.GetEnumDescription(Type.Old)} {Data.Old}";
     }
 }
 
@@ -387,7 +422,10 @@ public class ElementWithBooleanViewModel<T> : ElementItemViewModel where T : str
     /// <summary>
     /// 当不采用或者采用且有值时
     /// </summary>
-    public override bool CanDelete => !CanConfirm && ((!IsAdopted.New ?? false) || ((IsAdopted.New ?? false) && Data.New.HasValue));
+    public override bool CanDelete => !HasUnsavedValue && ((!IsAdopted.New ?? false) || ((IsAdopted.New ?? false) && Data.New.HasValue));
+
+
+    public override bool HasUnsavedValue => IsAdopted.IsChanged || Data.IsChanged;
 
 
     [SetsRequiredMembers]
@@ -459,7 +497,7 @@ public class ElementWithBooleanViewModel<T> : ElementItemViewModel where T : str
         throw new NotImplementedException();
     }
 
-    public override void Apply()
+    public override void ApplyOverride()
     {
         IsAdopted.Apply();
         Data.Apply();
@@ -469,7 +507,118 @@ public class ElementWithBooleanViewModel<T> : ElementItemViewModel where T : str
 }
 
 
+public class ElementRefrenceWithBooleanViewModel<T> : ElementItemViewModel where T : class
+{
+    /// <summary>
+    /// 是否采用
+    /// </summary>
+    public ValueViewModel<bool> IsAdopted { get; } = new();
 
+    public RefrenceViewModel<T> Data { get; } = new();
+
+
+
+    public override bool CanConfirm => (IsAdopted.Old is null && (!IsAdopted.New??false)) || (IsAdopted.New.HasValue && IsAdopted.New.Value && Data.IsChanged) || ((IsAdopted.New ?? false) && (IsAdopted.Old ?? true));
+
+    /// <summary>
+    /// 当不采用或者采用且有值时
+    /// </summary>
+    public override bool CanDelete => !HasUnsavedValue && IsAdopted.New is not null && ((!IsAdopted.New ?? false) || ((IsAdopted.New ?? false) && Data.New is not null));
+
+
+    public override bool HasUnsavedValue => IsAdopted.IsChanged || Data.IsChanged;
+
+    public Func<bool?, T?, string?>? DisplayGenerator { get; set; }
+
+    [SetsRequiredMembers]
+    public ElementRefrenceWithBooleanViewModel(FundElements elements, string property, int flowid, string label) //: base(elements, property, flowid, label)
+    {
+        Property = property;
+        var obj = elements.GetType().GetProperty(property)?.GetValue(elements);
+
+        if (obj is Mutable<ValueWithBoolean<T>> mutable)
+        {
+            Label = label;
+            (int fid, ValueWithBoolean<T>? dec) = mutable.GetValue(flowid);
+
+            IsAdopted.Old = fid == -1 ? null : fid == flowid && dec is not null ? dec.IsAdopted : null;
+            IsAdopted.New = IsAdopted.Old;
+
+            Data.Old = fid == -1 ? null : fid == flowid && dec is not null ? dec.Value : null;
+            Data.New = Data.Old;
+
+        }
+        else if (obj is Mutable<ValueWithBoolean<T?>> mutable2)
+        {
+            Label = label;
+            (int fid, ValueWithBoolean<T?>? dec) = mutable2.GetValue(flowid);
+
+            IsAdopted.Old = fid == -1 ? null : fid == flowid && dec is not null ? dec.IsAdopted : null;
+            IsAdopted.New = IsAdopted.Old;
+
+            Data.Old = fid == -1 ? null : fid == flowid && dec is not null ? dec.Value : null;
+            Data.New = Data.Old;
+        }
+        else
+            throw new NotImplementedException();
+
+        IsAdopted.PropertyChanged += ItemPropertyChanged;
+        Data.PropertyChanged += ItemPropertyChanged;
+    }
+
+    public override void UpdateEntity(FundElements elements, int flowid)
+    {
+        var obj = elements.GetType().GetProperty(Property)?.GetValue(elements);
+
+        if (Data.New is null || IsAdopted.New is null) return;
+
+        if (obj is Mutable<ValueWithBoolean<T>> mutable)
+            mutable.SetValue(new ValueWithBoolean<T> { IsAdopted = IsAdopted.New.Value, Value = Data.New }, flowid);
+        else if (obj is Mutable<ValueWithBoolean<T?>> mutable2)
+            mutable2.SetValue(new ValueWithBoolean<T?> { IsAdopted = IsAdopted.New.Value, Value = Data.New }, flowid);
+        else throw new NotImplementedException();
+    }
+
+    public override void RemoveValue(FundElements elements, int flowid)
+    {
+        var obj = elements.GetType().GetProperty(Property)?.GetValue(elements);
+
+        if (Data.New is null) return;
+
+        if (obj is Mutable<ValueWithBoolean<T>> mutable)
+            mutable.RemoveValue(flowid);
+
+
+        Data.New = null;
+        IsAdopted.New = null;
+    }
+
+
+    public override void Init(FundElements elements, int flowid)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void ApplyOverride()
+    {
+        IsAdopted.Apply();
+        Data.Apply();
+
+    }
+
+
+    protected override string? DisplayOverride()
+    {
+        return DisplayGenerator is not null ? DisplayGenerator(IsAdopted.Old, Data.Old) : Data.Old?.ToString();
+    }
+}
+
+/// <summary>
+/// 带保底的费用
+/// </summary>
+/// <typeparam name="TEnum"></typeparam>
+/// <typeparam name="T1"></typeparam>
+/// <typeparam name="T2"></typeparam>
 public class ElementItemWithEnumViewModel<TEnum, T1, T2> : ElementItemViewModel where TEnum : struct, Enum where T1 : struct where T2 : struct
 {
     public ValueViewModel<TEnum> Type { get; } = new();
@@ -488,11 +637,18 @@ public class ElementItemWithEnumViewModel<TEnum, T1, T2> : ElementItemViewModel 
 
 
 
-    public override bool CanConfirm => (Type.IsChanged && Type.ToString() != "Other" ? Data.IsSetted : Extra.IsSetted) || (Type.IsSetted && Data.IsSetted && ((IsAdopted.IsChanged && !(IsAdopted.New ?? false)) || Data2.IsSetted));
+    public override bool CanConfirm => (Type.IsChanged && Type.ToString() != "Other" ? Data.IsSetted : Extra.IsSetted) || (Type.IsSetted && Data.IsSetted && ((IsAdopted.IsChanged && !(IsAdopted.New ?? false)) || ((IsAdopted.New ?? false) && Data2.IsSetted)));
 
-    public override bool CanDelete => !CanConfirm && (Data.New is not null || Type.New is not null);
+    public override bool CanDelete => IsNotEmpty() && !HasUnsavedValue && (Data.New is not null || Type.New is not null);
+
+
+    public override bool HasUnsavedValue => Type.IsChanged || Data.IsChanged || Extra.IsChanged;
 
     public string Property2 { get; }
+
+
+    public Func<TEnum, T1?, string?, bool, T2?, string?>? DisplayGenerator { get; set; }
+
 
     [SetsRequiredMembers]
     public ElementItemWithEnumViewModel(FundElements elements, string property, string property2, int flowid, string label)
@@ -506,13 +662,13 @@ public class ElementItemWithEnumViewModel<TEnum, T1, T2> : ElementItemViewModel 
             Label = label;
             (int fid, ValueWithEnum<TEnum, T1>? dec) = mutable.GetValue(flowid);
 
-            Type.Old = fid == -1 ? default : fid == flowid && dec is not null ? dec.Type : default;
+            Type.Old = fid == -1 ? null : fid == flowid && dec is not null ? dec.Type : null;
             Type.New = Type.Old;
 
-            Data.Old = fid == -1 ? default : fid == flowid && dec is not null ? dec.Value : default;
+            Data.Old = fid == -1 ? null : fid == flowid && dec is not null ? dec.Value : null;
             Data.New = Data.Old;
 
-            Extra.Old = fid == -1 ? default : fid == flowid && dec is not null ? dec.Extra : default;
+            Extra.Old = fid == -1 ? null : fid == flowid && dec is not null ? dec.Extra : null;
             Extra.New = Extra.Old;
 
         }
@@ -566,8 +722,14 @@ public class ElementItemWithEnumViewModel<TEnum, T1, T2> : ElementItemViewModel 
         Type.PropertyChanged += ItemPropertyChanged;
         Data.PropertyChanged += ItemPropertyChanged;
         Extra.PropertyChanged += ItemPropertyChanged;
-        IsAdopted.PropertyChanged += ItemPropertyChanged;
+        IsAdopted.PropertyChanged += IsAdopted_PropertyChanged; ;
         Data2.PropertyChanged += ItemPropertyChanged;
+    }
+
+    private void IsAdopted_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        Data2.New = null;
+        ItemPropertyChanged(sender, e);
     }
 
     public override void UpdateEntity(FundElements elements, int flowid)
@@ -596,8 +758,6 @@ public class ElementItemWithEnumViewModel<TEnum, T1, T2> : ElementItemViewModel 
     {
         var obj = elements.GetType().GetProperty(Property)?.GetValue(elements);
 
-        if (Data.New is null) return;
-
         if (obj is Mutable<ValueWithEnum<TEnum, T1>> mutable)
             mutable.RemoveValue(flowid);
 
@@ -605,7 +765,7 @@ public class ElementItemWithEnumViewModel<TEnum, T1, T2> : ElementItemViewModel 
         Type.New = null;
         Data.New = null;
         Extra.New = null;
-        IsAdopted.New = null;
+        IsAdopted.New = false;
         Data2.New = null;
     }
 
@@ -615,7 +775,7 @@ public class ElementItemWithEnumViewModel<TEnum, T1, T2> : ElementItemViewModel 
         throw new NotImplementedException();
     }
 
-    public override void Apply()
+    public override void ApplyOverride()
     {
         Type.Apply();
         Data.Apply();
@@ -623,11 +783,25 @@ public class ElementItemWithEnumViewModel<TEnum, T1, T2> : ElementItemViewModel 
         IsAdopted.Apply();
         Data2.Apply();
     }
+
+    private bool IsNotEmpty() => Type.IsSetted || Data.IsSetted || IsAdopted.IsSetted || Data2.IsSetted || Extra.IsSetted;
+
+
+    protected override string? DisplayOverride()
+    {
+        if (Type.Old is null) return null;
+        if (DisplayGenerator is null) return null;
+
+        return DisplayGenerator(Type.Old.Value, Data.Old, Extra.Old, IsAdopted.Old ?? false, Data2.Old);
+    }
 }
 
 
 
+public class InvestmentManagerViewModel
+{
 
+}
 
 
 
@@ -643,9 +817,15 @@ public class PortionElementItemWithEnumViewModel<TEnum, TValue> : ElementItemVie
 
     public override bool CanConfirm => Data.IsChanged;
 
-    public override bool CanDelete => !CanConfirm && (Type.New is not null || Data.New is not null);
+    public override bool CanDelete => !HasUnsavedValue && (Type.New is not null || Data.New is not null);
+
+
+    public override bool HasUnsavedValue => Type.IsChanged || Data.IsChanged || Extra.IsChanged;
 
     public string Share { get; }
+
+
+    public Func<TEnum, TValue?, string?, string?>? DisplayGenerator { get; set; }
 
 
     [SetsRequiredMembers]
@@ -659,13 +839,13 @@ public class PortionElementItemWithEnumViewModel<TEnum, TValue> : ElementItemVie
             Label = label;
             (int fid, ValueWithEnum<TEnum, TValue>? dec) = mutable.GetValue(share, flowid);
 
-            Type.Old = fid == -1 ? default : fid == flowid && dec is not null ? dec.Type : default;
+            Type.Old = fid == -1 ?  null: fid == flowid && dec is not null ? dec.Type : null;
             Type.New = Type.Old;
 
-            Data.Old = fid == -1 ? default : fid == flowid && dec is not null ? dec.Value : default;
+            Data.Old = fid == -1 ? null : fid == flowid && dec is not null ? dec.Value : null;
             Data.New = Data.Old;
 
-            Extra.Old = fid == -1 ? default : fid == flowid && dec is not null ? dec.Extra : default;
+            Extra.Old = fid == -1 ? null : fid == flowid && dec is not null ? dec.Extra : null;
             Extra.New = Extra.Old;
 
         }
@@ -674,13 +854,13 @@ public class PortionElementItemWithEnumViewModel<TEnum, TValue> : ElementItemVie
             Label = label;
             (int fid, ValueWithEnum<TEnum, TValue>? dec) = mutable2.GetValue(share, flowid);
 
-            Type.Old = fid == -1 ? default : fid == flowid && dec is not null ? dec.Type : default;
+            Type.Old = fid == -1 ? null : fid == flowid && dec is not null ? dec.Type : null;
             Type.New = Type.Old;
 
-            Data.Old = fid == -1 ? default : fid == flowid && dec is not null ? dec.Value : default;
+            Data.Old = fid == -1 ? null : fid == flowid && dec is not null ? dec.Value : null;
             Data.New = Data.Old;
 
-            Extra.Old = fid == -1 ? default : fid == flowid && dec is not null ? dec.Extra : default;
+            Extra.Old = fid == -1 ? null : fid == flowid && dec is not null ? dec.Extra : null;
             Extra.New = Extra.Old;
         }
         else
@@ -772,10 +952,19 @@ public class PortionElementItemWithEnumViewModel<TEnum, TValue> : ElementItemVie
         throw new NotImplementedException();
     }
 
-    public override void Apply()
+    public override void ApplyOverride()
     {
         Type.Apply();
         Data.Apply();
         Extra.Apply();
+    }
+
+
+    protected override string? DisplayOverride()
+    {
+        if (DisplayGenerator is null)
+            return Type.ToString() == "Other" ? Extra.Old : Type.Old is null ? null : $"{EnumDescriptionTypeConverter.GetEnumDescription(Type.Old)} {Data.Old}";
+
+        return Type.Old is null ? null : DisplayGenerator(Type.Old.Value, Data.Old, Extra.Old);
     }
 }
