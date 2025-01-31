@@ -33,7 +33,10 @@ public class ElementItemViewModelSealing : ElementItemViewModel
     public override bool CanConfirm => Type.New switch { SealingType.No => Type.New != Type.Old, SealingType.Has => Month.New > 0 && Month.New != Month.Old, SealingType.Other => !string.IsNullOrWhiteSpace(Extra.New) && Extra.New != Extra.Old, _ => false };
 
 
-    public override bool CanDelete => throw new NotImplementedException();
+    public override bool CanDelete => (Type.IsSetted || Month.IsSetted || Extra.IsSetted) && !CanConfirm;
+
+
+    public override bool HasUnsavedValue => Type.IsChanged || Month.IsChanged || Extra.IsChanged;
 
 
     [SetsRequiredMembers]
@@ -47,7 +50,7 @@ public class ElementItemViewModelSealing : ElementItemViewModel
         Type.Old = fid == flowid ? dec?.Type : fid == -1 ? null : dec?.Type;
         Type.New = fid == flowid ? dec?.Type : fid == -1 ? null : dec?.Type;
 
-        Month.Old = fid == flowid ? dec?.Month ?? 0 : 0;
+        Month.Old = fid == flowid ? dec?.Month ?? 0 : dec?.Month;
         Month.New = Month.Old;
 
         Extra.Old = fid == flowid ? dec?.Extra : fid == -1 ? null : dec?.Extra;
@@ -72,4 +75,10 @@ public class ElementItemViewModelSealing : ElementItemViewModel
         Extra.Old = obj.Extra;
         Extra.New = obj.Extra;
     }
+
+
+    protected override string? DisplayOverride()
+    {
+        return $"{Type.Old switch { SealingType.No => "无", SealingType.Has => $"{Month.Old}个月", _ => Extra.Old }} ";
+    } 
 }

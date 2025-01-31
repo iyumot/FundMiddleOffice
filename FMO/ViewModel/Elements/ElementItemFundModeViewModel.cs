@@ -12,7 +12,9 @@ public class ElementItemFundModeViewModel : ElementItemViewModel
 
     public override bool CanConfirm => Data.New switch { FundMode.Other => Extra.IsChanged && !string.IsNullOrWhiteSpace(Extra.New), _ => Data.IsChanged };
 
-    public override bool CanDelete => !CanConfirm && Data.New is not null;
+    public override bool CanDelete => !HasUnsavedValue && Data.New is not null;
+
+    public override bool HasUnsavedValue => Data.IsChanged || Extra.IsChanged;
 
 
     [SetsRequiredMembers]
@@ -62,4 +64,10 @@ public class ElementItemFundModeViewModel : ElementItemViewModel
         Extra.Old = obj.Extra;
         Extra.New = obj.Extra;
     }
+
+    protected override string? DisplayOverride()
+    {
+        return Data.Old switch { null => null, FundMode.Other => Extra.Old, _ => EnumDescriptionTypeConverter.GetEnumDescription(Data.Old) };
+    }
+
 }
