@@ -50,7 +50,7 @@ public class FlowCollection
 /// 发起工作流
 /// </summary>
 public class InitiateFlow : FundFlow
-{ 
+{
     /// <summary>
     /// 要素文件
     /// </summary>
@@ -64,20 +64,17 @@ public class InitiateFlow : FundFlow
     public override string Name { get => "项目发起"; set { } }
 }
 
-/// <summary>
-/// 合同定稿工作流
-/// </summary>
-public class ContractFinalizeFlow : FundFlow
+
+
+
+public abstract class ContractFlow : FundFlow
 {
     /// <summary>
     /// 定稿合同文件
     /// </summary>
     public FundFileInfo? ContractFile { get; set; }
 
-    /// <summary>
-    /// 风险揭示书
-    /// </summary>
-    public FundFileInfo? RiskDisclosureDocument { get; set; }
+
 
     /// <summary>
     /// 募集账户函
@@ -89,6 +86,24 @@ public class ContractFinalizeFlow : FundFlow
     /// </summary>
     public FundFileInfo? CustodyAccountFile { get; set; }
 
+}
+
+
+
+
+
+/// <summary>
+/// 合同定稿工作流
+/// </summary>
+public class ContractFinalizeFlow : ContractFlow
+{
+
+    /// <summary>
+    /// 风险揭示书
+    /// </summary>
+    public FundFileInfo? RiskDisclosureDocument { get; set; }
+
+   
     //份额、要素
 
     public override string Name { get => "合同定稿"; set { } }
@@ -124,28 +139,14 @@ public class SetupFlow : FundFlow
 /// <summary>
 /// 合同变更工作流
 /// </summary>
-public class ContractModifyFlow : FundFlow
-{
-    /// <summary>
-    /// 定稿合同文件
-    /// </summary>
-    public FundFileInfo? ContractFile { get; set; }
+public class ContractModifyFlow : ContractFlow
+{ 
 
 
     /// <summary>
     /// 补充协议
     /// </summary>
     public VersionedFileInfo? SupplementaryFile { get; set; }
-
-    /// <summary>
-    /// 募集账户函
-    /// </summary>
-    public FundFileInfo? CollectionAccountFile { get; set; }
-
-    /// <summary>
-    /// 托管账户函
-    /// </summary>
-    public FundFileInfo? CustodyAccountFile { get; set; }
 
     //份额、要素
 
