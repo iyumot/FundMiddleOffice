@@ -121,7 +121,7 @@ public class ElementRefrenceViewModel<T> : ElementItemViewModel where T : class
             Label = label;
             (int fid, T? dec) = mutable.GetValue(flowid);
             Data.Old = fid == flowid ? dec : fid == -1 ? default : dec;
-            Data.New = fid == flowid ? dec : default;
+            Data.New = Data.Old;
         }
         else
             throw new NotImplementedException();

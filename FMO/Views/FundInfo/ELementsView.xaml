@@ -63,6 +63,12 @@
 
         <SolidColorBrush x:Key="LabelBrush">Gray</SolidColorBrush>
 
+        <Thickness
+            x:Key="LineSpacing"
+            Bottom="2"
+            Left="0"
+            Right="0"
+            Top="2" />
 
 
 
@@ -606,7 +612,7 @@
             </Style>
         </StackPanel.Resources>
 
-        <Grid Margin="0,2">
+        <Grid Margin="{StaticResource LineSpacing}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*" />
                 <ColumnDefinition Width="2*" />
@@ -645,7 +651,7 @@
             </ToggleButton>
         </Grid>
 
-        <DockPanel Margin="0,2" LastChildFill="False">
+        <DockPanel Margin="{StaticResource LineSpacing}" LastChildFill="False">
             <ContentControl
                 ContentTemplate="{StaticResource FundMode}"
                 DataContext="{Binding FundModeInfo}"
@@ -667,7 +673,7 @@
 
 
         <!--  风险等级 止损预警  -->
-        <DockPanel Margin="0,2" LastChildFill="False">
+        <DockPanel Margin="{StaticResource LineSpacing}" LastChildFill="False">
 
 
 
@@ -724,7 +730,7 @@
         <Separator />
 
         <!--  投资相关  -->
-        <DockPanel Margin="0,2" LastChildFill="False">
+        <DockPanel Margin="{StaticResource LineSpacing}" LastChildFill="False">
             <ContentControl
                 HorizontalContentAlignment="Stretch"
                 DataContext="{Binding InvestmentObjective}"
@@ -741,9 +747,10 @@
 
         </DockPanel>
 
-        <UniformGrid Rows="1">
+        <UniformGrid Margin="{StaticResource LineSpacing}" Rows="1">
             <ContentControl
                 HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
                 DataContext="{Binding InvestmentScope}"
                 Style="{StaticResource ElementContainer}">
                 <TextBox
@@ -754,6 +761,7 @@
 
             <ContentControl
                 HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
                 DataContext="{Binding InvestmentStrategy}"
                 Style="{StaticResource ElementContainer}">
                 <TextBox
@@ -767,7 +775,7 @@
         <Separator />
 
         <!--  费用  -->
-        <DockPanel Margin="0,2" LastChildFill="False">
+        <DockPanel Margin="{StaticResource LineSpacing}" LastChildFill="False">
 
             <ContentControl
                 ContentTemplate="{StaticResource Element.FundFee.G}"
@@ -789,7 +797,7 @@
 
 
         <!--  账户  -->
-        <DockPanel>
+        <DockPanel Margin="{StaticResource LineSpacing}">
 
             <TextBlock
                 Margin="10"

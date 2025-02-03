@@ -116,6 +116,7 @@ public class FundElements
 
     public Mutable<FundInvestmentManager[]>? InvestmentManagers { get; set; }
 
+
     /// <summary>
     /// 业绩比较基准
     /// </summary>
