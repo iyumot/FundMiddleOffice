@@ -53,6 +53,8 @@ public partial class ContractFinalizeFlowViewModel : FlowViewModel, IElementChan
     private string? RemainShare { get; set; }
 
 
+    private bool _shareChanged;
+
     [SetsRequiredMembers]
     public ContractFinalizeFlowViewModel(ContractFinalizeFlow flow, Mutable<ShareClass[]>? shareClass) : base(flow)
     {
@@ -98,6 +100,7 @@ public partial class ContractFinalizeFlowViewModel : FlowViewModel, IElementChan
     public void DivideShares()
     {
         IsDividingShare = true;
+        _shareChanged = true;
 
         ///最大5类
         if (Shares.Count > 5) return;
@@ -125,6 +128,7 @@ public partial class ContractFinalizeFlowViewModel : FlowViewModel, IElementChan
     public void ConfirmShares()
     {
         IsDividingShare = false;
+        _shareChanged = false;
 
         using var db = new BaseDatabase();
         var elements = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
@@ -181,6 +185,24 @@ public partial class ContractFinalizeFlowViewModel : FlowViewModel, IElementChan
         db.GetCollection<FundElements>().Update(elements);
 
         WeakReferenceMessenger.Default.Send(new FundShareChangedMessage { FundId = FundId, FlowId = FlowId });
+    }
+
+
+    /// <summary>
+    /// 如果拆分份额但未保存，则恢复为原始值
+    /// </summary>
+    /// <param name="value"></param>
+    partial void OnIsDividingShareChanged(bool value)
+    {
+        if (!_shareChanged) return; 
+
+        var db = new BaseDatabase();
+        var shareClass = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId)?.ShareClasses;
+
+        if (shareClass is not null && shareClass.GetValue(FlowId).Value is ShareClass[] shares)
+            Shares = new ObservableCollection<string>(shares.Select(x => x.Name));
+        else
+            Shares = new ObservableCollection<string>([FundElements.SingleShareKey]);
     }
 
 }
