@@ -168,7 +168,7 @@
         <DataTemplate x:Key="DT.ContractFinalizeFlow">
             <UserControl Template="{StaticResource FlowShell}">
                 <DockPanel>
-                    <StackPanel VerticalAlignment="Center">
+                    <StackPanel MinWidth="500" VerticalAlignment="Center">
                         <local:FileDisplay
                             FileInfo="{Binding Contract}"
                             Header="定稿合同"
@@ -200,25 +200,28 @@
 
                         <ToggleButton
                             hc:IconElement.Geometry="{StaticResource f.pencil}"
-                            Content="修改"
                             IsChecked="{Binding IsDividingShare}"
                             Style="{StaticResource ToggleButtonDefault.Small}"
+                            ToolTip="修改"
                             Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
 
 
-                        <Grid Visibility="{Binding IsDividingShare, Converter={StaticResource Boolean2VisibilityConverter}}">
+                        <UniformGrid Rows="1" Visibility="{Binding IsDividingShare, Converter={StaticResource Boolean2VisibilityConverter}}">
                             <Button
+                                hc:IconElement.Geometry="{StaticResource f.knife}"
                                 Command="{Binding DivideSharesCommand}"
-                                Content="拆分"
                                 Style="{StaticResource ButtonDefault.Small}"
+                                ToolTip="拆分"
                                 Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-                        </Grid>
 
-                        <Button
-                            Command="{Binding ConfirmSharesCommand}"
-                            Content="确认"
-                            Style="{StaticResource ButtonDefault.Small}"
-                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.circle-check}"
+                                Command="{Binding ConfirmSharesCommand}"
+                                Style="{StaticResource ButtonDefault.Small}"
+                                ToolTip="确认"
+                                Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                        </UniformGrid>
+
 
                         <ListBox
                             VerticalAlignment="Center"
@@ -310,7 +313,7 @@
                         Content="废除"
                         DockPanel.Dock="Right" />
 
-                    <StackPanel VerticalAlignment="Center">
+                    <StackPanel MinWidth="500" VerticalAlignment="Center">
                         <DockPanel>
                             <CheckBox Content="产品更名" IsChecked="{Binding ModifyName}" />
                         </DockPanel>
