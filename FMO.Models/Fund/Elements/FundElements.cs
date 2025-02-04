@@ -1,6 +1,6 @@
 ﻿namespace FMO.Models;
 
- 
+
 public class FundElements
 {
     public const string SingleShareKey = "单一份额";
@@ -284,14 +284,14 @@ public class FundElements
     /// </summary>
     /// <param name="flowid"></param>
     /// <param name="share"></param>
-    public void RemoveShareRelated(int flowid, string share)
+    public void RemoveShareRelated(int flowid, int share)
     {
         foreach (var p in GetType().GetProperties())
         {
             if (p.PropertyType.IsGenericType && p.PropertyType.GetGenericTypeDefinition() == typeof(PortionMutable<>))
             {
                 var genericArg = p.PropertyType.GetGenericArguments()[0];
-                var method = p.PropertyType.GetMethod(nameof(PortionMutable<object>.RemoveValue), System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance, new[] { typeof(string), typeof(int) });
+                var method = p.PropertyType.GetMethod(nameof(PortionMutable<object>.RemoveValue), System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance, new[] { typeof(int), typeof(int) });
                 var obj = p.GetValue(this);
                 method?.Invoke(obj, new object[] { share, flowid });
             }
@@ -299,71 +299,93 @@ public class FundElements
     }
 
 
-    private void AddShareRelated(int flowId, string[] add)
-    {
-        CopyFromDefault(ManageFee!, flowId, add);
-        CopyFromDefault(LockingRule!, flowId, add);
-        CopyFromDefault(SubscriptionFee!, flowId, add);
-        CopyFromDefault(PurchaseFee!, flowId, add);
-        CopyFromDefault(RedemptionFee!, flowId, add);
-    }
+    //private void AddShareRelated(int flowId, string[] add)
+    //{
+    //    CopyFromDefault(ManageFee!, flowId, add);
+    //    CopyFromDefault(LockingRule!, flowId, add);
+    //    CopyFromDefault(SubscriptionFee!, flowId, add);
+    //    CopyFromDefault(PurchaseFee!, flowId, add);
+    //    CopyFromDefault(RedemptionFee!, flowId, add);
+    //}
 
 
 
-    private void CopyFromDefault<T1, T2>(PortionMutable<ValueWithEnum<T1, T2>> mutable, int flowId, string[] add) where T1 : struct, Enum
-    {
-        if (mutable!.GetValue(flowId) is var d && d.FlowId == flowId && d.Value?.FirstOrDefault().Value is ValueWithEnum<T1, T2> r)
-            foreach (var item in add)
-                d.Value[item] = r;
-    }
+    //private void CopyFromDefault<T1, T2>(PortionMutable<ValueWithEnum<T1, T2>> mutable, int flowId, string[] add) where T1 : struct, Enum
+    //{
+    //    if (mutable!.GetValue(flowId) is var d && d.FlowId == flowId && d.Value?.FirstOrDefault().Value is ValueWithEnum<T1, T2> r)
+    //        foreach (var item in add)
+    //            d.Value[item] = r;
+    //}
 
-    private void SetElementAsDefault<T>(PortionMutable<T>? portion, int flowid) where T : notnull
-    {
-        if (portion is null) return;
+    //private void SetElementAsDefault<T>(PortionMutable<T>? portion, int flowid) where T : notnull
+    //{
+    //    if (portion is null) return;
 
-        (var id, var v) = portion!.GetValue(flowid);
-        if (id != flowid) return;
-        if (v is null || v.Count != 1) return;
+    //    (var id, var v) = portion!.GetValue(flowid);
+    //    if (id != flowid) return;
+    //    if (v is null || v.Count != 1) return;
 
-        var sin = v.First();
-        v[SingleShareKey] = sin.Value;
-        v.Remove(sin.Key);
-    }
-
-
-    private void SetAsDefault(int flowid)
-    {
-        foreach (var p in GetType().GetProperties())
-        {
-            if (p.PropertyType.IsGenericType && p.PropertyType.GetGenericTypeDefinition() == typeof(PortionMutable<>))
-            {
-                var genericArg = p.PropertyType.GetGenericArguments()[0];
-                var method = typeof(FundElements).GetMethod(nameof(FundElements.SetElementAsDefault), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);//, new[] { typeof(PortionMutable<>), typeof(int) });
-                var genericMethod = method!.MakeGenericMethod(genericArg);
-                genericMethod.Invoke(this, new object[] { p.GetValue(this)!, flowid });
-            }
-        }
-    }
+    //    var sin = v.First();
+    //    v[SingleShareKey] = sin.Value;
+    //    v.Remove(sin.Key);
+    //}
 
 
+    //private void SetAsDefault(int flowid)
+    //{
+    //    foreach (var p in GetType().GetProperties())
+    //    {
+    //        if (p.PropertyType.IsGenericType && p.PropertyType.GetGenericTypeDefinition() == typeof(PortionMutable<>))
+    //        {
+    //            var genericArg = p.PropertyType.GetGenericArguments()[0];
+    //            var method = typeof(FundElements).GetMethod(nameof(FundElements.SetElementAsDefault), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);//, new[] { typeof(PortionMutable<>), typeof(int) });
+    //            var genericMethod = method!.MakeGenericMethod(genericArg);
+    //            genericMethod.Invoke(this, new object[] { p.GetValue(this)!, flowid });
+    //        }
+    //    }
+    //}
 
-    public void ShareClassChange(int flowId, string[] newshares, string[] add, string[] remove)
-    {
-        // 从单一份额变成多份额，复制值
-        if (ShareClasses is not null && ShareClasses.GetValue(flowId) is var iv && iv.FlowId == flowId && iv.Value?.Length == 1)
-            AddShareRelated(flowId, add);
 
+
+    //public void ShareClassChange(int flowId, string[] newshares, string[] add, string[] remove)
+    //{
+    //    // 从单一份额变成多份额，复制值
+    //    if (ShareClasses is not null && ShareClasses.GetValue(flowId) is var iv && iv.FlowId == flowId && iv.Value?.Length == 1)
+    //        AddShareRelated(flowId, add);
+
+    //    foreach (var item in remove)
+    //        RemoveShareRelated(flowId, item);
+
+    //    if (ShareClasses is null)
+    //        ShareClasses = new(nameof(FundElements.ShareClasses), newshares.Select(x => new ShareClass(x)).ToArray());
+    //    else
+    //        ShareClasses.SetValue(newshares.Select(x => new ShareClass(x)).ToArray(), flowId);
+
+
+    //    if (newshares.Length == 1)
+    //        SetAsDefault(flowId);
+    //}
+
+    public void ShareClassChange(int flowId, (int Id, string Name)[] add, (int Id, string Name)[] remove, (int Id, string Name)[] change)
+    { 
+        var old = ShareClasses!.GetValue(flowId).Value?.ToList() ?? new();
+        old.AddRange(add.Select(x => new ShareClass { Id = x.Id, Name = x.Name }));
+
+        //删除份额类型
         foreach (var item in remove)
-            RemoveShareRelated(flowId, item);
+            RemoveShareRelated(flowId, item.Id);
+        old.RemoveAll(x => remove.Any(y => x.Id == y.Id));
 
-        if (ShareClasses is null)
-            ShareClasses = new(nameof(FundElements.ShareClasses), newshares.Select(x => new ShareClass { Name = x }).ToArray());
-        else
-            ShareClasses.SetValue(newshares.Select(x => new ShareClass { Name = x }).ToArray(), flowId);
+        //更名
+        foreach (var item in change)
+        {
+            var v = old.FirstOrDefault(x => x.Id == item.Id);
+            if (v is not null) v.Name = item.Name;
+        }
 
+        //如果只有一个，强制更名
+        if (old.Count == 1) old[0].Name = SingleShareKey;
 
-        if (newshares.Length == 1)
-            SetAsDefault(flowId);
+        ShareClasses!.SetValue(old.ToArray(), flowId);
     }
-
 }

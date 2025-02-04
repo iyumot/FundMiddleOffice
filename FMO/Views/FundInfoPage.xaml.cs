@@ -86,7 +86,6 @@ public partial class FundInfoPageViewModel : ObservableObject
 
         db.Dispose();
 
-
         Flows = new ObservableCollection<FlowViewModel>();
         foreach (var f in flows)
         {

@@ -10,6 +10,19 @@ using System.Windows;
 
 namespace FMO;
 
+
+public partial class ShareClassViewModel : ObservableObject
+{
+    [ObservableProperty]
+    public partial int Id { get; set; }
+
+    [ObservableProperty]
+    public required partial string Name { get; set; }
+
+
+
+}
+
 public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IElementChangable
 {
     /// <summary>
@@ -33,16 +46,12 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
 
 
     [ObservableProperty]
-    public partial ObservableCollection<string> Shares { get; set; }
+    public partial ObservableCollection<ShareClassViewModel> Shares { get; set; }
 
 
     [ObservableProperty]
     public partial bool IsDividingShare { get; set; }
 
-    /// <summary>
-    /// 如何删除后，留下的
-    /// </summary>
-    private string? RemainShare { get; set; }
 
     /// <summary>
     /// 份额类型有变动
@@ -65,10 +74,23 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
             CustodyAccount = new FileInfo(flow.CustodyAccountFile.Path);
 
 
+        if (flow is ContractFinalizeFlow)
+        {
+            // 如果没有设置过shareclass，设一个默认值 
+            if (shareClass?.Value is null || shareClass.Value.Length == 0)
+            {
+                shareClass!.SetValue([new ShareClass { Id = IdGenerator.GetNextId(nameof(ShareClass)), Name = FundElements.SingleShareKey }], flow.Id);
+                using var db = new BaseDatabase();
+                var el = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
+                el.ShareClasses = shareClass;
+                db.GetCollection<FundElements>().Update(el);
+            }
+        }
+
         if (shareClass is not null && shareClass.GetValue(FlowId).Value is ShareClass[] shares)
-            Shares = new ObservableCollection<string>(shares.Select(x => x.Name));
+            Shares = new ObservableCollection<ShareClassViewModel>(shares.Select(x => new ShareClassViewModel { Id = x.Id, Name = x.Name }));
         else
-            Shares = new ObservableCollection<string>([FundElements.SingleShareKey]);
+            throw new Exception(); //Shares = new ObservableCollection<ShareClassViewModel>([new ShareClassViewModel { Id = IdGenerator.GetNextId(nameof(ShareClass)), Name = FundElements.SingleShareKey }]);
     }
 
 
@@ -98,52 +120,53 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
         if (Shares.Count > 5) return;
 
         if (Shares.Count == 1)
-            Shares[0] = "A";
-        Shares.Add(((char)('A' + Shares.Count)).ToString());
+            Shares[0].Name = "A";
+
+        ShareClassViewModel newitem = new ShareClassViewModel { Id = IdGenerator.GetNextId(nameof(ShareClass)), Name = ((char)('A' + Shares.Count)).ToString() };
+        Shares.Add(newitem);
     }
 
     [RelayCommand]
-    public void DeleteShare(string s)
+    public void DeleteShare(ShareClassViewModel s)
     {
-        if (s == FundElements.SingleShareKey)
-            return;
+        if (Shares.Count > 1)
+            Shares.Remove(s);
 
-        Shares.Remove(s);
         if (Shares.Count == 1)
-        {
-            RemainShare = Shares[0];
-            Shares[0] = FundElements.SingleShareKey;
-        }
+            Shares[0].Name = FundElements.SingleShareKey;
     }
 
     [RelayCommand]
     public void ConfirmShares()
     {
-
         using var db = new BaseDatabase();
         var elements = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
 
         //// 同步份额相关的要素 
-        var rem = Shares.Count == 1 ? [RemainShare ?? Shares[0]] : Shares.ToArray();
-        var old = elements.ShareClasses is null ? [] : elements.ShareClasses.GetValue(FlowId) is var dd && dd.FlowId != FlowId ? [] : dd.Value?.Select(x => x.Name).ToArray() ?? [];
+        var rem = Shares.Select(x => (x.Id, x.Name)).ToArray();
+        var old = elements.ShareClasses is null ? [] : elements.ShareClasses.GetValue(FlowId) is var dd && dd.FlowId != FlowId ? [] : dd.Value?.Select(x => (x.Id, x.Name)).ToArray() ?? [];
 
-        var remove = old.Except(rem).ToArray();
-        var add = rem.Except(old).ToArray();
+        var remove = old.ExceptBy(rem.Select(x => x.Id), x => x.Id).ToArray();
+        var add = rem.ExceptBy(old.Select(x => x.Id), x => x.Id).ToArray();
+        var change = old.Where(x => rem.Any(y => y.Id == x.Id && y.Name != x.Name)).ToArray();
 
 
-        if ((remove.Length != 0 && !(remove.Length == 1 && remove[0] == FundElements.SingleShareKey)) && MessageBoxResult.Cancel == HandyControl.Controls.MessageBox.Show("减少份额种类将会删除对应份额相关的要素", "", MessageBoxButton.OKCancel))
+
+
+        if ((remove.Length != 0 && MessageBoxResult.Cancel == HandyControl.Controls.MessageBox.Show($"此操作将会删除份额[{string.Join(',', remove.Select(x => x.Name))}]相关的要素", "危险操作提示", MessageBoxButton.OKCancel)))
         {
-            if (elements.ShareClasses is not null && elements.ShareClasses.GetValue(FlowId) is var d && d.Value is ShareClass[] shares)
-                Shares = new ObservableCollection<string>(shares.Select(x => x.Name));
+            var shareClass = elements.ShareClasses;
+            if (shareClass is not null && shareClass.GetValue(FlowId).Value is ShareClass[] shares)
+                Shares = new ObservableCollection<ShareClassViewModel>(shares.Select(x => new ShareClassViewModel { Id = x.Id, Name = x.Name }));
             else
-                Shares = new ObservableCollection<string>([FundElements.SingleShareKey]);
+                throw new Exception();
 
             return;
         }
 
 
-        elements.ShareClassChange(FlowId, Shares.ToArray(), add, remove);
-       
+        elements.ShareClassChange(FlowId, add, remove, change);
+
 
         db.GetCollection<FundElements>().Update(elements);
 
@@ -167,8 +190,8 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
         var shareClass = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId)?.ShareClasses;
 
         if (shareClass is not null && shareClass.GetValue(FlowId).Value is ShareClass[] shares)
-            Shares = new ObservableCollection<string>(shares.Select(x => x.Name));
+            Shares = new ObservableCollection<ShareClassViewModel>(shares.Select(x => new ShareClassViewModel { Id = x.Id, Name = x.Name }));
         else
-            Shares = new ObservableCollection<string>([FundElements.SingleShareKey]);
+            throw new Exception();
     }
 }

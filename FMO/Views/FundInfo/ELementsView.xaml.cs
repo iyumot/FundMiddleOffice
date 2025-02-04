@@ -131,7 +131,7 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
     public partial ElementItemWithEnumViewModel<FundFeeType, decimal, decimal>? OutsourcingFee { get; set; }
 
 
-   // [ObservableProperty]
+    // [ObservableProperty]
     //public partial ObservableCollection<FundInvestmentManager>? InvestmentManagers { get; set; }
 
 
@@ -201,7 +201,7 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
         RiskLevel = new(elements, nameof(FundElements.RiskLevel), FlowId, "风险等级");
 
         DurationInMonths = new(elements, nameof(FundElements.DurationInMonths), FlowId, "存续期");
-        DurationInMonths.DisplayGenerator = (a) => a % 12 == 0 ? $"{a/12}年": $"{a}个月";
+        DurationInMonths.DisplayGenerator = (a) => a % 12 == 0 ? $"{a / 12}年" : $"{a}个月";
         ExpirationDate = new(elements, nameof(FundElements.ExpirationDate), FlowId, "到期日");
 
 
@@ -244,9 +244,9 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
         //////////////////////////////////////////////////////////////////////////////
         var shares = elements.ShareClasses!.GetValue(FlowId);
         if (shares.Value is not null)
-            PortionElements = new ObservableCollection<ShareElementsViewModel>(shares.Value.Select(x => new ShareElementsViewModel(x.Name, elements, FlowId)));
+            PortionElements = new ObservableCollection<ShareElementsViewModel>(shares.Value.Select(x => new ShareElementsViewModel(x.Id, x.Name, elements, FlowId)));
         else
-            PortionElements = new ObservableCollection<ShareElementsViewModel>([new ShareElementsViewModel(FundElements.SingleShareKey, elements, FlowId)]);
+            throw new Exception();//  PortionElements = new ObservableCollection<ShareElementsViewModel>([new ShareElementsViewModel(FundElements.SingleShareKey, elements, FlowId)]);
 
 
         OnlyOneShare = PortionElements.Count == 1;
@@ -374,3 +374,6 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
             OnFlowIdChanged(0, FlowId);
     }
 }
+
+
+
