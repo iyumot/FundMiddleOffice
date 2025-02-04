@@ -822,14 +822,15 @@ public class PortionElementItemWithEnumViewModel<TEnum, TValue> : ElementItemVie
 
     public override bool HasUnsavedValue => Type.IsChanged || Data.IsChanged || Extra.IsChanged;
 
-    public string Share { get; }
+    public string ShareName { get; }
 
+    public int ShareId { get; set; }
 
     public Func<TEnum, TValue?, string?, string?>? DisplayGenerator { get; set; }
 
 
     [SetsRequiredMembers]
-    public PortionElementItemWithEnumViewModel(FundElements elements, string share, string property, int flowid, string label) //: base(elements, property, flowid, label)
+    public PortionElementItemWithEnumViewModel(FundElements elements, int shareId, string share, string property, int flowid, string label) //: base(elements, property, flowid, label)
     {
         Property = property;
         var obj = elements.GetType().GetProperty(property)?.GetValue(elements);
@@ -837,7 +838,7 @@ public class PortionElementItemWithEnumViewModel<TEnum, TValue> : ElementItemVie
         if (obj is PortionMutable<ValueWithEnum<TEnum, TValue>> mutable)
         {
             Label = label;
-            (int fid, ValueWithEnum<TEnum, TValue>? dec) = mutable.GetValue(share, flowid);
+            (int fid, ValueWithEnum<TEnum, TValue>? dec) = mutable.GetValue(shareId, flowid);
 
             Type.Old = fid == -1 ?  null: fid == flowid && dec is not null ? dec.Type : null;
             Type.New = Type.Old;
@@ -852,7 +853,7 @@ public class PortionElementItemWithEnumViewModel<TEnum, TValue> : ElementItemVie
         else if (obj is PortionMutable<ValueWithEnum<TEnum, TValue>> mutable2)
         {
             Label = label;
-            (int fid, ValueWithEnum<TEnum, TValue>? dec) = mutable2.GetValue(share, flowid);
+            (int fid, ValueWithEnum<TEnum, TValue>? dec) = mutable2.GetValue(shareId, flowid);
 
             Type.Old = fid == -1 ? null : fid == flowid && dec is not null ? dec.Type : null;
             Type.New = Type.Old;
@@ -869,12 +870,13 @@ public class PortionElementItemWithEnumViewModel<TEnum, TValue> : ElementItemVie
         Type.PropertyChanged += ItemPropertyChanged;
         Data.PropertyChanged += ItemPropertyChanged;
         Extra.PropertyChanged += ItemPropertyChanged;
-        Share = share;
+        ShareId = shareId;
+        ShareName = share;
     }
 
 
-    [SetsRequiredMembers]
-    public PortionElementItemWithEnumViewModel(FundElements elements, string property, int flowid, string label) //: base(elements, property, flowid, label)
+    /*[SetsRequiredMembers]
+    public PortionElementItemWithEnumViewModel(FundElements elements, int shareId, string property, int flowid, string label) //: base(elements, property, flowid, label)
     {
         Property = property;
         var obj = elements.GetType().GetProperty(property)?.GetValue(elements) as dynamic;
@@ -914,8 +916,8 @@ public class PortionElementItemWithEnumViewModel<TEnum, TValue> : ElementItemVie
         Type.PropertyChanged += ItemPropertyChanged;
         Data.PropertyChanged += ItemPropertyChanged;
         Extra.PropertyChanged += ItemPropertyChanged;
-        Share = FundElements.SingleShareKey;
-    }
+        ShareId = FundElements.SingleShareKey;
+    }*/
 
     public override void UpdateEntity(FundElements elements, int flowid)
     {
@@ -924,7 +926,7 @@ public class PortionElementItemWithEnumViewModel<TEnum, TValue> : ElementItemVie
         if (Data.New is null || Type.New is null) return;
 
         if (obj is PortionMutable<ValueWithEnum<TEnum, TValue>> mutable)
-            mutable.SetValue(Share, new ValueWithEnum<TEnum, TValue> { Type = Type.New.Value, Value = Data.New.Value, Extra = Extra.New }, flowid);
+            mutable.SetValue(ShareId, new ValueWithEnum<TEnum, TValue> { Type = Type.New.Value, Value = Data.New.Value, Extra = Extra.New }, flowid);
 
         // else if (obj is PortionMutable<ValueWithEnum<TEnum, TValue>?> mutable2)
         //     mutable2.SetValue(Share, new ValueWithEnum<TEnum, TValue> { Type = Type.New.Value, Value = Data.New.Value, Extra = Extra.New }, flowid);

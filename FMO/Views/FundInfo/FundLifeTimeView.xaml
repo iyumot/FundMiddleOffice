@@ -259,11 +259,11 @@
                                                 HorizontalContentAlignment="Center"
                                                 BorderThickness="0"
                                                 Style="{StaticResource TextBox.Small}"
-                                                Text="{Binding .}" />
+                                                Text="{Binding Name}" />
                                         </DockPanel>
                                     </Border>
                                     <DataTemplate.Triggers>
-                                        <DataTrigger Binding="{Binding .}" Value="单一份额">
+                                        <DataTrigger Binding="{Binding Name}" Value="单一份额">
                                             <Setter TargetName="tb" Property="IsReadOnly" Value="True" />
                                             <Setter TargetName="btn" Property="Visibility" Value="Collapsed" />
                                         </DataTrigger>
@@ -342,20 +342,37 @@
                             Style="{StaticResource ListBoxCustom}" />
                     </StackPanel>
 
+
                     <DockPanel DockPanel.Dock="Top" LastChildFill="False">
-                        <TextBlock VerticalAlignment="Center" Text="基金份额" />
+                        <TextBlock
+                            Margin="0,0,10,0"
+                            VerticalAlignment="Center"
+                            Text="基金份额" />
 
-                        <Button
-                            Command="{Binding DivideSharesCommand}"
-                            Content="拆分"
-                            Style="{StaticResource ButtonDefault.Small}"
+                        <ToggleButton
+                            hc:IconElement.Geometry="{StaticResource f.pencil}"
+                            IsChecked="{Binding IsDividingShare}"
+                            Style="{StaticResource ToggleButtonDefault.Small}"
+                            ToolTip="修改"
                             Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
 
-                        <Button
-                            Command="{Binding ConfirmSharesCommand}"
-                            Content="确认"
-                            Style="{StaticResource ButtonDefault.Small}"
-                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                        <UniformGrid Rows="1" Visibility="{Binding IsDividingShare, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.knife}"
+                                Command="{Binding DivideSharesCommand}"
+                                Style="{StaticResource ButtonDefault.Small}"
+                                ToolTip="拆分"
+                                Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.circle-check}"
+                                Command="{Binding ConfirmSharesCommand}"
+                                Style="{StaticResource ButtonDefault.Small}"
+                                ToolTip="确认"
+                                Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                        </UniformGrid>
+
 
                         <ListBox
                             VerticalAlignment="Center"
@@ -393,11 +410,11 @@
                                                 HorizontalContentAlignment="Center"
                                                 BorderThickness="0"
                                                 Style="{StaticResource TextBox.Small}"
-                                                Text="{Binding .}" />
+                                                Text="{Binding Name}" />
                                         </DockPanel>
                                     </Border>
                                     <DataTemplate.Triggers>
-                                        <DataTrigger Binding="{Binding .}" Value="普通份额">
+                                        <DataTrigger Binding="{Binding Name}" Value="单一份额">
                                             <Setter TargetName="tb" Property="IsReadOnly" Value="True" />
                                             <Setter TargetName="btn" Property="Visibility" Value="Collapsed" />
                                         </DataTrigger>

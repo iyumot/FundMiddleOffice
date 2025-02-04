@@ -59,7 +59,7 @@ public partial class ShareElementsViewModel : ObservableObject
 
 
     [SetsRequiredMembers]
-    public ShareElementsViewModel(string share, FundElements elements, int flowid)
+    public ShareElementsViewModel(int shareId, string share, FundElements elements, int flowid)
     {
         Class = share;
 
@@ -67,20 +67,20 @@ public partial class ShareElementsViewModel : ObservableObject
 
         //LockingRule = new ElementItemViewModelSealing(elements, nameof(FundElements.LockingRule), flowid, "锁定期");
 
-        LockingRule = new PortionElementItemWithEnumViewModel<SealingType, int>(elements, share, nameof(FundElements.LockingRule), flowid, "锁定期");
+        LockingRule = new PortionElementItemWithEnumViewModel<SealingType, int>(elements, shareId, share, nameof(FundElements.LockingRule), flowid, "锁定期");
         LockingRule.DisplayGenerator = (a, b, c) => a switch { SealingType.No => "无", SealingType.Has => $"{b}个月", SealingType.Other => c, _ => throw new NotImplementedException() };
 
-        ManageFee = new PortionElementItemWithEnumViewModel<FundFeeType, decimal>(elements, share, nameof(FundElements.ManageFee), flowid, "管理费");
+        ManageFee = new PortionElementItemWithEnumViewModel<FundFeeType, decimal>(elements, shareId, share, nameof(FundElements.ManageFee), flowid, "管理费");
         ManageFee.DisplayGenerator = (a, b, c) => a switch { FundFeeType.Fix => $"每年固定{b}元", FundFeeType.Ratio => $"{b}%", FundFeeType.Other => c, _ => throw new NotImplementedException() };
 
-        SubscriptionFee = new PortionElementItemWithEnumViewModel<FundFeeType, decimal>(elements, share, nameof(FundElements.SubscriptionFee), flowid, "认购费");
+        SubscriptionFee = new PortionElementItemWithEnumViewModel<FundFeeType, decimal>(elements, shareId, share, nameof(FundElements.SubscriptionFee), flowid, "认购费");
         SubscriptionFee.DisplayGenerator = (a, b, c) => a switch { FundFeeType.Fix => $"单笔{b}元", FundFeeType.Ratio => $"{b}%", FundFeeType.Other => c, _ => throw new NotImplementedException() };
 
-        PurchaseFee = new PortionElementItemWithEnumViewModel<FundFeeType, decimal>(elements, share, nameof(FundElements.PurchaseFee), flowid, "申购费");
+        PurchaseFee = new PortionElementItemWithEnumViewModel<FundFeeType, decimal>(elements, shareId, share, nameof(FundElements.PurchaseFee), flowid, "申购费");
         PurchaseFee.DisplayGenerator = (a, b, c) => a switch { FundFeeType.Fix => $"单笔{b}元", FundFeeType.Ratio => $"{b}%", FundFeeType.Other => c, _ => throw new NotImplementedException() };
 
 
-        RedemptionFee = new PortionElementItemWithEnumViewModel<FundFeeType, decimal>(elements, share, nameof(FundElements.RedemptionFee), flowid, "赎回费");
+        RedemptionFee = new PortionElementItemWithEnumViewModel<FundFeeType, decimal>(elements, shareId, share, nameof(FundElements.RedemptionFee), flowid, "赎回费");
         RedemptionFee.DisplayGenerator = (a, b, c) => a switch { FundFeeType.Fix => $"单笔{b}元", FundFeeType.Ratio => $"{b}%", FundFeeType.Other => c, _ => throw new NotImplementedException() };
 
 

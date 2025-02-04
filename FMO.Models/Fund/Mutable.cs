@@ -88,14 +88,14 @@ public class Mutable<T> where T : notnull
 //}
 
 
-public class PortionMutable<T> : Mutable<Dictionary<string, T>> where T : notnull
+public class PortionMutable<T> : Mutable<Dictionary<int, T>> where T : notnull
 {
     [SetsRequiredMembers]
     public PortionMutable(string name) : base(name, new())
     {
     }
 
-    public void SetValue(string share, T value, int flowid)
+    public void SetValue(int share, T value, int flowid)
     {
         if (!Changes.ContainsKey(flowid))
             Changes.Add(flowid, new());
@@ -105,7 +105,7 @@ public class PortionMutable<T> : Mutable<Dictionary<string, T>> where T : notnul
         dic[share] = value;
     }
 
-    public (int FlowId, T? Value) GetValue(string share, int flowid)
+    public (int FlowId, T? Value) GetValue(int share, int flowid)
     {
         foreach (var x in Changes.Reverse())
         {
@@ -115,14 +115,14 @@ public class PortionMutable<T> : Mutable<Dictionary<string, T>> where T : notnul
                 return (x.Key, x.Value[share]);
 
             /// 如果只有一个值
-            if (x.Value.Count == 1 && x.Value.First().Key == FundElements.SingleShareKey)
-                return (x.Key, x.Value.First().Value);
+            //if (x.Value.Count == 1 && x.Value.First().Key == FundElements.SingleShareKey)
+            //    return (x.Key, x.Value.First().Value);
         }
 
         return (-1, default);
     }
 
-    public void RemoveValue(string share, int flowid)
+    public void RemoveValue(int share, int flowid)
     {
         if (!Changes.ContainsKey(flowid))
             return;

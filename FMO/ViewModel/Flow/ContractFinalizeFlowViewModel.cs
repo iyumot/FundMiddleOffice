@@ -29,26 +29,10 @@ public partial class ContractFinalizeFlowViewModel : ContractRelatedFlowViewMode
     /// </summary>
     private bool _shareChanged;
 
+
     [SetsRequiredMembers]
     public ContractFinalizeFlowViewModel(ContractFinalizeFlow flow, Mutable<ShareClass[]>? shareClass) : base(flow, shareClass)
     {
-        if (!string.IsNullOrWhiteSpace(flow.ContractFile?.Path))
-            Contract = new FileInfo(flow.ContractFile.Path);
-
-
-        if (!string.IsNullOrWhiteSpace(flow.CollectionAccountFile?.Path))
-            CollectionAccount = new FileInfo(flow.CollectionAccountFile.Path);
-
-
-        if (!string.IsNullOrWhiteSpace(flow.CustodyAccountFile?.Path))
-            CustodyAccount = new FileInfo(flow.CustodyAccountFile.Path);
-
-
-        if (shareClass is not null && shareClass.GetValue(FlowId).Value is ShareClass[] shares)
-            Shares = new ObservableCollection<string>(shares.Select(x => x.Name));
-        else
-            Shares = new ObservableCollection<string>([FundElements.SingleShareKey]);
-
 
         Initialized = true;
     }

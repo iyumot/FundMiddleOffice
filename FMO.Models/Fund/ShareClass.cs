@@ -1,10 +1,14 @@
-﻿namespace FMO.Models;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace FMO.Models;
 
 /// <summary>
 /// 有不同份额安排
 /// </summary>
 public class ShareClass
 {
+    public int Id { get; set; }
+
     /// <summary>
     /// 份额名称
     /// </summary>
@@ -14,6 +18,23 @@ public class ShareClass
     /// 要求
     /// </summary>
     public string? Requirement { get; set; }
+
+    /// <summary>
+    /// 仅用于serialize
+    /// </summary>
+    public ShareClass() { }
+
+    /// <summary>
+    /// 此项用于手动创建
+    /// </summary>
+    /// <param name="name"></param>
+    [SetsRequiredMembers]
+    public ShareClass(string name)
+    {
+        Name = name;
+        Id = IdGenerator.GetNextId(nameof(ShareClass));
+    }
+
 }
 
 

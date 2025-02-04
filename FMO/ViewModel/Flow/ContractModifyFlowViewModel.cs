@@ -34,12 +34,6 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
     [SetsRequiredMembers]
     public ContractModifyFlowViewModel(ContractModifyFlow flow, Mutable<ShareClass[]>? shareClass) : base(flow, shareClass)
     {
-
-        if (shareClass is not null && shareClass.GetValue(FlowId).Value is ShareClass[] shares)
-            Shares = new ObservableCollection<string>(shares.Select(x => x.Name));
-        else
-            Shares = new ObservableCollection<string>([SingleShareName]);
-
         ///补充协议
         SupplementaryFile = new(flow.SupplementaryFile?.Files.Select(x => new FileInfo(x.Path)) ?? Array.Empty<FileInfo>());
         SupplementaryFile.CollectionChanged += SupplementaryFile_CollectionChanged;
