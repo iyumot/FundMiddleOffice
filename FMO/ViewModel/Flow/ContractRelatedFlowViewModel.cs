@@ -87,14 +87,25 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
             }
         }
 
-        if (shareClass is not null && shareClass.GetValue(FlowId).Value is ShareClass[] shares)
-            Shares = new ObservableCollection<ShareClassViewModel>(shares.Select(x => new ShareClassViewModel { Id = x.Id, Name = x.Name }));
-        else
-            throw new Exception(); //Shares = new ObservableCollection<ShareClassViewModel>([new ShareClassViewModel { Id = IdGenerator.GetNextId(nameof(ShareClass)), Name = FundElements.SingleShareKey }]);
+        InitShare(shareClass);
     }
 
 
 
+    public void InitShare(Mutable<ShareClass[]>? shareClass = null)
+    {
+        if (shareClass is null)
+        {
+            using var db = new BaseDatabase();
+            shareClass = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId)?.ShareClasses;
+        }
+
+        if (shareClass is not null && shareClass.GetValue(FlowId).Value is ShareClass[] shares)
+            Shares = new ObservableCollection<ShareClassViewModel>(shares.Select(x => new ShareClassViewModel { Id = x.Id, Name = x.Name }));
+        else
+            throw new Exception(); //Shares = new ObservableCollection<ShareClassViewModel>([new ShareClassViewModel { Id = IdGenerator.GetNextId(nameof(ShareClass)), Name = FundElements.SingleShareKey }]);
+
+    }
 
     partial void OnCollectionAccountChanged(FileInfo? oldValue, FileInfo? newValue)
     {
@@ -148,18 +159,14 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
 
         var remove = old.ExceptBy(rem.Select(x => x.Id), x => x.Id).ToArray();
         var add = rem.ExceptBy(old.Select(x => x.Id), x => x.Id).ToArray();
-        var change = old.Where(x => rem.Any(y => y.Id == x.Id && y.Name != x.Name)).ToArray();
-
-
+        var change = rem.Where(x => old.Any(y => y.Id == x.Id && y.Name != x.Name)).ToArray();
 
 
         if ((remove.Length != 0 && MessageBoxResult.Cancel == HandyControl.Controls.MessageBox.Show($"此操作将会删除份额[{string.Join(',', remove.Select(x => x.Name))}]相关的要素", "危险操作提示", MessageBoxButton.OKCancel)))
         {
             var shareClass = elements.ShareClasses;
-            if (shareClass is not null && shareClass.GetValue(FlowId).Value is ShareClass[] shares)
-                Shares = new ObservableCollection<ShareClassViewModel>(shares.Select(x => new ShareClassViewModel { Id = x.Id, Name = x.Name }));
-            else
-                throw new Exception();
+
+            InitShare(shareClass);
 
             return;
         }
@@ -186,12 +193,6 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
     {
         if (!_shareChanged || value) return;
 
-        var db = new BaseDatabase();
-        var shareClass = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId)?.ShareClasses;
-
-        if (shareClass is not null && shareClass.GetValue(FlowId).Value is ShareClass[] shares)
-            Shares = new ObservableCollection<ShareClassViewModel>(shares.Select(x => new ShareClassViewModel { Id = x.Id, Name = x.Name }));
-        else
-            throw new Exception();
+        InitShare();
     }
 }

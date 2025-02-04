@@ -5,6 +5,7 @@ using FMO.Models;
 using FMO.Utilities;
 using System.Collections.ObjectModel;
 using System.Windows.Controls;
+using System.Xml.Linq;
 
 namespace FMO;
 
@@ -58,7 +59,7 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
 
 
     [ObservableProperty]
-    public partial ElementValueViewModel<RiskLevel> RiskLevel { get; set; }
+    public partial ElementValueViewModel<RiskLevel>? RiskLevel { get; set; }
 
 
 
@@ -95,7 +96,7 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsSealingFund))]
-    public partial /*ElementItemViewModelExtra<FundMode>?*/ ElementItemFundModeViewModel FundModeInfo { get; set; }
+    public partial /*ElementItemViewModelExtra<FundMode>?*/ ElementItemFundModeViewModel? FundModeInfo { get; set; }
 
 
     [ObservableProperty]
@@ -106,7 +107,7 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
     public partial ElementItemViewModelSealing? LockingRule { get; set; }
 
     [ObservableProperty]
-    public partial SealingType[] SealingTypes { get; set; }
+    public partial SealingType[]? SealingTypes { get; set; }
 
     [ObservableProperty]
     public partial bool IsSealingFund { get; set; }
@@ -138,7 +139,7 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
 
 
     [ObservableProperty]
-    public partial ElementRefrenceWithBooleanViewModel<string> PerformanceBenchmarks { get; set; }
+    public partial ElementRefrenceWithBooleanViewModel<string>? PerformanceBenchmarks { get; set; }
 
 
     [ObservableProperty]
@@ -241,7 +242,13 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
         InvestmentScope = new(elements, nameof(FundElements.InvestmentScope), FlowId, "投资范围");
         InvestmentStrategy = new(elements, nameof(FundElements.InvestmentStrategy), FlowId, "投资策略");
 
-        //////////////////////////////////////////////////////////////////////////////
+   
+        InitElementsOfShare(elements);
+         
+    }
+
+    private void InitElementsOfShare(FundElements elements)
+    {
         var shares = elements.ShareClasses!.GetValue(FlowId);
         if (shares.Value is not null)
             PortionElements = new ObservableCollection<ShareElementsViewModel>(shares.Value.Select(x => new ShareElementsViewModel(x.Id, x.Name, elements, FlowId)));
@@ -250,13 +257,10 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
 
 
         OnlyOneShare = PortionElements.Count == 1;
-
-
-
-
-
     }
 
+
+    public ElementsViewModel() { IsActive = true; }
 
 
 
@@ -370,8 +374,14 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
 
     public void Receive(FundShareChangedMessage message)
     {
-        if (message.FundId == FundId && message.FlowId == FlowId)
-            OnFlowIdChanged(0, FlowId);
+        if (message.FundId == FundId && message.FlowId <= FlowId)
+        { 
+            using var db = new BaseDatabase(); 
+            var elements = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
+            InitElementsOfShare(elements);
+        }
+                
+                //  OnFlowIdChanged(0, FlowId);
     }
 }
 

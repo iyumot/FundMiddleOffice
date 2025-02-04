@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
 using Serilog;
@@ -24,7 +25,7 @@ public partial class FundInfoPage : UserControl
 }
 
 
-public partial class FundInfoPageViewModel : ObservableObject
+public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<FundShareChangedMessage>
 {
     public Fund Fund { get; init; }
 
@@ -53,6 +54,7 @@ public partial class FundInfoPageViewModel : ObservableObject
 
         RiskLevel = ele.RiskLevel?.Value;
 
+        IsActive = true;
         _initialized = true;
     }
 
@@ -234,7 +236,7 @@ public partial class FundInfoPageViewModel : ObservableObject
         var flow = new ContractModifyFlow { FundId = Fund.Id };
         var db = new BaseDatabase();
         db.GetCollection<FundFlow>().Insert(flow);
-        var ele = db.GetCollection<FundElements>().FindOne(ele => ele.Id == Fund.Id);
+        var ele = db.GetCollection<FundElements>().FindOne(ele => ele.FundId == Fund.Id);
         db.Dispose();
         Flows.Add(new ContractModifyFlowViewModel(flow, ele.ShareClasses));
     }
@@ -288,5 +290,16 @@ public partial class FundInfoPageViewModel : ObservableObject
     partial void OnSelectedFlowInElementsChanged(FlowViewModel? oldValue, FlowViewModel? newValue)
     {
         ElementsViewDataContext.FlowId = newValue!.FlowId;
+    }
+
+     
+
+    public void Receive(FundShareChangedMessage message)
+    {
+        foreach (var f in Flows)
+        {
+            if (f is ContractRelatedFlowViewModel vm && f.FlowId > message.FlowId)
+                vm.InitShare();
+        }
     }
 }
