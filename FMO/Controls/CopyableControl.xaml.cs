@@ -73,8 +73,8 @@ public partial class CopyableControl : UserControl
 
             case Label lb:
                 d = DependencyPropertyDescriptor.FromProperty(Label.ContentProperty, typeof(Label));
-                d.AddValueChanged(lb, (s, e) => SetCanCopy(lb.Content.ToString()));
-                SetCanCopy(lb.Content.ToString());
+                d.AddValueChanged(lb, (s, e) => SetCanCopy(lb.Content?.ToString()));
+                SetCanCopy(lb.Content?.ToString());
                 break;
 
 
