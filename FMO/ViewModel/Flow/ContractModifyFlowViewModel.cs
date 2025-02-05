@@ -11,25 +11,23 @@ namespace FMO;
 public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel, IElementChangable
 {
 
-    private const string SingleShareName = "单一份额";
 
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ModifyCollectionAccount))]
+    [NotifyPropertyChangedFor(nameof(ModifyCustodyAccount))]
     public partial bool ModifyName { get; set; }
+
+    public bool ModifyCollectionAccount { get => ModifyName || field; set => SetProperty(ref field, value); }
+
+
+    public bool ModifyCustodyAccount { get => ModifyName || field; set => SetProperty(ref field, value); }
+
+
+
 
     [ObservableProperty]
     public partial ObservableCollection<FileInfo>? SupplementaryFile { get; set; }
-
-
-
-    [ObservableProperty]
-    public partial FileInfo? RiskDisclosureDocument { get; set; }
-
-
-
-
-
-
 
     [SetsRequiredMembers]
     public ContractModifyFlowViewModel(ContractModifyFlow flow, Mutable<ShareClass[]>? shareClass) : base(flow, shareClass)

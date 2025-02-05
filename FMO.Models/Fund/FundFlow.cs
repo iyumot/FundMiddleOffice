@@ -75,6 +75,10 @@ public abstract class ContractFlow : FundFlow
     public FundFileInfo? ContractFile { get; set; }
 
 
+    /// <summary>
+    /// 风险揭示书
+    /// </summary>
+    public FundFileInfo? RiskDisclosureDocument { get; set; }
 
     /// <summary>
     /// 募集账户函
@@ -98,12 +102,8 @@ public abstract class ContractFlow : FundFlow
 public class ContractFinalizeFlow : ContractFlow
 {
 
-    /// <summary>
-    /// 风险揭示书
-    /// </summary>
-    public FundFileInfo? RiskDisclosureDocument { get; set; }
 
-   
+
     //份额、要素
 
     public override string Name { get => "合同定稿"; set { } }
@@ -129,18 +129,44 @@ public class SetupFlow : FundFlow
     /// </summary>
     public FundFileInfo? PaidInCapitalProof { get; set; }
 
+    /// <summary>
+    /// 成立公告
+    /// </summary>
+    public FundFileInfo? EstablishmentAnnouncement { get; set; }
+
 
 
     public override string Name { get => "基金成立"; set { } }
 }
 
+/// <summary>
+/// 备案工作流
+/// </summary>
+public class RegistrationFlow : FundFlow
+{
 
+    /// <summary>
+    /// 备案承诺函
+    /// </summary>
+    public FundFileInfo? CommitmentLetter { get; set; }
+
+    /// <summary>
+    /// 用印版
+    /// </summary>
+    public FundFileInfo? SealedCommitmentLetter { get; set; }
+
+
+
+    public override string Name { get => "基金备案"; set { } }
+
+
+}
 
 /// <summary>
 /// 合同变更工作流
 /// </summary>
 public class ContractModifyFlow : ContractFlow
-{ 
+{
 
 
     /// <summary>

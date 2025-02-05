@@ -72,18 +72,25 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
         if (fund.Status >= FundStatus.ContractFinalized && !flows.Any(x => x is ContractFinalizeFlow))
         {
-            var f = new ContractFinalizeFlow { FundId = fund.Id, ContractFile = new FundFileInfo { Name = "基金合同" }, CustomFiles = new() };
+            var f = new ContractFinalizeFlow { FundId = fund.Id, ContractFile = new FundFileInfo("基金合同"), CustomFiles = new() };
             flows.Insert(1, f);
             db.GetCollection<FundFlow>().Insert(f);
         }
 
         if (fund.Status >= FundStatus.Setup && !flows.Any(x => x is SetupFlow))
         {
-            var f = new SetupFlow { FundId = fund.Id, PaidInCapitalProof = new FundFileInfo { Name = "实缴出资证明" }, CustomFiles = new() };
+            var f = new SetupFlow { FundId = fund.Id, Date = fund.SetupDate, PaidInCapitalProof = new FundFileInfo("实缴出资证明"), CustomFiles = new() };
             flows.Insert(2, f);
             db.GetCollection<FundFlow>().Insert(f);
         }
 
+
+        if (fund.Status >= FundStatus.Registration && !flows.Any(x => x is RegistrationFlow))
+        {
+            var f = new RegistrationFlow { FundId = fund.Id, Date = fund.AuditDate, CustomFiles = new() };
+            flows.Add(f);
+            db.GetCollection<FundFlow>().Insert(f);
+        }
 
 
         db.Dispose();
@@ -109,6 +116,9 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
                     Flows.Add(new SetupFlowViewModel(d));
                     break;
 
+                case RegistrationFlow d:
+                    Flows.Add(new RegistrationFlowViewModel(d));
+                    break;
                 default:
                     break;
             }
@@ -286,13 +296,20 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
     }
 
-
+    /// <summary>
+    /// 当flow变动时
+    /// </summary>
+    /// <param name="oldValue"></param>
+    /// <param name="newValue"></param>
     partial void OnSelectedFlowInElementsChanged(FlowViewModel? oldValue, FlowViewModel? newValue)
     {
-        ElementsViewDataContext.FlowId = newValue!.FlowId;
+        if (newValue is not null)
+            ElementsViewDataContext.FlowId = newValue.FlowId;
+        else if (Flows.FirstOrDefault(x => x is IElementChangable) is FlowViewModel f)
+            ElementsViewDataContext.FlowId = f.FlowId;
     }
 
-     
+
 
     public void Receive(FundShareChangedMessage message)
     {

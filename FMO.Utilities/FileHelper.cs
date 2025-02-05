@@ -80,7 +80,7 @@ public static class FileHelper
 
         // 同名，但是文件一样，直接返回
         if (hash == oldhash)
-            return (tar, false); 
+            return (tar, false);
 
         var fileName = ori.Name;
         string fileBaseName = Path.GetFileNameWithoutExtension(fileName);
@@ -92,11 +92,11 @@ public static class FileHelper
         {
             string newFileName = $"{fileBaseName} ({counter}){fileExtension}";
             string newFullPath = Path.Combine(tarFolder, newFileName);
-            if (!File.Exists(newFullPath))
+            if (File.Exists(newFullPath))
             {
                 var h = ComputeHash(newFullPath);
                 if (hash == oldhash)
-                    return (newFullPath,false);
+                    return (newFullPath, false);
 
                 continue;
             }
@@ -105,10 +105,41 @@ public static class FileHelper
             return (newFullPath, true);
         }
 
-        return (string.Empty,false);
+        return (string.Empty, false);
     }
 
 
 
+    public static string? CopyFile2(FileInfo ori, string tarFolder)
+    {
+        var tar = Path.Combine(tarFolder, ori.Name);
+
+        // 不存在重名文件，直接复制
+        if (!File.Exists(tar))
+        {
+            File.Copy(ori.FullName, tar);
+            return tar;
+        }
+
+        var fileName = ori.Name;
+        string fileBaseName = Path.GetFileNameWithoutExtension(fileName);
+        string fileExtension = Path.GetExtension(fileName);
+
+        // 生成新的文件名，添加递增的数字后缀
+        //int counter = 1;
+        //while (++counter > 0  )
+        for (int counter = 1; counter < 999; counter++)
+        {
+            string newFileName = $"{fileBaseName} ({counter}){fileExtension}";
+            string newFullPath = Path.Combine(tarFolder, newFileName);
+            if (File.Exists(newFullPath))
+                continue;
+
+            File.Copy(ori.FullName, newFullPath);
+            return newFullPath;
+        }
+
+        return null;
+    }
 
 }

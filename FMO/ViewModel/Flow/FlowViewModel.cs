@@ -2,13 +2,190 @@
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using FMO.Utilities;
+using Microsoft.Win32;
 using Serilog;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Reflection;
+using System.Windows.Controls;
 
 namespace FMO;
+
+
+
+public partial class PredefinedFileViewModel : ObservableObject
+{
+    public required string Name { get; set; }
+
+    [ObservableProperty]
+    public partial FileInfo? File { get; set; }
+
+    /// <summary>
+    /// 保存的路径
+    /// </summary>
+    public required string Folder { get; init; }
+
+
+    [ObservableProperty]
+    public required partial string Property { get; set; }
+
+    /// <summary>
+    /// 文件类型筛选
+    /// </summary>
+    public string? Filter { get; set; }
+
+    public int FundId { get; init; }
+
+    public int FlowId { get; init; }
+
+
+    [SetsRequiredMembers]
+    public PredefinedFileViewModel(int fundId, int flowId, string name, string? path, string folder, string property)
+    {
+        if (!string.IsNullOrWhiteSpace(path))
+            File = new FileInfo(path);
+
+        FundId = fundId;
+        FlowId = flowId;
+        Name = name;
+        Folder = folder;
+        Property = property;
+    }
+
+    [RelayCommand]
+    public void View()
+    {
+        if(File?.Exists??false) 
+            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(File.FullName) { UseShellExecute = true }); } catch { }
+    }
+
+    [RelayCommand]
+    public void Change()
+    {
+        var fd = new OpenFileDialog();
+        fd.Filter = Filter;
+        if (fd.ShowDialog() != true)
+            return;
+
+
+        var fi = new FileInfo(fd.FileName);
+        if (fi is null)
+        {
+            using var db = new BaseDatabase();
+            var flow = db.GetCollection<FundFlow>().FindById(FlowId);
+            if (flow!.GetType().GetProperty(Property) is PropertyInfo property && property.PropertyType == typeof(FundFileInfo))
+                property.SetValue(flow, null);
+
+            db.GetCollection<FundFlow>().Update(flow);
+            File = null;
+        }
+        else
+        {
+            string hash = fi.ComputeHash()!;
+
+            // 保存副本
+            var dir = FundHelper.GetFolder(FundId);
+            dir = dir.CreateSubdirectory(Folder);
+            var tar = FileHelper.CopyFile2(fi, dir.FullName);
+            if(tar is null)
+            {
+                Log.Error($"保存Flow文件出错，{fd.FileName}");
+                HandyControl.Controls.Growl.Error($"无法保存{fd.FileName}，文件名异常或者存在过多重名文件");
+                return;
+            } 
+
+            var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
+
+            using var db = new BaseDatabase();
+            var flow = db.GetCollection<FundFlow>().FindById(FlowId);
+            if (flow!.GetType().GetProperty(Property) is PropertyInfo property && property.PropertyType == typeof(FundFileInfo))
+                property.SetValue(flow, new FundFileInfo(tar, hash,  fi.LastWriteTime));
+
+            db.GetCollection<FundFlow>().Update(flow);
+
+            File = new FileInfo(tar);
+        }
+
+    }
+
+
+    [RelayCommand]
+    public void Print()
+    {
+        if (File is null || !File.Exists) return;
+
+
+        PrintDialog printDialog = new PrintDialog();
+        if (printDialog.ShowDialog() == true)
+        {
+            // 获取默认打印机名称
+            string printerName = printDialog.PrintQueue.Name;
+
+            // 使用系统默认的PDF阅读器打印PDF文档
+            System.Diagnostics.Process process = new System.Diagnostics.Process();
+            process.StartInfo.FileName = File.FullName;
+            process.StartInfo.Verb = "print"; 
+            process.Start();
+
+            // 等待打印任务完成
+            process.WaitForExit();
+        }
+    }
+
+
+    [RelayCommand]
+    public void SaveAs()
+    {
+        if (File is null || !File.Exists) return;
+
+        try
+        {
+            var d = new SaveFileDialog();
+            d.FileName = File.Name;
+            if (d.ShowDialog() == true)
+                System.IO.File.Copy(File.FullName, d.FileName);
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"文件另存为失败: {ex.Message}");
+        }
+    }
+
+
+    [RelayCommand]
+    public void Save()
+    {
+        if (File is null)
+        {
+            using var db = new BaseDatabase();
+            var flow = db.GetCollection<FundFlow>().FindById(FlowId);
+            if (flow!.GetType().GetProperty(Property) is PropertyInfo property && property.PropertyType == typeof(FundFileInfo))
+                property.SetValue(flow, null);
+        }
+        else
+        {
+            string hash = File.ComputeHash()!;
+
+            // 保存副本
+            var dir = FundHelper.GetFolder(FundId);
+            dir = dir.CreateSubdirectory(Folder);
+            var tar = FileHelper.CopyFile(File, dir.FullName);
+
+            var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path);
+
+            using var db = new BaseDatabase();
+            var flow = db.GetCollection<FundFlow>().FindById(FlowId);
+            //if (flow!.GetType().GetProperty(Property) is PropertyInfo property && property.PropertyType == typeof(FundFileInfo))
+            //    property.SetValue(flow, new FundFileInfo(tar.Path, hash,  ));
+
+          
+        }
+    }
+}
+
 
 /// <summary>
 /// 基类
@@ -43,6 +220,9 @@ public partial class FlowViewModel : ObservableObject
     [ObservableProperty]
     public partial bool IsReadOnly { get; set; } = true;
 
+    [ObservableProperty]
+    public partial bool IsSettingDate { get; set; }
+
     /// <summary>
     /// 初始化
     /// </summary>
@@ -72,7 +252,7 @@ public partial class FlowViewModel : ObservableObject
 
 
     partial void OnIsReadOnlyChanged(bool oldValue, bool newValue)
-    { 
+    {
         using var db = new BaseDatabase();
         var flow = db.GetCollection<FundFlow>().FindById(FlowId);
         flow.Finished = newValue;
@@ -81,7 +261,7 @@ public partial class FlowViewModel : ObservableObject
 
     partial void OnDateChanged(DateTime? oldValue, DateTime? newValue)
     {
-        if (oldValue is null || newValue is null || !Initialized) return; 
+        if (newValue is null || !Initialized) return;
 
         using var db = new BaseDatabase();
         var flow = db.GetCollection<FundFlow>().FindById(FlowId);
@@ -154,7 +334,7 @@ public partial class FlowViewModel : ObservableObject
             {
                 if (item.FileInfo is null || !item.FileInfo.Exists)
                 {
-                    flow!.CustomFiles.Add(new FundFileInfo { Name = item.Name ?? "未命名" });
+                    //flow!.CustomFiles.Add(new FundFileInfo { Name = item.Name ?? "未命名" });
                     continue;
                 }
 
@@ -164,7 +344,7 @@ public partial class FlowViewModel : ObservableObject
                 dir = dir.CreateSubdirectory(CustomFileFolder);
                 var tar = FileHelper.CopyFile(item.FileInfo, dir.FullName);
 
-                var fileVersion = new FundFileInfo { Name = item.Name ?? "未命名", Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.FileInfo.LastWriteTime };
+                var fileVersion = new FundFileInfo(tar.Path, hash, item.FileInfo.LastWriteTime);// { Name = item.Name ?? "未命名", Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.FileInfo.LastWriteTime };
 
                 flow!.CustomFiles.Add(fileVersion);
             }
@@ -217,7 +397,7 @@ public partial class FlowViewModel : ObservableObject
             fi = file(flow);
         }
 
-        if(fi is null)
+        if (fi is null)
         {
             Log.Error($"保存文件[{newValue.Name}]出错 {FundId} {Name} {file} 属性为null");
             HandyControl.Controls.Growl.Error($"保存文件出错 {newValue.Name}");
@@ -229,6 +409,8 @@ public partial class FlowViewModel : ObservableObject
         fi.Time = newValue.LastWriteTime;
         db.GetCollection<FundFlow>().Update(flow);
     }
+
+    
 }
 
 
