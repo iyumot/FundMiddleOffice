@@ -17,7 +17,10 @@ public static class FundHelper
         return new DirectoryInfo(FundStorageMap[fundId]);
     }
 
-
+    public static string GetFolder(int fundId, string sub)
+    {
+        return Path.Combine(FundStorageMap[fundId], sub);
+    }
 
 
     public static void Map(Fund fund, string folder)

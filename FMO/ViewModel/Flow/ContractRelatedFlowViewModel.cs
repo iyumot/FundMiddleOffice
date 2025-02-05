@@ -22,27 +22,26 @@ public partial class ShareClassViewModel : ObservableObject
 
 
 }
-
 public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IElementChangable
 {
     /// <summary>
     /// 定稿合同
     /// </summary>
     [ObservableProperty]
-    public partial FileInfo? Contract { get; set; }
+    public partial PredefinedFileViewModel? Contract { get; set; }
 
     /// <summary>
     /// 募集账户函
     /// </summary>
     [ObservableProperty]
-    public partial FileInfo? CollectionAccount { get; set; }
+    public partial PredefinedFileViewModel? CollectionAccount { get; set; }
 
 
     /// <summary>
     /// 托管账户函
     /// </summary>
     [ObservableProperty]
-    public partial FileInfo? CustodyAccount { get; set; }
+    public partial PredefinedFileViewModel? CustodyAccount { get; set; }
 
 
     [ObservableProperty]
@@ -53,6 +52,17 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
     public partial bool IsDividingShare { get; set; }
 
 
+
+    [ObservableProperty]
+    public partial PredefinedFileViewModel? RiskDisclosureDocument { get; set; }
+
+    /// <summary>
+    /// 份额分类
+    /// </summary>
+    [ObservableProperty]
+    public partial bool ModifyShareClass { get; set; }
+
+
     /// <summary>
     /// 份额类型有变动
     /// </summary>
@@ -60,18 +70,18 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
 
 
     [SetsRequiredMembers]
+#pragma warning disable CS9264 // 退出构造函数时，不可为 null 的属性必须包含非 null 值。请考虑添加 ‘required’ 修饰符，或将属性声明为可为 null，或添加 ‘[field: MaybeNull, AllowNull]’ 特性。
     public ContractRelatedFlowViewModel(ContractFlow flow, Mutable<ShareClass[]>? shareClass) : base(flow)
+#pragma warning restore CS9264 // 退出构造函数时，不可为 null 的属性必须包含非 null 值。请考虑添加 ‘required’ 修饰符，或将属性声明为可为 null，或添加 ‘[field: MaybeNull, AllowNull]’ 特性。
     {
-        if (!string.IsNullOrWhiteSpace(flow.ContractFile?.Path))
-            Contract = new FileInfo(flow.ContractFile.Path);
+        Contract = new(FundId, FlowId, "合同定稿" ,flow.ContractFile?.Path, "Contracts", nameof(ContractFlow.ContractFile));
 
+        RiskDisclosureDocument = new(FundId, FlowId, "风险揭示书", flow.RiskDisclosureDocument?.Path,  "Contracts", nameof(ContractFlow.RiskDisclosureDocument));
+         
+        CollectionAccount = new(FundId, FlowId, "募集账户函", flow.CollectionAccountFile?.Path,  "Accounts", nameof(ContractFlow.CollectionAccountFile));
 
-        if (!string.IsNullOrWhiteSpace(flow.CollectionAccountFile?.Path))
-            CollectionAccount = new FileInfo(flow.CollectionAccountFile.Path);
+        CustodyAccount = new(FundId, FlowId, "托管账户函", flow.CustodyAccountFile?.Path, "Accounts", nameof(ContractFlow.CustodyAccountFile));
 
-
-        if (!string.IsNullOrWhiteSpace(flow.CustodyAccountFile?.Path))
-            CustodyAccount = new FileInfo(flow.CustodyAccountFile.Path);
 
 
         if (flow is ContractFinalizeFlow)
@@ -89,9 +99,7 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
 
         InitShare(shareClass);
     }
-
-
-
+     
     public void InitShare(Mutable<ShareClass[]>? shareClass = null)
     {
         if (shareClass is null)
@@ -107,18 +115,7 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
 
     }
 
-    partial void OnCollectionAccountChanged(FileInfo? oldValue, FileInfo? newValue)
-    {
-        if (!Initialized) return;
 
-        if (newValue?.Exists ?? false)
-        {
-
-            SaveFile<ContractFinalizeFlow>(newValue, "Accounts", x => x.CollectionAccountFile, x => x.CollectionAccountFile = new FundFileInfo { Name = "募集账户函" });
-
-        }
-
-    }
 
 
     [RelayCommand]
@@ -195,4 +192,46 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
 
         InitShare();
     }
+
+    //partial void OnCollectionAccountChanged(FileInfo? oldValue, FileInfo? newValue)
+    //{
+    //    if (!Initialized) return;
+
+    //    if (newValue?.Exists ?? false)
+    //    {
+    //        SaveFile<ContractFlow>(newValue, "Accounts", x => x.CollectionAccountFile, x => x.CollectionAccountFile = new FundFileInfo("募集账户函"));
+    //    }
+
+    //}
+
+    //partial void OnCustodyAccountChanged(FileInfo? oldValue, FileInfo? newValue)
+    //{
+    //    if (!Initialized) return;
+
+    //    if (newValue?.Exists ?? false)
+    //    {
+    //        SaveFile<ContractFlow>(newValue, "Accounts", x => x.CustodyAccountFile, x => x.CustodyAccountFile = new FundFileInfo("托管账户函"));
+    //    }
+    //}
+
+    //partial void OnRiskDisclosureDocumentChanged(FileInfo? oldValue, FileInfo? newValue)
+    //{
+    //    if (!Initialized) return;
+
+    //    if (newValue?.Exists ?? false)
+    //    {
+    //        SaveFile<ContractFlow>(newValue, "Contracts", x => x.RiskDisclosureDocument, x => x.RiskDisclosureDocument = new FundFileInfo("风险揭示书"));
+    //    }
+    //}
+
+    //partial void OnContractChanged(FileInfo? oldValue, FileInfo? newValue)
+    //{
+    //    if (!Initialized) return;
+
+    //    if (newValue?.Exists ?? false)
+    //    {
+    //        SaveFile<ContractFlow>(newValue, "Contracts", x => x.ContractFile, x => x.ContractFile = new FundFileInfo("定稿合同"));
+    //    }
+
+    //}
 }

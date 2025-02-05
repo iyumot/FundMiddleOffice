@@ -106,6 +106,8 @@ namespace FMO
         }
 
 
+
+
         public override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
@@ -131,6 +133,15 @@ namespace FMO
             if (btn is not null)
                 btn.Click += Print_Click;
         }
+
+        protected override void OnDrop(DragEventArgs e)
+        {
+            if(e.Data.GetData(DataFormats.FileDrop) is string[] s)
+            {
+                FileInfo = new FileInfo(s[0]);
+            }
+        }
+
 
         private void Print_Click(object sender, RoutedEventArgs e)
         {

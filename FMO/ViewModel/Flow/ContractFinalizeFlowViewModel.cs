@@ -12,28 +12,12 @@ namespace FMO;
 
 public partial class ContractFinalizeFlowViewModel : ContractRelatedFlowViewModel, IElementChangable
 { 
-
-
-    [ObservableProperty]
-    public partial FileInfo? RiskDisclosureDocument { get; set; }
-
-     
-
-    /// <summary>
-    /// 如何删除后，留下的
-    /// </summary>
-    private string? RemainShare { get; set; }
-
-    /// <summary>
-    /// 份额类型有变动
-    /// </summary>
-    private bool _shareChanged;
+      
 
 
     [SetsRequiredMembers]
     public ContractFinalizeFlowViewModel(ContractFinalizeFlow flow, Mutable<ShareClass[]>? shareClass) : base(flow, shareClass)
     {
-
         Initialized = true;
     }
 

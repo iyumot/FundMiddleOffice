@@ -9,6 +9,7 @@
 
 
     <Style TargetType="{x:Type local:FileDisplay}">
+        <Setter Property="AllowDrop" Value="True" />
         <Setter Property="ClipToBounds" Value="True" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="Template">
