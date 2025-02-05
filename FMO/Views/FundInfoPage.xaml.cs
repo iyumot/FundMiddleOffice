@@ -3,12 +3,15 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
+using Microsoft.Win32;
 using Serilog;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Reflection;
 using System.Windows.Controls;
 using System.Windows.Data;
+using static System.Net.WebRequestMethods;
 
 namespace FMO;
 
@@ -51,6 +54,8 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
 
         InitFlows(fund, ele);
+
+        RegistrationLetter = new LatestFileViewModel { Name = "备案函", File = Flows?.Select(x=>x switch { RegistrationFlowViewModel a => a.RegistrationLetter,  ContractModifyFlowViewModel b => b.RegistrationLetter, _=> null}).Where(x=>x is not null && x.File is not null).LastOrDefault()?.File };
 
         RiskLevel = ele.RiskLevel?.Value;
 
@@ -96,6 +101,8 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         db.Dispose();
 
         Flows = new ObservableCollection<FlowViewModel>();
+        Flows.CollectionChanged += Flows_CollectionChanged;
+
         foreach (var f in flows)
         {
             switch (f)
@@ -133,7 +140,41 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         ElementsViewDataContext = new ElementsViewModel { FundId = Fund.Id };
 
         SelectedFlowInElements = Flows.LastOrDefault(x => x is IElementChangable);
+
     }
+
+    private void Flows_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        if(e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+        {
+            foreach(FlowViewModel flow in e.NewItems!)
+            {
+                switch (flow)
+                {
+                    case RegistrationFlowViewModel a:
+                        a.RegistrationLetter!.PropertyChanged += RegistrationLetter_PropertyChanged;
+                        break;
+
+                    case ContractModifyFlowViewModel a:
+                        a.RegistrationLetter!.PropertyChanged += RegistrationLetter_PropertyChanged;
+                        break;
+                    default:
+                        break;
+                } 
+            }
+        }    
+    }
+
+    /// <summary>
+    /// 更新最新备案函
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void RegistrationLetter_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        RegistrationLetter = new LatestFileViewModel { Name = "备案函", File = Flows?.Select(x => x switch { RegistrationFlowViewModel a => a.RegistrationLetter, ContractModifyFlowViewModel b => b.RegistrationLetter, _ => null }).Where(x => x is not null && x.File is not null).LastOrDefault()?.File };
+    }
+
 
 
     private void FlowsSource_Filter(object sender, FilterEventArgs e)
@@ -228,6 +269,10 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     public partial ElementsViewModel ElementsViewDataContext { get; set; }
 
 
+    [ObservableProperty]
+    public partial LatestFileViewModel? RegistrationLetter { get; set; }
+
+
     /// <summary>
     /// 打开基金公示
     /// </summary>
@@ -317,6 +362,67 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         {
             if (f is ContractRelatedFlowViewModel vm && f.FlowId > message.FlowId)
                 vm.InitShare();
+        }
+    }
+}
+
+
+public partial class LatestFileViewModel:ObservableObject
+{
+    public required string Name { get; set; }
+
+    [ObservableProperty]
+    public partial FileInfo? File { get; set; }
+
+
+    [RelayCommand]
+    public void View()
+    {
+        if (File?.Exists ?? false)
+            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(File.FullName) { UseShellExecute = true }); } catch { }
+    }
+
+     
+
+    [RelayCommand]
+    public void Print()
+    {
+        if (File is null || !File.Exists) return;
+
+
+        PrintDialog printDialog = new PrintDialog();
+        if (printDialog.ShowDialog() == true)
+        {
+            // 获取默认打印机名称
+            string printerName = printDialog.PrintQueue.Name;
+
+            // 使用系统默认的PDF阅读器打印PDF文档
+            System.Diagnostics.Process process = new System.Diagnostics.Process();
+            process.StartInfo.FileName = File.FullName;
+            process.StartInfo.Verb = "print";
+            process.Start();
+
+            // 等待打印任务完成
+            process.WaitForExit();
+        }
+    }
+
+
+    [RelayCommand]
+    public void SaveAs()
+    {
+        if (File is null || !File.Exists) return;
+
+        try
+        {
+            var d = new SaveFileDialog();
+            d.FileName = File.Name;
+            if (d.ShowDialog() == true)
+                System.IO.File.Copy(File.FullName, d.FileName);
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"文件另存为失败: {ex.Message}");
         }
     }
 }

@@ -224,6 +224,11 @@
                 </Trigger>
             </DataTemplate.Triggers>
         </DataTemplate>
+        <Style x:Key="SingleFileStyle" TargetType="ContentControl">
+            <Setter Property="ContentTemplate" Value="{StaticResource SingleFile}" />
+            <Setter Property="AllowDrop" Value="True" />
+            <EventSetter Event="Drop" Handler="ContentControl_Drop" />
+        </Style>
 
 
         <DataTemplate x:Key="SealedSingleFile">
@@ -294,6 +299,13 @@
             </DataTemplate.Triggers>
         </DataTemplate>
 
+
+        <Style x:Key="SealedFileStyle" TargetType="ContentControl">
+            <Setter Property="ContentTemplate" Value="{StaticResource SealedSingleFile}" />
+            <Setter Property="AllowDrop" Value="True" />
+            <EventSetter Event="Drop" Handler="ContentControl_Drop" />
+        </Style>
+
         <DataTemplate x:Key="DT.InitiateFlow">
             <UserControl Template="{StaticResource FlowShell}">
                 <StackPanel VerticalAlignment="Center">
@@ -319,10 +331,10 @@
             <UserControl Template="{StaticResource FlowShell}">
                 <DockPanel>
                     <StackPanel MinWidth="500" VerticalAlignment="Center">
-                        <ContentControl Content="{Binding Contract}" ContentTemplate="{StaticResource SingleFile}" />
-                        <ContentControl Content="{Binding RiskDisclosureDocument}" ContentTemplate="{StaticResource SingleFile}" />
-                        <ContentControl Content="{Binding CollectionAccount}" ContentTemplate="{StaticResource SingleFile}" />
-                        <ContentControl Content="{Binding CustodyAccount}" ContentTemplate="{StaticResource SingleFile}" />
+                        <ContentControl Content="{Binding Contract}" Style="{StaticResource SingleFileStyle}" />
+                        <ContentControl Content="{Binding RiskDisclosureDocument}" Style="{StaticResource SingleFileStyle}" />
+                        <ContentControl Content="{Binding CollectionAccount}" Style="{StaticResource SingleFileStyle}" />
+                        <ContentControl Content="{Binding CustodyAccount}" Style="{StaticResource SingleFileStyle}" />
 
                         <ListBox
                             BorderThickness="0"
@@ -430,9 +442,9 @@
             <UserControl Template="{StaticResource FlowShell}">
                 <StackPanel VerticalAlignment="Center">
 
-                    <ContentControl Content="{Binding EstablishmentAnnouncement}" ContentTemplate="{StaticResource SingleFile}" />
+                    <ContentControl Content="{Binding EstablishmentAnnouncement}" Style="{StaticResource SingleFileStyle}" />
 
-                    <ContentControl Content="{Binding PaidInCapitalProof}" ContentTemplate="{StaticResource SingleFile}" />
+                    <ContentControl Content="{Binding PaidInCapitalProof}" Style="{StaticResource SingleFileStyle}" />
 
                     <ListBox
                         BorderThickness="0"
@@ -445,12 +457,31 @@
         </DataTemplate>
 
 
-        <DataTemplate x:Key="DT.Registration">
+        <DataTemplate x:Key="DT.Registration" DataType="local:RegistrationFlowViewModel">
             <UserControl Template="{StaticResource FlowShell}">
                 <StackPanel VerticalAlignment="Center">
 
-                    <ContentControl Content="{Binding CommitmentLetter}" ContentTemplate="{StaticResource SingleFile}" />
-                    <ContentControl Content="{Binding SealedCommitmentLetter}" ContentTemplate="{StaticResource SealedSingleFile}" />
+                    <ContentControl Content="{Binding CommitmentLetter}" Style="{StaticResource SingleFileStyle}" />
+                    <ContentControl Content="{Binding SealedCommitmentLetter}" Style="{StaticResource SealedFileStyle}" />
+
+
+                    <ContentControl Content="{Binding Prospectus}" Style="{StaticResource SingleFileStyle}" />
+                    <ContentControl Content="{Binding SealedProspectus}" Style="{StaticResource SealedFileStyle}" />
+
+
+
+                    <ContentControl Content="{Binding SealedContract}" Style="{StaticResource SealedFileStyle}" />
+                    <ContentControl Content="{Binding SealedAccountOversightProtocol}" Style="{StaticResource SealedFileStyle}" />
+                    <ContentControl Content="{Binding SealedOutsourcingServicesAgreement}" Style="{StaticResource SealedFileStyle}" />
+                    <ContentControl Content="{Binding SealedInvestorList}" Style="{StaticResource SealedFileStyle}" />
+
+
+                    <ContentControl Content="{Binding StructureGraph}" Style="{StaticResource SingleFileStyle}" />
+                    <ContentControl Content="{Binding SealedStructureGraph}" Style="{StaticResource SealedFileStyle}" />
+
+
+                    <ContentControl Content="{Binding NestedCommitmentLetter}" Style="{StaticResource SingleFileStyle}" />
+                    <ContentControl Content="{Binding SealedNestedCommitmentLetter}" Style="{StaticResource SealedFileStyle}" />
 
 
                     <ListBox
@@ -458,6 +489,9 @@
                         ItemTemplate="{StaticResource DT.CustomFile}"
                         ItemsSource="{Binding CustomFiles}"
                         Style="{StaticResource ListBoxCustom}" />
+
+                    <Separator />
+                    <ContentControl Content="{Binding RegistrationLetter}" Style="{StaticResource SingleFileStyle}" />
                 </StackPanel>
             </UserControl>
 
@@ -481,7 +515,7 @@
                         </DockPanel.Resources>
                         <TextBlock Margin="0,0,10,0" Text="变更" />
                         <CheckBox Content="产品名称" IsChecked="{Binding ModifyName}" />
-                        <CheckBox Content="投资经理" IsChecked="{Binding ModifyName}" />
+                        <CheckBox Content="投资经理" IsChecked="{Binding ModifyInvestmentManager}" />
                         <CheckBox Content="份额分类" IsChecked="{Binding ModifyShareClass}" />
                         <CheckBox Content="募集账户" IsChecked="{Binding ModifyCollectionAccount}" />
                         <CheckBox Content="托管账户" IsChecked="{Binding ModifyCustodyAccount}" />
@@ -494,15 +528,15 @@
                             IsReadOnly="{Binding IsReadOnly}" />
 
 
-                        <ContentControl Content="{Binding Contract}" ContentTemplate="{StaticResource SingleFile}" />
-                        <ContentControl Content="{Binding RiskDisclosureDocument}" ContentTemplate="{StaticResource SingleFile}" />
+                        <ContentControl Content="{Binding Contract}" Style="{StaticResource SingleFileStyle}" />
+                        <ContentControl Content="{Binding RiskDisclosureDocument}" Style="{StaticResource SingleFileStyle}" />
                         <ContentControl
                             Content="{Binding CollectionAccount}"
-                            ContentTemplate="{StaticResource SingleFile}"
+                            Style="{StaticResource SingleFileStyle}"
                             Visibility="{Binding ModifyCollectionAccount, Converter={StaticResource Boolean2VisibilityConverter}}" />
                         <ContentControl
                             Content="{Binding CustodyAccount}"
-                            ContentTemplate="{StaticResource SingleFile}"
+                            Style="{StaticResource SingleFileStyle}"
                             Visibility="{Binding ModifyCustodyAccount, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
 
@@ -511,6 +545,13 @@
                             ItemTemplate="{StaticResource DT.CustomFile}"
                             ItemsSource="{Binding CustomFiles}"
                             Style="{StaticResource ListBoxCustom}" />
+
+                        <Separator />
+
+                        <ContentControl Content="{Binding Announcement}" Style="{StaticResource SingleFileStyle}" />
+                        <ContentControl Content="{Binding SealedAnnouncement}" Style="{StaticResource SealedFileStyle}" />
+
+                        <ContentControl Content="{Binding RegistrationLetter}" Style="{StaticResource SingleFileStyle}" />
                     </StackPanel>
 
 

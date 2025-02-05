@@ -33,7 +33,7 @@ namespace FMO
         public SetupFlowViewModel(SetupFlow flow) : base(flow)
         {
             PaidInCapitalProof = new(FundId, FlowId, "实缴出资证明", flow.PaidInCapitalProof?.Path, "Establish", nameof(SetupFlow.PaidInCapitalProof));
-            EstablishmentAnnouncement = new(FundId, FlowId, "成立公告", flow.PaidInCapitalProof?.Path, "Establish", nameof(SetupFlow.PaidInCapitalProof));
+            EstablishmentAnnouncement = new(FundId, FlowId, "成立公告", flow.PaidInCapitalProof?.Path, "Announcement", nameof(SetupFlow.PaidInCapitalProof));
 
             Initialized = true;
         }

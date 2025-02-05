@@ -62,7 +62,7 @@ public partial class InitiateFlowViewModel : FlowViewModel
 
                 // 保存副本
                 var dir = fund.Folder();
-                dir = dir.CreateSubdirectory("Elements");
+                dir = dir.CreateSubdirectory("Element");
                 var tar = FileHelper.CopyFile(item, dir.FullName);
 
                 FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
@@ -105,7 +105,7 @@ public partial class InitiateFlowViewModel : FlowViewModel
 
                 // 保存副本
                 var dir = fund.Folder();
-                dir = dir.CreateSubdirectory("Contracts");
+                dir = dir.CreateSubdirectory("Contract");
                 var tar = FileHelper.CopyFile(item, dir.FullName);
 
                 FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
