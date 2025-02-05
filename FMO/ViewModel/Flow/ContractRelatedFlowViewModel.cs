@@ -74,13 +74,13 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
     public ContractRelatedFlowViewModel(ContractFlow flow, Mutable<ShareClass[]>? shareClass) : base(flow)
 #pragma warning restore CS9264 // 退出构造函数时，不可为 null 的属性必须包含非 null 值。请考虑添加 ‘required’ 修饰符，或将属性声明为可为 null，或添加 ‘[field: MaybeNull, AllowNull]’ 特性。
     {
-        Contract = new(FundId, FlowId, "合同定稿" ,flow.ContractFile?.Path, "Contracts", nameof(ContractFlow.ContractFile));
+        Contract = new(FundId, FlowId, "合同定稿" ,flow.ContractFile?.Path, "Contract", nameof(ContractFlow.ContractFile));
 
-        RiskDisclosureDocument = new(FundId, FlowId, "风险揭示书", flow.RiskDisclosureDocument?.Path,  "Contracts", nameof(ContractFlow.RiskDisclosureDocument));
+        RiskDisclosureDocument = new(FundId, FlowId, "风险揭示书", flow.RiskDisclosureDocument?.Path,  "Contract", nameof(ContractFlow.RiskDisclosureDocument));
          
-        CollectionAccount = new(FundId, FlowId, "募集账户函", flow.CollectionAccountFile?.Path,  "Accounts", nameof(ContractFlow.CollectionAccountFile));
+        CollectionAccount = new(FundId, FlowId, "募集账户函", flow.CollectionAccountFile?.Path,  "Account", nameof(ContractFlow.CollectionAccountFile));
 
-        CustodyAccount = new(FundId, FlowId, "托管账户函", flow.CustodyAccountFile?.Path, "Accounts", nameof(ContractFlow.CustodyAccountFile));
+        CustodyAccount = new(FundId, FlowId, "托管账户函", flow.CustodyAccountFile?.Path, "Account", nameof(ContractFlow.CustodyAccountFile));
 
 
 
@@ -199,7 +199,7 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
 
     //    if (newValue?.Exists ?? false)
     //    {
-    //        SaveFile<ContractFlow>(newValue, "Accounts", x => x.CollectionAccountFile, x => x.CollectionAccountFile = new FundFileInfo("募集账户函"));
+    //        SaveFile<ContractFlow>(newValue, "Account", x => x.CollectionAccountFile, x => x.CollectionAccountFile = new FundFileInfo("募集账户函"));
     //    }
 
     //}
@@ -210,7 +210,7 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
 
     //    if (newValue?.Exists ?? false)
     //    {
-    //        SaveFile<ContractFlow>(newValue, "Accounts", x => x.CustodyAccountFile, x => x.CustodyAccountFile = new FundFileInfo("托管账户函"));
+    //        SaveFile<ContractFlow>(newValue, "Account", x => x.CustodyAccountFile, x => x.CustodyAccountFile = new FundFileInfo("托管账户函"));
     //    }
     //}
 
@@ -220,7 +220,7 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
 
     //    if (newValue?.Exists ?? false)
     //    {
-    //        SaveFile<ContractFlow>(newValue, "Contracts", x => x.RiskDisclosureDocument, x => x.RiskDisclosureDocument = new FundFileInfo("风险揭示书"));
+    //        SaveFile<ContractFlow>(newValue, "Contract", x => x.RiskDisclosureDocument, x => x.RiskDisclosureDocument = new FundFileInfo("风险揭示书"));
     //    }
     //}
 
@@ -230,7 +230,7 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
 
     //    if (newValue?.Exists ?? false)
     //    {
-    //        SaveFile<ContractFlow>(newValue, "Contracts", x => x.ContractFile, x => x.ContractFile = new FundFileInfo("定稿合同"));
+    //        SaveFile<ContractFlow>(newValue, "Contract", x => x.ContractFile, x => x.ContractFile = new FundFileInfo("定稿合同"));
     //    }
 
     //}

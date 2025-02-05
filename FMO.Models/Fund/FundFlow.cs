@@ -156,6 +156,53 @@ public class RegistrationFlow : FundFlow
     public FundFileInfo? SealedCommitmentLetter { get; set; }
 
 
+    /// <summary>
+    /// 招募说明书
+    /// </summary>
+    public FundFileInfo? Prospectus { get; set; }
+
+    public FundFileInfo? SealedProspectus { get; set; }
+
+    /// <summary>
+    /// 用印的基金合同
+    /// </summary>
+    public FundFileInfo? SealedContract { get; set; }
+
+
+    /// <summary>
+    /// 募集账户监督协议
+    /// </summary>
+    public FundFileInfo? SealedAccountOversightProtocol { get; set; }
+
+    /// <summary>
+    /// 外包服务协议
+    /// </summary>
+    public FundFileInfo? SealedOutsourcingServicesAgreement { get; set; }
+
+    /// <summary>
+    /// 投资者明细
+    /// </summary>
+    public FundFileInfo? SealedInvestorList { get; set; }
+
+    /// <summary>
+    /// 产品结构图
+    /// </summary>
+    public FundFileInfo? StructureGraph { get; set; }
+
+
+    public FundFileInfo? SealedStructureGraph { get; set; }
+
+    /// <summary>
+    /// 嵌套承诺函
+    /// </summary>
+    public FundFileInfo? NestedCommitmentLetter { get; set; }
+
+    public FundFileInfo? SealedNestedCommitmentLetter { get; set; }
+
+    /// <summary>
+    /// 备案函
+    /// </summary>
+    public FundFileInfo? RegistrationLetter { get; set; }
 
     public override string Name { get => "基金备案"; set { } }
 
@@ -173,6 +220,19 @@ public class ContractModifyFlow : ContractFlow
     /// 补充协议
     /// </summary>
     public VersionedFileInfo? SupplementaryFile { get; set; }
+
+    /// <summary>
+    /// 备案函
+    /// </summary>
+    public FundFileInfo? RegistrationLetter { get; set; }
+
+
+    /// <summary>
+    /// 成立公告
+    /// </summary>
+    public FundFileInfo? Announcement { get; set; }
+
+    public FundFileInfo? SealedAnnouncement { get; set; }
 
     //份额、要素
 

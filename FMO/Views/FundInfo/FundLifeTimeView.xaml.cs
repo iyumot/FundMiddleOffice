@@ -14,6 +14,13 @@ public partial class FundLifeTimeView : UserControl
     {
         InitializeComponent();
     }
+
+    private void ContentControl_Drop(object sender, DragEventArgs e)
+    {
+        if (sender is ContentControl c && c.Content is PredefinedFileViewModel vm && e.Data.GetData(DataFormats.FileDrop) is string[] s && s.Length > 0)
+            vm.OnDrop(s[0]);
+            
+    }
 }
 
 

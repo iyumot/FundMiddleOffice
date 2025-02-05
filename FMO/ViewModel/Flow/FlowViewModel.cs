@@ -155,6 +155,36 @@ public partial class PredefinedFileViewModel : ObservableObject
     }
 
 
+    public void OnDrop(string s)
+    {
+        var fi = new FileInfo(s);
+        if (!fi.Exists) return;
+
+        string hash = fi.ComputeHash()!;
+
+        // 保存副本
+        var dir = FundHelper.GetFolder(FundId);
+        dir = dir.CreateSubdirectory(Folder);
+        var tar = FileHelper.CopyFile2(fi, dir.FullName);
+        if (tar is null)
+        {
+            Log.Error($"保存Flow文件出错，{s}");
+            HandyControl.Controls.Growl.Error($"无法保存{fi.Name}，文件名异常或者存在过多重名文件");
+            return;
+        }
+
+        var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
+
+        using var db = new BaseDatabase();
+        var flow = db.GetCollection<FundFlow>().FindById(FlowId);
+        if (flow!.GetType().GetProperty(Property) is PropertyInfo property && property.PropertyType == typeof(FundFileInfo))
+            property.SetValue(flow, new FundFileInfo(tar, hash, fi.LastWriteTime));
+
+        db.GetCollection<FundFlow>().Update(flow);
+
+        File = new FileInfo(tar);
+    }
+
     [RelayCommand]
     public void Save()
     {
