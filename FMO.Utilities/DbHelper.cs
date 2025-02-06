@@ -35,6 +35,11 @@ public class BaseDatabase : LiteDatabase
     public BaseDatabase() : base(connectionString, null)
     {
     }
+
+    public ILiteCollection<DailyValue> GetDailyCollection(int fid)
+    {
+        return GetCollection<DailyValue>($"fv_{fid}");
+    }
 }
 
 
