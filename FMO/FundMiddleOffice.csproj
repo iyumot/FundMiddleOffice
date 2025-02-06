@@ -58,4 +58,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Views\Automations\" />
+  </ItemGroup>
+
 </Project>

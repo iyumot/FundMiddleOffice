@@ -83,8 +83,12 @@
             <TabItem Header="总览">
                 <local:FundLifeTimeView />
             </TabItem>
-            <TabItem Header="净值" />
-            <TabItem Header="曲线" />
+            <TabItem Header="净值">
+                <local:NetValueListView />
+            </TabItem>
+            <TabItem Header="曲线">
+                <local:NetValueCurveView DataContext="{Binding CurveViewDataContext}" />
+            </TabItem>
             <TabItem Header="要素">
                 <DockPanel>
                     <DockPanel DockPanel.Dock="Top">

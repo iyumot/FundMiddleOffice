@@ -18,11 +18,3 @@ public enum ClosureType
     [Description("其它")] Other
 }
 
-
-/// <summary>
-/// 封闭期
-/// </summary>
-public class ClosurePeriodInfo:DataExtra<ClosureType>
-{
-    public int Month { get; set; }
-}

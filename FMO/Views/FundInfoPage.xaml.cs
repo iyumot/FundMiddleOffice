@@ -5,13 +5,12 @@ using FMO.Models;
 using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
+using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Reflection;
 using System.Windows.Controls;
 using System.Windows.Data;
-using static System.Net.WebRequestMethods;
 
 namespace FMO;
 
@@ -55,9 +54,23 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
         InitFlows(fund, ele);
 
-        RegistrationLetter = new LatestFileViewModel { Name = "备案函", File = Flows?.Select(x=>x switch { RegistrationFlowViewModel a => a.RegistrationLetter,  ContractModifyFlowViewModel b => b.RegistrationLetter, _=> null}).Where(x=>x is not null && x.File is not null).LastOrDefault()?.File };
+        RegistrationLetter = new LatestFileViewModel { Name = "备案函", File = Flows?.Select(x => x switch { RegistrationFlowViewModel a => a.RegistrationLetter, ContractModifyFlowViewModel b => b.RegistrationLetter, _ => null }).Where(x => x is not null && x.File is not null).LastOrDefault()?.File };
 
         RiskLevel = ele.RiskLevel?.Value;
+
+        // 净值
+        var db = new BaseDatabase();
+        var ll = new List<DailyValue>(db.GetDailyCollection(Fund.Id).FindAll().OrderByDescending(x => x.Date).IntersectBy(TradingDay.Days, x => x.Date).ToList());
+        db.Dispose();
+        App.Current.Dispatcher.BeginInvoke(() =>
+        {
+            DailySource.Source = ll;
+            DailySource.View.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(DailyValue.Date), System.ComponentModel.ListSortDirection.Descending));
+            DailySource.View.Refresh();
+        });
+
+        CurveViewDataContext = new DailyValueCurveViewModel { FundName = Fund.ShortName, Data = ll.OrderBy(x=>x.Date).ToList(), SetupDate = Fund.SetupDate, StartDate = ll.LastOrDefault()?.Date, EndDate = ll.FirstOrDefault()?.Date };
+
 
         IsActive = true;
         _initialized = true;
@@ -145,9 +158,9 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
     private void Flows_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
-        if(e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+        if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
         {
-            foreach(FlowViewModel flow in e.NewItems!)
+            foreach (FlowViewModel flow in e.NewItems!)
             {
                 switch (flow)
                 {
@@ -160,9 +173,9 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
                         break;
                     default:
                         break;
-                } 
+                }
             }
-        }    
+        }
     }
 
     /// <summary>
@@ -262,6 +275,14 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     [ObservableProperty]
     public partial FlowViewModel? SelectedFlowInElements { get; set; }
 
+
+    [ObservableProperty]
+    public partial LatestFileViewModel? RegistrationLetter { get; set; }
+
+
+    public CollectionViewSource DailySource { get; } = new();
+
+
     /// <summary>
     /// 要素 上下文
     /// </summary>
@@ -270,7 +291,8 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
 
     [ObservableProperty]
-    public partial LatestFileViewModel? RegistrationLetter { get; set; }
+    public partial DailyValueCurveViewModel CurveViewDataContext { get; set; }
+
 
 
     /// <summary>
@@ -310,10 +332,61 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     }
 
 
+    [RelayCommand]
+    public void RefreshNetValues()
+    {
+        var fd = FundHelper.GetFolder(Fund.Id, "Sheet");
+        var di = new DirectoryInfo(fd);
+        if (!di.Exists)
+        {
+            HandyControl.Controls.Growl.Info("未发现本基金的估值表");
+            return;
+        }
+
+        ConcurrentBag<(string? name, string? code, DailyValue? daily)> bag = new();
+
+        Parallel.ForEach(di.GetFiles(), f =>
+        {
+            using var fs = f.OpenRead();
+            var item = ValuationSheetHelper.ParseExcel(fs);
+            if (item.dy is not null)
+                item.dy.SheetPath = Path.GetRelativePath(Directory.GetCurrentDirectory(), f.FullName);
+            bag.Add(item);
+        });
 
 
+        var data = bag.OrderBy(x => x.daily?.Date).ToArray();
+
+        // 从属验证
+        var err = data.Where(x => x.code != Fund.Code && x.name != Fund.Name).ToArray();
+        if (err.Length != 0)
+        {
+            HandyControl.Controls.Growl.Info($"发现{err.Length}个文件不属于本基金\n{string.Join('\n', err.Select(x => x.name))}))");
+        }
+
+        using var db = new BaseDatabase();
+        var c = db.GetDailyCollection(Fund.Id);
+        c.Upsert(data.Where(x => x.code == Fund.Code || x.name == Fund.Name).Select(x => x.daily!));
 
 
+        var ll = new List<DailyValue>(db.GetDailyCollection(Fund.Id).FindAll().OrderByDescending(x => x.Date).IntersectBy(TradingDay.Days, x => x.Date).ToList());
+
+
+        App.Current.Dispatcher.BeginInvoke(() =>
+        {
+            DailySource.Source = ll;
+            DailySource.View.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(DailyValue.Date), System.ComponentModel.ListSortDirection.Descending));
+            DailySource.View.Refresh();
+        });
+    }
+
+
+    [RelayCommand]
+    public void ViewSheet(DailyValue daily)
+    {
+        if (daily?.SheetPath is not null)
+            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(daily.SheetPath) { UseShellExecute = true }); } catch { } 
+    }
 
 
 
@@ -366,8 +439,10 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     }
 }
 
-
-public partial class LatestFileViewModel:ObservableObject
+/// <summary>
+/// 最新的文件版本视图
+/// </summary>
+public partial class LatestFileViewModel : ObservableObject
 {
     public required string Name { get; set; }
 
@@ -382,7 +457,7 @@ public partial class LatestFileViewModel:ObservableObject
             try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(File.FullName) { UseShellExecute = true }); } catch { }
     }
 
-     
+
 
     [RelayCommand]
     public void Print()

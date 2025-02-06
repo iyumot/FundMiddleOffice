@@ -28,6 +28,8 @@ public partial class App : Application
             this.Shutdown();
 
 
+        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+
         // 设置工作目录
         if (!string.IsNullOrWhiteSpace(Config.Default.WorkFolder))
         {
