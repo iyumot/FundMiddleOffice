@@ -74,8 +74,8 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
         {
             ele = FundElements.Create(message.Id);
             db.GetCollection<FundElements>().Insert(ele);
-        } 
-        if(ele.Init()) db.GetCollection<FundElements>().Update(ele);
+        }
+        if (ele.Init()) db.GetCollection<FundElements>().Update(ele);
         db.Dispose();
         if (fund is null) return;
 
@@ -148,6 +148,20 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                     page.IsSelected = true;
                     break;
                 }
+
+            case "Task":
+                {
+                    var page = Pages.FirstOrDefault(x => x.Content is TaskPage);
+                    if (page is null)
+                    {
+                        page = new TabItem { Header = GenerateHeader("任务"), Content = new TaskPage() };
+                        Pages.Add(page);
+                    }
+
+                    page.IsSelected = true;
+                    break;
+                }
+
             default:
                 {
                     Type? type = Type.GetType($"FMO.{id}");

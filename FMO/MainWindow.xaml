@@ -69,6 +69,21 @@
                         </Viewbox>
                     </hc:SideMenuItem.Icon>
                 </hc:SideMenuItem>
+
+                <hc:SideMenuItem Command="{Binding OpenPageCommand}" CommandParameter="Task">
+                    <hc:SideMenuItem.Header>
+                        <hc:Badge
+                            Width="50"
+                            Content="定时任务"
+                            ShowBadge="False"
+                            Status="Dot" />
+                    </hc:SideMenuItem.Header>
+                    <hc:SideMenuItem.Icon>
+                        <Viewbox Width="16" Height="16">
+                            <Path Data="{StaticResource f.list-check}" Fill="Black" />
+                        </Viewbox>
+                    </hc:SideMenuItem.Icon>
+                </hc:SideMenuItem>
             </hc:SideMenu>
 
             <TabControl
