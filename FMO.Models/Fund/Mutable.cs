@@ -67,7 +67,10 @@ public class Mutable<T> where T : notnull
         return (-1, default);
     }
 
-
+    public bool HasValue(T? val)
+    {
+        return val is null ? false : Changes.Any(x => x.Value is not null && x.Value.Equals(val));
+    }
 
     public static implicit operator T?(Mutable<T>? mutable)
     {
