@@ -18,9 +18,7 @@ public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<M
 
     [ObservableProperty]
     public partial DateTime? LastRunTime { get; set; }
-
-    [ObservableProperty]
-    public partial DateTime? NextRunDate { get; set; }
+     
 
     [ObservableProperty]
     public partial DateTime? NextRunTime { get; set; }
@@ -62,7 +60,7 @@ public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<M
     [RelayCommand]
     public void DoManualSetNextRunTime(bool set)
     {
-        if (set && NextRunDate is not null && NextRunTime is not null && NextRunTime.Value is DateTime t && t > DateTime.Now)
+        if (set &&  NextRunTime is not null && NextRunTime.Value is DateTime t && t > DateTime.Now)
         {
             using var db = new MissionDatabase();
             var mission = db.GetCollection<Mission>().FindById(Id);
