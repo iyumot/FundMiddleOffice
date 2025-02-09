@@ -1,7 +1,4 @@
-﻿using System.IO;
-using System.Windows;
-
-namespace FMO.Models;
+﻿namespace FMO.Models;
 
 public static class TradingDay
 {
@@ -61,9 +58,26 @@ public static class TradingDay
     {
         try
         {
-            using var sr = new StreamReader(@"config\tradedays.csv");
-            string[] strings = sr.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            Days.AddRange(strings.Select(x => DateOnly.ParseExact(x, "yyyy-MM-dd")));
+
+            var fi = new FileInfo(@"config\tradedays.csv");
+            if (fi.Exists)
+            {
+                using var sr = new StreamReader(@"config\tradedays.csv");
+                string[] strings = sr.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                Days.AddRange(strings.Select(x => DateOnly.ParseExact(x, "yyyy-MM-dd")));
+            }
+            else
+            {
+                DateOnly d = new DateOnly(2000, 1, 1);
+                DateOnly thisyear = new DateOnly(DateTime.Today.Year, 12, 31);
+                while (d < thisyear)
+                {
+                    if (d.DayOfWeek != DayOfWeek.Saturday && d.DayOfWeek != DayOfWeek.Sunday)
+                        Days.Add(d);
+
+                    d = d.AddDays(1);
+                }
+            }
         }
         catch
         {
