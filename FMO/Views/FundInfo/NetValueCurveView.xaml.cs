@@ -328,7 +328,7 @@ public class DailyValueCurveDrawing : FrameworkElement
     public Pen _gridPen2 { get; } = new Pen(new SolidColorBrush(Color.FromRgb(240, 240, 240)), 1) { DashStyle = DashStyles.Dash };
     public Pen _gridPeny { get; } = new Pen(new SolidColorBrush(Color.FromRgb(240, 240, 240)), 2) { DashStyle = DashStyles.Dash };
 
-    public double _heightOfXAxis { get; set; } = 100;
+    public double _heightOfXAxis { get; set; } = 80;
     public double _heightOfTopInfo { get; set; } = 50;
 
     private double _widthOfYAxis { get; set; } = 50;
@@ -760,7 +760,7 @@ public class DailyValueCurveDrawing : FrameworkElement
         for (int i = 0; i < ls.Count; i++)
         {
             var xp = sp;
-            var yp = h - _heightOfXAxis + 70;
+            var yp = h - _heightOfXAxis + 50;
 
             dc.DrawLine(new Pen(ls[i].b, 3), new Point(xp, yp), new Point(xp + 8, yp));
             dc.DrawText(ls[i].t, new Point(xp + 10, yp - ls[i].t.Height / 2));
@@ -779,4 +779,8 @@ public class DailyValueCurveDrawing : FrameworkElement
     }
 
 
+    protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+    {
+        Update();
+    }
 }
