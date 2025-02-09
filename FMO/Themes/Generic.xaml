@@ -207,6 +207,7 @@
                                 Text="{Binding Current.Name}" />
                             <TextBlock
                                 VerticalAlignment="Center"
+                                FontSize="11"
                                 Foreground="Gray"
                                 Text="按蓝色按键选择文件，支持多次设置文件，可保存文件历史版本"
                                 Visibility="{Binding Current, Converter={StaticResource Object2VisibilityReConverter}}" />
