@@ -32,7 +32,7 @@ public static class TradingDay
         return e - s + 1;
     }
 
-    internal static DateOnly Next(DateTime date)
+    public static DateOnly Next(DateTime date)
     {
         return Next(DateOnly.FromDateTime(date));
     }
