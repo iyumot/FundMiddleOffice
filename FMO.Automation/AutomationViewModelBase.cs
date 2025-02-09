@@ -2,10 +2,11 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Serilog;
+using System.ComponentModel;
 
 namespace FMO.Schedule;
 
-public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<MissionMessage> ,IRecipient<MissionProgressMessage>
+public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<MissionMessage>, IRecipient<MissionProgressMessage>
 {
 
 
@@ -56,16 +57,6 @@ public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<M
         WeakReferenceMessenger.Default.Register<MissionProgressMessage, string>(this, nameof(Mission));
     }
 
-    partial void OnIsActivatedChanged(bool value)
-    {
-        using var db = new MissionDatabase();
-        var mission = db.GetCollection<Mission>().FindById(Id);
-        if (mission is null) return;
-
-        mission.IsEnabled = value;
-        db.GetCollection<Mission>().Upsert(mission);
-        NextRunTime = mission.NextRun;
-    }
 
 
     [RelayCommand]
@@ -119,4 +110,36 @@ public class MissionViewModel<T> : AutomationViewModelBase where T : Mission
         Mission = mission;
     }
 
+
+    protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+
+        if (Mission is not null)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(IsActivated):
+                    if (IsActivated != Mission.IsEnabled)
+                    {
+                        Mission.IsEnabled = IsActivated;
+                        NextRunTime = Mission.NextRun;
+                        using var db = new MissionDatabase();
+                        db.GetCollection<Mission>().Upsert(Mission);
+                    }
+                    break;
+
+                case nameof(NextRunTime):
+                    if (NextRunTime != Mission.NextRun)
+                    {
+                        Mission.NextRun = NextRunTime;
+                        using var db = new MissionDatabase();
+                        db.GetCollection<Mission>().Upsert(Mission);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
 }

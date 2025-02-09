@@ -123,9 +123,9 @@ public class GatherDailyFromMailMission : Mission
             log += $"\n读取邮件，共 {mailids.Count} 封";
 
             List<string>? mails = null;
-            // using (var db = new MissionDatabase())
-            //     mails = db.GetCollection<GzMailInfo>().Query().Select(x => x.Id).ToList();
-            mails = new();
+            using (var db = new MissionDatabase())
+                mails = db.GetCollection<GzMailInfo>().Query().Select(x => x.Id).ToList();
+
             var needload = mailids.Except(mails).Select(x => mailids.IndexOf(x));
 
             log += $"\n检查缓存，新邮件{needload.Count()} 封";

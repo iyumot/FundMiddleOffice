@@ -8,7 +8,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DataContext="{d:DesignInstance Type=local:GatherDailyFromMailViewModel}"
     d:DesignHeight="450"
-    d:DesignWidth="800" Loaded="UserControl_Loaded"
+    d:DesignWidth="800"
+    Loaded="UserControl_Loaded"
     mc:Ignorable="d">
     <UserControl.Resources>
         <local:BooleanToBrushConverter x:Key="BooleanToBrushConverter" />
@@ -95,14 +96,14 @@
                     Margin="10,0"
                     Command="{Binding ManualWorkOnceCommand}"
                     Content="立即执行一次" />
-                <Button
+                <!--<Button
                     Height="22"
                     Margin="10,0"
                     Command="{Binding ReparseOnceCommand}"
-                    Content="重新解析" />
+                    Content="重新解析" />-->
             </DockPanel>
         </DockPanel>
 
-        <ProgressBar Value="{Binding ProgressValue}" />
+        <ProgressBar Visibility="{Binding IsWorking, Converter={StaticResource Boolean2VisibilityConverter}}" Value="{Binding ProgressValue}" />
     </DockPanel>
 </UserControl>
