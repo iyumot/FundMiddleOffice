@@ -27,11 +27,15 @@ public partial class FundInfoPage : UserControl
 }
 
 
-public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<FundShareChangedMessage>
+public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<FundShareChangedMessage>, IRecipient<FundDailyUpdateMessage>
 {
     public Fund Fund { get; init; }
 
     private bool _initialized;
+
+
+    //FileSystemWatcher sheetFolderWatcher;
+
 
     [SetsRequiredMembers]
 #pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑添加 "required" 修饰符或声明为可为 null。
@@ -56,26 +60,60 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
         RegistrationLetter = new LatestFileViewModel { Name = "备案函", File = Flows?.Select(x => x switch { RegistrationFlowViewModel a => a.RegistrationLetter, ContractModifyFlowViewModel b => b.RegistrationLetter, _ => null }).Where(x => x is not null && x.File is not null).LastOrDefault()?.File };
 
+
+        /// 监控估值表文件夹
+        //WatchSheetFolder(fund, ele);
+
         RiskLevel = ele.RiskLevel?.Value;
 
         // 净值
         var db = new BaseDatabase();
-        var ll = new List<DailyValue>(db.GetDailyCollection(Fund.Id).FindAll().OrderByDescending(x => x.Date).IntersectBy(TradingDay.Days, x => x.Date).ToList());
+        DailyValues = new ObservableCollection<DailyValue>(db.GetDailyCollection(Fund.Id).FindAll().OrderByDescending(x => x.Date).IntersectBy(TradingDay.Days, x => x.Date));
         db.Dispose();
         App.Current.Dispatcher.BeginInvoke(() =>
         {
-            DailySource.Source = ll;
+            DailySource.Source = DailyValues;
             DailySource.View.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(DailyValue.Date), System.ComponentModel.ListSortDirection.Descending));
             DailySource.View.Refresh();
         });
 
-        CurveViewDataContext = new DailyValueCurveViewModel { FundName = Fund.ShortName, Data = ll.OrderBy(x=>x.Date).ToList(), SetupDate = Fund.SetupDate, StartDate = ll.LastOrDefault()?.Date, EndDate = ll.FirstOrDefault()?.Date };
+        var ll = DailyValues;
+        CurveViewDataContext = new DailyValueCurveViewModel { FundName = Fund.ShortName, Data = ll.OrderBy(x => x.Date).ToList(), SetupDate = Fund.SetupDate, StartDate = ll.LastOrDefault()?.Date, EndDate = ll.FirstOrDefault()?.Date };
 
 
         IsActive = true;
         _initialized = true;
     }
 
+    //private void WatchSheetFolder(Fund fund, FundElements ele)
+    //{
+    //    /// 监控估值表文件夹
+    //    sheetFolderWatcher = new FileSystemWatcher(FundHelper.GetFolder(fund.Id, "Sheet"));
+    //    sheetFolderWatcher.EnableRaisingEvents = true;
+    //    sheetFolderWatcher.Created += (s, e) =>
+    //    {
+    //        try
+    //        {
+    //            using var fs = new FileStream(e.FullPath, FileMode.Open);
+    //            var v = ValuationSheetHelper.ParseExcel(fs);
+    //            if (v.dy is null)
+    //            {
+    //                Log.Warning($"解析估值表 {e.Name} 出错");
+    //                return;
+    //            }
+
+    //            if (v.code == FundCode || ele.FullName!.HasValue(v.fn))
+    //            {
+    //                var db = new BaseDatabase();
+    //                db.GetDailyCollection(fund.Id).Upsert(v.dy);
+    //            }
+    //        }
+    //        catch (Exception er)
+    //        {
+    //            Log.Warning($"解析估值表 {e.Name} 出错 {er.Message}");
+    //        }
+    //    };
+    //}
 
     private void InitFlows(Fund fund, FundElements ele)
     {
@@ -279,6 +317,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     [ObservableProperty]
     public partial LatestFileViewModel? RegistrationLetter { get; set; }
 
+    public ObservableCollection<DailyValue> DailyValues { get; }
 
     public CollectionViewSource DailySource { get; } = new();
 
@@ -385,7 +424,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     public void ViewSheet(DailyValue daily)
     {
         if (daily?.SheetPath is not null)
-            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(daily.SheetPath) { UseShellExecute = true }); } catch { } 
+            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(daily.SheetPath) { UseShellExecute = true }); } catch { }
     }
 
 
@@ -437,7 +476,19 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
                 vm.InitShare();
         }
     }
+
+    public void Receive(FundDailyUpdateMessage message)
+    {
+        if (message.FundId == Fund.Id)
+        {
+            var old = DailyValues.FirstOrDefault(x => x.Id == message.Daily.Id);
+            if (old is null)
+                DailyValues.Add(message.Daily);
+            else throw new NotImplementedException();
+        }
+    }
 }
+
 
 /// <summary>
 /// 最新的文件版本视图

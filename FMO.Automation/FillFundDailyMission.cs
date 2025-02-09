@@ -1,6 +1,5 @@
 ﻿using FMO.Models;
 using FMO.Utilities;
-using System.Diagnostics;
 
 namespace FMO.Schedule;
 
@@ -20,8 +19,7 @@ public class FillFundDailyMission : Mission
 
     protected override void SetNextRun()
     {
-
-        NextRun = LastRun < DateTime.Today ? DateTime.Today : LastRun.AddDays(1);
+        NextRun = LastRun switch { null => DateTime.Today, DateTime d => d < DateTime.Today ? DateTime.Today : d.AddDays(1) };
     }
 
     protected override bool WorkOverride()
@@ -50,4 +48,14 @@ public class FillFundDailyMission : Mission
         }
         catch { return false; }
     }
+}
+
+
+public struct MissionRecord
+{
+    public int MissionId { get; set; }
+
+    public DateTime Time { get; set; }
+
+    public string Record { get; set; }
 }

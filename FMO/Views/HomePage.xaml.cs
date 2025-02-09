@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.IO.AMAC;
 using FMO.Models;
+using FMO.Schedule;
 using FMO.Utilities;
 using Serilog;
 using System.IO;
@@ -19,17 +20,6 @@ public partial class HomePage : UserControl
     {
         InitializeComponent();
     }
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -66,6 +56,8 @@ public partial class HomePageViewModel : ObservableObject
 
         Task.Run(async () =>
         {
+            MissionSchedule.Init();
+
             await Task.Delay(2000);
 
             await DataSelfTest();
@@ -89,7 +81,7 @@ public partial class HomePageViewModel : ObservableObject
 
 
 
-        var ned = c.Where(x => x.PublicDisclosureSynchronizeTime == default).ToArray();
+        var ned = c.Where(x => x.Status >= FundStatus.Normal && x.PublicDisclosureSynchronizeTime == default).ToArray();
         if (ned.Length > 0)
         {
             try
