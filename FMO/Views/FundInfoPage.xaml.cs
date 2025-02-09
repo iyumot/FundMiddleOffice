@@ -58,6 +58,8 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
         InitFlows(fund, ele);
 
+
+
         RegistrationLetter = new LatestFileViewModel { Name = "备案函", File = Flows?.Select(x => x switch { RegistrationFlowViewModel a => a.RegistrationLetter, ContractModifyFlowViewModel b => b.RegistrationLetter, _ => null }).Where(x => x is not null && x.File is not null).LastOrDefault()?.File };
 
 

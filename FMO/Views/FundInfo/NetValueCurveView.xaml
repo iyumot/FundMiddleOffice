@@ -74,7 +74,7 @@
             </Setter>
         </Style>
     </UserControl.Resources>
-    <DockPanel Margin="0,30">
+    <DockPanel Margin="0,30,0,0">
         <DockPanel DockPanel.Dock="Top" LastChildFill="False">
             <DockPanel.Resources>
                 <Style BasedOn="{StaticResource ButtonBaseStyle}" TargetType="Button">
@@ -217,7 +217,10 @@
                     </UniformGrid>
                 </StackPanel>
 
-                <Viewbox Margin="20,0" Stretch="Uniform">
+                <Viewbox
+                    MaxHeight="60"
+                    Margin="20,0"
+                    Stretch="Uniform">
                     <TextBlock
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
@@ -227,7 +230,7 @@
 
             </DockPanel>
 
-            <local:DailyValueCurveDrawing Margin="0,0,40,0" />
+            <local:DailyValueCurveDrawing Margin="0,0,10,0" />
         </DockPanel>
 
     </DockPanel>
