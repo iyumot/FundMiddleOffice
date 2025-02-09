@@ -123,9 +123,9 @@ public class GatherDailyFromMailMission : Mission
             log += $"\n读取邮件，共 {mailids.Count} 封";
 
             List<string>? mails = null;
-            using (var db = new MissionDatabase())
-                mails = db.GetCollection<GzMailInfo>().Query().Select(x => x.Id).ToList();
-
+            // using (var db = new MissionDatabase())
+            //     mails = db.GetCollection<GzMailInfo>().Query().Select(x => x.Id).ToList();
+            mails = new();
             var needload = mailids.Except(mails).Select(x => mailids.IndexOf(x));
 
             log += $"\n检查缓存，新邮件{needload.Count()} 封";
@@ -253,6 +253,8 @@ public class GatherDailyFromMailMission : Mission
 
                 ///保存
                 var folder = FundHelper.GetFolder(fund.Id, "Sheet");
+                if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+
                 var di = new FileInfo(Path.Combine(folder, x.File));
                 if (di.Exists && di.Length == x.Stream!.Length) continue;
                 using var fs = di.OpenWrite();

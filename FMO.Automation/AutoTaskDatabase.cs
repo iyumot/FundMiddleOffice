@@ -2,10 +2,10 @@
 
 namespace FMO.Schedule;
 
-public class AutoTaskDatabase : LiteDatabase
+public class MissionDatabase : LiteDatabase
 {
 
-    public AutoTaskDatabase() : base(@"FileName=data\autotask.ldb;Connection=Shared")
+    public MissionDatabase() : base(@"FileName=data\mission.db;Password=891uiu89f41uf9dij432u89;Connection=Shared")
     {
     }
 

@@ -1,5 +1,6 @@
 ﻿namespace FMO.Schedule;
 
+
 public static class MissionSchedule
 {
     /// <summary>
@@ -15,11 +16,28 @@ public static class MissionSchedule
 
     static HashSet<Mission> missions = new HashSet<Mission>();
 
+    public static Mission[] Missions => missions.ToArray();
+
 
     public static void Init()
     {
-        using (var db = new AutoTaskDatabase())
-            Register(db.GetCollection<Mission>().FindById(nameof(FillFundDailyMission)) ?? new());
+        using var db = new MissionDatabase();
+        var ms = db.GetCollection<Mission>().FindAll().ToArray();
+
+        /// 如果没有，新建一个
+        if (!ms.Any(x => x is FillFundDailyMission))
+        {
+            var fm = new FillFundDailyMission();
+            db.GetCollection<Mission>().Insert(fm);
+            fm.Init();
+            missions.Add(fm);
+        }
+
+        foreach (var m in ms)
+        {
+            m.Init();
+            missions.Add(m);
+        }
 
         _taskTimer.Elapsed += _taskTimer_Elapsed;
         _taskTimer.Start();
@@ -46,5 +64,9 @@ public static class MissionSchedule
         missions.Add(mission);
     }
 
-
+    public static void SaveChanges(Mission m)
+    {
+        using var db = new MissionDatabase();
+        db.GetCollection<Mission>().Upsert(m);
+    }
 }

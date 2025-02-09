@@ -1,26 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-using FMO.Models;
-using FMO.Utilities;
-using LiteDB;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+using FMO.Schedule;
+using System.Collections.ObjectModel;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Media.TextFormatting;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace FMO;
 
@@ -37,5 +20,34 @@ public partial class TaskPage : UserControl
 
 
 
+public partial class TaskPageViewModel : ObservableObject
+{
 
+    public ObservableCollection<AutomationViewModelBase> Tasks { get; } = new();
+
+
+    public TaskPageViewModel()
+    {
+        var ms = MissionSchedule.Missions;
+
+        foreach (var m in ms)
+        {
+            var assembly = Assembly.GetAssembly(m.GetType());
+
+            var vmtype = assembly!.GetType(m.GetType().ToString().Replace("Mission", "ViewModel"));
+            if (vmtype is null)
+                continue;
+
+            if (!vmtype.IsAssignableTo(typeof(AutomationViewModelBase)))
+                continue;
+
+            var obj = Activator.CreateInstance(vmtype, m) as AutomationViewModelBase;
+
+            if (obj is not null)
+                Tasks.Add(obj);
+        }
+
+
+    }
+}
 

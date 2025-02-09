@@ -2,13 +2,20 @@
 
 public class MissionMessage
 {
-    public required string Id { get; set; }
+    public required int Id { get; set; }
 
     public bool IsWorking { get; set; }
+
+    public DateTime? LastRun { get; set; }
+
+    public DateTime? NextRun { get; set; }
 }
+
+
+
 public class MissionProgressMessage
 {
-    public required string Id { get; set; }
+    public required int Id { get; set; }
 
     public double Progress { get; set; }
 }
