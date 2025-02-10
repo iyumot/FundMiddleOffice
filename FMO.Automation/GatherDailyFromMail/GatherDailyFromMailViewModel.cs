@@ -144,13 +144,6 @@ public partial class GatherDailyFromMailViewModel : MissionViewModel<GatherDaily
     }
 
 
-    [RelayCommand]
-    public void ManualWorkOnce()
-    {
-        Task.Run(() => Mission.Work());
-    }
-
-
 
 
     public void Receive(MissionMailCredentialMessage message)

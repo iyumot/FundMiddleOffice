@@ -77,6 +77,9 @@ public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<M
         ManualSetNextRun = false;
     }
 
+
+
+
     public void Receive(MissionMessage message)
     {
         if (Id != message.Id) return;
@@ -98,7 +101,7 @@ public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<M
 }
 
 
-public class MissionViewModel<T> : AutomationViewModelBase where T : Mission
+public partial class MissionViewModel<T> : AutomationViewModelBase where T : Mission
 {
     protected T Mission { get; set; }
 
@@ -106,6 +109,13 @@ public class MissionViewModel<T> : AutomationViewModelBase where T : Mission
     public MissionViewModel(T mission) : base(mission)
     {
         Mission = mission;
+    }
+
+
+    [RelayCommand]
+    public void RunOnce()
+    {
+        Task.Run(() => Mission.Work());
     }
 
 
