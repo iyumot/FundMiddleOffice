@@ -8,13 +8,7 @@ using System.Threading.Tasks;
 namespace FMO.Models;
 
 
-public class FundDailyUpdateMessage
-{
 
-    public int FundId { get; set; }
-
-    public required DailyValue Daily { get; set; }
-}
 
 
 

@@ -17,7 +17,9 @@ public enum FundStatus
 
     [Description("正在运作")] Normal = 11,
 
-    [Description("提前清算")] EarlyLiquidation = 21,
+    [Description("开始清算")] StartLiquidation = 21,
+
+    [Description("提前清算")] EarlyLiquidation,
 
     [Description("正常清算")] Liquidation,
 

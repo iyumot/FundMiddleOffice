@@ -1,15 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
 using System.Globalization;
-using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace FMO.Shared;
 
@@ -27,7 +24,7 @@ public partial class DailyReportGridView : UserControl
 }
 
 
-public partial class DailyReportGridViewModel : ObservableRecipient,IRecipient<FundDailyUpdateMessage>
+public partial class DailyReportGridViewModel : ObservableRecipient, IRecipient<FundDailyUpdateMessage>, IRecipient<FundStatusChangedMessage>
 {
 
     [ObservableProperty]
@@ -46,13 +43,13 @@ public partial class DailyReportGridViewModel : ObservableRecipient,IRecipient<F
     {
         if (Data is null) return;
 
-        var item = Data.FirstOrDefault(x => x.Fund?.Id == message.FundId);
+        var item = Data.FirstOrDefault(x => x.FundId == message.FundId);
         if (item is null) return;
 
         if (message.Daily.Date < item.Daily?.Date) return;
 
         using var db = new BaseDatabase();
-        var dy = db.GetDailyCollection(item.Fund!.Id).Query().OrderByDescending(x => x.Date).Where(x => x.NetValue > 0 && x.CumNetValue > 0).Limit(5).ToArray();
+        var dy = db.GetDailyCollection(item.FundId).Query().OrderByDescending(x => x.Date).Where(x => x.NetValue > 0 && x.CumNetValue > 0).Limit(5).ToArray();
         if (!dy.Any()) return;
 
         item.Daily = dy.First();
@@ -74,7 +71,7 @@ public partial class DailyReportGridViewModel : ObservableRecipient,IRecipient<F
         if (dy.Length > 1)
             item.ChangeByPrev = (item.Daily!.CumNetValue - dy[1].CumNetValue) * 100;
 
-        var yearfirst = db.GetDailyCollection(item.Fund.Id).Query().OrderBy(x => x.Date).Where(x => x.Date.Year == td.Year).FirstOrDefault();
+        var yearfirst = db.GetDailyCollection(item.FundId).Query().OrderBy(x => x.Date).Where(x => x.Date.Year == td.Year).FirstOrDefault();
 
         if (yearfirst is not null)
             item.ChangeByYear = (item.Daily!.CumNetValue - yearfirst.CumNetValue);
@@ -84,15 +81,15 @@ public partial class DailyReportGridViewModel : ObservableRecipient,IRecipient<F
     {
         using var db = new BaseDatabase();
         var funds = db.GetCollection<Fund>().Find(x => x.Status == FundStatus.Normal).ToArray();
-       
+
 
         //最近的交易日
         var td = TradingDay.Current;
-        var tmp = funds.Select(x => new DailyReportItem { Fund = x }).ToArray();
+        var tmp = funds.Select(x => new DailyReportItem { FundId = x.Id, FundName = x.ShortName, FundCode = x.Code }).ToArray();
 
         foreach (var item in tmp)
         {
-            var dy = db.GetDailyCollection(item.Fund!.Id).Query().OrderByDescending(x => x.Date).Where(x => x.NetValue > 0 && x.CumNetValue > 0).Limit(5).ToArray();
+            var dy = db.GetDailyCollection(item.FundId).Query().OrderByDescending(x => x.Date).Where(x => x.NetValue > 0 && x.CumNetValue > 0).Limit(5).ToArray();
             if (!dy.Any()) continue;
 
             item.Daily = dy.First();
@@ -113,7 +110,7 @@ public partial class DailyReportGridViewModel : ObservableRecipient,IRecipient<F
             if (dy.Length > 1)
                 item.ChangeByPrev = (item.Daily!.CumNetValue - dy[1].CumNetValue) * 100;
 
-            var yearfirst = db.GetDailyCollection(item.Fund.Id).Query().OrderBy(x => x.Date).Where(x => x.Date.Year == td.Year).FirstOrDefault();
+            var yearfirst = db.GetDailyCollection(item.FundId).Query().OrderBy(x => x.Date).Where(x => x.Date.Year == td.Year).FirstOrDefault();
 
             if (yearfirst is not null)
                 item.ChangeByYear = (item.Daily!.CumNetValue - yearfirst.CumNetValue);
@@ -122,12 +119,69 @@ public partial class DailyReportGridViewModel : ObservableRecipient,IRecipient<F
         Data = tmp;
     }
 
+    public void Receive(FundStatusChangedMessage message)
+    {
+        if (Data is null) return;
+
+        if (message.Status >= FundStatus.StartLiquidation)
+        {
+            var f = Data?.FirstOrDefault(x => x.FundId == message.FundId);
+
+            if (f is not null)
+                Data = Data!.Except([f]).ToArray();
+        }
+        else if (message.Status == FundStatus.Normal && !Data.Any(x => x.FundId == message.FundId))
+        {
+
+            //最近的交易日
+            var td = TradingDay.Current;
+            using var db = new BaseDatabase();
+            var fund = db.GetCollection<Fund>().FindById(message.FundId);
+            if (fund is null) return;
+
+            DailyReportItem item = new DailyReportItem { FundId = fund.Id, FundName = fund.ShortName, FundCode = fund.Code };
+
+
+            var dy = db.GetDailyCollection(message.FundId).Query().OrderByDescending(x => x.Date).Where(x => x.NetValue > 0 && x.CumNetValue > 0).Limit(5).ToArray();
+            if (!dy.Any()) return;
+
+            item.Daily = dy.First();
+            item.Shares = item.Daily.Share / 10000;
+            item.NetAsset = item.Daily.NetAsset / 10000;
+
+            var gapdays = TradingDay.CountBetween(item.Daily.Date, td);
+            item.DateBrush = gapdays switch
+            {
+                > 7 => Brushes.Red,
+                > 3 => Brushes.PaleVioletRed,
+                _ => Brushes.Black
+            };
+
+            item.DateFontWeight = gapdays switch { <= 2 => FontWeights.Normal, _ => FontWeights.Bold };
+
+
+            if (dy.Length > 1)
+                item.ChangeByPrev = (item.Daily!.CumNetValue - dy[1].CumNetValue) * 100;
+
+            var yearfirst = db.GetDailyCollection(item.FundId).Query().OrderBy(x => x.Date).Where(x => x.Date.Year == td.Year).FirstOrDefault();
+
+            if (yearfirst is not null)
+                item.ChangeByYear = (item.Daily!.CumNetValue - yearfirst.CumNetValue);
+        }
+    }
 
 
     public partial class DailyReportItem : ObservableObject
     {
-        [ObservableProperty]
-        Fund? fund;
+        //[ObservableProperty]
+        //public partial Fund? Fund {  get; set; }
+
+        public int FundId { get; init; }
+
+        public string? FundName { get; init; }
+
+        public string? FundCode { get; set; }
+
 
         [ObservableProperty]
         DailyValue? daily;

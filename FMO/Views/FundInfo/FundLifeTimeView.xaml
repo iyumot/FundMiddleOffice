@@ -654,6 +654,30 @@
 
 
 
+        <DataTemplate x:Key="DT.Liquidation">
+            <UserControl Template="{StaticResource FlowShell}">
+                <DockPanel>
+                    <Button
+                        Command="{Binding DataContext.DeleteFlowCommand, RelativeSource={RelativeSource AncestorType=local:FundLifeTimeView}}"
+                        CommandParameter="{Binding .}"
+                        Content="撤销"
+                        DockPanel.Dock="Right" />
+
+                    <StackPanel VerticalAlignment="Center">
+
+                        <ContentControl Content="{Binding LiquidationReport}" Style="{StaticResource SingleFileStyle}" />
+
+
+                        <ListBox
+                            BorderThickness="0"
+                            ItemTemplate="{StaticResource DT.CustomFile}"
+                            ItemsSource="{Binding CustomFiles}"
+                            Style="{StaticResource ListBoxCustom}" />
+                    </StackPanel>
+                </DockPanel>
+            </UserControl>
+
+        </DataTemplate>
     </UserControl.Resources>
 
 
@@ -664,6 +688,11 @@
             <Button
                 Command="{Binding CreateContractModifyCommand}"
                 Content="发起合同变更"
+                Style="{StaticResource ButtonDashed}" />
+
+            <Button
+                Command="{Binding CreateClearFlowCommand}"
+                Content="发起清盘"
                 Style="{StaticResource ButtonDashed}" />
         </DockPanel>
 
