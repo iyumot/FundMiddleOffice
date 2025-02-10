@@ -18,7 +18,7 @@
             Background="White"
             BorderThickness="0"
             EnableRowVirtualization="True"
-            IsReadOnly="True"
+            IsReadOnly="True" Style="{StaticResource DataGrid.Small}"
             ItemsSource="{Binding DailySource.View}"
             SelectedIndex="-1"
             SelectionUnit="FullRow">
