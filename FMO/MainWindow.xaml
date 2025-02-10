@@ -84,6 +84,21 @@
                         </Viewbox>
                     </hc:SideMenuItem.Icon>
                 </hc:SideMenuItem>
+
+                <hc:SideMenuItem Command="{Binding OpenPageCommand}" CommandParameter="Statement">
+                    <hc:SideMenuItem.Header>
+                        <hc:Badge
+                            Width="50"
+                            Content="报表"
+                            ShowBadge="False"
+                            Status="Dot" />
+                    </hc:SideMenuItem.Header>
+                    <hc:SideMenuItem.Icon>
+                        <Viewbox Width="16" Height="16">
+                            <Path Data="{StaticResource f.square-poll-vertical}" Fill="Black" />
+                        </Viewbox>
+                    </hc:SideMenuItem.Icon>
+                </hc:SideMenuItem>
             </hc:SideMenu>
 
             <TabControl
