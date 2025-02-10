@@ -47,9 +47,10 @@ public partial class TaskPageViewModel : ObservableObject
                 Tasks.Add(obj);
         }
 
-
-        Tasks.Add(new SendDailyReportToWebhookViewModel(new()));
-
+        if (!Tasks.Any(x => x is GatherDailyFromMailViewModel))
+            Tasks.Add(new GatherDailyFromMailViewModel(new()));
+        if (!Tasks.Any(x => x is SendDailyReportToWebhookViewModel))
+            Tasks.Add(new SendDailyReportToWebhookViewModel(new()));
     }
 }
 
