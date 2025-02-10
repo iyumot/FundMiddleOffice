@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
 using System.Globalization;
@@ -26,26 +27,64 @@ public partial class DailyReportGridView : UserControl
 }
 
 
-public partial class DailyReportGridViewModel : ObservableObject
+public partial class DailyReportGridViewModel : ObservableRecipient,IRecipient<FundDailyUpdateMessage>
 {
 
     [ObservableProperty]
-    DailyReportItem[]? data;
+    public partial DailyReportItem[]? Data { get; set; }
 
 
 
     public DailyReportGridViewModel()
     {
-
+        IsActive = true;
         Init();
 
     }
 
+    public void Receive(FundDailyUpdateMessage message)
+    {
+        if (Data is null) return;
+
+        var item = Data.FirstOrDefault(x => x.Fund?.Id == message.FundId);
+        if (item is null) return;
+
+        if (message.Daily.Date < item.Daily?.Date) return;
+
+        using var db = new BaseDatabase();
+        var dy = db.GetDailyCollection(item.Fund!.Id).Query().OrderByDescending(x => x.Date).Where(x => x.NetValue > 0 && x.CumNetValue > 0).Limit(5).ToArray();
+        if (!dy.Any()) return;
+
+        item.Daily = dy.First();
+        item.Shares = item.Daily.Share / 10000;
+        item.NetAsset = item.Daily.NetAsset / 10000;
+
+        var td = TradingDay.Current;
+        var gapdays = TradingDay.CountBetween(item.Daily.Date, td);
+        item.DateBrush = gapdays switch
+        {
+            > 7 => Brushes.Red,
+            > 3 => Brushes.PaleVioletRed,
+            _ => Brushes.Black
+        };
+
+        item.DateFontWeight = gapdays switch { <= 2 => FontWeights.Normal, _ => FontWeights.Bold };
+
+
+        if (dy.Length > 1)
+            item.ChangeByPrev = (item.Daily!.CumNetValue - dy[1].CumNetValue) * 100;
+
+        var yearfirst = db.GetDailyCollection(item.Fund.Id).Query().OrderBy(x => x.Date).Where(x => x.Date.Year == td.Year).FirstOrDefault();
+
+        if (yearfirst is not null)
+            item.ChangeByYear = (item.Daily!.CumNetValue - yearfirst.CumNetValue);
+    }
+
     internal void Init()
     {
-        var db = new BaseDatabase();
+        using var db = new BaseDatabase();
         var funds = db.GetCollection<Fund>().Find(x => x.Status == FundStatus.Normal).ToArray();
-        db.Dispose();
+       
 
         //最近的交易日
         var td = TradingDay.Current;
