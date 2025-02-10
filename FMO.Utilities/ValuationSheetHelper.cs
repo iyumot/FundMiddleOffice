@@ -36,6 +36,8 @@ public static class ValuationSheetHelper
 
     public static (string? fn, string? code, DailyValue? dy) ParseExcel(Stream stream)
     {
+        if (stream is null || stream.Length == 0) return (null, null, null);
+
         if (stream.CanSeek)
             stream.Seek(0, SeekOrigin.Begin);
         //Console.WriteLine($"\n===============================================================\n");
