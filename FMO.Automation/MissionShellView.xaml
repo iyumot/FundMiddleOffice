@@ -165,7 +165,7 @@
                                     Margin="5,0,0,0"
                                     Columns="1"
                                     Visibility="{Binding ManualSetNextRun, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                    <DatePicker CalendarStyle="{StaticResource Style.Calendar}" SelectedDate="{Binding NextRunDate}" />
+                                    <DatePicker CalendarStyle="{StaticResource Style.Calendar}" SelectedDate="{Binding NextRunTime}" />
                                     <hc:TimePicker HorizontalContentAlignment="Center" SelectedTime="{Binding NextRunTime}" />
                                 </UniformGrid>
                                 <UniformGrid

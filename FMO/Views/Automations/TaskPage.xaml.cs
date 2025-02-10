@@ -48,6 +48,8 @@ public partial class TaskPageViewModel : ObservableObject
         }
 
 
+        Tasks.Add(new SendDailyReportToWebhookViewModel(new()));
+
     }
 }
 
