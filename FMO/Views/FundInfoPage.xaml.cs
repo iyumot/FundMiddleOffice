@@ -405,9 +405,13 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
             HandyControl.Controls.Growl.Info($"发现{err.Length}个文件不属于本基金\n{string.Join('\n', err.Select(x => x.name))}))");
         }
 
+        var avaliable = data.Where(x => x.code == Fund.Code || x.name == Fund.Name);
+        if (!avaliable.Any()) return;
+
+
         using var db = new BaseDatabase();
         var c = db.GetDailyCollection(Fund.Id);
-        c.Upsert(data.Where(x => x.code == Fund.Code || x.name == Fund.Name).Select(x => x.daily!));
+        c.Upsert(avaliable.Select(x => x.daily!));
 
 
         var ll = new List<DailyValue>(db.GetDailyCollection(Fund.Id).FindAll().OrderByDescending(x => x.Date).IntersectBy(TradingDay.Days, x => x.Date).ToList());
@@ -419,6 +423,8 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
             DailySource.View.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(DailyValue.Date), System.ComponentModel.ListSortDirection.Descending));
             DailySource.View.Refresh();
         });
+
+        WeakReferenceMessenger.Default.Send(new FundDailyUpdateMessage { FundId = Fund.Id, Daily = avaliable.Select(x => x.daily).OrderBy(x => x.Date).FirstOrDefault()! });
     }
 
 
