@@ -162,6 +162,20 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                     break;
                 }
 
+            case "Statement":
+                {
+                    var page = Pages.FirstOrDefault(x => x.Content is StatementPage);
+                    if (page is null)
+                    {
+                        page = new TabItem { Header = GenerateHeader("报表"), Content = new StatementPage() };
+                        Pages.Add(page);
+                    }
+
+                    page.IsSelected = true;
+                    break;
+                }
+
+
             default:
                 {
                     Type? type = Type.GetType($"FMO.{id}");
