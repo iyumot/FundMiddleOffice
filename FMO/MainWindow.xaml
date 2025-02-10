@@ -37,7 +37,7 @@
                     Header="基金">
                     <hc:SideMenuItem.Icon>
                         <Viewbox Width="16" Height="16">
-                            <Path Data="{StaticResource G.Product}" Fill="Black" />
+                            <Path Data="{StaticResource f.fire}" Fill="Black" />
                         </Viewbox>
                     </hc:SideMenuItem.Icon>
                 </hc:SideMenuItem>
@@ -51,7 +51,7 @@
                 <hc:SideMenuItem Header="TA">
                     <hc:SideMenuItem.Icon>
                         <Viewbox Width="16" Height="16">
-                            <Path Data="{StaticResource G.RectList}" Fill="Black" />
+                            <Path Data="{StaticResource f.table}" Fill="Black" />
                         </Viewbox>
                     </hc:SideMenuItem.Icon>
                 </hc:SideMenuItem>
@@ -74,13 +74,13 @@
                     <hc:SideMenuItem.Header>
                         <hc:Badge
                             Width="50"
-                            Content="定时任务"
+                            Content="任务"
                             ShowBadge="False"
                             Status="Dot" />
                     </hc:SideMenuItem.Header>
                     <hc:SideMenuItem.Icon>
                         <Viewbox Width="16" Height="16">
-                            <Path Data="{StaticResource f.list-check}" Fill="Black" />
+                            <Path Data="{StaticResource f.brain}" Fill="Black" />
                         </Viewbox>
                     </hc:SideMenuItem.Icon>
                 </hc:SideMenuItem>
