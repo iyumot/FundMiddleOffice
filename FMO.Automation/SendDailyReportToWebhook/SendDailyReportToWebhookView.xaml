@@ -31,6 +31,10 @@
             </Border>
         </DockPanel>
 
+        <Button
+            Command="{Binding RunOnceCommand}"
+            Content="立即发送"
+            DockPanel.Dock="Right" />
 
         <ListBox
             Background="Lavender"

@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FMO.Shared\FMO.Shared.csproj" />
     <ProjectReference Include="..\FMO.Utilities\FMO.Utilities.csproj" />
   </ItemGroup>
 
