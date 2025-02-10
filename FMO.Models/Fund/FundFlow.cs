@@ -238,3 +238,19 @@ public class ContractModifyFlow : ContractFlow
 
     public override string Name { get => "合同变更"; set { } }
 }
+
+
+public class LiquidationFlow : FundFlow
+{
+    /// <summary>
+    /// 清算报告
+    /// </summary>
+    public FundFileInfo? LiquidationReport { get; set; }
+
+
+
+
+
+
+    public override string Name { get => "基金清算"; set { } }
+}

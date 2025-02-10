@@ -52,6 +52,9 @@ public class FlowTemplateSelector : DataTemplateSelector
             case RegistrationFlowViewModel vm:
                 return (DataTemplate)element.TryFindResource("DT.Registration");
 
+
+            case LiquidationFlowViewModel vm:
+                return (DataTemplate)element.TryFindResource("DT.Liquidation");
             default:
                 break;
         }

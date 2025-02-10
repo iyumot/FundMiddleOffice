@@ -52,6 +52,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         RegistDate = fund.AuditDate;
         InitiateDate = fund.InitiateDate == default ? null : fund.InitiateDate;
         FundCode = fund.Code;
+        FundStatus = fund.Status;
 
         //CollectionAccount = fund.CollectionAccount?.ToString();
 
@@ -150,8 +151,14 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
             db.GetCollection<FundFlow>().Insert(f);
         }
 
+        if(fund.Status >= FundStatus.StartLiquidation && !flows.Any(x => x is LiquidationFlow))
+        {
+            var f = new LiquidationFlow { FundId = fund.Id,  CustomFiles = new() };
+            flows.Add(f);
+            db.GetCollection<FundFlow>().Insert(f);
+        }
 
-        db.Dispose();
+            db.Dispose();
 
         Flows = new ObservableCollection<FlowViewModel>();
         Flows.CollectionChanged += Flows_CollectionChanged;
@@ -179,6 +186,11 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
                 case RegistrationFlow d:
                     Flows.Add(new RegistrationFlowViewModel(d));
                     break;
+
+                case LiquidationFlow d:
+                    Flows.Add(new LiquidationFlowViewModel(d));
+                    break;
+
                 default:
                     break;
             }
@@ -248,6 +260,10 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
     [ObservableProperty]
     public partial string? FundCode { get; set; }
+
+
+    [ObservableProperty]
+    public partial FundStatus FundStatus { get; set; }
 
 
     [ObservableProperty]
@@ -359,6 +375,26 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         Flows.Add(new ContractModifyFlowViewModel(flow, ele.ShareClasses));
     }
 
+
+    [RelayCommand]
+    public void CreateClearFlow()
+    {
+        if (FundStatus >= FundStatus.StartLiquidation) return;
+
+        if (Flows.Any(x => x is LiquidationFlowViewModel)) return;
+
+        var flow = new LiquidationFlow { FundId = Fund.Id };
+        var db = new BaseDatabase();
+        db.GetCollection<FundFlow>().Insert(flow);
+        var fund = db.GetCollection<Fund>().FindById(Fund.Id);
+        fund.Status = FundStatus.StartLiquidation;
+        db.GetCollection<Fund>().Update(fund);
+        db.Dispose();
+        Flows.Add(new LiquidationFlowViewModel(flow));
+        WeakReferenceMessenger.Default.Send(new FundStatusChangedMessage { FundId = fund.Id, Status = fund.Status });
+    }
+
+
     /// <summary>
     /// 废除流程
     /// </summary>
@@ -368,7 +404,16 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     {
         using var db = new BaseDatabase();
         db.GetCollection<FundFlow>().Delete(flow.FlowId);
+        if (flow is LiquidationFlowViewModel && FundStatus == FundStatus.StartLiquidation)
+        {
+            FundStatus = FundStatus.Normal;
 
+            var fund = db.GetCollection<Fund>().FindById(Fund.Id);
+            fund.Status = FundStatus.Normal;
+            db.GetCollection<Fund>().Update(fund);
+
+            WeakReferenceMessenger.Default.Send(new FundStatusChangedMessage { FundId = fund.Id, Status = fund.Status });
+        }
         Flows.Remove(flow);
     }
 
@@ -496,6 +541,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         }
     }
 }
+
 
 
 /// <summary>

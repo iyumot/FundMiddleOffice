@@ -114,8 +114,8 @@
             ItemsSource="{Binding Data}"
             Style="{StaticResource DataGrid.Small}">
             <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding Fund.Code}" Header="备案号" />
-                <DataGridTextColumn Binding="{Binding Fund.ShortName}" Header="产品" />
+                <DataGridTextColumn Binding="{Binding FundCode}" Header="备案号" />
+                <DataGridTextColumn Binding="{Binding FundName}" Header="产品" />
                 <DataGridTextColumn
                     Binding="{Binding Daily.Date, StringFormat=yyyy-MM-dd}"
                     ElementStyle="{StaticResource Style.Date}"
