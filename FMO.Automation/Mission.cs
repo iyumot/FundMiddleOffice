@@ -24,8 +24,15 @@ public abstract class Mission
 
         if (time < NextRun) return;
 
-        if (LastRun is not null && NextRun < LastRun) return;
-        
+        if (LastRun is not null && NextRun < LastRun)
+        {
+            SetNextRun();
+            if (NextRun < LastRun)
+            {
+                IsEnabled = false;
+                return;
+            }
+        }
 
         // 设为永不执行
         NextRun = DateTime.MaxValue;
