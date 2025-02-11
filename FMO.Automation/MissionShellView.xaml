@@ -65,7 +65,7 @@
     </UserControl.Resources>
     <UserControl.Template>
         <ControlTemplate TargetType="UserControl">
-            <DockPanel Margin="0,8">
+            <DockPanel Margin="0,8" Background="Transparent">
                 <Border x:Name="borderHead" DockPanel.Dock="Top">
                     <DockPanel>
                         <Border MinWidth="100" Background="Blue">
@@ -101,11 +101,16 @@
                         </ToggleButton>
 
                         <Button
+                            x:Name="runonce"
+                            Height="24"
                             Margin="10,0"
                             hc:IconElement.Geometry="{StaticResource f.check-double}"
                             Background="AliceBlue"
                             BorderThickness="0"
-                            Content="运行一次" />
+                            Command="{Binding RunOnceCommand}"
+                            Content="运行一次"
+                            Visibility="Collapsed" />
+
                         <TextBlock
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
@@ -197,6 +202,9 @@
                     Content="{TemplateBinding Content}" />
             </DockPanel>
             <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="runonce" Property="Visibility" Value="Visible" />
+                </Trigger>
                 <DataTrigger Binding="{Binding IsActivated}" Value="False">
                     <Setter TargetName="content" Property="Opacity" Value="0.8" />
                 </DataTrigger>
