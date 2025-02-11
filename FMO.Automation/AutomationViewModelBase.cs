@@ -18,10 +18,19 @@ public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<M
 
     [ObservableProperty]
     public partial DateTime? LastRunTime { get; set; }
-     
+
+
+    //[ObservableProperty]
+    //public partial DateTime? NextRunTime { get; set; }
+
+
+    [ObservableProperty]
+    public partial DateTime? NextRunDate { get; set; }
+
 
     [ObservableProperty]
     public partial DateTime? NextRunTime { get; set; }
+
 
     [ObservableProperty]
     public partial bool ManualSetNextRun { get; set; }
@@ -41,6 +50,7 @@ public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<M
         try
         {
             LastRunTime = mission.LastRun;
+            NextRunDate = mission.NextRun;
             NextRunTime = mission.NextRun;
             IsActivated = mission.IsEnabled;
         }
@@ -60,7 +70,7 @@ public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<M
     [RelayCommand]
     public void DoManualSetNextRunTime(bool set)
     {
-        if (set &&  NextRunTime is not null && NextRunTime.Value is DateTime t && t > DateTime.Now)
+        if (set && NextRunDate is not null && NextRunTime is not null &&  NextRunDate.Value.Date.Add(NextRunTime.Value.TimeOfDay) is DateTime t && t > DateTime.Now)
         {
             using var db = new MissionDatabase();
             var mission = db.GetCollection<Mission>().FindById(Id);
@@ -71,6 +81,7 @@ public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<M
         {
             using var db = new MissionDatabase();
             var mission = db.GetCollection<Mission>().FindById(Id);
+            NextRunDate = mission?.NextRun;
             NextRunTime = mission?.NextRun;
         }
 
@@ -78,7 +89,10 @@ public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<M
     }
 
 
+    partial void OnNextRunTimeChanged(DateTime? value)
+    {
 
+    }
 
     public void Receive(MissionMessage message)
     {
@@ -91,7 +105,10 @@ public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<M
 
 
         if (message.NextRun is not null)
+        {
+            NextRunDate = message.NextRun;
             NextRunTime = message.NextRun;
+        }
     }
 
     public void Receive(MissionProgressMessage message)
@@ -131,6 +148,7 @@ public partial class MissionViewModel<T> : AutomationViewModelBase where T : Mis
                     if (IsActivated != Mission.IsEnabled)
                     {
                         Mission.IsEnabled = IsActivated;
+                        NextRunDate = Mission.NextRun;
                         NextRunTime = Mission.NextRun;
                         using var db = new MissionDatabase();
                         db.GetCollection<Mission>().Upsert(Mission);

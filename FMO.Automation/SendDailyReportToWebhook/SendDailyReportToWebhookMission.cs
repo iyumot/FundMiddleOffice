@@ -14,7 +14,7 @@ public class SendDailyReportToWebhookMission : Mission
 {
 
     TimeOnly _time = new TimeOnly(9, 0, 0);
-    public TimeOnly Time { get => _time; set { _time = value; SetNextRun(); } }
+    public TimeOnly Time { get => _time; set { _time = value; if (NextRun is not null) SetNextRun(); } }
 
     public List<WebHookInfo> WebHooks { get; set; } = new();
 
