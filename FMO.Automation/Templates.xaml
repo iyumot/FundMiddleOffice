@@ -211,14 +211,14 @@
                                 Margin="5,0,0,0"
                                 Columns="1"
                                 Visibility="{Binding ManualSetNextRun, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <DatePicker CalendarStyle="{StaticResource Style.Calendar}" SelectedDate="{Binding NextRunDate}" />
+                                <DatePicker CalendarStyle="{StaticResource Style.Calendar}" SelectedDate="{Binding NextRunTime}" />
                                 <hc:TimePicker HorizontalContentAlignment="Center" SelectedTime="{Binding NextRunTime}" />
                             </UniformGrid>
                             <UniformGrid
                                 HorizontalAlignment="Center"
                                 Columns="1"
                                 Visibility="{Binding ManualSetNextRun, Converter={StaticResource Boolean2VisibilityReConverter}}">
-                                <TextBlock DockPanel.Dock="Top" Text="{Binding NextRunDate, StringFormat=yyyy-M-d}" />
+                                <TextBlock DockPanel.Dock="Top" Text="{Binding NextRunTime, StringFormat=yyyy-M-d}" />
                                 <TextBlock HorizontalAlignment="Center" Text="{Binding NextRunTime, StringFormat=HH:mm}" />
                             </UniformGrid>
                         </Grid>
