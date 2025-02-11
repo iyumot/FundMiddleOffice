@@ -175,6 +175,19 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                     break;
                 }
 
+            case "Customer":
+                {
+                    var page = Pages.FirstOrDefault(x => x.Content is CustomerPage);
+                    if (page is null)
+                    {
+                        page = new TabItem { Header = GenerateHeader("投资人"), Content = new CustomerPage() };
+                        Pages.Add(page);
+                    }
+
+                    page.IsSelected = true;
+                    break;
+                }
+
 
             default:
                 {

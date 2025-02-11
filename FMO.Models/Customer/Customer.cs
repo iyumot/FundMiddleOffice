@@ -14,6 +14,13 @@ public enum CustomerType
 }
 
 
+public enum InvestorType
+{
+    Normal,
+
+    Professional,
+}
+
 
 /// <summary>
 /// 存储在base
