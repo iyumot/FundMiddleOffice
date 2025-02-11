@@ -94,12 +94,6 @@
 
                 <Button
                     Margin="10,0"
-                    Command="{Binding RunOnceCommand}"
-                    Content="立即执行一次" />
-
-
-                <Button
-                    Margin="10,0"
                     Command="{Binding RebuildDataCommand}"
                     Content="重建" />
                 <!--<Button
