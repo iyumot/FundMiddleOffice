@@ -231,6 +231,10 @@ public partial class DailyValueCurveViewModel : ObservableObject
         _debouncer.Invoke();
     }
 
+    partial void OnDataChanged(List<DailyValue>? value)
+    {
+        _debouncer.Invoke();
+    }
 
 }
 

@@ -151,14 +151,14 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
             db.GetCollection<FundFlow>().Insert(f);
         }
 
-        if(fund.Status >= FundStatus.StartLiquidation && !flows.Any(x => x is LiquidationFlow))
+        if (fund.Status >= FundStatus.StartLiquidation && !flows.Any(x => x is LiquidationFlow))
         {
-            var f = new LiquidationFlow { FundId = fund.Id,  CustomFiles = new() };
+            var f = new LiquidationFlow { FundId = fund.Id, CustomFiles = new() };
             flows.Add(f);
             db.GetCollection<FundFlow>().Insert(f);
         }
 
-            db.Dispose();
+        db.Dispose();
 
         Flows = new ObservableCollection<FlowViewModel>();
         Flows.CollectionChanged += Flows_CollectionChanged;
@@ -418,58 +418,80 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     }
 
 
-    [RelayCommand]
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RefreshNetValuesCommand))]
+    public partial bool CanRefreshNetValues { get; set; } = true;
+
+
+    [RelayCommand(CanExecute = nameof(CanRefreshNetValues))]
     public void RefreshNetValues()
     {
-        var fd = FundHelper.GetFolder(Fund.Id, "Sheet");
-        var di = new DirectoryInfo(fd);
-        if (!di.Exists)
+        CanRefreshNetValues = false;
+        Task.Run(() =>
         {
-            HandyControl.Controls.Growl.Info("未发现本基金的估值表");
-            return;
-        }
+            var fd = FundHelper.GetFolder(Fund.Id, "Sheet");
+            var di = new DirectoryInfo(fd);
+            if (!di.Exists)
+            {
+                HandyControl.Controls.Growl.Info("未发现本基金的估值表");
+                return;
+            }
 
-        ConcurrentBag<(string? name, string? code, DailyValue? daily)> bag = new();
+            ConcurrentBag<(string? name, string? code, DailyValue? daily)> bag = new();
 
-        Parallel.ForEach(di.GetFiles(), f =>
-        {
-            using var fs = f.OpenRead();
-            var item = ValuationSheetHelper.ParseExcel(fs);
-            if (item.dy is not null)
-                item.dy.SheetPath = Path.GetRelativePath(Directory.GetCurrentDirectory(), f.FullName);
-            bag.Add(item);
+            try
+            {
+                Parallel.ForEach(di.GetFiles(), f =>
+                {
+                    using var fs = f.OpenRead();
+                    var item = ValuationSheetHelper.ParseExcel(fs);
+                    if (item.dy is not null)
+                        item.dy.SheetPath = Path.GetRelativePath(Directory.GetCurrentDirectory(), f.FullName);
+                    else Log.Error($"解析{f.Name}出错");
+
+                    bag.Add(item);
+                });
+
+
+                var data = bag.OrderBy(x => x.daily?.Date).ToArray();
+
+                // 从属验证
+                var err = data.Where(x => x.code != Fund.Code && x.name != Fund.Name).ToArray();
+                if (err.Length != 0)
+                {
+                    Log.Error($"{FundName} 解析全部估值表出错 发现{err.Length}个文件不属于本基金\n{string.Join('\n', err.Select(x => x.name))}))");
+                    HandyControl.Controls.Growl.Info($"发现{err.Length}个文件不属于本基金\n{string.Join('\n', err.Select(x => x.name))}))");
+                }
+
+                var avaliable = data.Where(x => x.code == Fund.Code || x.name == Fund.Name);
+                if (!avaliable.Any()) return;
+
+
+                using var db = new BaseDatabase();
+                var c = db.GetDailyCollection(Fund.Id);
+                c.Upsert(avaliable.Select(x => x.daily!));
+
+
+                App.Current.Dispatcher.BeginInvoke(() =>
+                {
+                    var ll = new List<DailyValue>(db.GetDailyCollection(Fund.Id).FindAll().OrderByDescending(x => x.Date).IntersectBy(TradingDay.Days, x => x.Date).ToList());
+
+
+                    DailySource.Source = ll;
+                    DailySource.View.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(DailyValue.Date), System.ComponentModel.ListSortDirection.Descending));
+                    DailySource.View.Refresh();
+
+
+                    WeakReferenceMessenger.Default.Send(new FundDailyUpdateMessage { FundId = Fund.Id, Daily = avaliable.Select(x => x.daily).OrderBy(x => x.Date).FirstOrDefault()! });
+                });
+            }
+            catch (Exception e)
+            {
+                Log.Error($"{FundName} 解析全部估值表出错 {e.Message}");
+            }
+
+            App.Current.Dispatcher.BeginInvoke(() => CanRefreshNetValues = true);
         });
-
-
-        var data = bag.OrderBy(x => x.daily?.Date).ToArray();
-
-        // 从属验证
-        var err = data.Where(x => x.code != Fund.Code && x.name != Fund.Name).ToArray();
-        if (err.Length != 0)
-        {
-            HandyControl.Controls.Growl.Info($"发现{err.Length}个文件不属于本基金\n{string.Join('\n', err.Select(x => x.name))}))");
-        }
-
-        var avaliable = data.Where(x => x.code == Fund.Code || x.name == Fund.Name);
-        if (!avaliable.Any()) return;
-
-
-        using var db = new BaseDatabase();
-        var c = db.GetDailyCollection(Fund.Id);
-        c.Upsert(avaliable.Select(x => x.daily!));
-
-
-        var ll = new List<DailyValue>(db.GetDailyCollection(Fund.Id).FindAll().OrderByDescending(x => x.Date).IntersectBy(TradingDay.Days, x => x.Date).ToList());
-
-
-        App.Current.Dispatcher.BeginInvoke(() =>
-        {
-            DailySource.Source = ll;
-            DailySource.View.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(DailyValue.Date), System.ComponentModel.ListSortDirection.Descending));
-            DailySource.View.Refresh();
-        });
-
-        WeakReferenceMessenger.Default.Send(new FundDailyUpdateMessage { FundId = Fund.Id, Daily = avaliable.Select(x => x.daily).OrderBy(x => x.Date).FirstOrDefault()! });
     }
 
 
@@ -538,6 +560,8 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
             if (old is null)
                 DailyValues.Add(message.Daily);
             //else throw new NotImplementedException();
+
+            CurveViewDataContext.Data = DailyValues.OrderBy(x => x.Date).ToList();
         }
     }
 }
