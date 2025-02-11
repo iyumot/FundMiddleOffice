@@ -19,11 +19,7 @@ public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<M
     [ObservableProperty]
     public partial DateTime? LastRunTime { get; set; }
 
-
-    //[ObservableProperty]
-    //public partial DateTime? NextRunTime { get; set; }
-
-
+     
     [ObservableProperty]
     public partial DateTime? NextRunDate { get; set; }
 
@@ -31,6 +27,8 @@ public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<M
     [ObservableProperty]
     public partial DateTime? NextRunTime { get; set; }
 
+    [ObservableProperty]
+    public partial string? Description { get; set; }
 
     [ObservableProperty]
     public partial bool ManualSetNextRun { get; set; }
