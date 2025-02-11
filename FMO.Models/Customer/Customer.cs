@@ -20,7 +20,7 @@ public enum CustomerType
 /// </summary>
 public interface ICustomer
 {
-    int _id { get; set; }
+    int Id { get; set; }
 
     /// <summary>
     /// 客户名称
@@ -42,7 +42,7 @@ public interface ICustomer
 /// </summary>
 public class NaturalCustomer : ICustomer
 {
-    public int _id { get; set; }
+    public int Id { get; set; }
 
     public required string Name { get; set; }
 
@@ -80,7 +80,7 @@ public class NaturalCustomer : ICustomer
 /// </summary>
 public class InstitutionCustomer : ICustomer
 {
-    public int _id { get; set; }
+    public int Id { get; set; }
 
     public required string Name { get; set; }
 
@@ -98,7 +98,7 @@ public class InstitutionCustomer : ICustomer
 /// </summary>
 public class ProductCustomer : ICustomer
 {
-    public int _id { get; set; }
+    public int Id { get; set; }
 
     public required string Name { get; set; }
 
