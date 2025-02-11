@@ -330,7 +330,7 @@ public class CSTISCAssist : TrusteeAssistBase
             using var db = new BaseDatabase();
 
             // 获取已存在的
-            var exist_ids = db.GetCollection<ICustomer>().Query().Select(x => new { id = x._id, identity = x.Identity }).ToList();//.Where(x => data.Any(y => y.Item1.Identity == x.Identity)).ToArray();
+            var exist_ids = db.GetCollection<ICustomer>().Query().Select(x => new { id = x.Id, identity = x.Identity }).ToList();//.Where(x => data.Any(y => y.Item1.Identity == x.Identity)).ToArray();
             var accounts = db.GetCollection<BankAccount>().FindAll();
             //
             foreach (var item in data)
@@ -340,7 +340,7 @@ public class CSTISCAssist : TrusteeAssistBase
                 if (idx == -1)
                 {
                     db.GetCollection<ICustomer>().Insert(item.customer);
-                    item.account.OwnerId = item.customer._id;
+                    item.account.OwnerId = item.customer.Id;
                     db.GetCollection<BankAccount>().Insert(item.account);
                 }
                 else
@@ -605,13 +605,13 @@ public class CSTISCAssist : TrusteeAssistBase
             {
                 if (lastc is not null && lastc.Name == item.CustomerName && lastc.Identity.Id == item.CustomerIdentity)
                 {
-                    item.CustomerId = lastc._id;
+                    item.CustomerId = lastc.Id;
                     continue;
                 }
 
                 lastc = customers.FirstOrDefault(x => x.Name == item.CustomerName && x.Identity.Id == item.CustomerIdentity);
                 if (lastc is not null)
-                    item.CustomerId = lastc._id;
+                    item.CustomerId = lastc.Id;
                 else Log.Error("");
             }
 
