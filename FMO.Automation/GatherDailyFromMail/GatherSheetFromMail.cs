@@ -2,6 +2,7 @@
 using FMO.Models;
 using FMO.Utilities;
 using LiteDB;
+using MailKit.Net.Imap;
 using MimeKit;
 using System.IO;
 using System.IO.Compression;
@@ -34,6 +35,8 @@ public class GatherDailyFromMailMission : Mission
     public int Interval { get; set; } = 15;
 
 
+    public bool IgnoreCache { get; set; }
+
     protected override void SetNextRun()
     {
         NextRun = (LastRun ?? DateTime.Now).AddMinutes(Interval);
@@ -50,13 +53,12 @@ public class GatherDailyFromMailMission : Mission
         double progress = 0;
         var log = $"Mission[{Id}][从估值邮箱采集估值表]\n";
 
-        var pop3Client = new MailKit.Net.Pop3.Pop3Client();
-        List<Fund>? funds = null;
         try
         {
+            List<Fund>? funds = null;
             using (var db = new BaseDatabase())
                 funds = db.GetCollection<Fund>().FindAll().ToList();
-           
+
             var unsync = funds.Where(x => x.Status >= FundStatus.Normal && x.PublicDisclosureSynchronizeTime == default).ToArray();
             if (unsync.Length > 0)
             {
@@ -69,6 +71,7 @@ public class GatherDailyFromMailMission : Mission
 
             if (string.IsNullOrWhiteSpace(MailName) || string.IsNullOrWhiteSpace(MailPassword) || string.IsNullOrWhiteSpace(MailPop3)) return false;
 
+            using var pop3Client = new MailKit.Net.Pop3.Pop3Client();
             pop3Client.Connect(MailPop3, 995, true, new CancellationTokenSource(5000).Token);
             log = "连接邮箱服务器..................";
 
@@ -117,16 +120,19 @@ public class GatherDailyFromMailMission : Mission
             }
 
 
-            //var mailcount = pop3Client.GetMessageCount();
+            var mailcount = pop3Client.GetMessageCount();
             var mailids = pop3Client.GetMessageUids();
 
             log += $"\n读取邮件，共 {mailids.Count} 封";
 
-            List<string>? mails = null;
-            using (var db = new MissionDatabase())
-                mails = db.GetCollection<GzMailInfo>().Query().Select(x => x.Id).ToList();
+            List<string> mails = new();
+            if (!IgnoreCache)
+            {
+                using (var db = new MissionDatabase())
+                    mails = db.GetCollection<GzMailInfo>().Query().Select(x => x.Id).ToList();
+            }
 
-            var needload = mailids.Except(mails).Select(x => mailids.IndexOf(x));
+            var needload = mailids.Except(mails).Index().Select(x => x.Index);//.Select(x => mailids.IndexOf(x));
 
             log += $"\n检查缓存，新邮件{needload.Count()} 封";
 
@@ -166,8 +172,6 @@ public class GatherDailyFromMailMission : Mission
             var c = db.GetCollection<MissionRecord>();
             c.Insert(new MissionRecord { MissionId = Id, Time = time, Record = log });
         }
-
-        pop3Client.Dispose();
         return true;
     }
 
@@ -177,7 +181,7 @@ public class GatherDailyFromMailMission : Mission
         // 有附件
         if (msg.Attachments.Any())
             Extract(gz, msg, funds, ref log);
-         
+
         ///记录
         using (var db = new MissionDatabase())
             db.GetCollection<GzMailInfo>().Upsert(gz);

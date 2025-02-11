@@ -144,7 +144,16 @@ public partial class GatherDailyFromMailViewModel : MissionViewModel<GatherDaily
     }
 
 
-
+    [RelayCommand]
+    public void RebuildData()
+    {
+        Task.Run(() =>
+        {
+            Mission.IgnoreCache = true;
+            Mission.Work();
+            Mission.IgnoreCache = false;
+        });
+    }
 
     public void Receive(MissionMailCredentialMessage message)
     {

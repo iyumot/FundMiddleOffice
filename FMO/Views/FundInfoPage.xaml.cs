@@ -537,7 +537,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
             var old = DailyValues.FirstOrDefault(x => x.Id == message.Daily.Id);
             if (old is null)
                 DailyValues.Add(message.Daily);
-            else throw new NotImplementedException();
+            //else throw new NotImplementedException();
         }
     }
 }
