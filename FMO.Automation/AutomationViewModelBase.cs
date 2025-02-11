@@ -137,14 +137,14 @@ public partial class MissionViewModel<T> : AutomationViewModelBase where T : Mis
                     }
                     break;
 
-                case nameof(NextRunTime):
-                    if (NextRunTime != Mission.NextRun)
-                    {
-                        Mission.NextRun = NextRunTime;
-                        using var db = new MissionDatabase();
-                        db.GetCollection<Mission>().Upsert(Mission);
-                    }
-                    break;
+                //case nameof(NextRunTime):
+                //    if (NextRunTime != Mission.NextRun)
+                //    {
+                //        Mission.NextRun = NextRunTime;
+                //        using var db = new MissionDatabase();
+                //        db.GetCollection<Mission>().Upsert(Mission);
+                //    }
+                //    break;
                 default:
                     break;
             }
