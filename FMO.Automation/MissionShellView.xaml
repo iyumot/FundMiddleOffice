@@ -99,7 +99,18 @@
                                 <Path Data="{StaticResource f.pause}" Fill="Red" />
                             </Viewbox>
                         </ToggleButton>
-                        <TextBlock />
+
+                        <Button
+                            Margin="10,0"
+                            hc:IconElement.Geometry="{StaticResource f.check-double}"
+                            Background="AliceBlue"
+                            BorderThickness="0"
+                            Content="运行一次" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            d:Text="从估值邮箱中解析净值"
+                            Text="{Binding Description}" />
                     </DockPanel>
                 </Border>
 
