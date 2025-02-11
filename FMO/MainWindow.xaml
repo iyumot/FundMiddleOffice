@@ -41,7 +41,10 @@
                         </Viewbox>
                     </hc:SideMenuItem.Icon>
                 </hc:SideMenuItem>
-                <hc:SideMenuItem Header="客户">
+                <hc:SideMenuItem
+                    Command="{Binding OpenPageCommand}"
+                    CommandParameter="Customer"
+                    Header="客户">
                     <hc:SideMenuItem.Icon>
                         <Viewbox Width="16" Height="16">
                             <Path Data="{StaticResource G.User}" Fill="Black" />
