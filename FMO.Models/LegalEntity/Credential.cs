@@ -5,9 +5,12 @@ namespace FMO.Models;
 /// <summary>
 /// 枚举表示不同的证件类型。
 /// </summary>
+
+
+[TypeConverter(typeof(EnumDescriptionTypeConverter))]
 public enum IDType
 {
-    Unknown,
+    [Description("未知")]Unknown,
 
     /// <summary>
     /// 居民身份证。

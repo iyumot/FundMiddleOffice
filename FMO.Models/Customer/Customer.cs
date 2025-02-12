@@ -1,24 +1,27 @@
-﻿namespace FMO.Models;
+﻿using System.ComponentModel;
+
+namespace FMO.Models;
 
 
 
 
-
+[TypeConverter(typeof(EnumDescriptionTypeConverter))]
 public enum CustomerType
 {
-    Natural,
+    [Description("自然人")] Natural,
 
-    Institution,
+    [Description("机构")] Institution,
 
-    Product
+    [Description("产品")] Product
 }
 
 
+[TypeConverter(typeof(EnumDescriptionTypeConverter))]
 public enum InvestorType
 {
-    Normal,
+    [Description("普通")] Normal,
 
-    Professional,
+    [Description("专业")] Professional,
 }
 
 
@@ -38,6 +41,13 @@ public interface ICustomer
     /// 证件
     /// </summary>
     Identity Identity { get; set; }
+
+    /// <summary>
+    /// 证件有效期
+    /// </summary>
+    DateEfficient Efficient { get; set; }
+
+     
 
     CustomerType CustomerType => this switch { NaturalCustomer => CustomerType.Natural, InstitutionCustomer => CustomerType.Institution, ProductCustomer => CustomerType.Product, _ => throw new NotImplementedException() };
 }
@@ -80,6 +90,8 @@ public class NaturalCustomer : ICustomer
     /// 地址
     /// </summary>
     public string? Address { get; set; }
+
+    public DateEfficient Efficient { get; set; }
 }
 
 /// <summary>
@@ -95,6 +107,7 @@ public class InstitutionCustomer : ICustomer
 
     public required InstitutionCustomerType InstitutionType { get; set; }
 
+    public DateEfficient Efficient { get; set; }
 
 
 }
@@ -113,4 +126,6 @@ public class ProductCustomer : ICustomer
 
 
     public required ProductCustomerType ProductType { get; set; }
+
+    public DateEfficient Efficient { get; set; }
 }
