@@ -12,26 +12,31 @@
     mc:Ignorable="d">
     <UserControl.Template>
         <ControlTemplate TargetType="UserControl">
-            <Grid HorizontalAlignment="Left" Background="Transparent">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="24" />
-                </Grid.ColumnDefinitions>
-                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-                <Grid Grid.Column="1" Visibility="{Binding RelativeSource={RelativeSource AncestorType=local:CopyableControl}, Path=CanCopy, Converter={StaticResource Boolean2VisibilityConverter}}">
-                    <Button
-                        x:Name="btn"
-                        Padding="2,0"
-                        hc:IconElement.Geometry="{StaticResource f.copy}"
-                        Click="btn_Click"
-                        Content="复制"
-                        DockPanel.Dock="Right"
-                        FontSize="12"
-                        Foreground="{StaticResource PrimaryBrush}"
-                        Style="{StaticResource ButtonIcon.Small}"
-                        Visibility="Hidden" />
+            <Border
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}">
+                <Grid HorizontalAlignment="Left" Background="Transparent">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="24" />
+                    </Grid.ColumnDefinitions>
+                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    <Grid Grid.Column="1" Visibility="{Binding RelativeSource={RelativeSource AncestorType=local:CopyableControl}, Path=CanCopy, Converter={StaticResource Boolean2VisibilityConverter}}">
+                        <Button
+                            x:Name="btn"
+                            Padding="2,0"
+                            hc:IconElement.Geometry="{StaticResource f.copy}"
+                            Click="btn_Click"
+                            Content="复制"
+                            DockPanel.Dock="Right"
+                            FontSize="12"
+                            Foreground="{StaticResource PrimaryBrush}"
+                            Style="{StaticResource ButtonIcon.Small}"
+                            Visibility="Hidden" />
+                    </Grid>
                 </Grid>
-            </Grid>
+            </Border>
             <ControlTemplate.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter TargetName="btn" Property="Visibility" Value="Visible" />
