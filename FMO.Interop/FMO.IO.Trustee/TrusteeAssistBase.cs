@@ -63,7 +63,7 @@ public abstract class TrusteeAssistBase : ITrusteeAssist, IDisposable
 
     protected async Task<IPage> GetPageAsync()
     {
-        if (_mainPage is null)
+        if (_mainPage is null || _mainPage.IsClosed)
         {
             _mainPage = await Automation.NewPageAsync();
             await _mainPage.GotoAsync(Domain);
