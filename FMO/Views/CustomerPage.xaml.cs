@@ -94,11 +94,17 @@ public partial class CustomerViewModel:ObservableObject
     /// <summary>
     /// 民族
     /// </summary>
-    public string? Nation { get; set; }
+
+    [ObservableProperty] 
+    public partial string? Nation { get; set; }
 
 
+    [ObservableProperty]
+    public partial DateEfficient Efficient { get; set; }
 
 
+    [ObservableProperty]
+    public partial RiskLevel? RiskLevel { get; set; }
 
 
     public CustomerViewModel()
@@ -112,6 +118,7 @@ public partial class CustomerViewModel:ObservableObject
         Name = x.Name;
         Identity = x.Identity.Id;
         IDType = x.Identity.Type;
+        Type = x.CustomerType;
         Id = x.Id;
         
 
