@@ -47,6 +47,8 @@ public interface ICustomer
     /// </summary>
     DateEfficient Efficient { get; set; }
 
+
+    //List<InvestorFileInfo> Certifications { get; set; }
      
 
     CustomerType CustomerType => this switch { NaturalCustomer => CustomerType.Natural, InstitutionCustomer => CustomerType.Institution, ProductCustomer => CustomerType.Product, _ => throw new NotImplementedException() };

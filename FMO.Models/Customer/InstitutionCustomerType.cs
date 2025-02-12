@@ -116,6 +116,12 @@ public enum InstitutionCustomerType
     FundManagementCompany,
 
     /// <summary>
+    /// 银行
+    /// </summary>
+    [Description("银行")]
+    Bank,
+
+    /// <summary>
     /// 银行子公司
     /// </summary>
     [Description("银行子公司")]
@@ -145,10 +151,5 @@ public enum InstitutionCustomerType
     [Description("其它")]
     Other,
 
-    /// <summary>
-    /// 银行
-    /// </summary>
-    [Description("银行")]
-    Bank
 
 }
