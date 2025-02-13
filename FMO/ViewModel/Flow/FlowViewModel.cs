@@ -76,7 +76,7 @@ public partial class PredefinedFileViewModel : ObservableObject
         {
             using var db = new BaseDatabase();
             var flow = db.GetCollection<FundFlow>().FindById(FlowId);
-            if (flow!.GetType().GetProperty(Property) is PropertyInfo property && property.PropertyType == typeof(FundFileInfo))
+            if (flow!.GetType().GetProperty(Property) is PropertyInfo property && property.PropertyType == typeof(FileStorageInfo))
                 property.SetValue(flow, null);
 
             db.GetCollection<FundFlow>().Update(flow);
@@ -101,8 +101,8 @@ public partial class PredefinedFileViewModel : ObservableObject
 
             using var db = new BaseDatabase();
             var flow = db.GetCollection<FundFlow>().FindById(FlowId);
-            if (flow!.GetType().GetProperty(Property) is PropertyInfo property && property.PropertyType == typeof(FundFileInfo))
-                property.SetValue(flow, new FundFileInfo(tar, hash,  fi.LastWriteTime));
+            if (flow!.GetType().GetProperty(Property) is PropertyInfo property && property.PropertyType == typeof(FileStorageInfo))
+                property.SetValue(flow, new FileStorageInfo(tar, hash,  fi.LastWriteTime));
 
             db.GetCollection<FundFlow>().Update(flow);
 
@@ -177,8 +177,8 @@ public partial class PredefinedFileViewModel : ObservableObject
 
         using var db = new BaseDatabase();
         var flow = db.GetCollection<FundFlow>().FindById(FlowId);
-        if (flow!.GetType().GetProperty(Property) is PropertyInfo property && property.PropertyType == typeof(FundFileInfo))
-            property.SetValue(flow, new FundFileInfo(tar, hash, fi.LastWriteTime));
+        if (flow!.GetType().GetProperty(Property) is PropertyInfo property && property.PropertyType == typeof(FileStorageInfo))
+            property.SetValue(flow, new FileStorageInfo(tar, hash, fi.LastWriteTime));
 
         db.GetCollection<FundFlow>().Update(flow);
 
@@ -192,7 +192,7 @@ public partial class PredefinedFileViewModel : ObservableObject
         {
             using var db = new BaseDatabase();
             var flow = db.GetCollection<FundFlow>().FindById(FlowId);
-            if (flow!.GetType().GetProperty(Property) is PropertyInfo property && property.PropertyType == typeof(FundFileInfo))
+            if (flow!.GetType().GetProperty(Property) is PropertyInfo property && property.PropertyType == typeof(FileStorageInfo))
                 property.SetValue(flow, null);
         }
         else
@@ -240,7 +240,7 @@ public partial class FlowViewModel : ObservableObject
     /// 要素文件
     /// </summary>
     [ObservableProperty]
-    public partial ObservableCollection<CustomFileInfo>? CustomFiles { get; set; }
+    public partial ObservableCollection<CustomFileInfoViewModel>? CustomFiles { get; set; }
 
     public string CustomFileFolder { get; set; } = "Files";
 
@@ -270,7 +270,7 @@ public partial class FlowViewModel : ObservableObject
 
         Date = flow.Date?.ToDateTime(default) ?? null;
 
-        CustomFiles = flow.CustomFiles is not null ? new(flow.CustomFiles.Select(x => new CustomFileInfo { Id = x.Id, Name = x.Name, FileInfo = x.Path is null ? null : new FileInfo(x.Path) })) : new();
+        CustomFiles = flow.CustomFiles is not null ? new(flow.CustomFiles.Select(x => new CustomFileInfoViewModel { Id = x.Id, Name = x.Name, FileInfo = x.Path is null ? null : new FileInfo(x.Path) })) : new();
         foreach (var item in CustomFiles)
             item.PropertyChanged += CustomFile_PropertyChanged;
 
@@ -311,13 +311,13 @@ public partial class FlowViewModel : ObservableObject
         if (last is not null && (string.IsNullOrWhiteSpace(last.Name) || last.Name == "未命名") && last.FileInfo is null)
             return;
 
-        CustomFileInfo item = new();
+        CustomFileInfoViewModel item = new();
         item.PropertyChanged += CustomFile_PropertyChanged;
         CustomFiles.Add(item);
     }
 
     [RelayCommand]
-    public void DeleteFile(CustomFileInfo file)
+    public void DeleteFile(CustomFileInfoViewModel file)
     {
         CustomFiles?.Remove(file);
     }
@@ -326,17 +326,17 @@ public partial class FlowViewModel : ObservableObject
 
     protected void CustomFile_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (sender is not CustomFileInfo cfi) return;
+        if (sender is not CustomFileInfoViewModel cfi) return;
 
         using var db = new BaseDatabase();
         var flow = db.GetCollection<FundFlow>().FindById(FlowId);
 
         var file = flow!.CustomFiles?.FirstOrDefault(x => x.Id == cfi.Id);
         if (file is null) return;
-        if (e.PropertyName == nameof(CustomFileInfo.Name) && cfi.Name is not null)
+        if (e.PropertyName == nameof(CustomFileInfoViewModel.Name) && cfi.Name is not null)
             file.Name = cfi.Name;
 
-        if (e.PropertyName == nameof(CustomFileInfo.FileInfo) && cfi.FileInfo is not null)
+        if (e.PropertyName == nameof(CustomFileInfoViewModel.FileInfo) && cfi.FileInfo is not null)
         {
             var dir = FundHelper.GetFolder(FundId);
             // 保存副本
@@ -360,7 +360,7 @@ public partial class FlowViewModel : ObservableObject
             if (flow!.CustomFiles is null)
                 flow.CustomFiles = new();
 
-            foreach (CustomFileInfo item in e.NewItems)
+            foreach (CustomFileInfoViewModel item in e.NewItems)
             {
                 if (item.FileInfo is null || !item.FileInfo.Exists)
                 {
@@ -374,7 +374,7 @@ public partial class FlowViewModel : ObservableObject
                 dir = dir.CreateSubdirectory(CustomFileFolder);
                 var tar = FileHelper.CopyFile(item.FileInfo, dir.FullName);
 
-                var fileVersion = new FundFileInfo(tar.Path, hash, item.FileInfo.LastWriteTime);// { Name = item.Name ?? "未命名", Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.FileInfo.LastWriteTime };
+                var fileVersion = new FileStorageInfo(tar.Path, hash, item.FileInfo.LastWriteTime);// { Name = item.Name ?? "未命名", Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.FileInfo.LastWriteTime };
 
                 flow!.CustomFiles.Add(fileVersion);
             }
@@ -386,7 +386,7 @@ public partial class FlowViewModel : ObservableObject
             var flow = db.GetCollection<FundFlow>().FindById(FlowId);
             if (flow?.CustomFiles is null) return;
 
-            foreach (CustomFileInfo item in e.OldItems)
+            foreach (CustomFileInfoViewModel item in e.OldItems)
             {
                 if (item.FileInfo is null) continue;
 
@@ -403,7 +403,7 @@ public partial class FlowViewModel : ObservableObject
     }
 
 
-    protected void SaveFile<T>(FileInfo newValue, string folder, Func<T, FundFileInfo?> file, Action<T> initFile) where T : FundFlow
+    protected void SaveFile<T>(FileInfo newValue, string folder, Func<T, FileStorageInfo?> file, Action<T> initFile) where T : FundFlow
     {
         using var db = new BaseDatabase();
 
