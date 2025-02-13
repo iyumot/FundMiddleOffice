@@ -59,26 +59,26 @@ public class InvestorQualification
     /// <summary>
     /// 承诺函
     /// </summary>
-    public FundFileInfo? CommitmentLetter { get; set; }
+    public FileStorageInfo? CommitmentLetter { get; set; }
 
     /// <summary>
     /// 基本信息表
     /// </summary>
-    public FundFileInfo? InfomationSheet { get; set; }
+    public FileStorageInfo? InfomationSheet { get; set; }
 
     /// <summary>
     /// 普通/专业投资者告知书
     /// </summary>
-    public FundFileInfo? Notice { get; set; }
+    public FileStorageInfo? Notice { get; set; }
 
     /// <summary>
     /// 税收声明
     /// </summary>
-    public FundFileInfo? TaxDeclaration { get; set; }
+    public FileStorageInfo? TaxDeclaration { get; set; }
 
     /// <summary>
     /// 证明材料
     /// </summary>
-    public FundFileInfo? CertificationMaterials { get; set; }
+    public FileStorageInfo? CertificationMaterials { get; set; }
 
 }

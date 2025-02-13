@@ -131,14 +131,14 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
         if (fund.Status >= FundStatus.ContractFinalized && !flows.Any(x => x is ContractFinalizeFlow))
         {
-            var f = new ContractFinalizeFlow { FundId = fund.Id, ContractFile = new FundFileInfo("基金合同"), CustomFiles = new() };
+            var f = new ContractFinalizeFlow { FundId = fund.Id, ContractFile = new FileStorageInfo("基金合同"), CustomFiles = new() };
             flows.Insert(1, f);
             db.GetCollection<FundFlow>().Insert(f);
         }
 
         if (fund.Status >= FundStatus.Setup && !flows.Any(x => x is SetupFlow))
         {
-            var f = new SetupFlow { FundId = fund.Id, Date = fund.SetupDate, PaidInCapitalProof = new FundFileInfo("实缴出资证明"), CustomFiles = new() };
+            var f = new SetupFlow { FundId = fund.Id, Date = fund.SetupDate, PaidInCapitalProof = new FileStorageInfo("实缴出资证明"), CustomFiles = new() };
             flows.Insert(2, f);
             db.GetCollection<FundFlow>().Insert(f);
         }

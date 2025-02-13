@@ -67,7 +67,7 @@ public class FlowTemplateSelector : DataTemplateSelector
 }
 
 
-public partial class CustomFileInfo : ObservableObject
+public partial class CustomFileInfoViewModel : ObservableObject
 {
     public int Id { get; set; }
 

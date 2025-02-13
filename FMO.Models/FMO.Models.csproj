@@ -6,4 +6,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Using Include="System.Int32">
+      <Alias>FID</Alias>
+    </Using>
+  </ItemGroup>
+
 </Project>

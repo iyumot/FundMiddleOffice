@@ -52,3 +52,42 @@ public class TrusteeDatabase : LiteDatabase
     {
     }
 }
+
+
+public class FileIndexDatabase : LiteDatabase
+{
+
+    private const string connectionString = @"FileName=data\filestorage.db;Connection=Shared";
+
+    public FileIndexDatabase() : base(connectionString, null)
+    {
+    }
+}
+
+/// <summary>
+/// 文件索引
+/// </summary>
+public static class FileIndexService
+{
+    public static FileIndexDatabase Database { get; }
+
+    public static ILiteCollection<FileStorageInfo> Collection { get; }
+
+    public static FileStorageInfo? Find(int id) => Collection.FindById(id);
+
+
+    public static bool Store(FileStorageInfo f) => Collection.Upsert(f);
+
+
+    static FileIndexService()
+    {
+        Database = new();
+        Collection = Database.GetCollection<FileStorageInfo>();
+    }
+
+
+
+
+
+
+}
