@@ -51,7 +51,7 @@ public class InvestorQualification
     /// <summary>
     /// 普通 / 专业
     /// </summary>
-    public InvestorType InvestorType { get; set; }
+    public QualifiedInvestorType InvestorType { get; set; }
 
 
     public int MyProperty { get; set; }

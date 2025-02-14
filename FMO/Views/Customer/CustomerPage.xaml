@@ -166,12 +166,15 @@
             <Button />
         </DockPanel>
 
+        <local:CustomerView DataContext="{Binding Selected}" DockPanel.Dock="Right" />
+
 
         <DataGrid
             hc:DataGridAttach.ShowRowNumber="True"
             AutoGenerateColumns="False"
             IsReadOnly="True"
             ItemsSource="{Binding Customers}"
+            SelectedItem="{Binding Selected}"
             SelectionUnit="FullRow"
             Style="{StaticResource DataGrid.ReadOnly}">
             <DataGrid.Columns>
@@ -179,7 +182,7 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <local:CopyableControl>
-                                <TextBlock VerticalAlignment="Center" Text="{Binding Name}" />
+                                <TextBlock VerticalAlignment="Center" Text="{Binding Name.Data.Old}" />
                             </local:CopyableControl>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
