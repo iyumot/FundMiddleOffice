@@ -4,31 +4,10 @@ namespace FMO.Models;
 
 
 
-
-[TypeConverter(typeof(EnumDescriptionTypeConverter))]
-public enum CustomerType
-{
-    [Description("自然人")] Natural,
-
-    [Description("机构")] Institution,
-
-    [Description("产品")] Product
-}
-
-
-[TypeConverter(typeof(EnumDescriptionTypeConverter))]
-public enum InvestorType
-{
-    [Description("普通")] Normal,
-
-    [Description("专业")] Professional,
-}
-
-
 /// <summary>
 /// 存储在base
 /// </summary>
-public interface ICustomer
+public interface IInvestor
 {
     int Id { get; set; }
 
@@ -49,17 +28,33 @@ public interface ICustomer
 
 
     //List<InvestorFileInfo> Certifications { get; set; }
-     
 
-    CustomerType CustomerType => this switch { NaturalCustomer => CustomerType.Natural, InstitutionCustomer => CustomerType.Institution, ProductCustomer => CustomerType.Product, _ => throw new NotImplementedException() };
+    VersionedFileInfo? Certifications { get; set; }
+
+    // DetailCustomerType DetailType { get; set; }
+
+    InvestorType CustomerType => this switch { NaturalInvestor => InvestorType.Natural, InstitutionInvestor => InvestorType.Institution, ProductInvestor => InvestorType.Product, _ => throw new NotImplementedException() };
 }
 
 
 
+public class Investor : IInvestor
+{
+    public int Id {  get; set; }
+
+    public required string Name { get; set; }
+
+    public Identity Identity { get; set; }
+    
+    public DateEfficient Efficient { get; set; }
+    
+    public VersionedFileInfo? Certifications { get; set; }
+}
+
 /// <summary>
 /// 自然人
 /// </summary>
-public class NaturalCustomer : ICustomer
+public class NaturalInvestor : IInvestor
 {
     public int Id { get; set; }
 
@@ -94,12 +89,38 @@ public class NaturalCustomer : ICustomer
     public string? Address { get; set; }
 
     public DateEfficient Efficient { get; set; }
+
+    public VersionedFileInfo? Certifications { get; set; }
+
+    // public DetailCustomerType DetailType { get; set; }
+
+
+    public NaturalType DetailType { get; set; }
+}
+
+
+/// <summary>
+/// 机构类型
+/// </summary>
+public enum InstitutionType
+{
+    [Description("境内法人机构")] LegalEntity,
+
+    [Description("有限合伙")] LimitedPartnership,
+
+    [Description("一人独资")] IndividualProprietorship, 
+
+    [Description("QFII")] QFII,
+
+    [Description("境外机构")] Foreign,
+
+    [Description("其它机构")] Other,
 }
 
 /// <summary>
 /// 机构
 /// </summary>
-public class InstitutionCustomer : ICustomer
+public class InstitutionInvestor : IInvestor
 {
     public int Id { get; set; }
 
@@ -107,18 +128,19 @@ public class InstitutionCustomer : ICustomer
 
     public required Identity Identity { get; set; }
 
-    public required InstitutionCustomerType InstitutionType { get; set; }
+    public required InstitutionCustomerType DetailType { get; set; }
 
     public DateEfficient Efficient { get; set; }
 
 
+    public VersionedFileInfo? Certifications { get; set; }
 }
 
 
 /// <summary>
 /// 产品
 /// </summary>
-public class ProductCustomer : ICustomer
+public class ProductInvestor : IInvestor
 {
     public int Id { get; set; }
 
@@ -130,4 +152,10 @@ public class ProductCustomer : ICustomer
     public required ProductCustomerType ProductType { get; set; }
 
     public DateEfficient Efficient { get; set; }
+
+    public DetailCustomerType DetailType { get; set; }
+
+    public VersionedFileInfo? Certifications { get; set; }
 }
+
+
