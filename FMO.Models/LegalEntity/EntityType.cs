@@ -1,15 +1,18 @@
-﻿namespace FMO.Models
+﻿using System.ComponentModel;
+
+namespace FMO.Models;
+
+
+[TypeConverter(typeof(EnumDescriptionTypeConverter))]
+public enum EntityType
 {
-    public enum EntityType
-    {
-        Unk,
+    Unk,
 
-        Natrual,
+    [Description("自然人")] Natural,
 
-        Institution,
+    [Description("机构")] Institution,
 
-        Fund,
+    [Description("产品")] Product
 
 
-    }
 }

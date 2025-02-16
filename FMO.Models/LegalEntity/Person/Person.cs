@@ -30,5 +30,5 @@ public class Person : LegalEntity
     /// </summary>
     public string? Email { get; set; }
 
-    public override EntityType Type => EntityType.Natrual;
+    public override EntityType Type => EntityType.Natural;
 }

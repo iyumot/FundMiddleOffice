@@ -36,21 +36,6 @@ public interface IInvestor
     InvestorType CustomerType => this switch { NaturalInvestor => InvestorType.Natural, InstitutionInvestor => InvestorType.Institution, ProductInvestor => InvestorType.Product, _ => throw new NotImplementedException() };
 }
 
-
-
-public class Investor : IInvestor
-{
-    public int Id {  get; set; }
-
-    public required string Name { get; set; }
-
-    public Identity Identity { get; set; }
-    
-    public DateEfficient Efficient { get; set; }
-    
-    public VersionedFileInfo? Certifications { get; set; }
-}
-
 /// <summary>
 /// 自然人
 /// </summary>
@@ -102,17 +87,18 @@ public class NaturalInvestor : IInvestor
 /// <summary>
 /// 机构类型
 /// </summary>
+[TypeConverter(typeof(EnumDescriptionTypeConverter))]
 public enum InstitutionType
 {
-    [Description("境内法人机构")] LegalEntity,
+    [Description("法人机构")] LegalEntity,
 
     [Description("有限合伙")] LimitedPartnership,
 
-    [Description("一人独资")] IndividualProprietorship, 
+    [Description("一人独资")] IndividualProprietorship,
 
-    [Description("QFII")] QFII,
+    [Description("QFII、RQFII等")] QFII,
 
-    [Description("境外机构")] Foreign,
+    [Description("其它境外机构")] Foreign,
 
     [Description("其它机构")] Other,
 }

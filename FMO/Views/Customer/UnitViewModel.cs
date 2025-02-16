@@ -102,15 +102,21 @@ public partial class CustomerUnitValueViewModel<T> : UnitViewModel where T : str
 
     public override bool CanConfirm => Data.IsChanged;
 
-    public override bool CanDelete => throw new NotImplementedException();
+    public override bool CanDelete => !HasUnsavedValue && Data.Old.HasValue;
 
-    public override bool HasUnsavedValue => throw new NotImplementedException();
+    public override bool HasUnsavedValue => Data.IsChanged;
 
-    public Func<object, T>? InitFunc { get; set; }
+    public Func<Investor, T>? InitFunc { get; set; }
 
     protected override void InitOverride(object? param)
     {
-        throw new NotImplementedException();
+        if (param is Investor c && InitFunc is not null)
+        {
+            Data.Old = InitFunc(c);
+            Data.New = InitFunc(c);
+        }
+        else
+            throw new NotImplementedException();
     }
 
     public override void RemoveValue(object obj)
@@ -125,7 +131,7 @@ public partial class CustomerUnitValueViewModel<T> : UnitViewModel where T : str
 
     protected override string? DisplayOverride()
     {
-        return Data.Old.ToString();
+        return Data.Old switch { Enum e => EnumDescriptionTypeConverter.GetEnumDescription(e), null => null, var a => a.ToString() };
     }
 }
 
@@ -135,15 +141,15 @@ public partial class CustomerUnitRefrenceViewModel<T> : UnitViewModel where T : 
 
     public override bool CanConfirm => Data.IsChanged;
 
-    public override bool CanDelete => Data.Old is not null;
+    public override bool CanDelete => !HasUnsavedValue && Data.Old is not null;
 
     public override bool HasUnsavedValue => Data.IsChanged;
 
-    public Func<IInvestor, T>? InitFunc { get; set; }
+    public Func<Investor, T>? InitFunc { get; set; }
 
     protected override void InitOverride(object? param)
     {
-        if (param is IInvestor c && InitFunc is not null)
+        if (param is Investor c && InitFunc is not null)
         {
             Data.Old = InitFunc(c);
             Data.New = InitFunc(c);
@@ -166,6 +172,6 @@ public partial class CustomerUnitRefrenceViewModel<T> : UnitViewModel where T : 
 
     protected override string? DisplayOverride()
     {
-        return Data.Old.ToString();
+        return Data.Old switch { Enum e => EnumDescriptionTypeConverter.GetEnumDescription(e), null => null, var a => a.ToString() };
     }
 }

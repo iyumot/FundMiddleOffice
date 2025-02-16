@@ -48,14 +48,18 @@ public class InvestorFileInfo
 /// </summary>
 public class InvestorQualification
 {
+    public int Id { get; set; }
+
+    public DateOnly Date { get; set; }
+
+    public int InvestorId { get; set; }
+
+
     /// <summary>
     /// 普通 / 专业
     /// </summary>
     public QualifiedInvestorType InvestorType { get; set; }
-
-
-    public int MyProperty { get; set; }
-
+   
     /// <summary>
     /// 承诺函
     /// </summary>
@@ -80,5 +84,16 @@ public class InvestorQualification
     /// 证明材料
     /// </summary>
     public FileStorageInfo? CertificationMaterials { get; set; }
+
+    /// <summary>
+    /// 代理人证件
+    /// </summary>
+    public FileStorageInfo? Agent { get; set; }
+
+    /// <summary>
+    /// 授权书
+    /// </summary>
+    public FileStorageInfo? Authorization { get; set; }
+
 
 }
