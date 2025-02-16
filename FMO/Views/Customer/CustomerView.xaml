@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     Width="600"
+    d:DataContext="{d:DesignInstance Type=local:CustomerViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
@@ -80,6 +81,7 @@
                             <DockPanel Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:CustomerView}, Converter={StaticResource Boolean2VisibilityReConverter}}">
                                 <ContentPresenter
                                     Margin="4,0"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                     Content="{TemplateBinding Content}"
                                     ContentTemplate="{TemplateBinding ContentTemplate}" />
@@ -176,6 +178,17 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style
+            x:Key="SimpleElement.Stretch"
+            BasedOn="{StaticResource ElementContainer}"
+            TargetType="ContentControl">
+            <Setter Property="Content">
+                <Setter.Value>
+                    <TextBox HorizontalAlignment="Stretch" Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
     <Grid>
         <DockPanel>
@@ -185,22 +198,109 @@
                 <ContentControl
                     HorizontalAlignment="Center"
                     DataContext="{Binding Name}"
-                    Style="{StaticResource SimpleElement}"
+                    Style="{StaticResource ElementContainer}"
                     TextElement.FontSize="16"
-                    TextElement.FontWeight="Black" />
-
-
-                <ContentControl DataContext="{Binding DetailType}" Style="{StaticResource ElementContainer}">
-                    <ComboBox
-                        MinWidth="100"
-                        ItemsSource="{Binding DataContext.DetailTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}"
-                        SelectedItem="{Binding Data.New}" />
+                    TextElement.FontWeight="Black">
+                    <TextBox
+                        MinWidth="400"
+                        Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}"
+                        TextAlignment="Center" />
                 </ContentControl>
+
+                <!--  投资人类型  -->
+                <ContentControl Content="{Binding}">
+                    <ContentControl.ContentTemplate>
+                        <DataTemplate>
+                            <DockPanel>
+                                <ContentControl DataContext="{Binding EntityType}" Style="{StaticResource ElementContainer}">
+                                    <ComboBox
+                                        MinWidth="100"
+                                        ItemsSource="{x:Static local:CustomerViewModel.EntityTypes}"
+                                        SelectedItem="{Binding Data.New}" />
+                                </ContentControl>
+
+                                <!--  自然人类型  -->
+                                <ContentControl
+                                    x:Name="natural"
+                                    DataContext="{Binding InvestorNaturalType}"
+                                    Style="{StaticResource ElementContainer}"
+                                    Visibility="Collapsed">
+                                    <ComboBox
+                                        MinWidth="100"
+                                        ItemsSource="{x:Static local:CustomerViewModel.NaturalTypes}"
+                                        SelectedItem="{Binding Data.New}" />
+                                </ContentControl>
+
+                                <!--  机构类型  -->
+                                <DockPanel x:Name="institution" Visibility="Collapsed">
+                                    <DockPanel.Resources>
+                                        <CollectionViewSource x:Key="data" Source="{x:Static local:CustomerViewModel.InstitutionTypes}">
+                                            <CollectionViewSource.GroupDescriptions>
+                                                <PropertyGroupDescription PropertyName="Category" />
+                                            </CollectionViewSource.GroupDescriptions>
+                                        </CollectionViewSource>
+                                    </DockPanel.Resources>
+
+                                    <ContentControl DataContext="{Binding InvestorNaturalType}" Style="{StaticResource ElementContainer}">
+                                        <ComboBox
+                                            MinWidth="100"
+                                            ItemsSource="{Binding Source={StaticResource data}}"
+                                            SelectedValue="{Binding Data.New}"
+                                            SelectedValuePath="Value">
+                                            <ComboBox.GroupStyle>
+                                                <GroupStyle>
+                                                    <GroupStyle.HeaderTemplate>
+                                                        <DataTemplate>
+                                                            <Border
+                                                                Margin="2"
+                                                                Background="White"
+                                                                BorderThickness="2">
+                                                                <TextBlock
+                                                                    Margin="4"
+                                                                    FontSize="20"
+                                                                    FontWeight="Bold"
+                                                                    Text="{Binding Name}" />
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </GroupStyle.HeaderTemplate>
+                                                </GroupStyle>
+                                            </ComboBox.GroupStyle>
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Value}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                    </ContentControl>
+
+
+                                    <ComboBox ItemsSource="{Binding InvestorType}" />
+
+                                </DockPanel>
+
+                            </DockPanel>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding EntityType.Data.New}" Value="Natural">
+                                    <Setter TargetName="natural" Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding EntityType.Data.New}" Value="Institution">
+                                    <Setter TargetName="institution" Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </ContentControl.ContentTemplate>
+                </ContentControl>
+
+
+
+
+
 
             </StackPanel>
 
         </DockPanel>
 
+        <!--  查看/编辑 切换  -->
         <ToggleButton
             Grid.Column="2"
             HorizontalAlignment="Right"

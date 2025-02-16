@@ -19,9 +19,82 @@ public enum NaturalType
 [TypeConverter(typeof(EnumDescriptionTypeConverter))]
 public enum InvestorType
 {
-    [Description("自然人")] Natural,
+    [Description("非员工")] NonEmployee,
 
-    [Description("机构")] Institution,
+    [Description("员工")] Employee,
+
+    [Description("证券公司或其子公司")]
+    SecuritiesCompany = 101,
+
+    [Description("期货公司或其子公司")]
+    FuturesCompany,
+
+    [Description("基金管理公司或其子公司")]
+    FundManagementCompany,
+
+    /// <summary>
+    /// 银行
+    /// </summary>
+    [Description("银行")]
+    Bank,
+
+    /// <summary>
+    /// 保险公司
+    /// </summary>
+    [Description("保险公司")]
+    InsuranceCompany,
+
+    /// <summary>
+    /// 信托公司
+    /// </summary>
+    [Description("信托公司")]
+    TrustCompany,
+
+    /// <summary>
+    /// 财务公司
+    /// </summary>
+    [Description("财务公司")]
+    FinanceCompany,
+
+
+    /// <summary>
+    /// 其他境内金融机构
+    /// </summary>
+    [Description("其他境内金融机构")]
+    OtherDomesticFinancialInstitution,
+
+
+    /// <summary>
+    /// 机关法人
+    /// </summary>
+    [Description("机关法人")]
+    GovernmentAgency = 201,
+
+    /// <summary>
+    /// 事业单位法人
+    /// </summary>
+    [Description("事业单位法人")]
+    PublicInstitution,
+
+    /// <summary>
+    /// 社会团体法人
+    /// </summary>
+    [Description("社会团体法人")]
+    SocialOrganization,
+
+    /// <summary>
+    /// 非金融机构企业法人
+    /// </summary>
+    [Description("非金融机构企业法人")]
+    NonFinancialCorporateEntity,
+
+    /// <summary>
+    /// 非金融类非法人机构
+    /// </summary>
+    [Description("非金融类非法人机构")]
+    NonFinancialNonCorporateEntity,
+
+
 
     [Description("产品")] Product
 }
