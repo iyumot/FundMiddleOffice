@@ -346,7 +346,7 @@ public class DailyValueCurveDrawing : FrameworkElement
     {
         if (DataContext is not DailyValueCurveViewModel vm || vm.Choosed is null) return;
 
-        var data = vm.Choosed.ToArray();
+        var data = vm.Choosed.Where(x=>x.NetValue != 0 && x.CumNetValue != 0).ToArray();
         if (data.Length < 2) { DrawBlank(); return; }
 
         if (ActualWidth == 0 || ActualHeight == 0) return;
