@@ -132,13 +132,13 @@ public class GatherDailyFromMailMission : Mission
                     mails = db.GetCollection<GzMailInfo>().Query().Select(x => x.Id).ToList();
             }
 
-            var needload = mailids.Except(mails).Index().Select(x => x.Index);//.Select(x => mailids.IndexOf(x));
+            var needload = mailids.Index().ExceptBy(mails, x=>x.Item);//.Select(x => mailids.IndexOf(x));
 
             log += $"\n检查缓存，新邮件{needload.Count()} 封";
 
             double unit = 100.0 / needload.Count();
 
-            foreach (var i in needload)
+            foreach (var (i,v) in needload)
             {
                 try
                 {
