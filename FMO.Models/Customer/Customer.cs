@@ -33,7 +33,7 @@ public interface IInvestor
 
     // DetailCustomerType DetailType { get; set; }
 
-    InvestorType CustomerType => this switch { NaturalInvestor => InvestorType.Natural, InstitutionInvestor => InvestorType.Institution, ProductInvestor => InvestorType.Product, _ => throw new NotImplementedException() };
+    //InvestorType CustomerType => this switch { NaturalInvestor => InvestorType.Natural, InstitutionInvestor => InvestorType.Institution, ProductInvestor => InvestorType.Product, _ => throw new NotImplementedException() };
 }
 
 /// <summary>
