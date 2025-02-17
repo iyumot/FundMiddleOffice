@@ -1,4 +1,6 @@
-﻿namespace FMO.Schedule;
+﻿using static System.Net.Mime.MediaTypeNames;
+
+namespace FMO.Schedule;
 
 
 public static class MissionSchedule
