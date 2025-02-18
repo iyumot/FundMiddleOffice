@@ -17,86 +17,68 @@ public enum NaturalType
 
 
 [TypeConverter(typeof(EnumDescriptionTypeConverter))]
-public enum InvestorType
+public enum AmacInvestorType
 {
-    [Description("非员工")] NonEmployee,
+    [Description("自然人（非员工跟投）")] NonEmployee,
 
-    [Description("员工")] Employee,
+    [Description("自然人（员工跟投）")] Employee, 
 
-    [Description("证券公司或其子公司")]
-    SecuritiesCompany = 101,
+    [Description("本产品管理人跟投")] Manager,
 
-    [Description("期货公司或其子公司")]
-    FuturesCompany,
+    [Description("境内法人机构（公司等）")] LegalEntity,
 
-    [Description("基金管理公司或其子公司")]
-    FundManagementCompany,
+    [Description("境内非法人机构（个人独资企业）")] IndividualProprietorship,
 
-    /// <summary>
-    /// 银行
-    /// </summary>
-    [Description("银行")]
-    Bank,
+    [Description("境内非法人机构（一般合伙企业等）")] NonLegalEntity,
 
-    /// <summary>
-    /// 保险公司
-    /// </summary>
-    [Description("保险公司")]
-    InsuranceCompany,
+    [Description("QFII、RQFII等")] QFII,
 
-    /// <summary>
-    /// 信托公司
-    /// </summary>
-    [Description("信托公司")]
-    TrustCompany,
+    [Description("其它境外机构")] Foreign,
 
-    /// <summary>
-    /// 财务公司
-    /// </summary>
-    [Description("财务公司")]
-    FinanceCompany,
+    [Description("财政直接出资")]
+    DirectFinancialInvestment,
+
+    //[Description("其它机构")] Other,
 
 
-    /// <summary>
-    /// 其他境内金融机构
-    /// </summary>
-    [Description("其他境内金融机构")]
-    OtherDomesticFinancialInstitution,
+    [Description("产品")] Product,
 
+    [Description("私募基金产品")]
+    PrivateFundProduct,
 
-    /// <summary>
-    /// 机关法人
-    /// </summary>
-    [Description("机关法人")]
-    GovernmentAgency = 201,
+    [Description("证券公司及其子公司资产管理计划")]
+    SecuritiesCompanyAssetManagementPlan,
 
-    /// <summary>
-    /// 事业单位法人
-    /// </summary>
-    [Description("事业单位法人")]
-    PublicInstitution,
+    [Description("基金公司及其子公司资产管理计划")]
+    FundCompanyAssetManagementPlan,
 
-    /// <summary>
-    /// 社会团体法人
-    /// </summary>
-    [Description("社会团体法人")]
-    SocialOrganization,
+    [Description("期货公司及其子公司资产管理计划")]
+    FuturesCompanyAssetManagementPlan,
 
-    /// <summary>
-    /// 非金融机构企业法人
-    /// </summary>
-    [Description("非金融机构企业法人")]
-    NonFinancialCorporateEntity,
+    [Description("信托计划")]
+    TrustPlan,
 
-    /// <summary>
-    /// 非金融类非法人机构
-    /// </summary>
-    [Description("非金融类非法人机构")]
-    NonFinancialNonCorporateEntity,
+    [Description("商业银行理财产品")]
+    CommercialBankFinancialProduct,
 
+    [Description("保险资产管理计划")]
+    InsuranceAssetManagementPlan,
 
+    [Description("慈善基金、捐赠基金等社会公益基金")]
+    SocialWelfareFund,
 
-    [Description("产品")] Product
+    [Description("养老基金")]
+    PensionFund,
+
+    [Description("社会保障基金")]
+    SocialSecurityFund,
+
+    [Description("企业年金")]
+    EnterpriseAnnuity,
+
+    [Description("政府类引导基金")]
+    GovernmentGuidanceFund,
+
 }
 
 

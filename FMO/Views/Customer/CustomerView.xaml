@@ -233,51 +233,49 @@
 
                                 <!--  机构类型  -->
                                 <DockPanel x:Name="institution" Visibility="Collapsed">
-                                    <DockPanel.Resources>
+                                    <!--<DockPanel.Resources>
                                         <CollectionViewSource x:Key="data" Source="{x:Static local:CustomerViewModel.InstitutionTypes}">
                                             <CollectionViewSource.GroupDescriptions>
                                                 <PropertyGroupDescription PropertyName="Category" />
                                             </CollectionViewSource.GroupDescriptions>
                                         </CollectionViewSource>
-                                    </DockPanel.Resources>
+                                    </DockPanel.Resources>-->
 
-                                    <ContentControl DataContext="{Binding InvestorNaturalType}" Style="{StaticResource ElementContainer}">
-                                        <ComboBox
-                                            MinWidth="100"
-                                            ItemsSource="{Binding Source={StaticResource data}}"
-                                            SelectedValue="{Binding Data.New}"
-                                            SelectedValuePath="Value">
-                                            <ComboBox.GroupStyle>
-                                                <GroupStyle>
-                                                    <GroupStyle.HeaderTemplate>
-                                                        <DataTemplate>
-                                                            <Border
-                                                                Margin="2"
-                                                                Background="White"
-                                                                BorderThickness="2">
-                                                                <TextBlock
-                                                                    Margin="4"
-                                                                    FontSize="20"
-                                                                    FontWeight="Bold"
-                                                                    Text="{Binding Name}" />
-                                                            </Border>
-                                                        </DataTemplate>
-                                                    </GroupStyle.HeaderTemplate>
-                                                </GroupStyle>
-                                            </ComboBox.GroupStyle>
-                                            <ComboBox.ItemTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding Value}" />
-                                                </DataTemplate>
-                                            </ComboBox.ItemTemplate>
-                                        </ComboBox>
-                                    </ContentControl>
+                                    <!--<ComboBox
+                                        MinWidth="100"
+                                        ItemsSource="{Binding Source={StaticResource data}}"
+                                        SelectedValue="{Binding SelectedInstitutionType}"
+                                        SelectedValuePath="Value">
+                                        <ComboBox.GroupStyle>
+                                            <GroupStyle>
+                                                <GroupStyle.HeaderTemplate>
+                                                    <DataTemplate>
+                                                        <Border
+                                                            Margin="2"
+                                                            Background="White"
+                                                            BorderThickness="2">
+                                                            <TextBlock
+                                                                Margin="4"
+                                                                FontSize="20"
+                                                                FontWeight="Bold"
+                                                                Text="{Binding Name}" />
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </GroupStyle.HeaderTemplate>
+                                            </GroupStyle>
+                                        </ComboBox.GroupStyle>
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Value}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>-->
 
-
-                                    <ComboBox ItemsSource="{Binding InvestorType}" />
 
                                 </DockPanel>
 
+
+                                <ComboBox ItemsSource="{Binding InvestorTypes}" SelectedItem="{Binding Type}" />
                             </DockPanel>
                             <DataTemplate.Triggers>
                                 <DataTrigger Binding="{Binding EntityType.Data.New}" Value="Natural">

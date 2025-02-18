@@ -120,7 +120,7 @@ internal static class DtoHelper
 
     public static (IInvestor customer, BankAccount account) ToCustomer(this CustomerInfo info)
     {
-        InvestorType customerType = info.CustTypeCn switch { "个人" => InvestorType.Natural, "机构" => InvestorType.Institution, "产品" => InvestorType.Product, _ => throw new Exception($"未知的客户类型 {info.CustomName}：{info.ContTypeCn}") };
+        AmacInvestorType customerType = info.CustTypeCn switch { "个人" => AmacInvestorType.Natural, "机构" => AmacInvestorType.Institution, "产品" => AmacInvestorType.Product, _ => throw new Exception($"未知的客户类型 {info.CustomName}：{info.ContTypeCn}") };
 
         IDType idtype = info.IdentityTypeCn switch
         {
@@ -157,9 +157,9 @@ internal static class DtoHelper
 
         IInvestor customer = customerType switch
         {
-            InvestorType.Natural => new NaturalInvestor { Name = info.CustomName, Identity = identity, Gender = GetGender(info.SexCn) },
-            InvestorType.Institution => new InstitutionInvestor { Name = info.CustomName, Identity = identity, DetailType = GetInstitutionCustomerType(info.OrgTypeCn) },
-            InvestorType.Product => new ProductInvestor { Name = info.CustomName, Identity = identity, ProductType = GetProductCustomerType(info.OrgTypeCn) },
+            AmacInvestorType.Natural => new NaturalInvestor { Name = info.CustomName, Identity = identity, Gender = GetGender(info.SexCn) },
+            AmacInvestorType.Institution => new InstitutionInvestor { Name = info.CustomName, Identity = identity, DetailType = GetInstitutionCustomerType(info.OrgTypeCn) },
+            AmacInvestorType.Product => new ProductInvestor { Name = info.CustomName, Identity = identity, ProductType = GetProductCustomerType(info.OrgTypeCn) },
             _ => throw new NotImplementedException(),
         };
 
