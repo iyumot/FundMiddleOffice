@@ -94,7 +94,7 @@ public enum InstitutionType
 
     [Description("有限合伙")] LimitedPartnership,
 
-    [Description("一人独资")] IndividualProprietorship,
+    [Description("个人独资")] IndividualProprietorship,
 
     [Description("QFII、RQFII等")] QFII,
 

@@ -33,9 +33,10 @@ public partial class CustomerViewModel : ObservableObject
 
     public static NaturalType[] NaturalTypes { get; } = [NaturalType.NonEmployee, NaturalType.Employee];
 
-    public static IEnumerable<InstitutionWithGroup> InstitutionTypes { get; } = new List<InstitutionType>([InstitutionType.LegalEntity, InstitutionType.LimitedPartnership, InstitutionType.IndividualProprietorship, InstitutionType.Other, InstitutionType.QFII, InstitutionType.Foreign, InstitutionType.Other]).Index().Select(x => new InstitutionWithGroup { Category = x.Index < 4 ? "境内" : "境外", Value = x.Item });
+    //public static IEnumerable<InstitutionWithGroup> InstitutionTypes { get; } = new List<InstitutionType>([InstitutionType.LegalEntity, InstitutionType.LimitedPartnership, InstitutionType.IndividualProprietorship, InstitutionType.Other, InstitutionType.QFII, InstitutionType.Foreign, InstitutionType.Other]).Index().Select(x => new InstitutionWithGroup { Category = x.Index < 4 ? "境内" : "境外", Value = x.Item });
 
-
+   // [ObservableProperty]
+    //public partial InstitutionType? SelectedInstitutionType { get; set; }
 
 
 
@@ -47,14 +48,14 @@ public partial class CustomerViewModel : ObservableObject
     public CustomerUnitValueViewModel<EntityType> EntityType { get; } = new() { InitFunc = x => x.EntityType, Label = "客户类型" };
 
 
-    public CustomerUnitValueViewModel<NaturalType> InvestorNaturalType { get; } = new() { InitFunc = x => x.Type switch { Models.InvestorType.Employee => NaturalType.Employee, _ => NaturalType.NonEmployee } };
+    public CustomerUnitValueViewModel<NaturalType> InvestorNaturalType { get; } = new() { InitFunc = x => x.Type switch { Models.AmacInvestorType.Employee => NaturalType.Employee, _ => NaturalType.NonEmployee } };
 
     [ObservableProperty]
-    public partial InvestorType[] InvestorTypes { get; set; }
+    public partial AmacInvestorType[]? InvestorTypes { get; set; }
 
 
     [ObservableProperty]
-    public partial InvestorType Type { get; set; }
+    public partial AmacInvestorType? Type { get; set; }
 
 
     [ObservableProperty]
@@ -109,6 +110,8 @@ public partial class CustomerViewModel : ObservableObject
     {
         Name.Init(x);
         EntityType.Init(x);
+        EntityType.PropertyChanged += EntityType_PropertyChanged;
+        EntityType_PropertyChanged(null, null);
         // DetailType.Init(x);
 
         //switch (x)
@@ -147,6 +150,25 @@ public partial class CustomerViewModel : ObservableObject
         //}
     }
 
+    private void EntityType_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (EntityType.Data.New)
+        {
+            case Models.EntityType.Natural:
+                InvestorTypes = [AmacInvestorType.NonEmployee, AmacInvestorType.Employee];
+                break;
+            case Models.EntityType.Institution:
+                InvestorTypes = [AmacInvestorType.Manager, AmacInvestorType.LegalEntity, AmacInvestorType.IndividualProprietorship, AmacInvestorType.NonLegalEntity, AmacInvestorType.QFII, AmacInvestorType.Foreign, AmacInvestorType.DirectFinancialInvestment];
+                break;
+            case Models.EntityType.Product:
+                InvestorTypes = Enum.GetValues<AmacInvestorType>().Where(x => x > AmacInvestorType.Product).ToArray();
+                break;
+            case null:
+                break;
+            default:
+                break;
+        }
+    }
 
     [RelayCommand]
     public void Delete(UnitViewModel unit)
@@ -170,6 +192,35 @@ public partial class CustomerViewModel : ObservableObject
 
 
 
+
+
+
+    //partial void OnSelectedInstitutionTypeChanged(InstitutionType? oldValue, InstitutionType? newValue)
+    //{
+    //    switch (newValue)
+    //    {
+    //        case Models.InstitutionType.LegalEntity:
+    //            InvestorTypes = Enum.GetValues<AmacInvestorType>().Where(x=> (int)x > 100 && (int)x < 1000).ToArray();
+    //            break;
+    //        case Models.InstitutionType.LimitedPartnership:
+    //            InvestorTypes = Enum.GetValues<AmacInvestorType>().Where(x => (int)x > 1000 && (int)x < 2000).ToArray();
+    //            break;
+    //        case Models.InstitutionType.IndividualProprietorship:
+    //            InvestorTypes = Enum.GetValues<AmacInvestorType>().Where(x => (int)x > 2000 && (int)x < 3000).ToArray();
+    //            break;
+    //        case Models.InstitutionType.QFII:
+    //            break;
+    //        case Models.InstitutionType.Foreign:
+    //            break;
+    //        default:
+    //            InvestorTypes = Enum.GetValues<AmacInvestorType>().ToArray();
+    //            break;
+    //    }
+
+
+    //    if (InvestorTypes.Length == 1) Type = InvestorTypes[0];
+    //    else if (Type is not null && !InvestorTypes.Contains(Type.Value)) Type = null;
+    //}
 
     public class InstitutionWithGroup
     {

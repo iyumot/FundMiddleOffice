@@ -26,7 +26,7 @@ public class Investor
     /// </summary>
     public EntityType EntityType { get; set; }
 
-    public InvestorType Type { get; set; }
+    public AmacInvestorType Type { get; set; }
 
 
 
