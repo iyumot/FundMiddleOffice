@@ -10,7 +10,7 @@ namespace FMO.Models;
 [TypeConverter(typeof(EnumDescriptionTypeConverter))]
 public enum IDType
 {
-    [Description("未知")]Unknown,
+    [Description("未知")] Unknown,
 
     /// <summary>
     /// 居民身份证。
@@ -78,67 +78,38 @@ public enum IDType
     [Description("外国人永久居留身份证")]
     ForeignPermanentResidentID,
 
-    /// <summary>
-    /// 组织机构代码证
-    /// </summary>
+    Institusion,
+
+    [Description("统一社会信用代码")]
+    UnifiedSocialCreditCode,
+
     [Description("组织机构代码证")]
     OrganizationCodeCertificate,
 
+    [Description("营业执照号")]
+    BusinessLicenseNumber,
 
-    /// <summary>
-    /// 营业执照
-    /// </summary>
-    [Description("营业执照")]
-    BusinessLicense,
+    [Description("注册号")]
+    RegistrationNumber,
 
-    /// <summary>
-    /// 行政机关
-    /// </summary>
-    [Description("行政机关")]
-    AdministrativeAgency,
+    [Description("管理人登记编码")]
+    ManagerRegistrationCode,
 
-    /// <summary>
-    /// 社会团体
-    /// </summary>
-    [Description("社会团体")]
-    SocialGroup,
+    [Description("产品备案编码")]
+    ProductFilingCode,
 
-    /// <summary>
-    /// 军队
-    /// </summary>
-    [Description("军队")]
-    Military,
-
-    /// <summary>
-    /// 武警
-    /// </summary>
-    [Description("武警")]
-    ArmedPolice,
-
-    /// <summary>
-    /// 下属机构（具有主管单位批文号）
-    /// </summary>
-    [Description("下属机构（具有主管单位批文号）")]
-    SubordinateOrganization,
-
-    /// <summary>
-    /// 基金会
-    /// </summary>
-    [Description("基金会")]
-    Foundation,
+    [Description("证券业务许可证")]
+    SecuritiesBusinessLicense, 
 
 
-    /// <summary>
-    /// 登记证书
-    /// </summary>
-    [Description("登记证书")]
-    RegistrationCertificate,
+    [Description("产品登记编码")]
+    ProductRegistrationCode,
 
-    /// <summary>
-    /// 批文
-    /// </summary>
-    [Description("批文")]
-    ApprovalDocument,
+    [Description("港澳台居民居住证")]
+    ResidencePermitForHongKongMacaoAndTaiwanResidents,
+
+    [Description("信托登记系统产品编码")]
+    TrustRegistrationSystemProductCode,
 
 
     /// <summary>

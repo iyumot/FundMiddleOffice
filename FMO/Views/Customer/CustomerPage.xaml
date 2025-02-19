@@ -66,14 +66,14 @@
             <Style.Triggers>
 
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Background" Value="Orange" />
                     <Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, Path=Foreground}" />
                     <Setter Property="BorderBrush" Value="Transparent" />
                 </Trigger>
-                <DataTrigger Binding="{Binding Type}" Value="Institution">
+                <DataTrigger Binding="{Binding Type.Data.Old}" Value="Institution">
                     <Setter Property="Background" Value="WhiteSmoke" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding Type}" Value="Product">
+                <DataTrigger Binding="{Binding Type.Data.Old}" Value="Product">
                     <Setter Property="Background" Value="#dedede" />
                 </DataTrigger>
                 <!--<MultiTrigger>
@@ -163,10 +163,25 @@
     </UserControl.Resources>
     <DockPanel>
         <DockPanel DockPanel.Dock="Top">
-            <Button />
+            <DockPanel DockPanel.Dock="Right" LastChildFill="False">
+                <Button
+                    hc:IconElement.Geometry="{StaticResource f.plus}"
+                    Command="{Binding AddInvestorCommand}"
+                    Style="{StaticResource ButtonIcon}" />
+                <Button
+                    hc:IconElement.Geometry="{StaticResource f.circle-minus}"
+                    Command="{Binding RemoveInvestorCommand}"
+                    Foreground="Red"
+                    Style="{StaticResource ButtonIcon}" />
+            </DockPanel>
+            <TextBlock />
         </DockPanel>
 
-        <local:CustomerView DataContext="{Binding Selected}" DockPanel.Dock="Right" />
+        <local:CustomerView
+            Margin="10,0,0,0"
+            DataContext="{Binding Selected}"
+            DockPanel.Dock="Right"
+            Visibility="{Binding ., Converter={StaticResource Object2VisibilityConverter}}" />
 
 
         <DataGrid
@@ -187,14 +202,15 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn Binding="{Binding Type}" Header="类型" />
+
+                <DataGridTextColumn Binding="{Binding Type.Data.Old}" Header="类型" />
 
 
                 <DataGridTemplateColumn Header="证件类型">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <local:CopyableControl>
-                                <TextBlock VerticalAlignment="Center" Text="{Binding IDType}" />
+                                <TextBlock VerticalAlignment="Center" Text="{Binding IDType.Data.Old}" />
                             </local:CopyableControl>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -204,7 +220,7 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <local:CopyableControl>
-                                <TextBlock VerticalAlignment="Center" Text="{Binding Identity}" />
+                                <TextBlock VerticalAlignment="Center" Text="{Binding Identity.Data.Old}" />
                             </local:CopyableControl>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
