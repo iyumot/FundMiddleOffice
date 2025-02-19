@@ -269,6 +269,11 @@
                     </ContentControl>
                 </DockPanel>
 
+
+                <local:MultiFileDisplay
+                    Margin="0,5"
+                    Header="身份证明文件"
+                    IsReadOnly="{Binding IsReadOnly}" />
             </StackPanel>
 
         </DockPanel>
