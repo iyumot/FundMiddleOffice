@@ -7,7 +7,7 @@
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
-    Width="600"
+    Width="500"
     d:DataContext="{d:DesignInstance Type=local:CustomerViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
@@ -208,91 +208,66 @@
                 </ContentControl>
 
                 <!--  投资人类型  -->
-                <ContentControl Content="{Binding}">
-                    <ContentControl.ContentTemplate>
-                        <DataTemplate>
-                            <DockPanel>
-                                <ContentControl DataContext="{Binding EntityType}" Style="{StaticResource ElementContainer}">
-                                    <ComboBox
-                                        MinWidth="100"
-                                        ItemsSource="{x:Static local:CustomerViewModel.EntityTypes}"
-                                        SelectedItem="{Binding Data.New}" />
-                                </ContentControl>
+                <DockPanel Margin="0,4" LastChildFill="False">
+                    <ContentControl DataContext="{Binding EntityType}" Style="{StaticResource ElementContainer}">
+                        <ComboBox
+                            MinWidth="100"
+                            ItemsSource="{x:Static local:CustomerViewModel.EntityTypes}"
+                            SelectedItem="{Binding Data.New}" />
+                    </ContentControl>
 
-                                <!--  自然人类型  -->
-                                <ContentControl
-                                    x:Name="natural"
-                                    DataContext="{Binding InvestorNaturalType}"
-                                    Style="{StaticResource ElementContainer}"
-                                    Visibility="Collapsed">
-                                    <ComboBox
-                                        MinWidth="100"
-                                        ItemsSource="{x:Static local:CustomerViewModel.NaturalTypes}"
-                                        SelectedItem="{Binding Data.New}" />
-                                </ContentControl>
+                    <ContentControl DataContext="{Binding Type}" Style="{StaticResource ElementContainer}">
+                        <ComboBox
+                            MinWidth="100"
+                            ItemsSource="{Binding DataContext.InvestorTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}"
+                            SelectedItem="{Binding Data.New}" />
+                    </ContentControl>
+                </DockPanel>
 
-                                <!--  机构类型  -->
-                                <DockPanel x:Name="institution" Visibility="Collapsed">
-                                    <!--<DockPanel.Resources>
-                                        <CollectionViewSource x:Key="data" Source="{x:Static local:CustomerViewModel.InstitutionTypes}">
-                                            <CollectionViewSource.GroupDescriptions>
-                                                <PropertyGroupDescription PropertyName="Category" />
-                                            </CollectionViewSource.GroupDescriptions>
-                                        </CollectionViewSource>
-                                    </DockPanel.Resources>-->
-
-                                    <!--<ComboBox
-                                        MinWidth="100"
-                                        ItemsSource="{Binding Source={StaticResource data}}"
-                                        SelectedValue="{Binding SelectedInstitutionType}"
-                                        SelectedValuePath="Value">
-                                        <ComboBox.GroupStyle>
-                                            <GroupStyle>
-                                                <GroupStyle.HeaderTemplate>
-                                                    <DataTemplate>
-                                                        <Border
-                                                            Margin="2"
-                                                            Background="White"
-                                                            BorderThickness="2">
-                                                            <TextBlock
-                                                                Margin="4"
-                                                                FontSize="20"
-                                                                FontWeight="Bold"
-                                                                Text="{Binding Name}" />
-                                                        </Border>
-                                                    </DataTemplate>
-                                                </GroupStyle.HeaderTemplate>
-                                            </GroupStyle>
-                                        </ComboBox.GroupStyle>
-                                        <ComboBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding Value}" />
-                                            </DataTemplate>
-                                        </ComboBox.ItemTemplate>
-                                    </ComboBox>-->
+                <!--<ComboBox MinWidth="100" ItemsSource="{Binding DataContext.IDTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}" />-->
 
 
-                                </DockPanel>
+                <!--  证件  -->
+                <DockPanel Margin="0,4" LastChildFill="False">
+                    <ContentControl DataContext="{Binding IDType}" Style="{StaticResource ElementContainer}">
+                        <ComboBox
+                            MinWidth="100"
+                            ItemsSource="{Binding DataContext.IDTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}"
+                            SelectedItem="{Binding Data.New}" />
+                    </ContentControl>
+
+                    <ContentControl
+                        HorizontalAlignment="Center"
+                        DataContext="{Binding Identity}"
+                        Style="{StaticResource ElementContainer}">
+                        <TextBox
+                            MinWidth="200"
+                            hc:InfoElement.Placeholder="证件号码"
+                            IsReadOnly="{Binding Data.Old, Converter={StaticResource Object2BooleanConverter}}"
+                            Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}"
+                            TextAlignment="Center" />
+                    </ContentControl>
+                </DockPanel>
 
 
-                                <ComboBox ItemsSource="{Binding InvestorTypes}" SelectedItem="{Binding Type}" />
+                <DockPanel>
+                    <ContentControl DataContext="{Binding Efficient}" Style="{StaticResource ElementContainer}">
+                        <DockPanel>
+                            <DatePicker MinWidth="100" SelectedDate="{Binding Begin.New}" />
+                            <DockPanel Visibility="{Binding LongTerm.New, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                                <TextBlock
+                                    Margin="5,0"
+                                    VerticalAlignment="Center"
+                                    Text="-" />
+                                <DatePicker MinWidth="100" SelectedDate="{Binding End.New}" />
                             </DockPanel>
-                            <DataTemplate.Triggers>
-                                <DataTrigger Binding="{Binding EntityType.Data.New}" Value="Natural">
-                                    <Setter TargetName="natural" Property="Visibility" Value="Visible" />
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding EntityType.Data.New}" Value="Institution">
-                                    <Setter TargetName="institution" Property="Visibility" Value="Visible" />
-                                </DataTrigger>
-                            </DataTemplate.Triggers>
-                        </DataTemplate>
-                    </ContentControl.ContentTemplate>
-                </ContentControl>
-
-
-
-
-
+                            <CheckBox
+                                Margin="5,0"
+                                Content="长期"
+                                IsChecked="{Binding LongTerm.New}" />
+                        </DockPanel>
+                    </ContentControl>
+                </DockPanel>
 
             </StackPanel>
 

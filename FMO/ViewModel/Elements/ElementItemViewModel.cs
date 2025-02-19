@@ -44,7 +44,7 @@ public abstract class ElementItemViewModel : ObservableObject
 
     protected void ItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {  
-        if (sender is IValueViewModel x)
+        if (sender is IModifiableValue x)
         {
             OnPropertyChanged(nameof(CanConfirm));
             OnPropertyChanged(nameof(CanDelete));
@@ -56,8 +56,8 @@ public abstract class ElementItemViewModel : ObservableObject
     {
         foreach (var p in GetType().GetProperties())
         {
-            if (p.PropertyType.IsAssignableTo(typeof(IValueViewModel)))
-                ((IValueViewModel)p.GetValue(this)!).Apply();
+            if (p.PropertyType.IsAssignableTo(typeof(IModifiableValue)))
+                ((IModifiableValue)p.GetValue(this)!).Apply();
         }
 
         OnPropertyChanged(nameof(CanConfirm));

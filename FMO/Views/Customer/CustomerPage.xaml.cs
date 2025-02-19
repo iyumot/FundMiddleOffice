@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using FMO.Utilities;
 using System.Collections.ObjectModel;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace FMO;
@@ -52,5 +53,25 @@ public partial class CustomerPageViewModel : ObservableRecipient
     }
 
 
+    [RelayCommand]
+    public void AddInvestor()
+    {
+        Customers.Add(new CustomerViewModel(new Investor { Name = ""}));
+    }
+
+    [RelayCommand]
+    public void RemoveInvestor()
+    {
+        if (Selected is null) return;
+
+        if(Selected.Id != 0)
+        {
+            using var db = new BaseDatabase();
+            db.GetCollection<Investor>().Delete(Selected.Id); 
+        }
+         
+        Application.Current.Dispatcher.BeginInvoke((() => { Customers.Remove(Selected); Selected = null; }));
+        
+    }
 }
 
