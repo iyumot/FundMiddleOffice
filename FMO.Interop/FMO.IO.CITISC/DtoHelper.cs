@@ -103,6 +103,53 @@ internal static class DtoHelper
                 throw new Exception($"未知的产品类型：{str}");
         }
     }
+    private static AmacInvestorType GetInvestorType(string str)
+    {
+        switch (str)
+        {
+            case "封闭式公募基金产品":
+            case "开放式公募基金产品": 
+            case "基金公司专户":
+            case "基金子公司产品":
+                return AmacInvestorType.FundCompanyAssetManagementPlan;
+            case "银行理财产品": return AmacInvestorType.CommercialBankFinancialProduct;
+            case "信托计划": return AmacInvestorType.TrustPlan;
+
+            case "保险产品": 
+            case "保险公司及其子公司的资产管理计划": 
+                return AmacInvestorType.InsuranceAssetManagementPlan;
+
+            case "证券公司集合理财产品（含证券公司大集合）": 
+            case "证券公司及其子公司专项资管计划": 
+            case "证券公司及其子公司单一资管计划": 
+                return AmacInvestorType.SecuritiesCompanyAssetManagementPlan;
+
+            case "期货公司及其子公司的资产管理计划": 
+                return AmacInvestorType.FuturesCompanyAssetManagementPlan;
+
+            case "私募投资基金": return AmacInvestorType.PrivateFundProduct;
+
+            case "政府引导基金": return AmacInvestorType.GovernmentGuidanceFund;
+            case "全国社保基金": return AmacInvestorType.SocialSecurityFund;
+            case "地方社保基金": return AmacInvestorType.SocialSecurityFund;
+
+            case "基本养老保险": 
+            case "养老金产品": return AmacInvestorType.PensionFund;
+
+            case "境外资金（QFII）":
+            case "境外资金（RQFII）":
+                return AmacInvestorType.QFII; 
+
+            case "其它境外资金": return AmacInvestorType.Foreign;
+
+            case "社会公益基金（慈善基金、捐赠基金等）": return AmacInvestorType.SocialWelfareFund;
+            case "企业年金及职业年金": return AmacInvestorType.EnterpriseAnnuity;
+                 
+            default:
+                return AmacInvestorType.None;
+        }
+    }
+
 
     private static Gender? GetGender(string str)
     {
@@ -118,9 +165,9 @@ internal static class DtoHelper
 
 
 
-    public static (IInvestor customer, BankAccount account) ToCustomer(this CustomerInfo info)
+    public static (Investor customer, BankAccount account) ToCustomer(this CustomerInfo info)
     {
-        AmacInvestorType customerType = info.CustTypeCn switch { "个人" => AmacInvestorType.Natural, "机构" => AmacInvestorType.Institution, "产品" => AmacInvestorType.Product, _ => throw new Exception($"未知的客户类型 {info.CustomName}：{info.ContTypeCn}") };
+       // AmacInvestorType customerType = info.CustTypeCn switch { "个人" => AmacInvestorType.Natural, "机构" => AmacInvestorType.Institution, "产品" => AmacInvestorType.Product, _ => throw new Exception($"未知的客户类型 {info.CustomName}：{info.ContTypeCn}") };
 
         IDType idtype = info.IdentityTypeCn switch
         {
@@ -136,15 +183,15 @@ internal static class DtoHelper
             "台胞证" => IDType.TaiwanCompatriotsID,
             "外国人永久居留身份证" => IDType.ForeignPermanentResidentID,
             "组织机构代码证" => IDType.OrganizationCodeCertificate,
-            "营业执照" => IDType.BusinessLicense,
-            "行政机关" => IDType.AdministrativeAgency,
-            "社会团体" => IDType.SocialGroup,
-            "军队" => IDType.Military,
-            "武警" => IDType.ArmedPolice,
-            "下属机构（具有主管单位批文号）" => IDType.SubordinateOrganization,
-            "基金会" => IDType.Foundation,
-            "登记证书" => IDType.RegistrationCertificate,
-            "批文" => IDType.ApprovalDocument,
+            "营业执照" => IDType.BusinessLicenseNumber,
+            "行政机关" => IDType.Other,
+            "社会团体" => IDType.Other,
+            "军队" => IDType.Other,
+            "武警" => IDType.Other,
+            "下属机构（具有主管单位批文号）" => IDType.Other,
+            "基金会" => IDType.Other,
+            "登记证书" => IDType.RegistrationNumber,
+            "批文" => IDType.Other,
             "其他" => IDType.Other,
             "其它" => IDType.Other,
             _ => throw new Exception($"未知的证件类型：{info.IdentityTypeCn}")
@@ -155,13 +202,22 @@ internal static class DtoHelper
 
 
 
-        IInvestor customer = customerType switch
+        Investor customer = new Investor
         {
-            AmacInvestorType.Natural => new NaturalInvestor { Name = info.CustomName, Identity = identity, Gender = GetGender(info.SexCn) },
-            AmacInvestorType.Institution => new InstitutionInvestor { Name = info.CustomName, Identity = identity, DetailType = GetInstitutionCustomerType(info.OrgTypeCn) },
-            AmacInvestorType.Product => new ProductInvestor { Name = info.CustomName, Identity = identity, ProductType = GetProductCustomerType(info.OrgTypeCn) },
-            _ => throw new NotImplementedException(),
+            Name = info.CustomName,
+            Identity = identity,
+            EntityType = info.CustTypeCn switch { "个人" => EntityType.Natural, "机构" => EntityType.Institution, "产品" => EntityType.Product, _ => throw new Exception($"未知的客户类型 {info.CustomName}：{info.ContTypeCn}") },
+            Type = GetInvestorType(info.OrgTypeCn)
         };
+            
+            
+        //    customerType switch
+        //{
+        //    AmacInvestorType.Natural => new NaturalInvestor { Name = info.CustomName, Identity = identity, Gender = GetGender(info.SexCn) },
+        //    AmacInvestorType.Institution => new InstitutionInvestor { Name = info.CustomName, Identity = identity, DetailType = GetInstitutionCustomerType(info.OrgTypeCn) },
+        //    AmacInvestorType.Product => new ProductInvestor { Name = info.CustomName, Identity = identity, ProductType = GetProductCustomerType(info.OrgTypeCn) },
+        //    _ => throw new NotImplementedException(),
+        //};
 
         BankAccount bankAccount = new BankAccount
         {
