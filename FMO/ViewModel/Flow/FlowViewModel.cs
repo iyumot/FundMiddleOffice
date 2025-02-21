@@ -111,6 +111,17 @@ public partial class PredefinedFileViewModel : ObservableObject
 
     }
 
+    [RelayCommand]
+    public void Clear()
+    {
+        using var db = new BaseDatabase();
+        var flow = db.GetCollection<FundFlow>().FindById(FlowId);
+        if (flow!.GetType().GetProperty(Property) is PropertyInfo property && property.PropertyType == typeof(FileStorageInfo))
+            property.SetValue(flow, null);
+
+        db.GetCollection<FundFlow>().Update(flow);
+        File = null;
+    }
 
     [RelayCommand]
     public void Print()
