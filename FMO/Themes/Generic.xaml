@@ -50,6 +50,7 @@
 
                             <TextBlock
                                 Margin="5,0"
+                                VerticalAlignment="Center"
                                 Foreground="Blue"
                                 Text="{Binding FileInfo.Name}" />
 
