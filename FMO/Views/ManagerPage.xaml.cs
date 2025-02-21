@@ -6,7 +6,10 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace FMO;
 
@@ -18,6 +21,14 @@ public partial class ManagerPage : UserControl
     public ManagerPage()
     {
         InitializeComponent();
+    }
+
+    private void Grid_Drop(object sender, System.Windows.DragEventArgs e)
+    {
+        if (DataContext is ManagerPageViewModel vm && e.Data.GetData(DataFormats.FileDrop) is string[] s)
+        {
+            vm.SetLogo(s[0]);
+        }
     }
 }
 
@@ -203,6 +214,10 @@ public partial class ManagerPageViewModel : ObservableObject
     [ObservableProperty]
     public partial ManagerDataItem<string> WebSite { get; set; }
 
+    [ObservableProperty]
+    public partial ImageSource? MainLogo { get; set; }
+
+
 
     /// <summary>
     /// 营业执照正本
@@ -252,6 +267,20 @@ public partial class ManagerPageViewModel : ObservableObject
             db.GetCollection<InstitutionFiles>().Insert(mfile);
         }
         FilesId = mfile.Id;
+
+
+        if (db.FileStorage.Exists("icon.main"))
+        {
+            using var ms = new MemoryStream();
+            db.FileStorage.Download("icon.main", ms);
+            ms.Seek(0, SeekOrigin.Begin);
+            BitmapImage bitmapSource = new BitmapImage();
+            bitmapSource.BeginInit();
+            bitmapSource.CacheOption = BitmapCacheOption.OnLoad;
+            bitmapSource.StreamSource = ms;
+            bitmapSource.EndInit();
+            MainLogo = bitmapSource;
+        }
         db.Dispose();
 
         AmacPageUrl = $"https://gs.amac.org.cn/amac-infodisc/res/pof/manager/{manager.AmacId}.html";
@@ -282,7 +311,6 @@ public partial class ManagerPageViewModel : ObservableObject
         BusinessScope = new ManagerDataItem<string> { Label = "经营范围", OldValue = manager.BusinessScope, NewValue = manager.BusinessScope, Updater = (a, b) => b.BusinessScope = a };
 
         WebSite = new ManagerDataItem<string> { Label = "官网", OldValue = manager.WebSite, NewValue = manager.WebSite, Updater = (a, b) => b.WebSite = a };
-
 
 
 
@@ -324,8 +352,8 @@ public partial class ManagerPageViewModel : ObservableObject
     {
         try { Process.Start(new ProcessStartInfo(AmacPageUrl) { UseShellExecute = true }); } catch { }
     }
-    
-    
+
+
     #region MyRegion
 
     private void BusinessLicense_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -532,6 +560,23 @@ public partial class ManagerPageViewModel : ObservableObject
             db.GetCollection<InstitutionFiles>().Update(files!);
         }
 
+    }
+
+    internal void SetLogo(string v)
+    {
+        var db = new BaseDatabase();
+        db.FileStorage.Upload("icon.main", v);
+        if (db.FileStorage.Exists("icon.main"))
+        {
+            using var ms = new MemoryStream();
+            db.FileStorage.Download("icon.main", ms);
+            BitmapImage bitmapSource = new BitmapImage();
+            bitmapSource.BeginInit();
+            bitmapSource.CacheOption = BitmapCacheOption.OnLoad;
+            bitmapSource.StreamSource = ms;
+            bitmapSource.EndInit();
+            MainLogo = bitmapSource;
+        }
     }
     #endregion
 }

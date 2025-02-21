@@ -5,10 +5,12 @@ using FMO.Models;
 using FMO.Utilities;
 using Serilog;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace FMO;
 
@@ -28,6 +30,18 @@ public partial class MainWindow : HandyControl.Controls.Window
         // 管理人名称
         using var db = new BaseDatabase();
         Title += " - " + db.GetCollection<Manager>().FindOne(x => x.IsMaster)?.Name;
+        if(db.FileStorage.Exists("icon.main"))
+        {
+            using var ms = new MemoryStream();
+            db.FileStorage.Download("icon.main", ms);
+            BitmapImage bitmapSource = new BitmapImage();
+            bitmapSource.BeginInit();
+            bitmapSource.CacheOption = BitmapCacheOption.OnLoad;
+            bitmapSource.StreamSource = ms;
+            bitmapSource.EndInit();
+            Icon = bitmapSource;
+        }
+
     }
 }
 
