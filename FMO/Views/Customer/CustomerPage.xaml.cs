@@ -1,7 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
+using Serilog;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -23,17 +25,25 @@ public partial class CustomerPage : UserControl
     }
 }
 
-public partial class CustomerPageViewModel : ObservableRecipient
+public partial class CustomerPageViewModel : ObservableRecipient,IRecipient<Investor>
 {
 
-    public ObservableCollection<CustomerViewModel> Customers { get; }
+    public ObservableCollection<Investor> Customers { get; }
 
     [ObservableProperty]
-    public partial CustomerViewModel? Selected { get; set; }
+    public partial Investor? Selected { get; set; }
+
+
+    [ObservableProperty]
+    public partial CustomerViewModel? Detail { get; set; }
+
+
 
 
     public CustomerPageViewModel()
     {
+        IsActive = true;
+
         using var db = new BaseDatabase();
 
         var cusomers = db.GetCollection<Investor>().FindAll().ToArray();
@@ -45,7 +55,7 @@ public partial class CustomerPageViewModel : ObservableRecipient
                 new Investor { Name = "某产品", EntityType = EntityType.Product},
             ];
 
-        Customers = new(cusomers.Select(x => new CustomerViewModel(x)));
+        Customers = new(cusomers);// new(cusomers.Select(x => new CustomerViewModel(x)));
 
 
 
@@ -56,7 +66,7 @@ public partial class CustomerPageViewModel : ObservableRecipient
     [RelayCommand]
     public void AddInvestor()
     {
-        Customers.Add(new CustomerViewModel(new Investor { Name = ""}));
+        Customers.Add(new Investor { Name = ""});
     }
 
     [RelayCommand]
@@ -73,5 +83,34 @@ public partial class CustomerPageViewModel : ObservableRecipient
         Application.Current.Dispatcher.BeginInvoke((() => { Customers.Remove(Selected); Selected = null; }));
         
     }
-}
 
+    partial void OnSelectedChanged(Investor? oldValue, Investor? newValue)
+    {
+        Detail = newValue is null ? null : new CustomerViewModel(newValue);
+    }
+
+    public void Receive(Investor message)
+    {
+        Application.Current.Dispatcher.BeginInvoke((() => {
+
+            try
+            {
+                for (int i = 0; i < Customers.Count; i++)
+                {
+                    if (Customers[i].Id == message.Id)
+                    {
+                        Customers.RemoveAt(i);
+                        Customers.Insert(i, message);
+                        break;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Error($"更新investor出错 {e.Message}");
+            }
+        
+        }));
+    }
+}
+ 

@@ -70,10 +70,10 @@
                     <Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, Path=Foreground}" />
                     <Setter Property="BorderBrush" Value="Transparent" />
                 </Trigger>
-                <DataTrigger Binding="{Binding Type.Data.Old}" Value="Institution">
+                <DataTrigger Binding="{Binding Type}" Value="Institution">
                     <Setter Property="Background" Value="WhiteSmoke" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding Type.Data.Old}" Value="Product">
+                <DataTrigger Binding="{Binding Type}" Value="Product">
                     <Setter Property="Background" Value="#dedede" />
                 </DataTrigger>
                 <!--<MultiTrigger>
@@ -179,7 +179,7 @@
 
         <local:CustomerView
             Margin="10,0,0,0"
-            DataContext="{Binding Selected}"
+            DataContext="{Binding Detail}"
             DockPanel.Dock="Right"
             Visibility="{Binding ., Converter={StaticResource Object2VisibilityConverter}}" />
 
@@ -197,20 +197,20 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <local:CopyableControl>
-                                <TextBlock VerticalAlignment="Center" Text="{Binding Name.Data.Old}" />
+                                <TextBlock VerticalAlignment="Center" Text="{Binding Name}" />
                             </local:CopyableControl>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTextColumn Binding="{Binding Type.Data.Old}" Header="类型" />
+                <DataGridTextColumn Binding="{Binding Type}" Header="类型" />
 
 
                 <DataGridTemplateColumn Header="证件类型">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <local:CopyableControl>
-                                <TextBlock VerticalAlignment="Center" Text="{Binding IDType.Data.Old}" />
+                                <TextBlock VerticalAlignment="Center" Text="{Binding Identity.Type}" />
                             </local:CopyableControl>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -220,7 +220,7 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <local:CopyableControl>
-                                <TextBlock VerticalAlignment="Center" Text="{Binding Identity.Data.Old}" />
+                                <TextBlock VerticalAlignment="Center" Text="{Binding Identity.Id}" />
                             </local:CopyableControl>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
