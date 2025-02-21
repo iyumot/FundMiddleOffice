@@ -213,6 +213,14 @@
                                 Style="{StaticResource ButtonIcon.Small}"
                                 ToolTip="更换"
                                 Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                            <Button
+                                Margin="-5"
+                                hc:IconElement.Geometry="{StaticResource f.xmark}"
+                                Command="{Binding ClearCommand}"
+                                Foreground="Red"
+                                Style="{StaticResource ButtonIcon.Small}"
+                                ToolTip="删除"
+                                Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
                         </DockPanel>
                     </Grid>
 
