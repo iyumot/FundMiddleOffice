@@ -13,13 +13,13 @@ namespace FMO
         /// 实缴出资
         /// </summary>
         [ObservableProperty]
-        public partial PredefinedFileViewModel? PaidInCapitalProof { get; set; }
+        public partial FlowFileViewModel? PaidInCapitalProof { get; set; }
 
         /// <summary>
         /// 成立公告
         /// </summary>
         [ObservableProperty]
-        public partial PredefinedFileViewModel? EstablishmentAnnouncement { get; set; }
+        public partial FlowFileViewModel? EstablishmentAnnouncement { get; set; }
 
 
 

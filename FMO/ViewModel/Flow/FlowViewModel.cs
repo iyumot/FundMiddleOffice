@@ -16,7 +16,7 @@ namespace FMO;
 
 
 
-public partial class PredefinedFileViewModel : ObservableObject
+public partial class FlowFileViewModel : ObservableObject
 {
     public required string Name { get; set; }
 
@@ -43,7 +43,7 @@ public partial class PredefinedFileViewModel : ObservableObject
 
 
     [SetsRequiredMembers]
-    public PredefinedFileViewModel(int fundId, int flowId, string name, string? path, string folder, string property)
+    public FlowFileViewModel(int fundId, int flowId, string name, string? path, string folder, string property)
     {
         if (!string.IsNullOrWhiteSpace(path))
             File = new FileInfo(path);

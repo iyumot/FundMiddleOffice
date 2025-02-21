@@ -29,7 +29,7 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
     public partial bool ModifyInvestmentManager { get; set; }
 
     [ObservableProperty]
-    public partial PredefinedFileViewModel? RegistrationLetter { get; set; }
+    public partial FlowFileViewModel? RegistrationLetter { get; set; }
 
 
     [ObservableProperty]
@@ -39,11 +39,11 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
     /// 变更公告
     /// </summary>
     [ObservableProperty]
-    public partial PredefinedFileViewModel? Announcement { get; set; }
+    public partial FlowFileViewModel? Announcement { get; set; }
 
 
     [ObservableProperty]
-    public partial PredefinedFileViewModel? SealedAnnouncement { get; set; }
+    public partial FlowFileViewModel? SealedAnnouncement { get; set; }
 
     [SetsRequiredMembers]
     public ContractModifyFlowViewModel(ContractModifyFlow flow, Mutable<ShareClass[]>? shareClass) : base(flow, shareClass)
@@ -52,7 +52,7 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
         SupplementaryFile = new(flow.SupplementaryFile?.Files.Select(x => new FileInfo(x.Path)) ?? Array.Empty<FileInfo>());
         SupplementaryFile.CollectionChanged += SupplementaryFile_CollectionChanged;
 
-        RegistrationLetter = new PredefinedFileViewModel(FundId, FlowId, "备案函", flow.RegistrationLetter?.Path, "Registration", nameof(ContractModifyFlowViewModel.RegistrationLetter)) { Filter = "PDF (*.pdf)|*.pdf;" };
+        RegistrationLetter = new FlowFileViewModel(FundId, FlowId, "备案函", flow.RegistrationLetter?.Path, "Registration", nameof(ContractModifyFlowViewModel.RegistrationLetter)) { Filter = "PDF (*.pdf)|*.pdf;" };
         Announcement = new(FundId, FlowId, "变更公告", flow.Announcement?.Path, "Announcement", nameof(ContractModifyFlowViewModel.Announcement)) { Filter = "PDF (*.pdf)|*.pdf;" };
         SealedAnnouncement = new(FundId, FlowId, "变更公告", flow.SealedAnnouncement?.Path, "Announcement", nameof(ContractModifyFlowViewModel.SealedAnnouncement)) { Filter = "PDF (*.pdf)|*.pdf;" };
 

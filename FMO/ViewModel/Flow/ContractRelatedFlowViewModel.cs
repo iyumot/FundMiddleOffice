@@ -28,20 +28,20 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
     /// 定稿合同
     /// </summary>
     [ObservableProperty]
-    public partial PredefinedFileViewModel? Contract { get; set; }
+    public partial FlowFileViewModel? Contract { get; set; }
 
     /// <summary>
     /// 募集账户函
     /// </summary>
     [ObservableProperty]
-    public partial PredefinedFileViewModel? CollectionAccount { get; set; }
+    public partial FlowFileViewModel? CollectionAccount { get; set; }
 
 
     /// <summary>
     /// 托管账户函
     /// </summary>
     [ObservableProperty]
-    public partial PredefinedFileViewModel? CustodyAccount { get; set; }
+    public partial FlowFileViewModel? CustodyAccount { get; set; }
 
 
     [ObservableProperty]
@@ -54,7 +54,7 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
 
 
     [ObservableProperty]
-    public partial PredefinedFileViewModel? RiskDisclosureDocument { get; set; }
+    public partial FlowFileViewModel? RiskDisclosureDocument { get; set; }
 
     /// <summary>
     /// 份额分类
