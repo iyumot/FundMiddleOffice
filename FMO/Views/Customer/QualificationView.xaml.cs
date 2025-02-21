@@ -24,6 +24,8 @@ public partial class QualificationView : UserControl
     public QualificationView()
     {
         InitializeComponent();
+
+        DataContext = new QualificationViewModel();
     }
 }
 
@@ -32,6 +34,10 @@ public partial class QualificationViewModel:ObservableObject
 {
     [ObservableProperty]
     public partial bool IsProfessional { get; set; }
+
+    [ObservableProperty]
+    public partial bool NeedExperience { get; set; }
+
 
 }
 
