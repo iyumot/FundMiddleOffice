@@ -278,6 +278,22 @@
                 <ContentControl DataContext="{Binding BusinessScope}" Template="{StaticResource ManagerDataItem.ML}" />
 
 
+                <!--  logo  -->
+                <DockPanel>
+                    <Grid
+                        AllowDrop="True"
+                        Background="Transparent"
+                        Drop="Grid_Drop">
+                        <Image
+                            Width="64"
+                            Height="64"
+                            Source="{Binding MainLogo}" />
+
+                        <TextBlock Text="Logo" Visibility="{Binding MainLogo, Converter={StaticResource Object2VisibilityReConverter}}" />
+                    </Grid>
+                    <Image />
+                </DockPanel>
+
 
                 <Border Margin="0,20,0,0" Background="WhiteSmoke">
                     <StackPanel>
