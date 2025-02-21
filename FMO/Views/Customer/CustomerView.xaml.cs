@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
 using System.ComponentModel;
@@ -192,6 +193,8 @@ public partial class CustomerViewModel : ObservableObject
             {
                 entity.RemoveValue(v);
                 db.GetCollection<Investor>().Upsert(v);
+
+                WeakReferenceMessenger.Default.Send(v);
             }
         }
     }
@@ -227,10 +230,10 @@ public partial class CustomerViewModel : ObservableObject
             {
                 db.GetCollection<Investor>().Upsert(v);
                 if (Id == 0) Id = v.Id;
+
+                WeakReferenceMessenger.Default.Send(v);
             }
-        }
-
-
+        } 
         unit.Apply();
     }
 

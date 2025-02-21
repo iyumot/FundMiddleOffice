@@ -29,6 +29,7 @@ public class Investor
     public AmacInvestorType Type { get; set; }
 
 
+    public RiskLevel RiskLevel { get; set; }
 
 
 }
