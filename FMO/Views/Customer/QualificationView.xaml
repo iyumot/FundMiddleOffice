@@ -5,13 +5,35 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DataContext="{d:DesignInstance Type=local:QualificationViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
     <StackPanel>
+        <StackPanel.Resources>
+            <Thickness
+                x:Key="marg"
+                Bottom="4"
+                Left="0"
+                Right="0"
+                Top="4" />
+        </StackPanel.Resources>
         <UniformGrid Rows="1">
-            <RadioButton Content="普通投资者" />
-            <RadioButton Content="专业投资者" />
+            <RadioButton Content="普通投资者" IsChecked="{Binding IsProfessional, Converter={StaticResource Boolean2BooleanReConverter}}" />
+            <RadioButton Content="专业投资者" IsChecked="{Binding IsProfessional}" />
         </UniformGrid>
+
+        <TextBlock Margin="{StaticResource marg}" Text="认定方式" />
+        <DockPanel Margin="{StaticResource marg}">
+            <CheckBox Content="300万以上资产证明" />
+            <local:FileDisplay Margin="8,0,0,0" Header="" />
+        </DockPanel>
+
+        <DockPanel Margin="{StaticResource marg}" Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}">
+            <CheckBox Margin="{StaticResource marg}" Content="2年以上投资经历证明" />
+            <local:FileDisplay Margin="8,0,0,0" Header="" />
+        </DockPanel>
+
+
     </StackPanel>
 </UserControl>
