@@ -274,6 +274,9 @@
                     Margin="0,5"
                     Header="身份证明文件"
                     IsReadOnly="{Binding IsReadOnly}" />
+
+
+                <local:QualificationView />
             </StackPanel>
 
         </DockPanel>
