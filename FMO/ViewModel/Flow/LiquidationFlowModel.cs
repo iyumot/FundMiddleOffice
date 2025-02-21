@@ -8,7 +8,7 @@ public partial class LiquidationFlowViewModel:FlowViewModel
 {
 
     [ObservableProperty]
-    public partial PredefinedFileViewModel? LiquidationReport { get; set; }
+    public partial FlowFileViewModel? LiquidationReport { get; set; }
 
     [SetsRequiredMembers]
     public LiquidationFlowViewModel(LiquidationFlow flow) : base(flow)
