@@ -264,6 +264,7 @@ public class GatherDailyFromMailMission : Mission
                 using var fs = di.OpenWrite();
                 x.Stream!.Seek(0, SeekOrigin.Begin);
                 x.Stream!.CopyTo(fs);
+                x.Daily.SheetPath  = Path.GetRelativePath(Directory.GetCurrentDirectory(), di.FullName);
                 fs.Flush();
             }
 
