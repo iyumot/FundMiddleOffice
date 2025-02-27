@@ -31,6 +31,8 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 {
     public Fund Fund { get; init; }
 
+    public int FundId { get; private set; }
+
     private bool _initialized;
 
 
@@ -46,6 +48,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     {
         this.Fund = fund;
 
+        FundId = fund.Id;
         FundName = fund.Name;
         FundShortName = fund.ShortName;
         SetupDate = fund.SetupDate;
@@ -498,8 +501,18 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     [RelayCommand]
     public void ViewSheet(DailyValue daily)
     {
-        if (daily?.SheetPath is not null)
-            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(daily.SheetPath) { UseShellExecute = true }); } catch { }
+        string? path = daily?.SheetPath;
+
+        if(path is null)
+        {
+            var di = new DirectoryInfo(Path.Combine(FundHelper.GetFolder(FundId, "Sheet")));
+            var fis = di.GetFiles().Where(x => x.Name.Contains(daily!.Date.ToString("yyyyMMdd")));
+            if (fis.Count() == 1)
+                path = fis.First().FullName;
+        }
+         
+        if (path is not null)
+            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true }); } catch { }
     }
 
 
