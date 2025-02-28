@@ -203,7 +203,10 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTextColumn Binding="{Binding Type}" Header="类型" />
+                <DataGridTextColumn
+                    Binding="{Binding Type}"
+                    ElementStyle="{StaticResource TextBlockDefault}"
+                    Header="类型" />
 
 
                 <DataGridTemplateColumn Header="证件类型">

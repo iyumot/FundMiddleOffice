@@ -85,7 +85,7 @@ public class InvestorQualification
 
     public int InvestorId { get; set; }
 
-    public QualificationType MyProperty { get; set; }
+    public QualificationType Type { get; set; }
 
 
 
@@ -94,7 +94,7 @@ public class InvestorQualification
     /// <summary>
     /// 普通 / 专业
     /// </summary>
-    public QualifiedInvestorType InvestorType { get; set; }
+    public QualifiedInvestorType Result { get; set; }
    
     /// <summary>
     /// 承诺函
@@ -120,6 +120,21 @@ public class InvestorQualification
     /// 证明材料
     /// </summary>
     public FileStorageInfo? CertificationMaterials { get; set; }
+
+
+    /// <summary>
+    /// 证明材料
+    /// </summary>
+    public FileStorageInfo? ProofOfAssets { get; set; }
+
+
+    public FileStorageInfo? ProofOfExperience { get; set; }
+
+    /// <summary>
+    /// 特殊投资者
+    /// </summary>
+    public FileStorageInfo? ProofOfSpecial { get; set; }
+
 
     /// <summary>
     /// 代理人证件

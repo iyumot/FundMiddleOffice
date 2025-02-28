@@ -28,7 +28,7 @@
             <Setter Property="hc:IconElement.Geometry" Value="{StaticResource f.circle-check}" />
             <Setter Property="hc:IconElement.Width" Value="15" />
             <Setter Property="Visibility" Value="{Binding CanConfirm, Converter={StaticResource Boolean2VisibilityConverter}}" />
-            <Setter Property="Command" Value="{Binding DataContext.ModifyCommand, RelativeSource={RelativeSource AncestorType=local:CustomerView}}" />
+            <Setter Property="Command" Value="{Binding DataContext.ModifyCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
             <Setter Property="CommandParameter" Value="{Binding .}" />
         </Style>
         <Style
@@ -43,7 +43,7 @@
             <Setter Property="Padding" Value="1" />
             <Setter Property="hc:IconElement.Geometry" Value="{StaticResource f.xmark}" />
             <Setter Property="Visibility" Value="{Binding CanDelete, Converter={StaticResource Boolean2VisibilityConverter}}" />
-            <Setter Property="Command" Value="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=local:CustomerView}}" />
+            <Setter Property="Command" Value="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
             <Setter Property="CommandParameter" Value="{Binding .}" />
         </Style>
         <Style
@@ -59,10 +59,9 @@
             <Setter Property="hc:IconElement.Geometry" Value="{StaticResource f.rotate-left}" />
             <Setter Property="hc:IconElement.Width" Value="12" />
             <Setter Property="Visibility" Value="{Binding HasUnsavedValue, Converter={StaticResource Boolean2VisibilityConverter}}" />
-            <Setter Property="Command" Value="{Binding DataContext.ResetCommand, RelativeSource={RelativeSource AncestorType=local:CustomerView}}" />
+            <Setter Property="Command" Value="{Binding DataContext.ResetCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
             <Setter Property="CommandParameter" Value="{Binding .}" />
         </Style>
-
         <Style x:Key="ElementContainer" TargetType="ContentControl">
             <Setter Property="Content" Value="{Binding}" />
             <Setter Property="Template">
@@ -73,12 +72,12 @@
                                 VerticalAlignment="Center"
                                 Foreground="{StaticResource LabelBrush}"
                                 Text="{Binding Label}" />
-                            <local:CopyableControl Margin="10,0,0,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:CustomerView}, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <local:CopyableControl Margin="10,0,0,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityConverter}}">
                                 <TextBlock Text="{Binding Display}" />
                             </local:CopyableControl>
 
 
-                            <DockPanel Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:CustomerView}, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                            <DockPanel Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityReConverter}}">
                                 <ContentPresenter
                                     Margin="4,0"
                                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -111,11 +110,11 @@
                                         VerticalAlignment="Center"
                                         Foreground="{StaticResource LabelBrush}"
                                         Text="{Binding Label}" />
-                                    <local:CopyableControl Margin="10,0,0,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:CustomerView}, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                    <local:CopyableControl Margin="10,0,0,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityConverter}}">
                                         <TextBlock Text="{Binding Display}" />
                                     </local:CopyableControl>
 
-                                    <DockPanel Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:CustomerView}, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                                    <DockPanel Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityReConverter}}">
                                         <Button DockPanel.Dock="Right" Style="{StaticResource SaveElement}" />
 
                                         <Button DockPanel.Dock="Right" Style="{StaticResource ResetElement}" />
@@ -189,94 +188,133 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+
+        <DataTemplate x:Key="DT.QualificationItem" DataType="local:QualificationViewModel">
+            <TextBlock Text="{Binding Date.Data.Old, StringFormat=yyyy-MM-dd, TargetNullValue=未设置日期}" />
+        </DataTemplate>
+
+        <ItemsPanelTemplate x:Key="IPT.QualificationItem">
+            <WrapPanel IsItemsHost="True" />
+        </ItemsPanelTemplate>
     </UserControl.Resources>
     <Grid>
         <DockPanel>
 
             <StackPanel>
-
-                <ContentControl
-                    HorizontalAlignment="Center"
-                    DataContext="{Binding Name}"
-                    Style="{StaticResource ElementContainer}"
-                    TextElement.FontSize="16"
-                    TextElement.FontWeight="Black">
-                    <TextBox
-                        MinWidth="400"
-                        Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}"
-                        TextAlignment="Center" />
-                </ContentControl>
-
-                <!--  投资人类型  -->
-                <DockPanel Margin="0,4" LastChildFill="False">
-                    <ContentControl DataContext="{Binding EntityType}" Style="{StaticResource ElementContainer}">
-                        <ComboBox
-                            MinWidth="100"
-                            ItemsSource="{x:Static local:CustomerViewModel.EntityTypes}"
-                            SelectedItem="{Binding Data.New}" />
-                    </ContentControl>
-
-                    <ContentControl DataContext="{Binding Type}" Style="{StaticResource ElementContainer}">
-                        <ComboBox
-                            MinWidth="100"
-                            ItemsSource="{Binding DataContext.InvestorTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}"
-                            SelectedItem="{Binding Data.New}" />
-                    </ContentControl>
-                </DockPanel>
-
-                <!--<ComboBox MinWidth="100" ItemsSource="{Binding DataContext.IDTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}" />-->
-
-
-                <!--  证件  -->
-                <DockPanel Margin="0,4" LastChildFill="False">
-                    <ContentControl DataContext="{Binding IDType}" Style="{StaticResource ElementContainer}">
-                        <ComboBox
-                            MinWidth="100"
-                            ItemsSource="{Binding DataContext.IDTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}"
-                            SelectedItem="{Binding Data.New}" />
-                    </ContentControl>
+                <!--  基本信息  -->
+                <StackPanel>
 
                     <ContentControl
                         HorizontalAlignment="Center"
-                        DataContext="{Binding Identity}"
-                        Style="{StaticResource ElementContainer}">
+                        DataContext="{Binding Name}"
+                        Style="{StaticResource ElementContainer}"
+                        TextElement.FontSize="16"
+                        TextElement.FontWeight="Black">
                         <TextBox
-                            MinWidth="200"
-                            hc:InfoElement.Placeholder="证件号码"
-                            IsReadOnly="{Binding Data.Old, Converter={StaticResource Object2BooleanConverter}}"
+                            MinWidth="400"
                             Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}"
                             TextAlignment="Center" />
                     </ContentControl>
-                </DockPanel>
+
+                    <!--  投资人类型  -->
+                    <DockPanel Margin="0,4" LastChildFill="False">
+                        <ContentControl DataContext="{Binding EntityType}" Style="{StaticResource ElementContainer}">
+                            <ComboBox
+                                MinWidth="100"
+                                ItemsSource="{x:Static local:CustomerViewModel.EntityTypes}"
+                                SelectedItem="{Binding Data.New}" />
+                        </ContentControl>
+
+                        <ContentControl DataContext="{Binding Type}" Style="{StaticResource ElementContainer}">
+                            <ComboBox
+                                MinWidth="100"
+                                ItemsSource="{Binding DataContext.InvestorTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}"
+                                SelectedItem="{Binding Data.New}" />
+                        </ContentControl>
+                    </DockPanel>
+
+                    <!--<ComboBox MinWidth="100" ItemsSource="{Binding DataContext.IDTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}" />-->
 
 
-                <DockPanel>
-                    <ContentControl DataContext="{Binding Efficient}" Style="{StaticResource ElementContainer}">
-                        <DockPanel>
-                            <DatePicker MinWidth="100" SelectedDate="{Binding Begin.New}" />
-                            <DockPanel Visibility="{Binding LongTerm.New, Converter={StaticResource Boolean2VisibilityReConverter}}">
-                                <TextBlock
+                    <!--  证件  -->
+                    <DockPanel Margin="0,4" LastChildFill="False">
+                        <ContentControl DataContext="{Binding IDType}" Style="{StaticResource ElementContainer}">
+                            <ComboBox
+                                MinWidth="100"
+                                ItemsSource="{Binding DataContext.IDTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}"
+                                SelectedItem="{Binding Data.New}" />
+                        </ContentControl>
+
+                        <ContentControl
+                            HorizontalAlignment="Center"
+                            DataContext="{Binding Identity}"
+                            Style="{StaticResource ElementContainer}">
+                            <TextBox
+                                MinWidth="200"
+                                hc:InfoElement.Placeholder="证件号码"
+                                IsReadOnly="{Binding Data.Old, Converter={StaticResource Object2BooleanConverter}}"
+                                Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}"
+                                TextAlignment="Center" />
+                        </ContentControl>
+                    </DockPanel>
+
+
+                    <DockPanel>
+                        <ContentControl DataContext="{Binding Efficient}" Style="{StaticResource ElementContainer}">
+                            <DockPanel>
+                                <DatePicker MinWidth="100" SelectedDate="{Binding Begin.New}" />
+                                <DockPanel Visibility="{Binding LongTerm.New, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                                    <TextBlock
+                                        Margin="5,0"
+                                        VerticalAlignment="Center"
+                                        Text="-" />
+                                    <DatePicker MinWidth="100" SelectedDate="{Binding End.New}" />
+                                </DockPanel>
+                                <CheckBox
                                     Margin="5,0"
-                                    VerticalAlignment="Center"
-                                    Text="-" />
-                                <DatePicker MinWidth="100" SelectedDate="{Binding End.New}" />
+                                    Content="长期"
+                                    IsChecked="{Binding LongTerm.New}" />
                             </DockPanel>
-                            <CheckBox
-                                Margin="5,0"
-                                Content="长期"
-                                IsChecked="{Binding LongTerm.New}" />
+                        </ContentControl>
+                    </DockPanel>
+
+
+                    <local:MultiFileDisplay
+                        Margin="0,5"
+                        Header="身份证明文件"
+                        IsReadOnly="{Binding IsReadOnly}" />
+
+
+                </StackPanel>
+
+
+                <!--  合投  -->
+                <GroupBox>
+                    <GroupBox.Header>
+                        <DockPanel>
+                            <TextBlock VerticalAlignment="Center" Text="合格投资者认定" />
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource AddGeometry}"
+                                Command="{Binding AddQualificationCommand}"
+                                Foreground="Green"
+                                Style="{StaticResource ButtonIcon.Small}" />
                         </DockPanel>
-                    </ContentControl>
-                </DockPanel>
+                    </GroupBox.Header>
+                    <StackPanel>
+                        <ListBox
+                            ItemTemplate="{StaticResource DT.QualificationItem}"
+                            ItemsPanel="{StaticResource IPT.QualificationItem}"
+                            ItemsSource="{Binding Qualifications}"
+                            SelectedItem="{Binding SelectedQualification}" />
 
+                        <local:QualificationView
+                            Margin="0,5"
+                            DataContext="{Binding SelectedQualification}"
+                            Visibility="{Binding ., Converter={StaticResource Object2VisibilityConverter}}" />
+                    </StackPanel>
+                </GroupBox>
 
-                <local:MultiFileDisplay
-                    Margin="0,5"
-                    Header="身份证明文件"
-                    IsReadOnly="{Binding IsReadOnly}" />
-
-
-                <local:QualificationView />
             </StackPanel>
 
         </DockPanel>
