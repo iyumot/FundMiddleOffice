@@ -3,37 +3,129 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DataContext="{d:DesignInstance Type=local:QualificationViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
-    <StackPanel>
-        <StackPanel.Resources>
-            <Thickness
-                x:Key="marg"
-                Bottom="4"
-                Left="0"
-                Right="0"
-                Top="4" />
-        </StackPanel.Resources>
-        <UniformGrid Rows="1">
-            <RadioButton Content="普通投资者" IsChecked="{Binding IsProfessional, Converter={StaticResource Boolean2BooleanReConverter}}" />
-            <RadioButton Content="专业投资者" IsChecked="{Binding IsProfessional}" />
-        </UniformGrid>
+    <UserControl.Resources />
+    <Grid>
 
-        <TextBlock Margin="{StaticResource marg}" Text="认定方式" />
-        <DockPanel Margin="{StaticResource marg}">
-            <CheckBox Content="300万以上资产证明" />
-            <local:FileDisplay Margin="8,0,0,0" Header="" />
+        <StackPanel>
+            <StackPanel.Resources>
+                <Thickness
+                    x:Key="marg"
+                    Bottom="4"
+                    Left="0"
+                    Right="0"
+                    Top="4" />
+            </StackPanel.Resources>
+
+
+            <DockPanel LastChildFill="False" Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                <TextBlock VerticalAlignment="Center" Text="日期" />
+                <ContentControl DataContext="{Binding Date}" Style="{DynamicResource ElementContainer}">
+                    <DatePicker
+                        Width="100"
+                        Margin="8,0,0,0"
+                        SelectedDate="{Binding Data.New, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
+                </ContentControl>
+
+
+                <CheckBox
+                    Margin="5,0"
+                    Content="专业投资者"
+                    IsChecked="{Binding IsProfessional}" />
+
+                <!--<UniformGrid Rows="1">
+                    <RadioButton Content="普通投资者" IsChecked="{Binding IsProfessional, Converter={StaticResource Boolean2BooleanReConverter}}" />
+                    <RadioButton Content="专业投资者" IsChecked="{Binding IsProfessional}" />
+                </UniformGrid>-->
+            </DockPanel>
+
+
+
+            <TextBlock Margin="{StaticResource marg}" Text="认定方式" />
+
+            <DockPanel Margin="{StaticResource marg}">
+                <CheckBox Content="资产证明" />
+                <TextBox
+                    Width="60"
+                    Margin="4,0"
+                    Text="{Binding FinancialAssets}" />
+                <TextBlock VerticalAlignment="Center" Text="万" />
+                <local:FileDisplay Margin="8,0,0,0" Header="" />
+            </DockPanel>
+
+
+            <DockPanel Margin="{StaticResource marg}">
+                <CheckBox Content="收入证明" />
+                <TextBox Width="60" Margin="4,0" />
+                <TextBlock VerticalAlignment="Center" Text="万（近三年年均）" />
+                <local:FileDisplay Margin="8,0,0,0" Header="" />
+            </DockPanel>
+
+
+            <DockPanel Margin="{StaticResource marg}" Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                <CheckBox Content="管理人员工" />
+                <local:FileDisplay Margin="8,0,0,0" Header="" />
+            </DockPanel>
+
+            <Separator />
+
+
+            <DockPanel Margin="{StaticResource marg}" Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}">
+                <CheckBox Margin="{StaticResource marg}" Content="具有2年以上证券、基金、期货、黄金、外汇等投资经历" />
+                <local:FileDisplay Margin="8,0,0,0" Header="" />
+            </DockPanel>
+
+            <DockPanel Margin="{StaticResource marg}" Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}">
+                <CheckBox Margin="{StaticResource marg}" Content="具有2年以上金融产品设计、投资、风险管理及相关工作经历" />
+                <local:FileDisplay Margin="8,0,0,0" Header="" />
+            </DockPanel>
+
+            <DockPanel Margin="{StaticResource marg}" Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}">
+                <CheckBox Margin="{StaticResource marg}" Content="特殊专业机构投资者的高级管理人员" />
+                <local:FileDisplay Margin="8,0,0,0" Header="" />
+            </DockPanel>
+
+            <DockPanel Margin="{StaticResource marg}" Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}">
+                <CheckBox Margin="{StaticResource marg}" Content="获得职业资格认证的从事金融相关业务的注册会计师和律师" />
+                <local:FileDisplay Margin="8,0,0,0" Header="" />
+            </DockPanel>
+
+
+        </StackPanel>
+
+        <!--  右上角按键  -->
+        <DockPanel HorizontalAlignment="Right" VerticalAlignment="Top">
+            <!--  删除合投  -->
+            <Button
+                Margin="5,0"
+                hc:IconElement.Geometry="{StaticResource f.trash}"
+                Command="{Binding DataContext.DeleteQualificationCommand, RelativeSource={RelativeSource AncestorType=local:CustomerView}}"
+                CommandParameter="{Binding .}"
+                Foreground="Red"
+                Style="{StaticResource ButtonIconCircular.Small}"
+                Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+            <!--  切换读写  -->
+            <ToggleButton
+                BorderBrush="Transparent"
+                DockPanel.Dock="Right"
+                IsChecked="{Binding IsReadOnly}"
+                Style="{StaticResource ToggleButtonFlip}">
+                <hc:StatusSwitchElement.CheckedElement>
+                    <Viewbox Width="14" Height="14">
+                        <Path Data="{StaticResource f.pen}" Fill="Green" />
+                    </Viewbox>
+                </hc:StatusSwitchElement.CheckedElement>
+                <Viewbox Width="14" Height="14">
+                    <Path Data="{StaticResource f.eye}" Fill="Black" />
+                </Viewbox>
+            </ToggleButton>
         </DockPanel>
-
-        <DockPanel Margin="{StaticResource marg}" Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}">
-            <CheckBox Margin="{StaticResource marg}" Content="2年以上投资经历证明" />
-            <local:FileDisplay Margin="8,0,0,0" Header="" />
-        </DockPanel>
-
-
-    </StackPanel>
+    </Grid>
 </UserControl>

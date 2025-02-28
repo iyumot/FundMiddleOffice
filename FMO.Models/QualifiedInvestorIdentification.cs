@@ -3,21 +3,39 @@
 namespace FMO.Models;
 
 
+[TypeConverter(typeof(EnumDescriptionTypeConverter))]
+public enum QualificationFileType
+{
+    None ,
+
+    [Description("500万资产证明")] Assets500,
+
+    [Description("300万资产证明")] Assets300,
+
+    [Description("三年年均收入>50万")] Income,
+
+    [Description("员工")] Employee,
+
+    [Description("金融机构")] FinancialInstitution,
+
+    [Description("金融产品 ")] Product,
+}
+
 public enum QualificationType
 {
     None,
 
-    [Description("资产证明")] Assets,
+    [Description("500万资产证明")] Assets500,
 
-    [Description("收入证明")] Income,
+    [Description("300万资产证明")] Assets300,
+
+    [Description("三年年均收入>50万")] Income,
 
     [Description("员工")] Employee,
 
-    [Description("金融机构 ")] FinancialInstitution,
-
-    [Description("备案金融产品 ")] RegisteredProduct,
-
-    [Description("金融产品 ")] UnregisteredProduct,
+    [Description("金融机构")] FinancialInstitution,
+     
+    [Description("金融产品 ")] Product,
 
     [Description("公益基金")] PublicWelfareFund,
 
@@ -85,7 +103,7 @@ public class InvestorQualification
 
     public int InvestorId { get; set; }
 
-    public QualificationType MyProperty { get; set; }
+    public QualificationType Type { get; set; }
 
 
 
@@ -94,7 +112,7 @@ public class InvestorQualification
     /// <summary>
     /// 普通 / 专业
     /// </summary>
-    public QualifiedInvestorType InvestorType { get; set; }
+    public QualifiedInvestorType Result { get; set; }
    
     /// <summary>
     /// 承诺函
@@ -117,9 +135,19 @@ public class InvestorQualification
     public FileStorageInfo? TaxDeclaration { get; set; }
 
     /// <summary>
-    /// 证明材料
+    /// 证明材料：资产证明、收入证明、资产负债表
     /// </summary>
     public FileStorageInfo? CertificationMaterials { get; set; }
+
+    
+
+    public FileStorageInfo? ProofOfExperience { get; set; }
+
+    /// <summary>
+    /// 特殊投资者
+    /// </summary>
+    public FileStorageInfo? ProofOfSpecial { get; set; }
+
 
     /// <summary>
     /// 代理人证件
