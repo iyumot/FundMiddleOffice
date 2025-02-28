@@ -85,6 +85,10 @@ public abstract class UnitViewModel : ObservableObject
     }
 }
 
+/// <summary>
+/// 更新到实体
+/// </summary>
+/// <typeparam name="T"></typeparam>
 public interface IEntityViewModel<T> where T : notnull
 {
     public void Init(T param);
@@ -106,7 +110,7 @@ public interface IEntityViewModel<T> where T : notnull
     }
 }
 
-public partial class EntityPropertyViewModel<T, TProperty> : UnitViewModel, IEntityViewModel<T> where TProperty : notnull where T : notnull
+public partial class EntityPropertyViewModel<TEntity, TProperty> : UnitViewModel, IEntityViewModel<TEntity> where TProperty : notnull where TEntity : notnull
 {
     public PropertyViewModel<TProperty> Data { get; } = new();
 
@@ -116,18 +120,18 @@ public partial class EntityPropertyViewModel<T, TProperty> : UnitViewModel, IEnt
 
     public override bool HasUnsavedValue => Data.IsChanged;
 
-    public Func<T, TProperty?>? InitFunc { get; set; }
+    public Func<TEntity, TProperty?>? InitFunc { get; set; }
 
-    public Action<T, TProperty>? UpdateFunc { get; set; }
+    public Action<TEntity, TProperty>? UpdateFunc { get; set; }
 
-    public Action<T>? ClearFunc { get; set; }
+    public Action<TEntity>? ClearFunc { get; set; }
 
     protected override string? DisplayOverride()
     {
         return Data.Old switch { Enum e => EnumDescriptionTypeConverter.GetEnumDescription(e), null => null, var a => a.ToString() };
     }
 
-    public void Init(T param)
+    public void Init(TEntity param)
     {
         if (param is not null && InitFunc is not null)
         {
@@ -137,7 +141,7 @@ public partial class EntityPropertyViewModel<T, TProperty> : UnitViewModel, IEnt
         SubscribeChanges();
     }
 
-    public void UpdateEntity(T obj)
+    public void UpdateEntity(TEntity obj)
     {
         if (obj is not null && UpdateFunc is not null && Data.New is not null)
             UpdateFunc(obj, Data.New);
@@ -152,4 +156,100 @@ public partial class EntityPropertyViewModel<T, TProperty> : UnitViewModel, IEnt
     //        ClearFunc(obj);
     //}
 }
+
+
+/// <summary>
+/// 用于struct
+/// </summary>
+/// <typeparam name="TEntity"></typeparam>
+/// <typeparam name="TProperty"></typeparam>
+public partial class EntityValueViewModel<TEntity, TProperty> : UnitViewModel, IEntityViewModel<TEntity> where TProperty : struct where TEntity : notnull
+{
+    public ValueViewModel<TProperty> Data { get; } = new();
+
+    public override bool CanConfirm => Data.IsChanged;
+
+    public override bool CanDelete => !HasUnsavedValue && Data.Old is not null;
+
+    public override bool HasUnsavedValue => Data.IsChanged;
+
+    public Func<TEntity, TProperty?>? InitFunc { get; set; }
+
+    public Action<TEntity, TProperty?>? UpdateFunc { get; set; }
+
+    public Action<TEntity>? ClearFunc { get; set; }
+
+    protected override string? DisplayOverride()
+    {
+        return Data.Old switch { Enum e => EnumDescriptionTypeConverter.GetEnumDescription(e), null => null, var a => a.ToString() };
+    }
+
+    public void Init(TEntity param)
+    {
+        if (param is not null && InitFunc is not null)
+        {
+            Data.Old = InitFunc(param);
+            Data.New = InitFunc(param);
+        }
+        SubscribeChanges();
+    }
+
+    public void UpdateEntity(TEntity obj)
+    {
+        if (obj is not null && UpdateFunc is not null && Data.New is not null)
+            UpdateFunc(obj, Data.New);
+    }
+     
+}
+
+
+
+/// <summary>
+/// 用于class
+/// </summary>
+/// <typeparam name="TEntity"></typeparam>
+/// <typeparam name="TProperty"></typeparam>
+public partial class EntityRefrenceViewModel<TEntity, TProperty> : UnitViewModel, IEntityViewModel<TEntity> where TProperty : class where TEntity : notnull
+{
+    public RefrenceViewModel<TProperty> Data { get; } = new();
+
+    public override bool CanConfirm => Data.IsChanged;
+
+    public override bool CanDelete => !HasUnsavedValue && Data.Old is not null;
+
+    public override bool HasUnsavedValue => Data.IsChanged;
+
+    public Func<TEntity, TProperty?>? InitFunc { get; set; }
+
+    public Action<TEntity, TProperty?>? UpdateFunc { get; set; }
+
+    public Action<TEntity>? ClearFunc { get; set; }
+
+    protected override string? DisplayOverride()
+    {
+        return Data.Old switch { Enum e => EnumDescriptionTypeConverter.GetEnumDescription(e), null => null, var a => a.ToString() };
+    }
+
+    public void Init(TEntity param)
+    {
+        if (param is not null && InitFunc is not null)
+        {
+            Data.Old = InitFunc(param);
+            Data.New = InitFunc(param);
+        }
+        SubscribeChanges();
+    }
+
+    public void UpdateEntity(TEntity obj)
+    {
+        if (obj is not null && UpdateFunc is not null && Data.New is not null)
+            UpdateFunc(obj, Data.New);
+    }
+     
+}
+
+
+
+
+
 

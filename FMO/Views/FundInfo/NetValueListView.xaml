@@ -18,10 +18,11 @@
             Background="White"
             BorderThickness="0"
             EnableRowVirtualization="True"
-            IsReadOnly="True" Style="{StaticResource DataGrid.Small}"
+            IsReadOnly="True"
             ItemsSource="{Binding DailySource.View}"
             SelectedIndex="-1"
-            SelectionUnit="FullRow">
+            SelectionUnit="FullRow"
+            Style="{StaticResource DataGrid.Small}">
             <DataGrid.Resources>
                 <Style
                     x:Key="style"
