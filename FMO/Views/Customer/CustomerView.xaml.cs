@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Controls;
 
@@ -88,29 +89,38 @@ public partial class CustomerViewModel : ObservableObject
     [ObservableProperty]
     public partial Enum[]? DetailTypes { get; set; }
 
+
+    public ObservableCollection<QualificationViewModel> Qualifications { get; }
+
+    [ObservableProperty]
+    public partial QualificationViewModel? SelectedQualification { get; set; }
+
     public CustomerViewModel()
     {
-
+        Qualifications = new();
     }
 
 
-    public CustomerViewModel(Investor x)
+    public CustomerViewModel(Investor investor)
     {
-        Id = x.Id;
-        Name.Init(x);
-        EntityType.Init(x);
+        Id = investor.Id;
+        Name.Init(investor);
+        EntityType.Init(investor);
         EntityType.PropertyChanged += EntityType_PropertyChanged;
         EntityType_PropertyChanged(null, null);
 
-        Type.Init(x);
+        Type.Init(investor);
         Type.PropertyChanged += Type_PropertyChanged;
         Type_PropertyChanged(null, null);
 
-        Identity.Init(x);
-        IDType.Init(x);
+        Identity.Init(investor);
+        IDType.Init(investor);
 
-        Efficient.Init(x);
+        Efficient.Init(investor);
 
+        using var db = new BaseDatabase();
+        var iq = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == Id).ToArray();
+        Qualifications = new(iq.Select(x => QualificationViewModel.From(x, investor)));
     }
 
     private void Type_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -199,8 +209,6 @@ public partial class CustomerViewModel : ObservableObject
         }
     }
 
-
-
     [RelayCommand]
     public void Reset(UnitViewModel unit)
     {
@@ -233,13 +241,35 @@ public partial class CustomerViewModel : ObservableObject
 
                 WeakReferenceMessenger.Default.Send(v);
             }
-        } 
+        }
         unit.Apply();
     }
 
 
+    [RelayCommand]
+    public void AddQualification()
+    {
+        using var db = new BaseDatabase();
+        InvestorQualification entity = new InvestorQualification { InvestorId = Id };
+        db.GetCollection<InvestorQualification>().Insert(entity);
+        Qualifications.Add(QualificationViewModel.From(entity, Type.Data.Old));
+    }
+
+    [RelayCommand]
+    public void DeleteQualification(QualificationViewModel v)
+    {
+        if (v.Date.Data.Old is not null && HandyControl.Controls.MessageBox.Show("确认删除吗？", button:System.Windows.MessageBoxButton.YesNo) == System.Windows.MessageBoxResult.No)
+            return;
 
 
+        Qualifications.Remove(v);
+
+        if (!v.IsFinished)
+        {
+            using var db = new BaseDatabase();
+            db.GetCollection<InvestorQualification>().Delete(v.Id);
+        }
+    }
 }
 
 

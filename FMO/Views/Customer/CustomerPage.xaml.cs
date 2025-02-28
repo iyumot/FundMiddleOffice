@@ -50,9 +50,9 @@ public partial class CustomerPageViewModel : ObservableRecipient,IRecipient<Inve
 
         if (cusomers.Length == 0)
             cusomers = [
-                new Investor { Name = "张三", EntityType = EntityType.Natural},
-                new Investor { Name = "某公司", EntityType = EntityType.Institution},
-                new Investor { Name = "某产品", EntityType = EntityType.Product},
+                new Investor { Id = 1, Name = "张三", EntityType = EntityType.Natural},
+                new Investor { Id = 2, Name = "某公司", EntityType = EntityType.Institution},
+                new Investor { Id = 3, Name = "某产品", EntityType = EntityType.Product},
             ];
 
         Customers = new(cusomers);// new(cusomers.Select(x => new CustomerViewModel(x)));

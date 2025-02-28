@@ -137,7 +137,7 @@ public record struct Identity
 
     public override int GetHashCode()
     {
-        return Type.GetHashCode() ^ Id.GetHashCode();
+        return Type.GetHashCode() ^ (Id??"").GetHashCode();
     }
 }
 
