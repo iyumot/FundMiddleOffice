@@ -64,10 +64,14 @@
         </Style>
         <Style x:Key="ElementContainer" TargetType="ContentControl">
             <Setter Property="Content" Value="{Binding}" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ContentControl">
-                        <DockPanel Background="Transparent" LastChildFill="False">
+                        <DockPanel
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Background="Transparent"
+                            LastChildFill="False">
                             <TextBlock
                                 VerticalAlignment="Center"
                                 Foreground="{StaticResource LabelBrush}"

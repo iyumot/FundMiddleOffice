@@ -29,8 +29,20 @@ public partial class FileViewModel : ObservableObject
     /// </summary>
     public string? Filter { get; set; }
 
-
+    /// <summary>
+    /// 文件变更后，更新到实体
+    /// </summary>
     public Action<FileViewModel>? SaveFunc { get; set; }
+
+    /// <summary>
+    /// 保存到本地
+    /// </summary>
+    public Func<FileViewModel, string?>? StoreFunc { get; set; }
+
+    /// <summary>
+    /// 清除文件
+    /// </summary>
+    public Action<FileViewModel>? ClearFunc { get; set; }
 
     [RelayCommand]
     public void View()
@@ -59,12 +71,15 @@ public partial class FileViewModel : ObservableObject
     }
     protected virtual void OnClear()
     {
-
     }
 
     [RelayCommand]
     public void Clear()
     {
+        if (ClearFunc is not null)
+            ClearFunc(this);
+
+        File = null;
         OnClear();
     }
 
@@ -125,9 +140,14 @@ public partial class FileViewModel : ObservableObject
 
         if (fi is not null)
         {
-            if (fi.Exists && SaveFunc is not null)
-                SaveFunc(this);
+            if (fi.Exists)
+            {
+                if (StoreFunc is not null && StoreFunc(this) is string s)
+                    File = new FileInfo(s);
 
+                if (SaveFunc is not null)
+                    SaveFunc(this);
+            }
             OnChanged(fi);
         }
     }

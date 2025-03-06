@@ -120,7 +120,7 @@ public partial class CustomerViewModel : ObservableObject
 
         using var db = new BaseDatabase();
         var iq = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == Id).ToArray();
-        Qualifications = new(iq.Select(x => QualificationViewModel.From(x, investor)));
+        Qualifications = new(iq.Select(x => QualificationViewModel.From(x, investor.Type, investor.EntityType)));
     }
 
     private void Type_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -202,6 +202,7 @@ public partial class CustomerViewModel : ObservableObject
             if (v is not null)
             {
                 entity.RemoveValue(v);
+                unit.Reset();
                 db.GetCollection<Investor>().Upsert(v);
 
                 WeakReferenceMessenger.Default.Send(v);
@@ -252,7 +253,7 @@ public partial class CustomerViewModel : ObservableObject
         using var db = new BaseDatabase();
         InvestorQualification entity = new InvestorQualification { InvestorId = Id };
         db.GetCollection<InvestorQualification>().Insert(entity);
-        Qualifications.Add(QualificationViewModel.From(entity, Type.Data.Old));
+        Qualifications.Add(QualificationViewModel.From(entity, Type.Data.Old, EntityType.Data.Old));
     }
 
     [RelayCommand]
