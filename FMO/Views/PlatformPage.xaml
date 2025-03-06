@@ -1,5 +1,5 @@
 ﻿<UserControl
-    x:Class="FMO.TrusteePage"
+    x:Class="FMO.PlatformPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -10,7 +10,7 @@
     d:DesignWidth="800"
     mc:Ignorable="d">
     <UserControl.DataContext>
-        <local:TrusteePageViewModel />
+        <local:PlatformPageViewModel />
     </UserControl.DataContext>
     <UserControl.Resources />
     <DockPanel>

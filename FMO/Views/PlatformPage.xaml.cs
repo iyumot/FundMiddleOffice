@@ -15,11 +15,11 @@ using System.Windows.Media.Imaging;
 namespace FMO;
 
 /// <summary>
-/// TrusteePage.xaml 的交互逻辑
+/// PlatformPage.xaml 的交互逻辑
 /// </summary>
-public partial class TrusteePage : UserControl
+public partial class PlatformPage : UserControl
 {
-    public TrusteePage()
+    public PlatformPage()
     {
         InitializeComponent();
 
@@ -30,15 +30,15 @@ public partial class TrusteePage : UserControl
 /// <summary>
 /// Page的vm
 /// </summary>
-public partial class TrusteePageViewModel : ObservableObject
+public partial class PlatformPageViewModel : ObservableObject
 {
 
     private static bool _firstLoad = true;
 
-    public ObservableCollection<TrusteePageViewModelTrustee> Trustees { get; } = new();
+    public ObservableCollection<PlatformPageViewModelTrustee> Trustees { get; } = new();
 
 
-    public TrusteePageViewModel()
+    public PlatformPageViewModel()
     {
         /// 读取所有托管插件
         /// 
@@ -70,7 +70,7 @@ public partial class TrusteePageViewModel : ObservableObject
                 icon.StreamSource = iconStream;
                 icon.EndInit();
 
-                Trustees.Add(new TrusteePageViewModelTrustee(trusteeAssist, trusteeAssist.Name, icon));
+                Trustees.Add(new PlatformPageViewModelTrustee(trusteeAssist, trusteeAssist.Name, icon));
             }
 
             _firstLoad = false;
@@ -89,10 +89,10 @@ public partial class TrusteePageViewModel : ObservableObject
 /// <summary>
 /// 单个项的vm
 /// </summary>
-public partial class TrusteePageViewModelTrustee : ObservableRecipient, IRecipient<string>
+public partial class PlatformPageViewModelTrustee : ObservableRecipient, IRecipient<string>
 {
     [SetsRequiredMembers]
-    public TrusteePageViewModelTrustee(ITrusteeAssist assist, string name, ImageSource? icon)
+    public PlatformPageViewModelTrustee(ITrusteeAssist assist, string name, ImageSource? icon)
     {
         Icon = icon;
         Name = name;
@@ -294,7 +294,7 @@ public partial class TrusteePageViewModelTrustee : ObservableRecipient, IRecipie
     }
 }
 
-public partial class SyncButtonData(Geometry Icon, ICommand Command, TrusteePageViewModelTrustee.SyncProcess SyncProcess, string Description) : ObservableObject
+public partial class SyncButtonData(Geometry Icon, ICommand Command, PlatformPageViewModelTrustee.SyncProcess SyncProcess, string Description) : ObservableObject
 {
     [ObservableProperty]
     public partial bool IsRunning { get; set; }
@@ -303,7 +303,7 @@ public partial class SyncButtonData(Geometry Icon, ICommand Command, TrusteePage
 
     public ICommand Command { get; } = Command;
 
-    public TrusteePageViewModelTrustee.SyncProcess SyncProcess { get; } = SyncProcess;
+    public PlatformPageViewModelTrustee.SyncProcess SyncProcess { get; } = SyncProcess;
 
     public string Description { get; } = Description;
 }

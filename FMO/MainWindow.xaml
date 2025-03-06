@@ -62,13 +62,13 @@
                     <hc:SideMenuItem.Header>
                         <hc:Badge
                             Width="50"
-                            Content="托管外包"
+                            Content="平台"
                             ShowBadge="False"
                             Status="Dot" />
                     </hc:SideMenuItem.Header>
                     <hc:SideMenuItem.Icon>
                         <Viewbox Width="16" Height="16">
-                            <Path Data="{StaticResource G.Bank}" Fill="Black" />
+                            <Path Data="{StaticResource f.tree}" Fill="Black" />
                         </Viewbox>
                     </hc:SideMenuItem.Icon>
                 </hc:SideMenuItem>
