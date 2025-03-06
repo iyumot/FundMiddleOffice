@@ -13,4 +13,25 @@ public static class ObjectExtension
         string info = string.Join(",\n\t", type.GetProperties().Select(x => $"{x.Name}:{x.GetValue(obj)?.ToString() ?? "null"}"));
         return $"{type.Name} \n\t {info} \n\n";             
     }
+
+
+    public static void UpdateFrom(this object des, object src)
+    {
+        if (src is null) return;
+
+        var psd = des.GetType().GetProperties();
+        var pss = src.GetType().GetProperties();
+
+        foreach (var p in psd)
+        {
+            if (!p.CanWrite) continue;
+
+            //是否有同名属性
+            var ps = pss.FirstOrDefault(x => x.Name == p.Name && x.CanRead);
+            if (ps is null) continue;
+            
+            p.SetValue(des, ps.GetValue(src));
+        }
+    }
+
 }
