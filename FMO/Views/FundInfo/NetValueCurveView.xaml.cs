@@ -213,7 +213,7 @@ public partial class DailyValueCurveViewModel : ObservableObject
 
     internal void ResetDaily()
     {
-        Choosed = Data?.Where(x => x.Date >= StartDate && x.Date <= EndDate)?.ToList();
+        Choosed = Data?.Where(x => x.Date >= StartDate && x.Date <= EndDate && x.NetValue > 0 )?.ToList();
 
         LastValue = Choosed?.LastOrDefault()?.CumNetValue;
         APY = Choosed is null || Choosed.Count() < 2 ? null : (Choosed.Last().CumNetValue - Choosed.First().CumNetValue) / (Choosed.Last().Date.DayNumber - Choosed.First().Date.DayNumber) * 365;
