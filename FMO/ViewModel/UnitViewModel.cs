@@ -83,6 +83,17 @@ public abstract class UnitViewModel : ObservableObject
 
         OnPropertyChanged(nameof(Display));
     }
+
+
+    public void Reset()
+    {
+        foreach (var p in GetType().GetProperties())
+        {
+            if (p.PropertyType.IsAssignableTo(typeof(IModifiableValue)))
+                ((IModifiableValue)p.GetValue(this)!).Clear();
+        }
+    }
+
 }
 
 /// <summary>
@@ -99,12 +110,6 @@ public interface IEntityViewModel<T> where T : notnull
 
     public void RemoveValue(T obj)
     {
-        foreach (var p in obj.GetType().GetProperties())
-        {
-            if (p.PropertyType.IsAssignableTo(typeof(IModifiableValue)))
-             ((IModifiableValue)p.GetValue(this)!).Clear();
-        }
-
         if (obj is not null && ClearFunc is not null)
             ClearFunc(obj);
     }
@@ -199,7 +204,7 @@ public partial class EntityValueViewModel<TEntity, TProperty> : UnitViewModel, I
         if (obj is not null && UpdateFunc is not null && Data.New is not null)
             UpdateFunc(obj, Data.New);
     }
-     
+
 }
 
 
@@ -245,7 +250,7 @@ public partial class EntityRefrenceViewModel<TEntity, TProperty> : UnitViewModel
         if (obj is not null && UpdateFunc is not null && Data.New is not null)
             UpdateFunc(obj, Data.New);
     }
-     
+
 }
 
 

@@ -9,8 +9,99 @@
     d:DataContext="{d:DesignInstance Type=local:QualificationViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
+    Background="Transparent"
     mc:Ignorable="d">
-    <UserControl.Resources />
+    <UserControl.Resources>
+        <!--  单个文件模板  -->
+        <DataTemplate x:Key="SingleFile">
+            <Border>
+                <DockPanel Background="Transparent">
+                    <TextBlock
+                        x:Name="lb"
+                        VerticalAlignment="Center"
+                        Text="{Binding Label}" />
+
+                    <Viewbox
+                        Width="14"
+                        Height="14"
+                        Margin="2,0,8,0"
+                        VerticalAlignment="Center">
+                        <Path
+                            Data="{DynamicResource f.angle-right}"
+                            Fill="Black"
+                            Stroke="Black" />
+                    </Viewbox>
+
+                    <TextBlock Margin="5,2" Text="{Binding File.Name}" />
+
+                    <Grid Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                        <Button
+                            hc:IconElement.Geometry="{StaticResource f.gear}"
+                            Command="{Binding ChangeCommand}"
+                            Style="{StaticResource ButtonIcon.Small}"
+                            ToolTip="设置文件"
+                            Visibility="{Binding File.Exists, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                    </Grid>
+
+                    <Grid
+                        x:Name="p"
+                        VerticalAlignment="Center"
+                        Visibility="Collapsed">
+                        <DockPanel LastChildFill="False" Visibility="{Binding File, Converter={StaticResource FileExistsToVisibilityConverter}}">
+                            <Button
+                                Margin="-5"
+                                hc:IconElement.Geometry="{StaticResource f.book-open-reader}"
+                                Command="{Binding ViewCommand}"
+                                Foreground="Lime"
+                                Style="{StaticResource ButtonIcon.Small}"
+                                ToolTip="查看" />
+                            <Button
+                                Margin="-5"
+                                hc:IconElement.Geometry="{StaticResource f.file-export}"
+                                Command="{Binding SaveAsCommand}"
+                                Style="{StaticResource ButtonIcon.Small}"
+                                ToolTip="另存为" />
+
+                            <Button
+                                Margin="-5"
+                                hc:IconElement.Geometry="{StaticResource f.print}"
+                                Command="{Binding PrintCommand}"
+                                Style="{StaticResource ButtonIcon.Small}"
+                                ToolTip="打印" />
+                            <Button
+                                Margin="-5"
+                                hc:IconElement.Geometry="{StaticResource f.repeat}"
+                                Command="{Binding ChangeCommand}"
+                                Style="{StaticResource ButtonIcon.Small}"
+                                ToolTip="更换"
+                                Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                            <Button
+                                Margin="-5"
+                                hc:IconElement.Geometry="{StaticResource f.xmark}"
+                                Command="{Binding ClearCommand}"
+                                Foreground="Red"
+                                Style="{StaticResource ButtonIcon.Small}"
+                                ToolTip="删除"
+                                Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                        </DockPanel>
+                    </Grid>
+
+                </DockPanel>
+            </Border>
+            <DataTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="p" Property="Visibility" Value="Visible" />
+                </Trigger>
+                <DataTrigger Binding="{Binding File.Exists}" Value="True">
+                    <Setter TargetName="lb" Property="Foreground" Value="Green" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+        <Style x:Key="SingleFileStyle" TargetType="ContentControl">
+            <Setter Property="ContentTemplate" Value="{StaticResource SingleFile}" />
+
+        </Style>
+    </UserControl.Resources>
     <Grid>
 
         <StackPanel>
@@ -33,11 +124,16 @@
                         SelectedDate="{Binding Data.New, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
                 </ContentControl>
 
-
                 <CheckBox
-                    Margin="5,0"
+                    Margin="15,0"
                     Content="专业投资者"
                     IsChecked="{Binding IsProfessional}" />
+                <!--<ContentControl DataContext="{Binding IsProfessional}" Style="{DynamicResource ElementContainer}">
+                    <CheckBox
+                        Margin="15,0"
+                        Content="专业投资者"
+                        IsChecked="{Binding Data.New}" />
+                </ContentControl>-->
 
                 <!--<UniformGrid Rows="1">
                     <RadioButton Content="普通投资者" IsChecked="{Binding IsProfessional, Converter={StaticResource Boolean2BooleanReConverter}}" />
@@ -47,60 +143,203 @@
 
 
 
-            <TextBlock Margin="{StaticResource marg}" Text="认定方式" />
 
-            <DockPanel Margin="{StaticResource marg}">
-                <CheckBox Content="资产证明" />
-                <TextBox
-                    Width="60"
-                    Margin="4,0"
-                    Text="{Binding FinancialAssets}" />
-                <TextBlock VerticalAlignment="Center" Text="万" />
-                <local:FileDisplay Margin="8,0,0,0" Header="" />
+
+
+
+
+            <ContentControl Content="{Binding InfomationSheet}" Style="{StaticResource SingleFileStyle}" />
+
+            <ContentControl Content="{Binding CommitmentLetter}" Style="{StaticResource SingleFileStyle}" />
+
+            <ContentControl Content="{Binding Notice}" Style="{StaticResource SingleFileStyle}" />
+
+            <ContentControl Content="{Binding TaxDeclaration}" Style="{StaticResource SingleFileStyle}" />
+
+            <ContentControl Content="{Binding CertificationMaterials}" Style="{StaticResource SingleFileStyle}" />
+
+
+            <StackPanel Visibility="{Binding ShowAgent, Converter={StaticResource Boolean2VisibilityConverter}}">
+                <ContentControl Content="{Binding Authorization}" Style="{StaticResource SingleFileStyle}" />
+
+                <ContentControl Content="{Binding Agent}" Style="{StaticResource SingleFileStyle}" />
+            </StackPanel>
+            <ContentControl
+                Content="{Binding ProofOfExperience}"
+                Style="{StaticResource SingleFileStyle}"
+                Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+            <DockPanel>
+                <TextBlock Margin="{StaticResource marg}" Text="认定方式" />
+
+                <ContentControl>
+                    <ContentControl.Template>
+                        <ControlTemplate TargetType="ContentControl">
+                            <TextBlock
+                                x:Name="tb"
+                                Margin="20,0,0,0"
+                                VerticalAlignment="Center"
+                                Foreground="Blue"
+                                Text="{Binding Statement}"
+                                Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                            <ControlTemplate.Triggers>
+                                <DataTrigger Binding="{Binding HasError}" Value="True">
+                                    <Setter TargetName="tb" Property="Foreground" Value="Red" />
+                                </DataTrigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </ContentControl.Template>
+                </ContentControl>
             </DockPanel>
 
+            <!--  认定方式  -->
+            <StackPanel Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                <ListBox
+                    Padding="-8,0"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    ItemsSource="{Binding ProofTypes}"
+                    SelectedItem="{Binding ProofType}"
+                    Style="{StaticResource ListBoxCustom}">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel IsItemsHost="True" Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemContainerStyle>
+                        <Style BasedOn="{StaticResource ListBoxItemCustom}" TargetType="ListBoxItem">
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                            <Setter Property="Margin" Value="8,0" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding .}" Value="Financial">
+                                    <Setter Property="ContentTemplate">
+                                        <Setter.Value>
+                                            <DataTemplate>
+                                                <DockPanel Margin="{StaticResource marg}" DataContext="{Binding RelativeSource={RelativeSource AncestorType=local:QualificationView}, Path=DataContext}">
+                                                    <CheckBox Content="金融资产" IsChecked="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                                                    <TextBox
+                                                        Width="60"
+                                                        Margin="4,0"
+                                                        DataContext="{Binding RelativeSource={RelativeSource AncestorType=local:QualificationView}, Path=DataContext}"
+                                                        Text="{Binding FinancialAssets}" />
+                                                    <TextBlock VerticalAlignment="Center" Text="万" />
+                                                </DockPanel>
+                                            </DataTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
 
-            <DockPanel Margin="{StaticResource marg}">
-                <CheckBox Content="收入证明" />
-                <TextBox Width="60" Margin="4,0" />
-                <TextBlock VerticalAlignment="Center" Text="万（近三年年均）" />
-                <local:FileDisplay Margin="8,0,0,0" Header="" />
-            </DockPanel>
+                                <DataTrigger Binding="{Binding .}" Value="Income">
+                                    <Setter Property="ContentTemplate">
+                                        <Setter.Value>
+                                            <DataTemplate>
+                                                <DockPanel Margin="{StaticResource marg}">
+                                                    <CheckBox Content="近三年年均收入" IsChecked="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                                                    <TextBox Width="60" Margin="4,0" />
+                                                    <TextBlock VerticalAlignment="Center" Text="万" />
+                                                </DockPanel>
+                                            </DataTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+
+                                <DataTrigger Binding="{Binding .}" Value="Employee">
+                                    <Setter Property="ContentTemplate">
+                                        <Setter.Value>
+                                            <DataTemplate>
+                                                <CheckBox
+                                                    VerticalAlignment="Center"
+                                                    Content="管理人员工"
+                                                    IsChecked="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                                            </DataTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
 
 
-            <DockPanel Margin="{StaticResource marg}" Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityReConverter}}">
-                <CheckBox Content="管理人员工" />
-                <local:FileDisplay Margin="8,0,0,0" Header="" />
-            </DockPanel>
+                                <DataTrigger Binding="{Binding .}" Value="NetAssets">
+                                    <Setter Property="ContentTemplate">
+                                        <Setter.Value>
+                                            <DataTemplate>
+                                                <DockPanel Margin="{StaticResource marg}" DataContext="{Binding RelativeSource={RelativeSource AncestorType=local:QualificationView}, Path=DataContext}">
+                                                    <CheckBox Content="净资产" IsChecked="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                                                    <TextBox
+                                                        Width="60"
+                                                        Margin="4,0"
+                                                        Text="{Binding NetAssets}" />
+                                                    <TextBlock VerticalAlignment="Center" Text="万" />
 
-            <Separator />
+                                                    <DockPanel Visibility="{Binding RelativeSource={RelativeSource AncestorType=local:QualificationView}, Path=DataContext.IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                                        <TextBlock
+                                                            Margin="8,0,0,0"
+                                                            VerticalAlignment="Center"
+                                                            Text="金融资产" />
+                                                        <TextBox
+                                                            Width="60"
+                                                            Margin="4,0"
+                                                            Text="{Binding FinancialAssets}" />
+                                                        <TextBlock VerticalAlignment="Center" Text="万" />
+                                                    </DockPanel>
+                                                </DockPanel>
+                                            </DataTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
 
 
-            <DockPanel Margin="{StaticResource marg}" Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}">
-                <CheckBox Margin="{StaticResource marg}" Content="具有2年以上证券、基金、期货、黄金、外汇等投资经历" />
-                <local:FileDisplay Margin="8,0,0,0" Header="" />
-            </DockPanel>
+                                <DataTrigger Binding="{Binding .}" Value="FinancialInstitution">
+                                    <Setter Property="ContentTemplate">
+                                        <Setter.Value>
+                                            <DataTemplate>
+                                                <CheckBox
+                                                    VerticalAlignment="Center"
+                                                    Content="{Binding}"
+                                                    IsChecked="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                                            </DataTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
 
-            <DockPanel Margin="{StaticResource marg}" Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}">
-                <CheckBox Margin="{StaticResource marg}" Content="具有2年以上金融产品设计、投资、风险管理及相关工作经历" />
-                <local:FileDisplay Margin="8,0,0,0" Header="" />
-            </DockPanel>
+                            </Style.Triggers>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
 
-            <DockPanel Margin="{StaticResource marg}" Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}">
-                <CheckBox Margin="{StaticResource marg}" Content="特殊专业机构投资者的高级管理人员" />
-                <local:FileDisplay Margin="8,0,0,0" Header="" />
-            </DockPanel>
 
-            <DockPanel Margin="{StaticResource marg}" Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}">
-                <CheckBox Margin="{StaticResource marg}" Content="获得职业资格认证的从事金融相关业务的注册会计师和律师" />
-                <local:FileDisplay Margin="8,0,0,0" Header="" />
-            </DockPanel>
+                <Separator />
+
+                <ListBox
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    ItemsSource="{Binding ExperienceTypes}"
+                    SelectedItem="{Binding ExperienceType}"
+                    Style="{StaticResource ListBoxCustom}"
+                    Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <CheckBox
+                                Margin="{StaticResource marg}"
+                                Content="{Binding .}"
+                                IsChecked="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </StackPanel>
 
 
         </StackPanel>
 
+
         <!--  右上角按键  -->
         <DockPanel HorizontalAlignment="Right" VerticalAlignment="Top">
+            <Button
+                Margin="5,0"
+                hc:IconElement.Geometry="{StaticResource f.floppy-disk}"
+                Command="{Binding SaveQualificationCommand}"
+                CommandParameter="{Binding .}"
+                Style="{StaticResource ButtonIconCircular.Small}"
+                Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
             <!--  删除合投  -->
             <Button
                 Margin="5,0"
@@ -111,12 +350,23 @@
                 Style="{StaticResource ButtonIconCircular.Small}"
                 Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
 
+
+            <Grid Margin="10,0" Visibility="{Binding RelativeSource={RelativeSource AncestorType=local:QualificationView}, Path=IsMouseOver, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                <Ellipse MinWidth="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}" Fill="Gold" />
+                <TextBlock
+                    Margin="5"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Text="{Binding Id}" />
+            </Grid>
+
             <!--  切换读写  -->
             <ToggleButton
                 BorderBrush="Transparent"
                 DockPanel.Dock="Right"
                 IsChecked="{Binding IsReadOnly}"
-                Style="{StaticResource ToggleButtonFlip}">
+                Style="{StaticResource ToggleButtonFlip}"
+                Visibility="{Binding RelativeSource={RelativeSource AncestorType=local:QualificationView}, Path=IsMouseOver, Converter={StaticResource Boolean2VisibilityConverter}}">
                 <hc:StatusSwitchElement.CheckedElement>
                     <Viewbox Width="14" Height="14">
                         <Path Data="{StaticResource f.pen}" Fill="Green" />
@@ -128,4 +378,5 @@
             </ToggleButton>
         </DockPanel>
     </Grid>
+
 </UserControl>

@@ -6,20 +6,40 @@ namespace FMO.Models;
 [TypeConverter(typeof(EnumDescriptionTypeConverter))]
 public enum QualificationFileType
 {
-    None ,
+    None,
 
-    [Description("500万资产证明")] Assets500,
+    [Description("金融资产")] Financial,
 
-    [Description("300万资产证明")] Assets300,
-
-    [Description("三年年均收入>50万")] Income,
+    [Description("三年年均收入")] Income,
 
     [Description("员工")] Employee,
+
+    [Description("净资产")] NetAssets,
+
+    //[Description("净资产+金融资产")] NetAndFinancial,
 
     [Description("金融机构")] FinancialInstitution,
 
     [Description("金融产品 ")] Product,
 }
+
+
+[TypeConverter(typeof(EnumDescriptionTypeConverter))]
+public enum QualificationExperienceType
+{
+    None,
+
+    [Description("具有2年以上证券、基金、期货、黄金、外汇等投资经历")] Invest,
+
+    [Description("具有2年以上金融产品设计、投资、风险管理及相关工作经历")] Work,
+
+    [Description("特殊专业机构投资者的高级管理人员")] Senior,
+
+    [Description("获得职业资格认证的从事金融相关业务的注册会计师和律师")] Lawyer,
+
+}
+
+
 
 public enum QualificationType
 {
@@ -34,7 +54,7 @@ public enum QualificationType
     [Description("员工")] Employee,
 
     [Description("金融机构")] FinancialInstitution,
-     
+
     [Description("金融产品 ")] Product,
 
     [Description("公益基金")] PublicWelfareFund,
@@ -103,17 +123,33 @@ public class InvestorQualification
 
     public int InvestorId { get; set; }
 
-    public QualificationType Type { get; set; }
+    //public QualificationType Type { get; set; }
+
+    /// <summary>
+    /// 净资产
+    /// </summary>
+    public decimal? NetAssets { get; set; }
+
+    /// <summary>
+    /// 金融资产（万） （个人）
+    /// </summary>
+    public decimal? FinancialAssets { get; set; }
+
+    /// <summary>
+    /// 近三年年均收入
+    /// </summary>
+    public decimal? Income { get; set; }
 
 
+    public QualificationFileType ProofType { get; set; }
 
-
+    public QualificationExperienceType ExperienceType { get; set; }
 
     /// <summary>
     /// 普通 / 专业
     /// </summary>
     public QualifiedInvestorType Result { get; set; }
-   
+
     /// <summary>
     /// 承诺函
     /// </summary>
@@ -139,7 +175,7 @@ public class InvestorQualification
     /// </summary>
     public FileStorageInfo? CertificationMaterials { get; set; }
 
-    
+
 
     public FileStorageInfo? ProofOfExperience { get; set; }
 
@@ -159,5 +195,77 @@ public class InvestorQualification
     /// </summary>
     public FileStorageInfo? Authorization { get; set; }
 
+    /// <summary>
+    /// 代理人是法代
+    /// </summary>
+    public bool AgentIsLeagal { get; set; }
 
+    /// <summary>
+    /// 是否有错误
+    /// </summary>
+    public string? Error { get; set; }
+
+
+    private bool IsFileExists(FileStorageInfo? info) => string.IsNullOrWhiteSpace(info?.Path) ? false : File.Exists(info.Path);
+
+    public (bool HasError, string? Info) Check()
+    {
+        bool er = false;
+        List<string> info = new();
+        if (Date.Year < 1970)
+        {
+            er = true;
+            info.Add("无日期");
+        }
+
+        if (!IsFileExists(InfomationSheet) || !IsFileExists(CommitmentLetter) || !IsFileExists(Notice) || !IsFileExists(CertificationMaterials) || (Result == QualifiedInvestorType.Professional && !IsFileExists(ProofOfExperience)))
+        {
+            er = true;
+            info.Add("缺少必要文件");
+        }
+
+        string s = "";
+        switch (ProofType)
+        {
+            case QualificationFileType.Financial:
+                s = FinancialAssets switch { >= 500 => "500万金融资产证明", >= 300 => "300万金融资产证明", > 0 => "金融资产证明(无效金额)", _ => "金融资产证明(请填写金额)" };
+                break;
+            case QualificationFileType.Income:
+                s = Income switch { >= 50 => "50万年均收入证明", > 0 => "年均收入证明(无效金额)", _ => "年均收入证明(请填写金额)" };
+                break;
+            case QualificationFileType.Employee:
+                s = "管理人员工";
+                break;
+            case QualificationFileType.NetAssets:
+                s = Result == QualifiedInvestorType.Professional ? (NetAssets switch { >= 2000 => "年末净资产>2000万", > 0 => "年末净资产(无效金额)", _ => "年末净资产(请填写金额)" } + FinancialAssets switch { >= 1000 => "1000万金融资产证明", > 0 => "金融资产证明(无效金额)", _ => "金融资产证明(请填写金额)" }) : NetAssets switch { >= 1000 => "年末净资产>1000万", _ => "年末净资产(请填写金额)" };
+                break;
+            case QualificationFileType.FinancialInstitution:
+                s = "金融机构";
+                break;
+            case QualificationFileType.Product:
+                s = "基金产品";
+                break;
+            default:
+                break;
+        }
+
+        switch (ExperienceType)
+        {
+            case QualificationExperienceType.Invest:
+                s += " + 2年投资经历";
+                break;
+            case QualificationExperienceType.Work:
+                s += " + 2年以上金融产品设计、投资、风险管理及相关工作经历";
+                break;
+            case QualificationExperienceType.Senior:
+                s += " + 特殊专业机构投资者的高级管理人员";
+                break;
+            case QualificationExperienceType.Lawyer:
+                s += " + 获得职业资格认证的从事金融相关业务的注册会计师和律师";
+                break;
+        }
+
+
+        return (er, s + "  " + string.Join(',', info));
+    }
 }
