@@ -139,10 +139,10 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
         {
             case "Trustee":
                 {
-                    var page = Pages.FirstOrDefault(x => x.Content is TrusteePage);
+                    var page = Pages.FirstOrDefault(x => x.Content is PlatformPage);
                     if (page is null)
                     {
-                        page = new TabItem { Header = GenerateHeader("托管平台"), Content = new TrusteePage() };
+                        page = new TabItem { Header = GenerateHeader("外部平台"), Content = new PlatformPage() };
                         Pages.Add(page);
                     }
 
