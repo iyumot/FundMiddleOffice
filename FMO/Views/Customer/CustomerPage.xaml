@@ -203,11 +203,24 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTextColumn
+                <!--<DataGridTextColumn
                     Binding="{Binding Type}"
                     ElementStyle="{StaticResource TextBlockDefault}"
-                    Header="类型" />
-
+                    Header="类型" />-->
+                <DataGridTemplateColumn Header="类型">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <local:CopyableControl>
+                                <TextBlock VerticalAlignment="Center" Text="{Binding Type}" />
+                            </local:CopyableControl>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding Type}" Value="None">
+                                    <Setter Property="TextElement.Foreground" Value="Red" />
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
                 <DataGridTemplateColumn Header="证件类型">
                     <DataGridTemplateColumn.CellTemplate>
