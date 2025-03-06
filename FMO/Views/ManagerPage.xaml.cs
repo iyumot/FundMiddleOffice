@@ -576,6 +576,8 @@ public partial class ManagerPageViewModel : ObservableObject
             bitmapSource.StreamSource = ms;
             bitmapSource.EndInit();
             MainLogo = bitmapSource;
+
+            App.Current.MainWindow.Icon = MainLogo;
         }
     }
     #endregion
