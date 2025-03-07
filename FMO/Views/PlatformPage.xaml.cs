@@ -11,6 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Serilog;
 
 namespace FMO;
 
@@ -51,26 +52,33 @@ public partial class PlatformPageViewModel : ObservableObject
 
             foreach (var file in files)
             {
-                var assembly = Assembly.LoadFile(file.FullName);
+                try
+                {
+                    var assembly = Assembly.LoadFile(file.FullName);
 
-                var type = assembly.GetTypes().FirstOrDefault(x => x.GetInterface(typeof(ITrusteeAssist).FullName!) is not null);
-                if (type is null) continue;
+                    var type = assembly.GetTypes().FirstOrDefault(x => x.GetInterface(typeof(ITrusteeAssist).FullName!) is not null);
+                    if (type is null) continue;
 
 
-                ITrusteeAssist trusteeAssist = (ITrusteeAssist)Activator.CreateInstance(type)!;
+                    ITrusteeAssist trusteeAssist = (ITrusteeAssist)Activator.CreateInstance(type)!;
 
-                Stream? iconStream = null;
-                var res = assembly.GetManifestResourceNames();
-                var name = res.FirstOrDefault(x => x.Contains(".logo."));
-                if (name is not null)
-                    iconStream = assembly.GetManifestResourceStream(name);
+                    Stream? iconStream = null;
+                    var res = assembly.GetManifestResourceNames();
+                    var name = res.FirstOrDefault(x => x.Contains(".logo."));
+                    if (name is not null)
+                        iconStream = assembly.GetManifestResourceStream(name);
 
-                var icon = new BitmapImage();
-                icon.BeginInit();
-                icon.StreamSource = iconStream;
-                icon.EndInit();
+                    var icon = new BitmapImage();
+                    icon.BeginInit();
+                    icon.StreamSource = iconStream;
+                    icon.EndInit();
 
-                Trustees.Add(new PlatformPageViewModelTrustee(trusteeAssist, trusteeAssist.Name, icon));
+                    Trustees.Add(new PlatformPageViewModelTrustee(trusteeAssist, trusteeAssist.Name, icon));
+                }
+                catch (Exception e)
+                {
+                    Log.Error($"加载托管插件失败{e.Message}");
+                }
             }
 
             _firstLoad = false;
