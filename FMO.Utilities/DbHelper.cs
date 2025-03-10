@@ -53,6 +53,15 @@ public class TrusteeDatabase : LiteDatabase
     }
 }
 
+public class DSDatabase : LiteDatabase
+{
+
+    private const string connectionString = @"FileName=data\digital.db;Password=f34902ufdisuf8s1;Connection=Shared";
+
+    public DSDatabase() : base(connectionString, null)
+    {
+    }
+}
 
 public class FileIndexDatabase : LiteDatabase
 {
