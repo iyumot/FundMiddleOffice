@@ -71,12 +71,13 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
 
     public void Receive(string message)
     {
-
+        HandyControl.Controls.Growl.Info(message);
     }
 
     protected override void OnActivated()
     {
         WeakReferenceMessenger.Default.Register<OpenFundMessage>(this);
+        WeakReferenceMessenger.Default.Register<string,string>(this, "toast");
     }
 
     public void Receive(OpenFundMessage message)
