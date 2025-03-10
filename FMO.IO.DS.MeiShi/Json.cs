@@ -1,0 +1,532 @@
+﻿
+using FMO.Models;
+
+namespace FMO.IO.DS.MeiShi.Json.Customer;
+
+//如果好用，请收藏地址，帮忙分享。
+public class TotalInvestmentAmountDTO
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    public string cny { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string cnyStr { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string usd { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string usdStr { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string hkd { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string hkdStr { get; set; }
+}
+
+public class HoldTotalAmountDTO
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    public string cny { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string cnyStr { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string usd { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string usdStr { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string hkd { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string hkdStr { get; set; }
+}
+
+public class TotalValueDTO
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    public string cny { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string cnyStr { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string usd { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string usdStr { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string hkd { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string hkdStr { get; set; }
+}
+
+public class HoldingEarningsDTO
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    public string cny { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string cnyStr { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string usd { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string usdStr { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string hkd { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string hkdStr { get; set; }
+}
+
+public class NetPurchaseAmountDTO
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    public string cny { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string cnyStr { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string usd { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string usdStr { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string hkd { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string hkdStr { get; set; }
+}
+
+public class ListItem
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    public int customerId { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int customerType { get; set; }
+    /// <summary>
+    /// 光大期货光耀专享12号F0F单一资产管理计划
+    /// </summary>
+    public string customerName { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int customerLevel { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int investorType { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int riskType { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int riskState { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int realNameState { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int isDelete { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int investedFundsNum { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string totalInvestmentAmount { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public TotalInvestmentAmountDTO totalInvestmentAmountDTO { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int fundsAlreadyOwnedNum { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string alreadyOwnedProductNames { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string alreadyOwnedProductIds { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string holdTotalAmount { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public HoldTotalAmountDTO holdTotalAmountDTO { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public TotalValueDTO totalValueDTO { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string holdingEarnings { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public HoldingEarningsDTO holdingEarningsDTO { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string mobile { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string email { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int cardType { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string cardNumber { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int forbidden { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string saleUserName { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string remark { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string dealer { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string currentAutomatic { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string historyAutomatic { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string currentManual { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string historyManual { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string channelNames { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string origin { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string otherOrigin { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int isVIP { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string nickName { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string openId { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string registerTime { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string sourceType { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string createTime { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string riskLimitDate { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int isRiskLongTime { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string isExpire { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string legalPersonCardNumber { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string authorizedRepresentativeCardNumber { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string customerGroupNames { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int companyCode { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int identifyStatus { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string identifyLimitDate { get; set; }
+    /// <summary>
+    /// 2028年03月06日
+    /// </summary>
+    public string identifyLimitDateString { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string riskLimitDateString { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string channelType { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string channelTypeString { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string lastLoginTime { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int isSubscribed { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int isCanSubscribed { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string inviterName { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string oneLevelChannelName { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string twoLevelChannelName { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string customizeElementMap { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string personAddress { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string companyCardValidStartTime { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string companyCardValidEndTime { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int companyIsCardLongTime { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string businessScope { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string feeNetValue { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string archivalOrganization { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string productScale { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string customizeElementInfoMap { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string customerSource { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string customerSourceTime { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int maintenanceType { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string timeMaintenanceType { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string managerTakeOverTime { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int aptnessType { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string netPurchaseAmount { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public NetPurchaseAmountDTO netPurchaseAmountDTO { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string cumulativeIncome { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string cumulativeIncomeDTO { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string trusteeOriginalData { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string trusteeOriginalDataString { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string saleUserIds { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string cnfundAssociationInvestorType { get; set; }
+
+    internal (Investor customer, BankAccount account) ToCustomer()
+    {
+        var v = new Investor { Name = customerName };
+        var b = new BankAccount { };
+        return (v, b);
+    }
+}
+
+public class Data
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    public List<ListItem> list { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int total { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int pageNum { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int pageSize { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public int pages { get; set; }
+}
+
+public class Root
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    public int code { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public Data data { get; set; }
+    /// <summary>
+    /// 请求成功
+    /// </summary>
+    public string message { get; set; }
+}
