@@ -2,12 +2,8 @@
 using FMO.Utilities;
 using Microsoft.Playwright;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Diagnostics;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace FMO.IO.DS.MeiShi;
 
@@ -19,18 +15,11 @@ public class Assist : AssistBase
 
     public override string Domain => "https://vipfunds.simu800.com/";
 
-      
-  
-    public override async Task<bool> LoginValidationOverrideAsync(IPage page, int wait_seconds = 5)
-    {
-        for (var i = 0; i < wait_seconds; i++)
-        {
-            await Task.Delay(1000);
 
-            if (await page.GetByText("易直销").CountAsync() > 0)
-                return true;
-        }
-        return false;
+
+    public override async Task<bool> LoginValidationOverrideAsync(IPage page)
+    {
+        return (await page.GetByText("易直销").CountAsync() > 0);
     }
 
     public override async Task<bool> SynchronizeCustomerAsync()
@@ -41,10 +30,14 @@ public class Assist : AssistBase
 
         var page = await GetPageAsync();
 
+        var locator = page.Locator("div.antd-pro-components-header-index-tabWarp").GetByText("易运营");
+        await locator.HoverAsync();
+        locator = page.GetByText("投资者综合信息");
+
         IResponse? response = null;
-        await page.RunAndWaitForResponseAsync(async () => await page.GotoAsync($"https://iservice.citics.com/ds/account/searchcustomer?refresh={DateTime.Now.TimeStampBySeconds()}"), x =>
+        await page.RunAndWaitForResponseAsync(async () => await locator.First.ClickAsync()/* await page.GotoAsync($"https://vipfunds.simu800.com/vipmanager/investorManagement/customerInfo/?v={DateTime.Now.TimeStampBySeconds()}")*/, x =>
         {
-            if (x.Request.PostData?.Contains("queryCustInfoList") ?? false)
+            if (x.Request.Url?.Contains("customer/query") ?? false)
             {
                 response = x;
                 return true;
@@ -73,26 +66,27 @@ public class Assist : AssistBase
             using var db = new BaseDatabase();
 
             // 获取已存在的
-            var exist_ids = db.GetCollection<Investor>().Query().Select(x => new { id = x.Id, identity = x.Identity }).ToList();//.Where(x => data.Any(y => y.Item1.Identity == x.Identity)).ToArray();
-            var accounts = db.GetCollection<BankAccount>().FindAll();
+            var exist_ids = db.GetCollection<Investor>().FindAll().ToList();//.Where(x => data.Any(y => y.Item1.Identity == x.Identity)).ToArray();
+    
             //
             foreach (var item in data)
             {
-                int idx = exist_ids.FindIndex(0, x => x.identity == item.customer.Identity);
+                int idx = exist_ids.FindIndex(0, x => x.Identity.Id == item.Identity.Id);
 
                 if (idx == -1)
                 {
-                    db.GetCollection<Investor>().Insert(item.customer);
-                    item.account.OwnerId = item.customer.Id;
-                    db.GetCollection<BankAccount>().Insert(item.account);
+                    db.GetCollection<Investor>().Insert(item);
                 }
                 else
                 {
-                    item.account.OwnerId = exist_ids[idx].id;
-                    if (accounts.Any(x => x.Bank == item.account.Bank && x.Number == item.account.Number))
-                        continue;
+                    var old = exist_ids[idx];
+                    if (string.IsNullOrWhiteSpace(old.Phone)) old.Phone = item.Phone;
+                    if (string.IsNullOrWhiteSpace(old.Email)) old.Email = item.Email;
 
-                    db.GetCollection<BankAccount>().Insert(item.account);
+                    if (old.Identity.Type == IDType.Unknown)
+                        old.Identity = item.Identity;
+
+                    if (old.RiskLevel == default) old.RiskLevel = item.RiskLevel;
                 }
             }
 

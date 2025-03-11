@@ -10,6 +10,7 @@
     <StartupObject></StartupObject>
     <RootNamespace>FMO</RootNamespace>
     <ApplicationIcon>res\logo.ico</ApplicationIcon>
+    <AnalysisLevel>latest</AnalysisLevel>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,6 +33,7 @@
     <ProjectReference Include="..\FMO.Automation\FMO.Schedule.csproj" />
     <ProjectReference Include="..\FMO.Interop\FMO.IO.AMAC\FMO.IO.AMAC.csproj" />
     <ProjectReference Include="..\FMO.InterOp\FMO.IO.Trustee\FMO.IO.Trustee.csproj" />
+    <ProjectReference Include="..\FMO.IO.DS\FMO.IO.DS.csproj" />
     <ProjectReference Include="..\FMO.Shared\FMO.Shared.csproj" />
     <ProjectReference Include="..\FMO.Utilities\FMO.Utilities.csproj" />
     <ProjectReference Include="..\FMO.Models\FMO.Models.csproj" />

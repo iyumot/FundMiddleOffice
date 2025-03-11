@@ -32,6 +32,10 @@ public class Investor
     public RiskLevel RiskLevel { get; set; }
 
 
+    public string? Email { get; set; }
+
+    public string? Phone { get; set; }
+
 }
 
 

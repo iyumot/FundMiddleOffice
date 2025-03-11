@@ -149,47 +149,47 @@ public class ListItem
     /// <summary>
     /// 
     /// </summary>
-    public int customerId { get; set; }
+    public int? customerId { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public int customerType { get; set; }
+    public int? customerType { get; set; }
     /// <summary>
     /// 光大期货光耀专享12号F0F单一资产管理计划
     /// </summary>
-    public string customerName { get; set; }
+    public string? customerName { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public int customerLevel { get; set; }
+    public int? customerLevel { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public int investorType { get; set; }
+    public int? investorType { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public int riskType { get; set; }
+    public int? riskType { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public int riskState { get; set; }
+    public int? riskState { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public int realNameState { get; set; }
+    public int? realNameState { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public int isDelete { get; set; }
+    public int? isDelete { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public int investedFundsNum { get; set; }
+    public int? investedFundsNum { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string totalInvestmentAmount { get; set; }
+    public string? totalInvestmentAmount { get; set; }
     /// <summary>
     /// 
     /// </summary>
@@ -197,19 +197,19 @@ public class ListItem
     /// <summary>
     /// 
     /// </summary>
-    public int fundsAlreadyOwnedNum { get; set; }
+    public int? fundsAlreadyOwnedNum { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string alreadyOwnedProductNames { get; set; }
+    public string? alreadyOwnedProductNames { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string alreadyOwnedProductIds { get; set; }
+    public string? alreadyOwnedProductIds { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string holdTotalAmount { get; set; }
+    public string? holdTotalAmount { get; set; }
     /// <summary>
     /// 
     /// </summary>
@@ -221,7 +221,7 @@ public class ListItem
     /// <summary>
     /// 
     /// </summary>
-    public string holdingEarnings { get; set; }
+    public string? holdingEarnings { get; set; }
     /// <summary>
     /// 
     /// </summary>
@@ -229,231 +229,231 @@ public class ListItem
     /// <summary>
     /// 
     /// </summary>
-    public string mobile { get; set; }
+    public string? mobile { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string email { get; set; }
+    public string? email { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public int cardType { get; set; }
+    public int? cardType { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string cardNumber { get; set; }
+    public string? cardNumber { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public int forbidden { get; set; }
+    public int? forbidden { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string saleUserName { get; set; }
+    public string? saleUserName { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string remark { get; set; }
+    public string? remark { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string dealer { get; set; }
+    public string? dealer { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string currentAutomatic { get; set; }
+    public string? currentAutomatic { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string historyAutomatic { get; set; }
+    public string? historyAutomatic { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string currentManual { get; set; }
+    public string? currentManual { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string historyManual { get; set; }
+    public string? historyManual { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string channelNames { get; set; }
+    public string? channelNames { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string origin { get; set; }
+    public string? origin { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string otherOrigin { get; set; }
+    public string? otherOrigin { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public int isVIP { get; set; }
+    public int? isVIP { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string nickName { get; set; }
+    public string? nickName { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string openId { get; set; }
+    public string? openId { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string registerTime { get; set; }
+    public string? registerTime { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string sourceType { get; set; }
+    public string? sourceType { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string createTime { get; set; }
+    public string? createTime { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string riskLimitDate { get; set; }
+    public string? riskLimitDate { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public int isRiskLongTime { get; set; }
+    public int? isRiskLongTime { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string isExpire { get; set; }
+    public string? isExpire { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string legalPersonCardNumber { get; set; }
+    public string? legalPersonCardNumber { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string authorizedRepresentativeCardNumber { get; set; }
+    public string? authorizedRepresentativeCardNumber { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string customerGroupNames { get; set; }
+    public string? customerGroupNames { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public int companyCode { get; set; }
+    public int? companyCode { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public int identifyStatus { get; set; }
+    public int? identifyStatus { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string identifyLimitDate { get; set; }
+    public string? identifyLimitDate { get; set; }
     /// <summary>
     /// 2028年03月06日
     /// </summary>
-    public string identifyLimitDateString { get; set; }
+    public string? identifyLimitDateString { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string riskLimitDateString { get; set; }
+    public string? riskLimitDateString { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string channelType { get; set; }
+    public string? channelType { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string channelTypeString { get; set; }
+    public string? channelTypeString { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string lastLoginTime { get; set; }
+    public string? lastLoginTime { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public int isSubscribed { get; set; }
+    public int? isSubscribed { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public int isCanSubscribed { get; set; }
+    public int? isCanSubscribed { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string inviterName { get; set; }
+    public string? inviterName { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string oneLevelChannelName { get; set; }
+    public string? oneLevelChannelName { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string twoLevelChannelName { get; set; }
+    public string? twoLevelChannelName { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string customizeElementMap { get; set; }
+    public string? customizeElementMap { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string personAddress { get; set; }
+    public string? personAddress { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string companyCardValidStartTime { get; set; }
+    public string? companyCardValidStartTime { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string companyCardValidEndTime { get; set; }
+    public string? companyCardValidEndTime { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public int companyIsCardLongTime { get; set; }
+    public int? companyIsCardLongTime { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string businessScope { get; set; }
+    public string? businessScope { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string feeNetValue { get; set; }
+    public string? feeNetValue { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string archivalOrganization { get; set; }
+    public string? archivalOrganization { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string productScale { get; set; }
+    public string? productScale { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string customizeElementInfoMap { get; set; }
+    public string? customizeElementInfoMap { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string customerSource { get; set; }
+    public string? customerSource { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string customerSourceTime { get; set; }
+    public string? customerSourceTime { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public int maintenanceType { get; set; }
+    public int? maintenanceType { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string timeMaintenanceType { get; set; }
+    public string? timeMaintenanceType { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string managerTakeOverTime { get; set; }
+    public string? managerTakeOverTime { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public int aptnessType { get; set; }
+    public int? aptnessType { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string netPurchaseAmount { get; set; }
+    public string? netPurchaseAmount { get; set; }
     /// <summary>
     /// 
     /// </summary>
@@ -461,34 +461,72 @@ public class ListItem
     /// <summary>
     /// 
     /// </summary>
-    public string cumulativeIncome { get; set; }
+    public string? cumulativeIncome { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string cumulativeIncomeDTO { get; set; }
+    public string? cumulativeIncomeDTO { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string trusteeOriginalData { get; set; }
+   // public string? trusteeOriginalData { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string trusteeOriginalDataString { get; set; }
+    public string? trusteeOriginalDataString { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string saleUserIds { get; set; }
+    public string? saleUserIds { get; set; }
     /// <summary>
     /// 
     /// </summary>
-    public string cnfundAssociationInvestorType { get; set; }
+    public int? cnfundAssociationInvestorType { get; set; }
 
-    internal (Investor customer, BankAccount account) ToCustomer()
+    internal Investor ToCustomer()
     {
-        var v = new Investor { Name = customerName };
-        var b = new BankAccount { };
-        return (v, b);
+        var v = new Investor
+        {
+            Name = customerName!,
+            EntityType = customerType switch { 1 => EntityType.Natural, 2 => EntityType.Institution, 3 => EntityType.Product, _ => EntityType.Unk },
+            Identity = GetIdentity(),
+            Phone = mobile,
+            Email = email,
+            RiskLevel = riskType switch { >= 5 => RiskLevel.R5, > 0 => (RiskLevel)(riskType - 1), _ => RiskLevel.Unk }
+        };
+        return v;
     }
+
+
+    internal Identity GetIdentity()
+    {
+        return new Identity
+        {
+            Id = cardNumber!,
+            Type = cardType switch
+            {
+                1 => IDType.IdentityCard,
+                2 => IDType.HouseholdRegister,
+                3 => IDType.ForeignPermanentResidentID,
+                4 => IDType.PassportChina,
+                5 => IDType.SoldierID,
+                6 => IDType.HongKongMacauPass,
+                7 => IDType.TaiwanCompatriotsID,
+                8 => IDType.BusinessLicenseNumber,
+                9 => IDType.OrganizationCodeCertificate,
+                12 => IDType.Other,
+                13 => IDType.ProductFilingCode,
+                14 => IDType.OfficerID,
+                15 => IDType.PassportForeign,
+                16 => IDType.CivilianID,
+                17 => IDType.PoliceID,
+                _ => IDType.Unknown
+            }
+        };
+
+    }
+
+
 }
 
 public class Data

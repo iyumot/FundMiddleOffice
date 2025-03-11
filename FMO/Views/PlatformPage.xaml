@@ -14,6 +14,77 @@
     </UserControl.DataContext>
     <UserControl.Resources />
     <DockPanel>
+
+
+        <DockPanel DockPanel.Dock="Top">
+            <TextBlock DockPanel.Dock="Top" Text="电签平台" />
+
+            <ListBox
+                DockPanel.Dock="Top"
+                ItemsSource="{Binding Digitals}"
+                Style="{StaticResource WrapPanelHorizontalListBox}">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel IsItemsHost="True" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Width="250" Margin="5,0">
+                            <Image
+                                Margin="0,5"
+                                DockPanel.Dock="Top"
+                                Source="{Binding Icon}" />
+                            <!--<TextBlock Text="{Binding Name}" />-->
+
+                            <DockPanel LastChildFill="False">
+                                <CheckBox Content="启用" IsChecked="{Binding IsEnabled}" />
+                                <TextBlock
+                                    Margin="10,0,5,0"
+                                    VerticalAlignment="Center"
+                                    Text="{Binding LoginStatus}" />
+
+                                <Button
+                                    hc:IconElement.Geometry="{StaticResource G.RightToBracket}"
+                                    Command="{Binding LoginCommand}"
+                                    Style="{StaticResource ButtonDefault.Small}"
+                                    ToolTip="登陆" />
+                            </DockPanel>
+
+                            <ListBox ItemsSource="{Binding Buttons}" Style="{StaticResource ListBoxCustom}">
+                                <ListBox.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel IsItemsHost="True" />
+                                    </ItemsPanelTemplate>
+                                </ListBox.ItemsPanel>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Width="26" Height="26">
+                                            <hc:LoadingCircle
+                                                Width="24"
+                                                Height="24"
+                                                DotDiameter="3"
+                                                Visibility="{Binding IsRunning, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                                            <Button
+                                                Padding="0"
+                                                hc:IconElement.Geometry="{Binding Icon}"
+                                                Command="{Binding Command}"
+                                                CommandParameter="{Binding .}"
+                                                Style="{StaticResource ButtonIcon.Small}"
+                                                ToolTip="{Binding Description}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+        </DockPanel>
+
+
         <DockPanel Margin="5" DockPanel.Dock="Top">
             <TextBlock VerticalAlignment="Center" Text="同步说明" />
 
