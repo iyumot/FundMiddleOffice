@@ -104,12 +104,20 @@ public abstract class AssistBase : IDigitalSignature, IDisposable
     /// <returns></returns>
     public async Task<bool> LoginValidationAsync(IPage page, int wait_seconds = 5)
     {
-        var b = await LoginValidationOverrideAsync(page, wait_seconds);
-        if (!b) WeakReferenceMessenger.Default.Send(Identifier, "Trustee.LogOut");
+        bool b = false;
+        for (var i = 0; i < wait_seconds; i++)
+        {
+            await Task.Delay(1000);
+
+            try { b = await LoginValidationOverrideAsync(page); } catch { }
+            if (b) break;
+        }
+
+        if (!b) WeakReferenceMessenger.Default.Send($"{Name}平台登陆失败", "toast");//WeakReferenceMessenger.Default.Send(Identifier, "DigitalSignature.LogOut");
         return b;
     }
 
-    public abstract Task<bool> LoginValidationOverrideAsync(IPage page, int wait_seconds = 5);
+    public abstract Task<bool> LoginValidationOverrideAsync(IPage page);
 
 
     protected async Task<IPage> GetPageAsync()
@@ -127,6 +135,8 @@ public abstract class AssistBase : IDigitalSignature, IDisposable
     {
         try
         {
+            WeakReferenceMessenger.Default.Send("请手动登陆平台", "toast");
+
             var playwright = await Playwright.CreateAsync();
 
             var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Channel = "msedge", Headless = false });
@@ -140,8 +150,15 @@ public abstract class AssistBase : IDigitalSignature, IDisposable
             // 验证
             IsLogedIn = await LoginValidationAsync(page, 100);
 
+            if(IsLogedIn)
+            {
+                var cookies = await page.Context.CookiesAsync();
+                await context.AddCookiesAsync(cookies.Select(x=> new Cookie { Domain = x.Domain, Expires = x.Expires, HttpOnly = x.HttpOnly, Name = x.Name, Path = x.Path, SameSite = x.SameSite, Secure = x.Secure, Value = x.Value}));
+            }
+
             await context.StorageStateAsync(new BrowserContextStorageStateOptions { Path = "context" });
             //await Automation.SaveContextAsync();
+
 
             await page.CloseAsync();
             await browser.CloseAsync();
@@ -151,7 +168,7 @@ public abstract class AssistBase : IDigitalSignature, IDisposable
 
         return IsLogedIn;
     }
-     
+
 
     /// <summary>
     /// 从托管外包机构同步客户资料

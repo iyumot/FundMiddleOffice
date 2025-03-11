@@ -15,7 +15,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="logo.png" />
+    <EmbeddedResource Include="logo.png" />
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy $(TargetPath) E:\funds\plugins\$(AssemblyName).dll" />
+  </Target>
 
 </Project>

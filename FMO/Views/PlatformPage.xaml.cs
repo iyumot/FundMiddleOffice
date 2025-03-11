@@ -12,6 +12,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Serilog;
+using System.Runtime.CompilerServices;
+using System.Xml.Linq;
+using FMO.IO.DS;
 
 namespace FMO;
 
@@ -38,13 +41,16 @@ public partial class PlatformPageViewModel : ObservableObject
 
     public ObservableCollection<PlatformPageViewModelTrustee> Trustees { get; } = new();
 
+    public ObservableCollection<PlatformPageViewModelDigital> Digitals { get; } = new();
+
+
 
     public PlatformPageViewModel()
     {
         /// 读取所有托管插件
         /// 
 
-        if (_firstLoad)
+        //if (_firstLoad)
         {
 
             var files = new DirectoryInfo("plugins").GetFiles("*.dll");
@@ -55,39 +61,149 @@ public partial class PlatformPageViewModel : ObservableObject
                 try
                 {
                     var assembly = Assembly.LoadFile(file.FullName);
-
-                    var type = assembly.GetTypes().FirstOrDefault(x => x.GetInterface(typeof(ITrusteeAssist).FullName!) is not null);
-                    if (type is null) continue;
-
-
-                    ITrusteeAssist trusteeAssist = (ITrusteeAssist)Activator.CreateInstance(type)!;
-
-                    Stream? iconStream = null;
-                    var res = assembly.GetManifestResourceNames();
-                    var name = res.FirstOrDefault(x => x.Contains(".logo."));
-                    if (name is not null)
-                        iconStream = assembly.GetManifestResourceStream(name);
-
-                    var icon = new BitmapImage();
-                    icon.BeginInit();
-                    icon.StreamSource = iconStream;
-                    icon.EndInit();
-
-                    Trustees.Add(new PlatformPageViewModelTrustee(trusteeAssist, trusteeAssist.Name, icon));
+                    TryAddTrustee(assembly);
+                    TryAddSignature(assembly);
                 }
                 catch (Exception e)
                 {
-                    Log.Error($"加载托管插件失败{e.Message}");
+                    Log.Error($"[{file.Name}]加载插件失败{e.Message}");
                 }
             }
 
             _firstLoad = false;
         }
 
+       
 
 
         // using var db = new TrusteeDatabase();
 
+
+    }
+
+    /// <summary>
+    /// 加载托管插件，一个dll只加载一个
+    /// </summary>
+    /// <param name="assembly"></param>
+    void TryAddTrustee(Assembly assembly)
+    {
+        var type = assembly.GetTypes().FirstOrDefault(x => x.GetInterface(typeof(ITrusteeAssist).FullName!) is not null);
+        if (type is null) return;
+
+        ITrusteeAssist trusteeAssist = (ITrusteeAssist)Activator.CreateInstance(type)!;
+
+        Stream? iconStream = null;
+        var res = assembly.GetManifestResourceNames();
+        var name = res.FirstOrDefault(x => x.Contains(".logo."));
+        if (name is not null)
+            iconStream = assembly.GetManifestResourceStream(name);
+
+        var icon = new BitmapImage();
+        icon.BeginInit();
+        icon.StreamSource = iconStream;
+        icon.EndInit();
+
+        Trustees.Add(new PlatformPageViewModelTrustee(trusteeAssist, trusteeAssist.Name, icon));
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="assembly"></param>
+    void TryAddSignature(Assembly assembly)
+    {
+        var type = assembly.GetTypes().FirstOrDefault(x => x.GetInterface(typeof(IDigitalSignature).FullName!) is not null);
+        if (type is null) return;
+
+        IDigitalSignature assist = (IDigitalSignature)Activator.CreateInstance(type)!;
+
+        Stream? iconStream = null;
+        var res = assembly.GetManifestResourceNames();
+        var name = res.FirstOrDefault(x => x.Contains(".logo."));
+        if (name is not null)
+            iconStream = assembly.GetManifestResourceStream(name);
+
+        var icon = new BitmapImage();
+        icon.BeginInit();
+        icon.StreamSource = iconStream;
+        icon.EndInit();
+
+        Digitals.Add(new PlatformPageViewModelDigital(assist, assist.Name, icon));
+    }
+
+}
+
+public partial class PlatformPageViewModelDigital : ObservableRecipient//, IRecipient<string>
+{
+    /// <summary>
+    /// 图标
+    /// </summary>
+    public ImageSource? Icon { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public required string Name { get; set; }
+
+    /// <summary>
+    /// 托管助手 
+    /// </summary>
+    public required IDigitalSignature Assist { get; set; }
+
+
+    /// <summary>
+    /// 同步项
+    /// </summary>
+    public SyncButtonData[] Buttons { get; set; }
+
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SynchronizeDataCommand))]
+    public partial bool SyncCommandCanExecute { get; set; } = true;
+
+
+    [SetsRequiredMembers]
+    public PlatformPageViewModelDigital(IDigitalSignature assist, string name, ImageSource? icon)
+    {
+        Icon = icon;
+        Name = name;
+        Assist = assist;
+
+
+        Buttons = [
+            new SyncButtonData((Geometry)App.Current.Resources["f.address-card"]  , SynchronizeDataCommand, SyncCustomers,"客户资料"),   ];
+
+        //using var db = new TrusteeDatabase();
+        ////Config = db.GetCollection<TrusteeConfig>().FindOne(x => x.Id == Assist.Identifier) ?? new TrusteeConfig { Id = assist.Identifier };
+
+        //IsActive = true;
+
+        //WeakReferenceMessenger.Default.Register(this, "Trustee.LogOut");
+
+        //NeedLogin = !IsLogin;
+        //if (IsEnabled) Task.Run(async () => { await Task.Delay(2000); StartWork(); });
+
+
+    }
+
+
+
+
+    [RelayCommand(CanExecute = nameof(SyncCommandCanExecute))]
+    public async Task SynchronizeData(SyncButtonData btn)
+    {
+        SyncCommandCanExecute = false;
+
+        btn.IsRunning = true;
+        try { await btn.SyncProcess(); } catch (Exception ex) { }
+        btn.IsRunning = false;
+
+        SyncCommandCanExecute = true;
+    }
+
+    public async Task SyncCustomers()
+    {
+        await Assist.SynchronizeCustomerAsync();
 
     }
 }
@@ -274,15 +390,7 @@ public partial class PlatformPageViewModelTrustee : ObservableRecipient, IRecipi
         NeedLogin = true;
     }
 
-
-
-
-
-
-
-
-
-
+     
 
 
 
@@ -301,6 +409,12 @@ public partial class PlatformPageViewModelTrustee : ObservableRecipient, IRecipi
         }
     }
 }
+
+
+
+
+
+
 
 public partial class SyncButtonData(Geometry Icon, ICommand Command, PlatformPageViewModelTrustee.SyncProcess SyncProcess, string Description) : ObservableObject
 {
