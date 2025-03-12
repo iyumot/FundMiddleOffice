@@ -22,7 +22,7 @@ public static class Automation
 
     static IPlaywright? playwright;
     static IBrowser? browser;
-    static IBrowserContext? context;
+    static IBrowserContext? _context;
 
     /// <summary>
     /// 5分钟无变动，保存一次
@@ -43,13 +43,13 @@ public static class Automation
                 browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Channel = "msedge", Headless = true });
 
 
-            if (context == null)
+            if (_context == null)
             {
-                context = await browser.NewContextAsync();
+                _context = await browser.NewContextAsync();
 
                 using var db = new PlatformDatabase();
                 var cookies = db.GetCollection<Cookie>().FindAll().ToArray();
-                await context.AddCookiesAsync(cookies);
+                await _context.AddCookiesAsync(cookies);
             }
         }
         finally
@@ -66,7 +66,7 @@ public static class Automation
     {
         await EnsureResourcesInitialized();
 
-        var page = await context!.NewPageAsync();
+        var page = await _context!.NewPageAsync();
 
         //page.Response += Page_Response;
 
@@ -91,8 +91,8 @@ public static class Automation
     /// <returns></returns>
     public static async Task SaveContextAsync()
     {
-        if (context is not null)
-            await context.StorageStateAsync(new BrowserContextStorageStateOptions { Path = "context" });
+        if (_context is not null)
+            await _context.StorageStateAsync(new BrowserContextStorageStateOptions { Path = "context" });
     }
 
 
@@ -133,13 +133,17 @@ public static class Automation
         else Log.Information($"{domain} Login Succuss ");
 
 
-        var cookies = await context.CookiesAsync();
+        var cookie_save = await context.CookiesAsync();
 
         using var db = new PlatformDatabase();
         db.GetCollection<Cookie>().DeleteMany(x => x.Domain == domain);
-        db.GetCollection<Cookie>().Upsert(cookies.Select(x => new Cookie { Domain = x.Domain, Expires = x.Expires, HttpOnly = x.HttpOnly, Name = x.Name, Path = x.Path, SameSite = x.SameSite, Secure = x.Secure, Value = x.Value }));
+        IEnumerable<Cookie> cookies = cookie_save.Select(x => new Cookie { Domain = x.Domain, Expires = x.Expires, HttpOnly = x.HttpOnly, Name = x.Name, Path = x.Path, SameSite = x.SameSite, Secure = x.Secure, Value = x.Value });
+        db.GetCollection<Cookie>().Upsert(cookies);
 
+        if (_context is not null)
+            await _context.AddCookiesAsync(cookies);
 
+        await page.CloseAsync();
         return b;
     }
 
