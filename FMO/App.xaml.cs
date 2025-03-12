@@ -1,4 +1,5 @@
-﻿using FMO.Models;
+﻿using FMO.IO;
+using FMO.Models;
 using FMO.Utilities;
 using Serilog;
 using System.IO;
@@ -63,5 +64,10 @@ public partial class App : Application
     }
 
 
+    protected override async void OnExit(ExitEventArgs e)
+    {
+        await Automation.DisposeAsync();
+        base.OnExit(e);
+    }
 
 }
