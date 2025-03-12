@@ -37,10 +37,10 @@ public static class Automation
         {
             if (playwright == null)
                 playwright = await Playwright.CreateAsync();
-            
+
 
             if (browser == null)
-                browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Channel = "msedge", Headless = false });
+                browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Channel = "msedge", Headless = true });
 
 
             if (context == null)
@@ -169,7 +169,12 @@ public static class Automation
     }
 
 
-
+    public static async Task DisposeAsync()
+    {
+        if (browser is not null)
+            await browser.DisposeAsync();
+        playwright?.Dispose();
+    }
 }
 
 
