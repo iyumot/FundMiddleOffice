@@ -30,7 +30,10 @@
                 </ListBox.ItemsPanel>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Width="250" Margin="5,0">
+                        <StackPanel
+                            Width="250"
+                            Margin="5,0"
+                            IsEnabled="{Binding IsInitialized}">
                             <Image
                                 Margin="0,5"
                                 DockPanel.Dock="Top"
@@ -40,12 +43,13 @@
                             <DockPanel LastChildFill="False">
                                 <CheckBox Content="启用" IsChecked="{Binding IsEnabled}" />
                                 <TextBlock
+                                    x:Name="login"
                                     Margin="10,0,5,0"
                                     VerticalAlignment="Center"
                                     Text="{Binding LoginStatus}" />
 
                                 <Button
-                                    hc:IconElement.Geometry="{StaticResource G.RightToBracket}"
+                                    hc:IconElement.Geometry="{StaticResource f.lightbulb}"
                                     Command="{Binding LoginCommand}"
                                     Style="{StaticResource ButtonDefault.Small}"
                                     ToolTip="登陆" />
@@ -78,6 +82,12 @@
                             </ListBox>
 
                         </StackPanel>
+
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding IsLogin}" Value="False">
+                                <Setter TargetName="login" Property="Foreground" Value="Red" />
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>

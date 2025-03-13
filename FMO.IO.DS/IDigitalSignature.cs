@@ -60,6 +60,8 @@ public interface IDigitalSignature : IDisposable
     Task<bool> SynchronizeCustomerAsync();
 
 
+
+    Task<bool> PrepareLoginAsync(IPage page);
 }
 
 
@@ -124,12 +126,17 @@ public abstract class AssistBase : IDigitalSignature, IDisposable
     {
         if (_mainPage is null || _mainPage.IsClosed)
         {
-            _mainPage = await Automation.NewPageAsync();
+            _mainPage = await Automation.NewPageAsync(Identifier);
             await _mainPage.GotoAsync(Domain);
         }
         return _mainPage;
     }
 
+
+    public async Task<bool> PrepareLoginAsync(IPage page)
+    {
+        return (await page.GotoAsync(Domain))?.Ok ?? false;
+    }
 
     public virtual async Task<bool> LoginAsync()
     {
@@ -137,34 +144,10 @@ public abstract class AssistBase : IDigitalSignature, IDisposable
         {
             WeakReferenceMessenger.Default.Send("请手动登陆平台", "toast");
 
-            var playwright = await Playwright.CreateAsync();
+            IsLogedIn = await Automation.LoginAsync(Identifier, PrepareLoginAsync, LoginValidationOverrideAsync, 60);
 
-            var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Channel = "msedge", Headless = false });
-
-            var context = await Automation.LoadContext(browser);
-
-            var page = await context.NewPageAsync();
-
-            await page.GotoAsync(Domain);
-
-            // 验证
-            IsLogedIn = await LoginValidationAsync(page, 100);
-
-            if(IsLogedIn)
-            {
-                var cookies = await page.Context.CookiesAsync();
-                await context.AddCookiesAsync(cookies.Select(x=> new Cookie { Domain = x.Domain, Expires = x.Expires, HttpOnly = x.HttpOnly, Name = x.Name, Path = x.Path, SameSite = x.SameSite, Secure = x.Secure, Value = x.Value}));
-            }
-
-            await context.StorageStateAsync(new BrowserContextStorageStateOptions { Path = "context" });
-            //await Automation.SaveContextAsync();
-
-
-            await page.CloseAsync();
-            await browser.CloseAsync();
-            playwright.Dispose();
         }
-        catch (Exception e) { IsLogedIn = false; Log.Error($"Trustee Login Failed : {e.Message}"); }
+        catch (Exception e) { IsLogedIn = false; Log.Error($"Platform Login Failed : {e.Message}"); }
 
         return IsLogedIn;
     }

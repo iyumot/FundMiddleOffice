@@ -1,8 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using FMO.IO;
+using FMO.IO.DS;
 using FMO.IO.Trustee;
 using FMO.Utilities;
+using Serilog;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -11,10 +14,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Serilog;
-using System.Runtime.CompilerServices;
-using System.Xml.Linq;
-using FMO.IO.DS;
 
 namespace FMO;
 
@@ -73,7 +72,7 @@ public partial class PlatformPageViewModel : ObservableObject
             _firstLoad = false;
         }
 
-       
+
 
 
         // using var db = new TrusteeDatabase();
@@ -151,6 +150,29 @@ public partial class PlatformPageViewModelDigital : ObservableRecipient//, IReci
     public required IDigitalSignature Assist { get; set; }
 
 
+    [ObservableProperty]
+    public partial bool IsEnabled { get; set; }
+
+    /// <summary>
+    /// 初始化
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsInitialized { get; set; }
+
+
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LoginStatus))]
+    public partial bool IsLogin { get; set; }
+
+
+    [ObservableProperty]
+    public partial bool NeedLogin { get; set; }
+
+    public string LoginStatus => IsLogin ? "已登陆" : "未登陆";
+
+
+
     /// <summary>
     /// 同步项
     /// </summary>
@@ -169,6 +191,7 @@ public partial class PlatformPageViewModelDigital : ObservableRecipient//, IReci
         Name = name;
         Assist = assist;
 
+        IsLogin = false;
 
         Buttons = [
             new SyncButtonData((Geometry)App.Current.Resources["f.address-card"]  , SynchronizeDataCommand, SyncCustomers,"客户资料"),   ];
@@ -180,11 +203,35 @@ public partial class PlatformPageViewModelDigital : ObservableRecipient//, IReci
 
         //WeakReferenceMessenger.Default.Register(this, "Trustee.LogOut");
 
-        //NeedLogin = !IsLogin;
+        NeedLogin = !IsLogin;
         //if (IsEnabled) Task.Run(async () => { await Task.Delay(2000); StartWork(); });
 
 
+        Task.Run(async () =>
+        {
+            var page = await Automation.NewPageAsync(assist.Identifier);
+            await assist.PrepareLoginAsync(page);
+
+            IsLogin = await assist.LoginValidationAsync(page);
+
+            await page.CloseAsync();
+
+            IsInitialized = true;
+        });
+
     }
+
+
+    [RelayCommand(CanExecute = nameof(NeedLogin))]
+    public async Task Login()
+    {
+        NeedLogin = false;
+
+        IsLogin = await Assist.LoginAsync();
+
+        NeedLogin = true;
+    }
+
 
 
 
@@ -390,7 +437,7 @@ public partial class PlatformPageViewModelTrustee : ObservableRecipient, IRecipi
         NeedLogin = true;
     }
 
-     
+
 
 
 

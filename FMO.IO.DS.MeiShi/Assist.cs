@@ -29,6 +29,8 @@ public class Assist : AssistBase
             return false;
 
         var page = await GetPageAsync();
+        await page.Keyboard.PressAsync("Escape");
+        await page.Keyboard.PressAsync("Escape");
 
         var locator = page.Locator("div.antd-pro-components-header-index-tabWarp").GetByText("易运营");
         await locator.HoverAsync();
