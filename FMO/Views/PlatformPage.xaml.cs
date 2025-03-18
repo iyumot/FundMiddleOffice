@@ -209,12 +209,15 @@ public partial class PlatformPageViewModelDigital : ObservableRecipient//, IReci
 
         Task.Run(async () =>
         {
-            var page = await Automation.NewPageAsync(assist.Identifier);
+            using var page = await Automation.AcquirePage(assist.Identifier);
+            //var page = pw.Page;
+
             await assist.PrepareLoginAsync(page);
 
             IsLogin = await assist.LoginValidationAsync(page);
 
-            await page.CloseAsync();
+            if (IsLogin)
+                await assist.EndLoginAsync(page);
 
             IsInitialized = true;
         });

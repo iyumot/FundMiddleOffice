@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using FMO.Utilities;
 using Microsoft.Playwright;
-using Serilog;
+using System.Text.RegularExpressions;
 
 namespace FMO.IO.DS;
 
@@ -9,49 +9,8 @@ namespace FMO.IO.DS;
 /// <summary>
 /// 电签平台
 /// </summary>
-public interface IDigitalSignature : IDisposable
+public interface IDigitalSignature : IExternPlatform
 {
-    /// <summary>
-    /// 标识 
-    /// 不可重复
-    /// cstisc 中信证券
-    /// </summary>
-    string Identifier { get; }
-
-
-    /// <summary>
-    /// 公司名称
-    /// </summary>
-    string Name { get; }
-
-    /// <summary>
-    /// 主页
-    /// </summary>
-    string Domain { get; }
-
-    /// <summary>
-    /// 是否已登录
-    /// </summary>
-    bool IsLogedIn { get; }
-
-
-    /// <summary>
-    /// 验证登录的方法
-    /// </summary>
-    /// <param name="page"></param>
-    /// <param name="wait_seconds">最大等待时间（秒）</param>
-    /// <returns></returns>
-    Task<bool> LoginValidationAsync(IPage page, int wait_seconds = 5);
-
-    /// <summary>
-    /// 登录
-    /// </summary>
-    /// <returns></returns>
-    Task<bool> LoginAsync();
-
-
-
-
 
     /// <summary>
     /// 从托管外包机构同步客户资料，单向
@@ -60,8 +19,6 @@ public interface IDigitalSignature : IDisposable
     Task<bool> SynchronizeCustomerAsync();
 
 
-
-    Task<bool> PrepareLoginAsync(IPage page);
 }
 
 
@@ -69,9 +26,9 @@ public interface IDigitalSignature : IDisposable
 /// <summary>
 /// 提供部分实现的基类
 /// </summary>
-public abstract class AssistBase : IDigitalSignature, IDisposable
+public abstract class AssistBase : IDigitalSignature
 {
-    private IPage? _mainPage;
+    //public IPage? MainPage { get; protected set; }
 
 
     public abstract string Identifier { get; }
@@ -92,11 +49,19 @@ public abstract class AssistBase : IDigitalSignature, IDisposable
     public SynchronizeTime SynchronizeTime { get; init; }
 
 
+    public abstract Regex HoldingCheck { get; }
+
+    public string? UserID { get; set; }
+
+    public string? Password { get; set; }
+
     protected AssistBase()
     {
         using var db = new DSDatabase();
         SynchronizeTime = db.GetCollection<SynchronizeTime>().FindById(Identifier) ?? new SynchronizeTime { Identifier = Identifier };
     }
+
+
 
     /// <summary>
     /// 登陆验证
@@ -122,35 +87,42 @@ public abstract class AssistBase : IDigitalSignature, IDisposable
     public abstract Task<bool> LoginValidationOverrideAsync(IPage page);
 
 
-    protected async Task<IPage> GetPageAsync()
-    {
-        if (_mainPage is null || _mainPage.IsClosed)
-        {
-            _mainPage = await Automation.NewPageAsync(Identifier);
-            await _mainPage.GotoAsync(Domain);
-        }
-        return _mainPage;
-    }
+    //protected async Task<IPage> GetPageAsync()
+    //{
+    //    if (MainPage is null || MainPage.IsClosed)
+    //    {
+    //        MainPage = await Automation.NewPageAsync();
+    //        await MainPage.GotoAsync(Domain);
+    //    }
+    //    return MainPage;
+    //}
 
 
-    public async Task<bool> PrepareLoginAsync(IPage page)
+    public virtual async Task<bool> PrepareLoginAsync(IPage page)
     {
         return (await page.GotoAsync(Domain))?.Ok ?? false;
     }
 
-    public virtual async Task<bool> LoginAsync()
+    public virtual async Task<bool> EndLoginAsync(IPage page)
     {
-        try
-        {
-            WeakReferenceMessenger.Default.Send("请手动登陆平台", "toast");
-
-            IsLogedIn = await Automation.LoginAsync(Identifier, PrepareLoginAsync, LoginValidationOverrideAsync, 60);
-
-        }
-        catch (Exception e) { IsLogedIn = false; Log.Error($"Platform Login Failed : {e.Message}"); }
-
-        return IsLogedIn;
+        await page!.Keyboard.PressAsync("Escape");
+        await page.Keyboard.PressAsync("Escape");
+        return true;
     }
+
+    //public virtual async Task<bool> LoginAsync()
+    //{
+    //    try
+    //    {
+    //        WeakReferenceMessenger.Default.Send("请手动登陆平台", "toast");
+
+    //        IsLogedIn = await Automation.LoginAsync(Identifier, PrepareLoginAsync, LoginValidationOverrideAsync, 60);
+
+    //    }
+    //    catch (Exception e) { IsLogedIn = false; Log.Error($"Platform Login Failed : {e.Message}"); }
+
+    //    return IsLogedIn;
+    //}
 
 
     /// <summary>
@@ -175,12 +147,6 @@ public abstract class AssistBase : IDigitalSignature, IDisposable
         return loc;
     }
 
-
-    public async void Dispose()
-    {
-        if (_mainPage is not null)
-            await _mainPage.CloseAsync();
-    }
 
 
 }

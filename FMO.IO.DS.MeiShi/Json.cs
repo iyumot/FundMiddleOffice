@@ -1,9 +1,12 @@
 ﻿
 using FMO.Models;
+using System.Text.RegularExpressions;
 
 namespace FMO.IO.DS.MeiShi.Json.Customer;
 
-//如果好用，请收藏地址，帮忙分享。
+
+#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑添加 "required" 修饰符或声明为可为 null。
+
 public class TotalInvestmentAmountDTO
 {
     /// <summary>
@@ -457,7 +460,7 @@ public class ListItem
     /// <summary>
     /// 
     /// </summary>
-    public NetPurchaseAmountDTO netPurchaseAmountDTO { get; set; }
+    //public NetPurchaseAmountDTO netPurchaseAmountDTO { get; set; }
     /// <summary>
     /// 
     /// </summary>
@@ -465,7 +468,7 @@ public class ListItem
     /// <summary>
     /// 
     /// </summary>
-    public string? cumulativeIncomeDTO { get; set; }
+    //public string? cumulativeIncomeDTO { get; set; }
     /// <summary>
     /// 
     /// </summary>
@@ -492,8 +495,18 @@ public class ListItem
             Identity = GetIdentity(),
             Phone = mobile,
             Email = email,
-            RiskLevel = riskType switch { >= 5 => RiskLevel.R5, > 0 => (RiskLevel)(riskType - 1), _ => RiskLevel.Unk }
+            RiskLevel = riskType switch { >= 5 => RiskLevel.R5, > 0 => (RiskLevel)riskType, _ => RiskLevel.Unk }
         };
+
+        if (customerName!.Contains("私募"))
+            v.Type = AmacInvestorType.PrivateFundProduct;
+        else if (Regex.IsMatch(customerName, ".{2,}期货.*资产管理计划"))
+            v.Type = AmacInvestorType.FuturesCompanyAssetManagementPlan;
+        else if (Regex.IsMatch(customerName, ".{2,}证券.*资产管理计划"))
+            v.Type = AmacInvestorType.SecuritiesCompanyAssetManagementPlan;
+        else if (Regex.IsMatch(customerName, ".{2,}基金.*资产管理计划"))
+            v.Type = AmacInvestorType.FundCompanyAssetManagementPlan;
+
         return v;
     }
 
@@ -568,3 +581,5 @@ public class Root
     /// </summary>
     public string message { get; set; }
 }
+
+#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑添加 "required" 修饰符或声明为可为 null。
