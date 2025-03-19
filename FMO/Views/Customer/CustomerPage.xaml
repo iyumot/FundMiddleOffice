@@ -162,19 +162,22 @@
 
     </UserControl.Resources>
     <DockPanel>
-        <DockPanel DockPanel.Dock="Top">
+        <DockPanel Margin="0,5" DockPanel.Dock="Top">
             <DockPanel DockPanel.Dock="Right" LastChildFill="False">
                 <Button
                     hc:IconElement.Geometry="{StaticResource f.plus}"
                     Command="{Binding AddInvestorCommand}"
-                    Style="{StaticResource ButtonIcon}" />
+                    Content="新增投资人"
+                    Style="{StaticResource ButtonDefault.Small}" />
                 <Button
                     hc:IconElement.Geometry="{StaticResource f.circle-minus}"
                     Command="{Binding RemoveInvestorCommand}"
+                    Content="删除投资人"
                     Foreground="Red"
-                    Style="{StaticResource ButtonIcon}" />
+                    Style="{StaticResource ButtonDefault.Small}" />
+
+                
             </DockPanel>
-            <TextBlock />
         </DockPanel>
 
         <local:CustomerView
