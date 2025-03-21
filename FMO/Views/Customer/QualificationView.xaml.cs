@@ -27,6 +27,7 @@ public partial class QualificationViewModel : ObservableObject
 {
     public int Id { get; private set; }
 
+    public string? Name { get; set; }
 
     [ObservableProperty]
     public partial bool IsReadOnly { get; set; } = true;
@@ -47,6 +48,7 @@ public partial class QualificationViewModel : ObservableObject
     public partial QualificationExperienceType[]? ExperienceTypes { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowTax))]
     public partial QualificationFileType? ProofType { get; set; }
 
     [ObservableProperty]
@@ -70,6 +72,8 @@ public partial class QualificationViewModel : ObservableObject
     public bool ShowAgent { get; init; }
 
     public bool ShowNatural { get; init; }
+
+    public bool ShowTax => ProofType != QualificationFileType.Product && ProofType != QualificationFileType.FinancialInstitution;
 
 
     [ObservableProperty]
@@ -181,7 +185,8 @@ public partial class QualificationViewModel : ObservableObject
         using var db = new BaseDatabase();
         var obj = db.GetCollection<InvestorQualification>().FindById(Id);
 
-
+        NeedExperience = obj.ProofType != QualificationFileType.Product && obj.ProofType != QualificationFileType.FinancialInstitution;
+        Name = obj.InvestorName;
         InfomationSheet = new FileViewModel
         {
             Id = nameof(InfomationSheet),
@@ -312,10 +317,12 @@ public partial class QualificationViewModel : ObservableObject
 
 
 
+
     public static QualificationViewModel From(InvestorQualification x, AmacInvestorType investor, EntityType entityType)
     {
         var obj = new QualificationViewModel(x.Id)
         {
+            Name = x.InvestorName,
             IsProfessional = x.Result == QualifiedInvestorType.Professional,
             //  EntityType = entityType,
             InvestorType = investor,
@@ -344,7 +351,11 @@ public partial class QualificationViewModel : ObservableObject
                 break;
         }
 
-        obj.ProofType = x.ProofType;
+        if (obj.ProofTypes?.Length == 1 && x.ProofType == QualificationFileType.None)
+            obj.ProofType = obj.ProofTypes[0];
+        else
+            obj.ProofType = x.ProofType;
+
         obj.ExperienceTypes = entityType == EntityType.Natural ? [QualificationExperienceType.Invest, QualificationExperienceType.Work, QualificationExperienceType.Senior, QualificationExperienceType.Lawyer] : [QualificationExperienceType.Invest];
         obj.ExperienceType = x.ExperienceType;
 
@@ -369,6 +380,10 @@ public partial class QualificationViewModel : ObservableObject
         }
     }
 
+    partial void OnProofTypeChanged(QualificationFileType? value)
+    {
+        NeedExperience = (value ?? QualificationFileType.None) != QualificationFileType.Product && (value ?? QualificationFileType.None) != QualificationFileType.FinancialInstitution;
+    }
 
     [RelayCommand]
     public void SaveQualification()
