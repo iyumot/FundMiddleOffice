@@ -194,7 +194,8 @@ public partial class PlatformPageViewModelDigital : ObservableRecipient//, IReci
         IsLogin = false;
 
         Buttons = [
-            new SyncButtonData((Geometry)App.Current.Resources["f.address-card"]  , SynchronizeDataCommand, SyncCustomers,"客户资料"),   ];
+            new SyncButtonData((Geometry)App.Current.Resources["f.address-card"]  , SynchronizeDataCommand, SyncCustomers,"客户资料"),
+            new SyncButtonData((Geometry)App.Current.Resources["f.certificate"]  , SynchronizeDataCommand, SyncQualifications,"合投材料"),  ];
 
         //using var db = new TrusteeDatabase();
         ////Config = db.GetCollection<TrusteeConfig>().FindOne(x => x.Id == Assist.Identifier) ?? new TrusteeConfig { Id = assist.Identifier };
@@ -256,6 +257,18 @@ public partial class PlatformPageViewModelDigital : ObservableRecipient//, IReci
         await Assist.SynchronizeCustomerAsync();
 
     }
+
+
+    public async Task SyncQualifications()
+    {
+        await Assist.SynchronizeQualificatoinAsync();
+    }
+
+
+
+
+
+
 }
 
 

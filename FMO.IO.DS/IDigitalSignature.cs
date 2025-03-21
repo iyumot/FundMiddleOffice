@@ -17,8 +17,7 @@ public interface IDigitalSignature : IExternPlatform
     /// </summary>
     /// <returns></returns>
     Task<bool> SynchronizeCustomerAsync();
-
-
+    Task<bool> SynchronizeQualificatoinAsync();
 }
 
 
@@ -132,6 +131,7 @@ public abstract class AssistBase : IDigitalSignature
     public abstract Task<bool> SynchronizeCustomerAsync();
 
 
+    public abstract Task<bool> SynchronizeQualificatoinAsync();
 
     protected async Task<ILocator> FirstVisible(ILocator loc)
     {
@@ -146,7 +146,5 @@ public abstract class AssistBase : IDigitalSignature
         }
         return loc;
     }
-
-
 
 }
