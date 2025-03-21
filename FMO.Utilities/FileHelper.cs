@@ -23,6 +23,17 @@ public static class FileHelper
         }
     }
 
+    public static string? ComputeHash(Stream? stream)
+    {
+        if (stream is null) return null;
+
+        using (var md5 = MD5.Create())
+        {
+                var hashc = md5.ComputeHash(stream);
+                return BitConverter.ToString(hashc).Replace("-", "").ToLowerInvariant();
+        }
+    }
+
     /// <summary>
     /// 
     /// </summary>

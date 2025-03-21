@@ -123,6 +123,20 @@ public class InvestorQualification
 
     public int InvestorId { get; set; }
 
+    public string? IdentityCode { get; set; }
+
+    public string? InvestorName { get; set; }
+
+    /// <summary>
+    /// 是否锁定不可修改
+    /// </summary>
+    public bool IsSealed { get; set; }
+
+    /// <summary>
+    /// 来源
+    /// </summary>
+    public string? Source { get; set; }
+
     //public QualificationType Type { get; set; }
 
     /// <summary>
