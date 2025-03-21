@@ -154,7 +154,9 @@
 
             <ContentControl Content="{Binding Notice}" Style="{StaticResource SingleFileStyle}" />
 
-            <ContentControl Content="{Binding TaxDeclaration}" Style="{StaticResource SingleFileStyle}" />
+            <Grid Visibility="{Binding ShowTax, Converter={StaticResource Boolean2VisibilityConverter}}">
+                <ContentControl Content="{Binding TaxDeclaration}" Style="{StaticResource SingleFileStyle}" />
+            </Grid>
 
             <ContentControl Content="{Binding CertificationMaterials}" Style="{StaticResource SingleFileStyle}" />
 
@@ -164,10 +166,12 @@
 
                 <ContentControl Content="{Binding Agent}" Style="{StaticResource SingleFileStyle}" />
             </StackPanel>
-            <ContentControl
-                Content="{Binding ProofOfExperience}"
-                Style="{StaticResource SingleFileStyle}"
-                Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}" />
+            <Grid Visibility="{Binding NeedExperience, Converter={StaticResource Boolean2VisibilityConverter}}">
+                <ContentControl
+                    Content="{Binding ProofOfExperience}"
+                    Style="{StaticResource SingleFileStyle}"
+                    Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}" />
+            </Grid>
 
             <DockPanel>
                 <TextBlock Margin="{StaticResource marg}" Text="认定方式" />
@@ -300,6 +304,18 @@
                                     </Setter>
                                 </DataTrigger>
 
+                                <DataTrigger Binding="{Binding .}" Value="Product">
+                                    <Setter Property="ContentTemplate">
+                                        <Setter.Value>
+                                            <DataTemplate>
+                                                <CheckBox
+                                                    VerticalAlignment="Center"
+                                                    Content="{Binding}"
+                                                    IsChecked="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                                            </DataTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </ListBox.ItemContainerStyle>
@@ -308,22 +324,24 @@
 
                 <Separator />
 
-                <ListBox
-                    Background="Transparent"
-                    BorderBrush="Transparent"
-                    ItemsSource="{Binding ExperienceTypes}"
-                    SelectedItem="{Binding ExperienceType}"
-                    Style="{StaticResource ListBoxCustom}"
-                    Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <CheckBox
-                                Margin="{StaticResource marg}"
-                                Content="{Binding .}"
-                                IsChecked="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                <Grid Visibility="{Binding NeedExperience, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    <ListBox
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        ItemsSource="{Binding ExperienceTypes}"
+                        SelectedItem="{Binding ExperienceType}"
+                        Style="{StaticResource ListBoxCustom}"
+                        Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox
+                                    Margin="{StaticResource marg}"
+                                    Content="{Binding .}"
+                                    IsChecked="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
             </StackPanel>
 
 
