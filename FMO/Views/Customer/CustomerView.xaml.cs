@@ -140,32 +140,26 @@ public partial class CustomerViewModel : ObservableObject
                 IDTypes = [Models.IDType.UnifiedSocialCreditCode, Models.IDType.OrganizationCodeCertificate, Models.IDType.BusinessLicenseNumber, Models.IDType.RegistrationNumber, Models.IDType.Other];
                 break;
             case AmacInvestorType.QFII:
+                IDTypes = [Models.IDType.SecuritiesBusinessLicense, Models.IDType.Other];
                 break;
             case AmacInvestorType.Product:
-                break;
             case AmacInvestorType.PrivateFundProduct:
-                break;
             case AmacInvestorType.SecuritiesCompanyAssetManagementPlan:
-                break;
             case AmacInvestorType.FundCompanyAssetManagementPlan:
-                break;
             case AmacInvestorType.FuturesCompanyAssetManagementPlan:
-                break;
+                IDTypes = [Models.IDType.ProductFilingCode, Models.IDType.ProductRegistrationCode, Models.IDType.Other];
+                break; 
             case AmacInvestorType.TrustPlan:
-                break;
             case AmacInvestorType.CommercialBankFinancialProduct:
-                break;
             case AmacInvestorType.InsuranceAssetManagementPlan:
-                break;
             case AmacInvestorType.SocialWelfareFund:
-                break;
             case AmacInvestorType.PensionFund:
-                break;
             case AmacInvestorType.SocialSecurityFund:
-                break;
             case AmacInvestorType.EnterpriseAnnuity:
+                IDTypes = [Models.IDType.UnifiedSocialCreditCode, Models.IDType.BusinessLicenseNumber, Models.IDType.Other];
                 break;
             case AmacInvestorType.GovernmentGuidanceFund:
+                IDTypes = [Models.IDType.ProductFilingCode, Models.IDType.UnifiedSocialCreditCode, Models.IDType.BusinessLicenseNumber, Models.IDType.OrganizationCodeCertificate, Models.IDType.Other];
                 break;
 
             default:
