@@ -28,7 +28,7 @@ public partial class MainWindow : HandyControl.Controls.Window
 
 
         // 管理人名称
-        using var db = new BaseDatabase();
+        using var db = DbHelper.Base();// DbHelper.Base();
         Title += " - " + db.GetCollection<Manager>().FindOne(x => x.IsMaster)?.Name;
         if(db.FileStorage.Exists("icon.main"))
         {
@@ -82,7 +82,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
 
     public void Receive(OpenFundMessage message)
     {
-        var db = new BaseDatabase();
+        var db = DbHelper.Base();
         var fund = db.GetCollection<Fund>().FindById(message.Id);
         var ele = db.GetCollection<FundElements>().FindOne(x => x.FundId == message.Id);
         if (ele is null)

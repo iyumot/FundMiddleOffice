@@ -75,7 +75,7 @@ public partial class PlatformPageViewModel : ObservableObject
 
 
 
-        // using var db = new TrusteeDatabase();
+        // using var db = DbHelper.Trustee();
 
 
     }
@@ -197,7 +197,7 @@ public partial class PlatformPageViewModelDigital : ObservableRecipient//, IReci
             new SyncButtonData((Geometry)App.Current.Resources["f.address-card"]  , SynchronizeDataCommand, SyncCustomers,"客户资料"),
             new SyncButtonData((Geometry)App.Current.Resources["f.certificate"]  , SynchronizeDataCommand, SyncQualifications,"合投材料"),  ];
 
-        //using var db = new TrusteeDatabase();
+        //using var db = DbHelper.Trustee();
         ////Config = db.GetCollection<TrusteeConfig>().FindOne(x => x.Id == Assist.Identifier) ?? new TrusteeConfig { Id = assist.Identifier };
 
         //IsActive = true;
@@ -292,7 +292,7 @@ public partial class PlatformPageViewModelTrustee : ObservableRecipient, IRecipi
             new SyncButtonData((Geometry)App.Current.Resources["f.rectangle-list"]  , SynchronizeDataCommand, SyncTA,"交易申请"),
             new SyncButtonData((Geometry)App.Current.Resources["f.list-check"]  , SynchronizeDataCommand, SyncTA,"交易确认"),            ];
 
-        using var db = new TrusteeDatabase();
+        using var db = DbHelper.Trustee();
         Config = db.GetCollection<TrusteeConfig>().FindOne(x => x.Id == Assist.Identifier) ?? new TrusteeConfig { Id = assist.Identifier };
 
         IsActive = true;
@@ -358,7 +358,7 @@ public partial class PlatformPageViewModelTrustee : ObservableRecipient, IRecipi
 
     protected void SaveConfig()
     {
-        using var db = new TrusteeDatabase();
+        using var db = DbHelper.Trustee();
         LiteDB.ILiteCollection<TrusteeConfig> c = db.GetCollection<TrusteeConfig>();
 
         c.Upsert(Config);
@@ -463,7 +463,7 @@ public partial class PlatformPageViewModelTrustee : ObservableRecipient, IRecipi
         {
             IsLogin = false;
 
-            using var db = new TrusteeDatabase();
+            using var db = DbHelper.Trustee();
             var config = db.GetCollection<TrusteeConfig>().FindOne(x => x.Id == Assist.Identifier) ?? new TrusteeConfig { Id = Assist.Identifier };
 
             config.IsLogedIn = false;

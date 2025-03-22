@@ -73,7 +73,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         RiskLevel = ele.RiskLevel?.Value;
 
         // 净值
-        var db = new BaseDatabase();
+        var db = DbHelper.Base();
         DailyValues = new ObservableCollection<DailyValue>(db.GetDailyCollection(Fund.Id).FindAll().OrderByDescending(x => x.Date).IntersectBy(TradingDay.Days, x => x.Date));
         db.Dispose();
         App.Current.Dispatcher.BeginInvoke(() =>
@@ -110,7 +110,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
     //            if (v.code == FundCode || ele.FullName!.HasValue(v.fn))
     //            {
-    //                var db = new BaseDatabase();
+    //                var db = DbHelper.Base();
     //                db.GetDailyCollection(fund.Id).Upsert(v.dy);
     //            }
     //        }
@@ -123,7 +123,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
     private void InitFlows(Fund fund, FundElements ele)
     {
-        var db = new BaseDatabase();
+        var db = DbHelper.Base();
         var flows = db.GetCollection<FundFlow>().Find(x => x.FundId == fund.Id).ToList();
         if (!flows.Any(x => x is InitiateFlow))
         {
@@ -371,7 +371,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     public void CreateContractModify()
     {
         var flow = new ContractModifyFlow { FundId = Fund.Id };
-        var db = new BaseDatabase();
+        var db = DbHelper.Base();
         db.GetCollection<FundFlow>().Insert(flow);
         var ele = db.GetCollection<FundElements>().FindOne(ele => ele.FundId == Fund.Id);
         db.Dispose();
@@ -387,7 +387,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         if (Flows.Any(x => x is LiquidationFlowViewModel)) return;
 
         var flow = new LiquidationFlow { FundId = Fund.Id };
-        var db = new BaseDatabase();
+        var db = DbHelper.Base();
         db.GetCollection<FundFlow>().Insert(flow);
         var fund = db.GetCollection<Fund>().FindById(Fund.Id);
         fund.Status = FundStatus.StartLiquidation;
@@ -405,7 +405,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     [RelayCommand]
     public void DeleteFlow(FlowViewModel flow)
     {
-        using var db = new BaseDatabase();
+        using var db = DbHelper.Base();
         db.GetCollection<FundFlow>().Delete(flow.FlowId);
         if (flow is LiquidationFlowViewModel && FundStatus == FundStatus.StartLiquidation)
         {
@@ -470,7 +470,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
                 if (!avaliable.Any()) return;
 
 
-                using var db = new BaseDatabase();
+                using var db = DbHelper.Base();
                 var c = db.GetDailyCollection(Fund.Id);
                 c.Upsert(avaliable.Select(x => x.daily!));
 

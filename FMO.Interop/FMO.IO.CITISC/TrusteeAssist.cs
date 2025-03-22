@@ -223,7 +223,7 @@ public class CSTISCAssist : TrusteeAssistBase
             return false;
 
         // 获取已保存的流水最新日期
-        var db = new BaseDatabase();
+        var db = DbHelper.Base();
         var last = db.GetCollection<BankTransaction>().Query().Where(x => x.Origin == Identifier).OrderByDescending(x => x.Time).FirstOrDefault();
         // var bankaccs = db.GetCollection<BankAccount>().FindAll();
         db.Dispose();
@@ -275,7 +275,7 @@ public class CSTISCAssist : TrusteeAssistBase
         }
 
         // 保存到数据库
-        db = new BaseDatabase();
+        db = DbHelper.Base();
         db.GetCollection<BankTransaction>().Insert(transactions);
         db.Dispose();
         await page.CloseAsync();
@@ -327,7 +327,7 @@ public class CSTISCAssist : TrusteeAssistBase
         {
             var data = obj.Data.Select(x => x.ToCustomer()).ToArray();
 
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
 
             // 获取已存在的
             var exist_ids = db.GetCollection<Investor>().Query().Select(x => new { id = x.Id, identity = x.Identity }).ToList();//.Where(x => data.Any(y => y.Item1.Identity == x.Identity)).ToArray();
@@ -537,7 +537,7 @@ public class CSTISCAssist : TrusteeAssistBase
 
         try
         {
-            var db = new BaseDatabase();
+            var db = DbHelper.Base();
             var last = db.GetCollection<TransferRequest>().Query().OrderByDescending(x => x.RequestDate).FirstOrDefault();
             db.Dispose();
 
@@ -595,7 +595,7 @@ public class CSTISCAssist : TrusteeAssistBase
             data = data.OrderBy(x => x.CustomerIdentity).ToList();
 
             // 保存到数据库
-            db = new BaseDatabase();
+            db = DbHelper.Base();
             // 客户映射
             var ids = data.Select(x => x.CustomerIdentity).Distinct().ToList();
 

@@ -151,7 +151,7 @@ public class Assist : AssistBase
         {
             var data = obj.data.list.Select(x => x.ToCustomer()).ToArray();
 
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
 
             // 获取已存在的
             var exist_ids = db.GetCollection<Investor>().FindAll().ToList();//.Where(x => data.Any(y => y.Item1.Identity == x.Identity)).ToArray();
@@ -271,7 +271,7 @@ public class Assist : AssistBase
 
         try
         {
-            var db = new BaseDatabase();
+            var db = DbHelper.Base();
             var data = db.GetCollection<InvestorQualification>();
 
             for (int i = 0; i < 999; i++)
@@ -493,7 +493,7 @@ public class Assist : AssistBase
             return false;
         }
 
-        var db = new BaseDatabase();
+        var db = DbHelper.Base();
         var co = db.GetCollection<Investor>();
         List<(Json.QualificationJson.ListItem j, InvestorQualification q)> list = new();
         foreach (var item in obj.data.list)

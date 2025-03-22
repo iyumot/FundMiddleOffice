@@ -44,7 +44,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
     {
         IsActive = true;
 
-        using var db = new BaseDatabase();
+        using var db = DbHelper.Base();
 
         var cusomers = db.GetCollection<Investor>().FindAll().ToArray();
 
@@ -79,7 +79,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
             if (Selected.Name?.Length > 1 && Selected.Identity != default && HandyControl.Controls.MessageBox.Show($"是否删除投资人 【{Selected.Name}】资料", "提示", button: System.Windows.MessageBoxButton.YesNo) == System.Windows.MessageBoxResult.No)
                 return;
 
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
             db.GetCollection<Investor>().Delete(Selected.Id);
         }
 
