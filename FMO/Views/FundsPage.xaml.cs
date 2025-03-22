@@ -69,7 +69,7 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
         UiConfig = FundPageUiConfig.Load();
         UiConfig.PropertyChanged += UiConfig_PropertyChanged;
 
-        var db = new BaseDatabase();
+        var db = DbHelper.Base();
         var funds = db.GetCollection<Fund>().FindAll().ToArray();
         db.Dispose();
 

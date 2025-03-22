@@ -39,6 +39,8 @@ public partial class App : Application
                 Directory.SetCurrentDirectory(di.FullName);
         }
 
+        //DbHelper.initpassword();
+
         Log.Logger = new LoggerConfiguration().WriteTo.File("log.txt").CreateLogger();
 
         Directory.CreateDirectory("data");
@@ -57,7 +59,7 @@ public partial class App : Application
 
     private bool CheckIsFirstRun()
     {
-        using var db = new BaseDatabase();
+        using var db = DbHelper.Base();
         var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
 
         return (manager is null);

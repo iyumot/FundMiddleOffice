@@ -82,7 +82,7 @@ public partial class ManagerDataItem<T> : DataItem<T, Manager>, IDatabaseUpdater
 
     public override void Update()
     {
-        using var db = new BaseDatabase();
+        using var db = DbHelper.Base();
         var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
         Updater(NewValue, manager);
         db.GetCollection<Manager>().Update(manager);
@@ -101,7 +101,7 @@ public partial class ManagerDateExItem : DataItem<DateOnly?, Manager>, IDatabase
 
     public override void Update()
     {
-        using var db = new BaseDatabase();
+        using var db = DbHelper.Base();
         var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
         if (IsLongTerm ?? false)
             Updater(DateOnly.MaxValue, manager);
@@ -258,7 +258,7 @@ public partial class ManagerPageViewModel : ObservableObject
 
     public ManagerPageViewModel()
     {
-        var db = new BaseDatabase();
+        var db = DbHelper.Base();
         var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
         var mfile = db.GetCollection<InstitutionFiles>().FindOne(x => x.InstitutionId == manager.Id);
         if (mfile is null)
@@ -360,7 +360,7 @@ public partial class ManagerPageViewModel : ObservableObject
     {
         if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
         {
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
 
             foreach (FileInfo item in e.NewItems)
             {
@@ -381,7 +381,7 @@ public partial class ManagerPageViewModel : ObservableObject
         }
         else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
         {
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
             var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
 
 
@@ -401,7 +401,7 @@ public partial class ManagerPageViewModel : ObservableObject
     {
         if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
         {
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
 
             foreach (FileInfo item in e.NewItems)
             {
@@ -422,7 +422,7 @@ public partial class ManagerPageViewModel : ObservableObject
         }
         else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
         {
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
             var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
 
 
@@ -442,7 +442,7 @@ public partial class ManagerPageViewModel : ObservableObject
     {
         if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
         {
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
 
             foreach (FileInfo item in e.NewItems)
             {
@@ -463,7 +463,7 @@ public partial class ManagerPageViewModel : ObservableObject
         }
         else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
         {
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
             var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
 
 
@@ -483,7 +483,7 @@ public partial class ManagerPageViewModel : ObservableObject
     {
         if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
         {
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
 
             foreach (FileInfo item in e.NewItems)
             {
@@ -504,7 +504,7 @@ public partial class ManagerPageViewModel : ObservableObject
         }
         else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
         {
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
             var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
 
 
@@ -524,7 +524,7 @@ public partial class ManagerPageViewModel : ObservableObject
     {
         if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
         {
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
 
             foreach (FileInfo item in e.NewItems)
             {
@@ -545,7 +545,7 @@ public partial class ManagerPageViewModel : ObservableObject
         }
         else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
         {
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
             var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
 
 
@@ -564,7 +564,7 @@ public partial class ManagerPageViewModel : ObservableObject
 
     internal void SetLogo(string v)
     {
-        var db = new BaseDatabase();
+        var db = DbHelper.Base();
         db.FileStorage.Upload("icon.main", v);
         if (db.FileStorage.Exists("icon.main"))
         {

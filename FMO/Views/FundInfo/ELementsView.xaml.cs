@@ -175,7 +175,7 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
     {
         IsActive = true;
 
-        using var db = new BaseDatabase();
+        using var db = DbHelper.Base();
         var fund = db.GetCollection<Fund>().FindById(FundId);
         var flow = db.GetCollection<FundFlow>().FindById(newValue);
         bool isori = flow is ContractFinalizeFlow;
@@ -271,7 +271,7 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
         {
 
             case ElementItemViewModelSealing v:
-                using (var db = new BaseDatabase())
+                using (var db = DbHelper.Base())
                 {
                     var elements = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
                     v.UpdateEntity(elements, FlowId);
@@ -284,7 +284,7 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
 
 
             case ElementItemViewModel v:
-                using (var db = new BaseDatabase())
+                using (var db = DbHelper.Base())
                 {
                     var elements = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
                     v.UpdateEntity(elements, FlowId);
@@ -325,7 +325,7 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
         {
 
             case ElementItemViewModelSealing v:
-                using (var db = new BaseDatabase())
+                using (var db = DbHelper.Base())
                 {
                     var elements = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
                     v.RemoveValue(elements, FlowId);
@@ -336,7 +336,7 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
 
 
             case ElementItemViewModel v:
-                using (var db = new BaseDatabase())
+                using (var db = DbHelper.Base())
                 {
                     var elements = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
                     v.RemoveValue(elements, FlowId);
@@ -376,7 +376,7 @@ public partial class ElementsViewModel : ObservableRecipient, IRecipient<FundSha
     {
         if (message.FundId == FundId && message.FlowId <= FlowId)
         { 
-            using var db = new BaseDatabase(); 
+            using var db = DbHelper.Base(); 
             var elements = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
             InitElementsOfShare(elements);
         }

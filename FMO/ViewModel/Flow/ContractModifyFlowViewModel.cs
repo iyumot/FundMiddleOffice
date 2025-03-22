@@ -63,7 +63,7 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
     {
         if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
         {
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
             var fund = db.GetCollection<Fund>().FindById(FundId);
 
             foreach (FileInfo item in e.NewItems)
@@ -88,7 +88,7 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
         }
         else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
         {
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
             var flow = db.GetCollection<FundFlow>().FindById(FlowId) as ContractModifyFlow;
 
 

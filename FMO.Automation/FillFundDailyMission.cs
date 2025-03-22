@@ -26,7 +26,7 @@ public class FillFundDailyMission : Mission
     {
         try
         {
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
             var funds = db.GetCollection<Fund>().Query().Where(x => x.Status == FundStatus.Normal).ToArray();
 
             var idt = TradingDay.Days.BinarySearch(DateOnly.FromDateTime(DateTime.Today));

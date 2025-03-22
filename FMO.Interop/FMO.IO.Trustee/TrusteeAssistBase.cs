@@ -41,7 +41,7 @@ public abstract class TrusteeAssistBase : ITrusteeAssist, IDisposable
 
     protected TrusteeAssistBase()
     {
-        using var db = new TrusteeDatabase();
+        using var db = DbHelper.Trustee();
         TrusteeSynchronizeTime = db.GetCollection<TrusteeSynchronizeTime>().FindById(Identifier) ?? new TrusteeSynchronizeTime { Identifier = Identifier };
     }
 

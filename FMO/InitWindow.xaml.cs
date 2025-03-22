@@ -112,7 +112,7 @@ public partial class InitWindowViewModel : ObservableRecipient, IRecipient<InitS
         ///保存数据库
         Manager.IsMaster = true;
 
-        var db = new BaseDatabase();
+        var db = DbHelper.Base();
         db.GetCollection<Manager>().Insert(Manager);
 
         db.GetCollection<FundBasicInfo>().InsertBulk(funds);

@@ -14,7 +14,7 @@ public static class ValuationSheetHelper
     public static DailyValue[] ParseMany(FileInfo[] files)
     {
         List<Fund> funds = null;
-        using (var db = new BaseDatabase())
+        using (var db = DbHelper.Base())
             funds = db.GetCollection<Fund>().FindAll().ToList();
 
         var zip = ZipFile.OpenRead("");
@@ -25,7 +25,7 @@ public static class ValuationSheetHelper
     public static DailyValue[] ParseMany(FileInfo zipfiles)
     {
         List<Fund> funds = null;
-        using (var db = new BaseDatabase())
+        using (var db = DbHelper.Base())
             funds = db.GetCollection<Fund>().FindAll().ToList();
 
         var zip = ZipFile.OpenRead("");

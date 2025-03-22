@@ -56,7 +56,7 @@ public class GatherDailyFromMailMission : Mission
         try
         {
             List<Fund>? funds = null;
-            using (var db = new BaseDatabase())
+            using (var db = DbHelper.Base())
                 funds = db.GetCollection<Fund>().FindAll().ToList();
 
             var unsync = funds.Where(x => x.Status >= FundStatus.Normal && x.PublicDisclosureSynchronizeTime == default).ToArray();
@@ -268,7 +268,7 @@ public class GatherDailyFromMailMission : Mission
                 fs.Flush();
             }
 
-            using (var db = new BaseDatabase())
+            using (var db = DbHelper.Base())
             {
                 foreach (var x in ds.Where(x => x.Fund is not null && x.Daily is not null))
                 {

@@ -56,7 +56,7 @@ public abstract class AssistBase : IDigitalSignature
 
     protected AssistBase()
     {
-        using var db = new DSDatabase();
+        using var db = DbHelper.Digital();
         SynchronizeTime = db.GetCollection<SynchronizeTime>().FindById(Identifier) ?? new SynchronizeTime { Identifier = Identifier };
     }
 

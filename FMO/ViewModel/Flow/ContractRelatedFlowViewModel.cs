@@ -90,7 +90,7 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
             if (shareClass?.Value is null || shareClass.Value.Length == 0)
             {
                 shareClass!.SetValue([new ShareClass { Id = IdGenerator.GetNextId(nameof(ShareClass)), Name = FundElements.SingleShareKey }], flow.Id);
-                using var db = new BaseDatabase();
+                using var db = DbHelper.Base();
                 var el = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
                 el.ShareClasses = shareClass;
                 db.GetCollection<FundElements>().Update(el);
@@ -104,7 +104,7 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
     {
         if (shareClass is null)
         {
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
             shareClass = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId)?.ShareClasses;
         }
 
@@ -147,7 +147,7 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
     [RelayCommand]
     public void ConfirmShares()
     {
-        using var db = new BaseDatabase();
+        using var db = DbHelper.Base();
         var elements = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
 
         //// 同步份额相关的要素 

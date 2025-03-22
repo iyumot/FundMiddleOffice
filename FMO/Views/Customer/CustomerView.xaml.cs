@@ -118,7 +118,7 @@ public partial class CustomerViewModel : ObservableObject
 
         Efficient.Init(investor);
 
-        using var db = new BaseDatabase();
+        using var db = DbHelper.Base();
         var iq = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == Id).ToArray();
         Qualifications = new(iq.Select(x => QualificationViewModel.From(x, investor.Type, investor.EntityType)));
     }
@@ -190,7 +190,7 @@ public partial class CustomerViewModel : ObservableObject
     {
         if (unit is IEntityViewModel<Investor> entity)
         {
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
             var v = db.GetCollection<Investor>().FindById(Id);
 
             if (v is not null)
@@ -221,7 +221,7 @@ public partial class CustomerViewModel : ObservableObject
     {
         if (unit is IEntityViewModel<Investor> entity)
         {
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
             var v = db.GetCollection<Investor>().FindById(Id);
 
             if (v is not null)
@@ -244,7 +244,7 @@ public partial class CustomerViewModel : ObservableObject
     [RelayCommand]
     public void AddQualification()
     {
-        using var db = new BaseDatabase();
+        using var db = DbHelper.Base();
         InvestorQualification entity = new InvestorQualification { InvestorId = Id };
         db.GetCollection<InvestorQualification>().Insert(entity);
         Qualifications.Add(QualificationViewModel.From(entity, Type.Data.Old, EntityType.Data.Old));
@@ -261,7 +261,7 @@ public partial class CustomerViewModel : ObservableObject
 
         if (!v.IsFinished)
         {
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
             db.GetCollection<InvestorQualification>().Delete(v.Id);
         }
     }

@@ -48,7 +48,7 @@ public partial class DailyReportGridViewModel : ObservableRecipient, IRecipient<
 
         if (message.Daily.Date < item.Daily?.Date) return;
 
-        using var db = new BaseDatabase();
+        using var db = DbHelper.Base();
         var dy = db.GetDailyCollection(item.FundId).Query().OrderByDescending(x => x.Date).Where(x => x.NetValue > 0 && x.CumNetValue > 0).Limit(5).ToArray();
         if (!dy.Any()) return;
 
@@ -79,7 +79,7 @@ public partial class DailyReportGridViewModel : ObservableRecipient, IRecipient<
 
     internal void Init()
     {
-        using var db = new BaseDatabase();
+        using var db = DbHelper.Base();
         var funds = db.GetCollection<Fund>().Find(x => x.Status == FundStatus.Normal).ToArray();
 
 
@@ -135,7 +135,7 @@ public partial class DailyReportGridViewModel : ObservableRecipient, IRecipient<
 
             //最近的交易日
             var td = TradingDay.Current;
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
             var fund = db.GetCollection<Fund>().FindById(message.FundId);
             if (fund is null) return;
 

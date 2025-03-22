@@ -182,7 +182,7 @@ public partial class QualificationViewModel : ObservableObject
     public QualificationViewModel(int id)
     {
         Id = id;
-        using var db = new BaseDatabase();
+        using var db = DbHelper.Base();
         var obj = db.GetCollection<InvestorQualification>().FindById(Id);
 
         NeedExperience = obj.ProofType != QualificationFileType.Product && obj.ProofType != QualificationFileType.FinancialInstitution;
@@ -267,7 +267,7 @@ public partial class QualificationViewModel : ObservableObject
 
     private void ClearFile(FileViewModel v)
     {
-        using var db = new BaseDatabase();
+        using var db = DbHelper.Base();
         var obj = db.GetCollection<InvestorQualification>().FindById(Id);
 
         if (obj!.GetType().GetProperty(v.Id) is PropertyInfo property && property.PropertyType == typeof(FileStorageInfo))
@@ -306,7 +306,7 @@ public partial class QualificationViewModel : ObservableObject
 
         string hash = fi.ComputeHash()!;
 
-        using var db = new BaseDatabase();
+        using var db = DbHelper.Base();
         var obj = db.GetCollection<InvestorQualification>().FindById(Id);
 
         if (obj!.GetType().GetProperty(v.Id) is PropertyInfo property && property.PropertyType == typeof(FileStorageInfo))
@@ -373,7 +373,7 @@ public partial class QualificationViewModel : ObservableObject
         {
             //case nameof(Date):
 
-            //using var db = new BaseDatabase();
+            //using var db = DbHelper.Base();
             //var obj = db.GetCollection<InvestorQualification>().FindById(Id);
             //obj.Date = Date;
             //   break;
@@ -388,7 +388,7 @@ public partial class QualificationViewModel : ObservableObject
     [RelayCommand]
     public void SaveQualification()
     {
-        using var db = new BaseDatabase();
+        using var db = DbHelper.Base();
         var obj = db.GetCollection<InvestorQualification>().FindById(Id);
         obj.Result = IsProfessional ? QualifiedInvestorType.Professional : QualifiedInvestorType.Normal;
         obj.ProofType = ProofType ?? QualificationFileType.None;
@@ -415,7 +415,7 @@ public partial class QualificationViewModel : ObservableObject
     {
         if (unit is IEntityViewModel<InvestorQualification> entity)
         {
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
             var v = db.GetCollection<InvestorQualification>().FindById(Id);
 
             if (v is not null)
@@ -446,7 +446,7 @@ public partial class QualificationViewModel : ObservableObject
     {
         if (unit is IEntityViewModel<InvestorQualification> property)
         {
-            using var db = new BaseDatabase();
+            using var db = DbHelper.Base();
             var v = db.GetCollection<InvestorQualification>().FindById(Id);
 
             if (v is not null)

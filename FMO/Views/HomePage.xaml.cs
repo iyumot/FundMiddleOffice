@@ -75,7 +75,7 @@ public partial class HomePageViewModel : ObservableObject
     public async Task DataSelfTest()
     {
         IsSelfTesting = true;
-        var db = new BaseDatabase();
+        var db = DbHelper.Base();
         var c = db.GetCollection<Fund>().FindAll().ToArray();
         db.Dispose();
 
@@ -104,7 +104,7 @@ public partial class HomePageViewModel : ObservableObject
                     if (finished < ned.Length)
                         HandyControl.Controls.Growl.Success($"已同步{finished}个基金，剩余{ned.Length - finished}个");
                     
-                    db = new BaseDatabase();
+                    db = DbHelper.Base();
                     db.GetCollection<Fund>().Update(set);
                     db.Dispose();
                 }
