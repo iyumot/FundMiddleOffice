@@ -78,6 +78,9 @@ public static class DbHelper
     public static LiteDatabase Digital() => new LiteDatabase(@$"FileName=data\digital.db;Password={_password};Connection=Shared");
 
 
+    public static LiteDatabase Platform() => new LiteDatabase(@$"FileName=data\platform.db;Password={_password};Connection=Shared");
+
+
     public static void initpassword()
     {
         var di = new DirectoryInfo("data");

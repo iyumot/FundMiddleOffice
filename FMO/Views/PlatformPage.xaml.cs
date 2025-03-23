@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -122,6 +123,12 @@ public partial class PlatformPageViewModel : ObservableObject
         if (name is not null)
             iconStream = assembly.GetManifestResourceStream(name);
 
+        using var db = DbHelper.Platform();
+        var acc = db.GetCollection<PlatformAccount>().FindById(assist.Identifier);
+
+        assist.UserID = acc?.UserId;
+        assist.Password = acc?.Password;
+
         var icon = new BitmapImage();
         icon.BeginInit();
         icon.StreamSource = iconStream;
@@ -173,6 +180,18 @@ public partial class PlatformPageViewModelDigital : ObservableRecipient//, IReci
 
 
 
+    [ObservableProperty]
+    public partial bool ShowAccount { get; set; }
+
+    [ObservableProperty]
+    public partial string? UserId { get; set; }
+
+
+    [ObservableProperty]
+    public partial string? Password { get; set; }
+
+
+
     /// <summary>
     /// 同步项
     /// </summary>
@@ -191,6 +210,9 @@ public partial class PlatformPageViewModelDigital : ObservableRecipient//, IReci
         Name = name;
         Assist = assist;
 
+
+        UserId = assist.UserID;
+        Password = assist.Password;
         IsLogin = false;
 
         Buttons = [
@@ -265,9 +287,14 @@ public partial class PlatformPageViewModelDigital : ObservableRecipient//, IReci
     }
 
 
-
-
-
+    [RelayCommand]
+    public void SaveAccount()
+    {
+        Assist.UserID = UserId;
+        Assist.Password = Password;
+        using var db = DbHelper.Platform();
+        db.GetCollection<PlatformAccount>().Upsert(new PlatformAccount { Id=Assist.Identifier, UserId = UserId, Password = Password });
+    }
 
 }
 
