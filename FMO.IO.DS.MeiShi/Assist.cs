@@ -28,12 +28,13 @@ public class Assist : AssistBase
 
         try
         {
-            UserID = "sj@seesunfund.com"; Password = "Ss123789";
             if (!string.IsNullOrWhiteSpace(UserID))
                 await page.Locator("#userName").FillAsync(UserID);
+            else return true;
 
             if (!string.IsNullOrWhiteSpace(Password))
                 await page.Locator("#password").FillAsync(Password);
+            else return true;
 
             var box = page.Locator("#account_drag").Locator("..");
 

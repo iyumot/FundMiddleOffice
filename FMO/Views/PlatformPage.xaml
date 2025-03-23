@@ -31,7 +31,7 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel
-                            Width="250"
+                            Width="260"
                             Margin="5,0"
                             IsEnabled="{Binding IsInitialized}">
                             <Image
@@ -41,6 +41,13 @@
                             <!--<TextBlock Text="{Binding Name}" />-->
 
                             <DockPanel LastChildFill="False">
+                                <ToggleButton
+                                    hc:IconElement.Geometry="{StaticResource f.circle-user}"
+                                    hc:IconElement.Width="16"
+                                    DockPanel.Dock="Right"
+                                    IsChecked="{Binding ShowAccount}"
+                                    Style="{StaticResource ToggleButtonIcon.Small}" />
+
                                 <CheckBox Content="启用" IsChecked="{Binding IsEnabled}" />
                                 <TextBlock
                                     x:Name="login"
@@ -53,7 +60,45 @@
                                     Command="{Binding LoginCommand}"
                                     Style="{StaticResource ButtonDefault.Small}"
                                     ToolTip="登陆" />
+
+
                             </DockPanel>
+
+
+                            <Border Background="LightGray" Visibility="{Binding ShowAccount, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                <Grid Margin="2">
+                                    <Grid.Resources>
+                                        <Style BasedOn="{StaticResource TextBox.Small}" TargetType="TextBox" />
+                                        <Style BasedOn="{StaticResource TextBlockDefault}" TargetType="TextBlock">
+                                            <Setter Property="VerticalAlignment" Value="Center" />
+                                            <Setter Property="Margin" Value="3,0,5,0" />
+                                        </Style>
+                                    </Grid.Resources>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="auto" />
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="用户名" />
+                                    <TextBox Grid.Column="1" Text="{Binding UserId}" />
+                                    <TextBlock Grid.Row="1" Text="密码" />
+                                    <TextBox
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Text="{Binding Password}" />
+
+                                    <Button
+                                        Grid.RowSpan="2"
+                                        Grid.Column="2"
+                                        hc:IconElement.Geometry="{StaticResource SaveGeometry}"
+                                        Command="{Binding SaveAccountCommand}"
+                                        Style="{StaticResource ButtonIcon}" />
+                                </Grid>
+                            </Border>
 
                             <ListBox ItemsSource="{Binding Buttons}" Style="{StaticResource ListBoxCustom}">
                                 <ListBox.ItemsPanel>

@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy $(TargetPath) E:\funds\plugins\$(AssemblyName).dll" />
+    <Exec Command="copy $(TargetPath) E:\funds\plugins\$(AssemblyName).dll&#xD;&#xA;copy $(TargetPath) ..\FMO\bin\Debug\net9.0-windows\plugins\$(AssemblyName).dll" />
   </Target>
 
 </Project>

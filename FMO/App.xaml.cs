@@ -46,6 +46,7 @@ public partial class App : Application
         Directory.CreateDirectory("data");
         Directory.CreateDirectory("config");
         Directory.CreateDirectory("files\\funds");
+        Directory.CreateDirectory("plugins");
 
         ///数据库自检等操作
         DatabaseAssist.SystemValidation();
