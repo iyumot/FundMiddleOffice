@@ -68,6 +68,7 @@
         <Style x:Key="SingleFileStyle" TargetType="ContentControl">
             <Setter Property="ContentTemplate" Value="{StaticResource SingleFile}" />
         </Style>
+
     </UserControl.Resources>
     <Grid Margin="8">
 
@@ -80,16 +81,16 @@
             Grid.Column="1"
             MaxWidth="1200"
             BorderThickness="0">
-            <TabItem Header="总览">
+            <TabItem Width="80" Header="总览">
                 <local:FundLifeTimeView />
             </TabItem>
-            <TabItem Header="净值">
+            <TabItem Width="80" Header="净值">
                 <local:NetValueListView />
             </TabItem>
-            <TabItem Header="曲线">
+            <TabItem Width="80" Header="曲线">
                 <local:NetValueCurveView DataContext="{Binding CurveViewDataContext}" />
             </TabItem>
-            <TabItem Header="要素">
+            <TabItem Width="80" Header="要素">
                 <DockPanel>
                     <DockPanel DockPanel.Dock="Top">
                         <ListBox
@@ -118,8 +119,24 @@
                     <local:ElementsView DataContext="{Binding ElementsViewDataContext}" />
                 </DockPanel>
             </TabItem>
-            <TabItem Header="合同" />
-            <TabItem Header="净值" />
+            <TabItem Width="80" Header="合同" />
+            <TabItem Width="80" Header="策略">
+                <!--<TabItem.Header>
+                    <DockPanel DataContext="{Binding StrategyDataContext}">
+                        <Button
+                            Margin="0,0,-8,0"
+                            hc:IconElement.Geometry="{StaticResource f.circle-plus}"
+                            hc:IconElement.Height="14"
+                            hc:IconElement.Width="14"
+                            Command="{Binding AddStrategyCommand}"
+                            DockPanel.Dock="Right"
+                            Style="{StaticResource ButtonIcon.Small}"
+                            Visibility="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=IsSelected, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                        <TextBlock VerticalAlignment="Center" Text="策略" />
+                    </DockPanel>
+                </TabItem.Header>-->
+                <local:FundStrategyView DataContext="{Binding StrategyDataContext}" />
+            </TabItem>
         </TabControl>
 
 
