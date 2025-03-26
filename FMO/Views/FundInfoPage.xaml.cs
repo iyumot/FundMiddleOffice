@@ -75,6 +75,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         // 净值
         var db = DbHelper.Base();
         DailyValues = new ObservableCollection<DailyValue>(db.GetDailyCollection(Fund.Id).FindAll().OrderByDescending(x => x.Date).IntersectBy(TradingDay.Days, x => x.Date));
+        var strategies = db.GetCollection<FundStrategy>().Find(x => x.FundId == fund.Id).ToList();
         db.Dispose();
         App.Current.Dispatcher.BeginInvoke(() =>
         {
@@ -84,7 +85,16 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         });
 
         var ll = DailyValues;
-        CurveViewDataContext = new DailyValueCurveViewModel { FundName = Fund.ShortName, Data = ll.OrderBy(x => x.Date).ToList(), SetupDate = Fund.SetupDate, StartDate = ll.LastOrDefault()?.Date, EndDate = ll.FirstOrDefault()?.Date };
+        CurveViewDataContext = new DailyValueCurveViewModel
+        {
+            FundId = Fund.Id,
+            FundName = Fund.ShortName,
+            Data = ll.OrderBy(x => x.Date).ToList(),
+            SetupDate = Fund.SetupDate,
+            StartDate = ll.LastOrDefault()?.Date,
+            EndDate = ll.FirstOrDefault()?.Date,
+            Strategies = strategies
+        };
 
 
         StrategyDataContext = new(FundId);
@@ -506,14 +516,14 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     {
         string? path = daily?.SheetPath;
 
-        if(path is null)
+        if (path is null)
         {
             var di = new DirectoryInfo(Path.Combine(FundHelper.GetFolder(FundId, "Sheet")));
             var fis = di.GetFiles().Where(x => x.Name.Contains(daily!.Date.ToString("yyyyMMdd")));
             if (fis.Count() == 1)
                 path = fis.First().FullName;
         }
-         
+
         if (path is not null)
             try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true }); } catch { }
     }
