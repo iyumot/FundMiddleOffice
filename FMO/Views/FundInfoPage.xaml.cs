@@ -87,6 +87,8 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         CurveViewDataContext = new DailyValueCurveViewModel { FundName = Fund.ShortName, Data = ll.OrderBy(x => x.Date).ToList(), SetupDate = Fund.SetupDate, StartDate = ll.LastOrDefault()?.Date, EndDate = ll.FirstOrDefault()?.Date };
 
 
+        StrategyDataContext = new(FundId);
+
         IsActive = true;
         _initialized = true;
     }
@@ -353,7 +355,8 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     [ObservableProperty]
     public partial DailyValueCurveViewModel CurveViewDataContext { get; set; }
 
-
+    [ObservableProperty]
+    public partial FundStrategyViewModel StrategyDataContext { get; set; }
 
     /// <summary>
     /// 打开基金公示

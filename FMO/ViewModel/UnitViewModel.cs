@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using FMO.Models;
 using System.ComponentModel;
+using System.Reflection;
+using System.Windows;
 
 namespace FMO;
 
@@ -49,6 +51,30 @@ public abstract class UnitViewModel : ObservableObject
         {
             if (p.PropertyType.IsAssignableTo(typeof(INotifyPropertyChanged)))
                 ((INotifyPropertyChanged)p.GetValue(this)!).PropertyChanged += ItemPropertyChanged;
+
+            if (p.PropertyType.IsGenericType && (p.PropertyType.GetGenericTypeDefinition() == typeof(ValueViewModel<>) || p.PropertyType.GetGenericTypeDefinition() == typeof(RefrenceViewModel<>)) && p.PropertyType.GetGenericArguments()[0].IsAssignableTo(typeof(INotifyPropertyChanged)))
+            {
+                var ty = typeof(WeakEventManager<,>).MakeGenericType([p.PropertyType, typeof(PropertyChangedEventArgs)]);
+              
+                var m = ty.GetMethod("AddHandler", BindingFlags.Static | BindingFlags.Public);
+                var pobj = p.GetValue(this);
+                if(m is not null)
+                m.Invoke(null, [pobj, nameof(PropertyChanged), new EventHandler<PropertyChangedEventArgs>(OnNewChanged)]);
+                 //WeakEventManager<ValueViewModel<TProperty>, PropertyChangedEventArgs>.AddHandler(Data, nameof(INotifyPropertyChanged.PropertyChanged), OnDataPropertyChanged);
+
+            }
+        }
+    }
+
+    private void OnNewChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if(e.PropertyName == nameof(ValueViewModel<>.New) && sender?.GetType()?.GetProperty(nameof(ValueViewModel<>.New)) is PropertyInfo info && info.PropertyType.IsAssignableTo(typeof(INotifyPropertyChanged)))
+        {
+            var ty = typeof(WeakEventManager<,>).MakeGenericType([info.PropertyType, typeof(PropertyChangedEventArgs)]);
+
+            var m = ty.GetMethod("AddHandler", BindingFlags.Static | BindingFlags.Public); 
+            if (m is not null)
+                m.Invoke(null, [sender, nameof(PropertyChanged), new EventHandler<PropertyChangedEventArgs>(ItemPropertyChanged)]);
         }
     }
 
@@ -184,8 +210,13 @@ public partial class EntityValueViewModel<TEntity, TProperty> : UnitViewModel, I
 
     public Action<TEntity>? ClearFunc { get; set; }
 
+    public Func<TProperty?, string?>? DisplayFunc { get; set; }
+
     protected override string? DisplayOverride()
     {
+        if (DisplayFunc is not null)
+            return DisplayFunc(Data.Old);
+
         return Data.Old switch { Enum e => EnumDescriptionTypeConverter.GetEnumDescription(e), null => null, var a => a.ToString() };
     }
 
@@ -196,7 +227,16 @@ public partial class EntityValueViewModel<TEntity, TProperty> : UnitViewModel, I
             Data.Old = InitFunc(param);
             Data.New = InitFunc(param);
         }
+
+        WeakEventManager<ValueViewModel<TProperty>, PropertyChangedEventArgs>.AddHandler(Data, nameof(INotifyPropertyChanged.PropertyChanged), OnDataPropertyChanged);
+
         SubscribeChanges();
+    }
+
+    private void OnDataPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(Data.New) && Data.New is INotifyPropertyChanged changed)
+            WeakEventManager<TProperty, PropertyChangedEventArgs>.AddHandler(Data.New.Value, nameof(INotifyPropertyChanged.PropertyChanged), ItemPropertyChanged);
     }
 
     public void UpdateEntity(TEntity obj)
@@ -230,19 +270,24 @@ public partial class EntityRefrenceViewModel<TEntity, TProperty> : UnitViewModel
 
     public Action<TEntity>? ClearFunc { get; set; }
 
+    public Func<TProperty?, string?>? DisplayFunc { get; set; }
+
     protected override string? DisplayOverride()
     {
+        if (DisplayFunc is not null)
+            return DisplayFunc(Data.Old);
+
         return Data.Old switch { Enum e => EnumDescriptionTypeConverter.GetEnumDescription(e), null => null, var a => a.ToString() };
     }
 
     public void Init(TEntity param)
     {
+        SubscribeChanges();
         if (param is not null && InitFunc is not null)
         {
             Data.Old = InitFunc(param);
             Data.New = InitFunc(param);
         }
-        SubscribeChanges();
     }
 
     public void UpdateEntity(TEntity obj)
