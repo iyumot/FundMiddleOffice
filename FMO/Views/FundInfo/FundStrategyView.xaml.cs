@@ -27,14 +27,19 @@ public partial class FundStrategyViewModel : ObservableObject
 
     public int FundId { get; }
 
-    public FundStrategyViewModel(int fundId)
+    public DateOnly FundSetupDate { get; }
+
+    public FundStrategyViewModel(int fundId, DateOnly setupDate)
     {
         using var db = DbHelper.Base();
         var data = db.GetCollection<FundStrategy>().Find(x => x.FundId == fundId).ToArray();
 
+
+
         Strategies = new(data.Select(x => new StrategyInfoViewModel(x)));
 
         FundId = fundId;
+        FundSetupDate = setupDate;
     }
 
     [RelayCommand]
@@ -49,7 +54,7 @@ public partial class FundStrategyViewModel : ObservableObject
         }
         StrategyInfoViewModel st = new(new FundStrategy { FundId = FundId });
         st.IsReadOnly = false;
-        st.Start.NewValue = Strategies.LastOrDefault()?.End?.OldValue?.Date?.AddDays(1);
+        st.Start.NewValue = Strategies.Count == 0 ? new DateTime(FundSetupDate, default) : Strategies.LastOrDefault()?.End?.OldValue?.Date?.AddDays(1);
         Strategies.Add(st);
     }
 
@@ -58,7 +63,7 @@ public partial class FundStrategyViewModel : ObservableObject
     {
         if (HandyControl.Controls.MessageBox.Show("是否确认删除", button: System.Windows.MessageBoxButton.YesNo) == System.Windows.MessageBoxResult.Yes)
         {
-            if(v.Id > 0)
+            if (v.Id > 0)
             {
                 using var db = DbHelper.Base();
                 db.GetCollection<FundStrategy>().Delete(v.Id);
@@ -110,7 +115,7 @@ public partial class StrategyInfoViewModel : EditableControlViewModelBase<FundSt
             InitFunc = x => x.Name,
             UpdateFunc = (a, b) => a.Name = b,
             ClearFunc = x => x.Name = null
-        }; 
+        };
     }
 
     public ChangeableViewModel<FundStrategy, string> Name { get; }

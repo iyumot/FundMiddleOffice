@@ -97,7 +97,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         };
 
 
-        StrategyDataContext = new(FundId);
+        StrategyDataContext = new(FundId, fund.SetupDate);
 
         IsActive = true;
         _initialized = true;
