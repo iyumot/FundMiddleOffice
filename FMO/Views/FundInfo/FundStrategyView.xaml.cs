@@ -47,7 +47,10 @@ public partial class FundStrategyViewModel : ObservableObject
             HandyControl.Controls.Growl.Warning("请先设置已有的策略");
             return;
         }
-        Strategies.Add(new StrategyInfoViewModel(new FundStrategy { FundId = FundId }));
+        StrategyInfoViewModel st = new(new FundStrategy { FundId = FundId });
+        st.IsReadOnly = false;
+        st.Start.NewValue = Strategies.LastOrDefault()?.End?.OldValue?.Date?.AddDays(1);
+        Strategies.Add(st);
     }
 
     [RelayCommand]
