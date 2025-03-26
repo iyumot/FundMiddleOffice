@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using System.Globalization;
 using System.Windows;
@@ -189,6 +190,10 @@ public partial class DailyValueCurveViewModel : ObservableObject
 
     Debouncer _debouncer { get; }
 
+    public int FundId { get; internal set; }
+
+    public List<FundStrategy>? Strategies { get; internal set; }
+
     #endregion
 
 
@@ -213,7 +218,7 @@ public partial class DailyValueCurveViewModel : ObservableObject
 
     internal void ResetDaily()
     {
-        Choosed = Data?.Where(x => x.Date >= StartDate && x.Date <= EndDate && x.NetValue > 0 )?.ToList();
+        Choosed = Data?.Where(x => x.Date >= StartDate && x.Date <= EndDate && x.NetValue > 0)?.ToList();
 
         LastValue = Choosed?.LastOrDefault()?.CumNetValue;
         APY = Choosed is null || Choosed.Count() < 2 ? null : (Choosed.Last().CumNetValue - Choosed.First().CumNetValue) / (Choosed.Last().Date.DayNumber - Choosed.First().Date.DayNumber) * 365;
@@ -236,6 +241,14 @@ public partial class DailyValueCurveViewModel : ObservableObject
         _debouncer.Invoke();
     }
 
+
+    [RelayCommand]
+    public void SetDateByStrategy(FundStrategy strategy)
+    {
+        StartDate = strategy.Start;
+        DateOnly today = DateOnly.FromDateTime(DateTime.Today);
+        EndDate = strategy.End > today ? today : strategy.End;
+    }
 }
 
 public class Axis
@@ -346,7 +359,7 @@ public class DailyValueCurveDrawing : FrameworkElement
     {
         if (DataContext is not DailyValueCurveViewModel vm || vm.Choosed is null) return;
 
-        var data = vm.Choosed.Where(x=>x.NetValue != 0 && x.CumNetValue != 0).ToArray();
+        var data = vm.Choosed.Where(x => x.NetValue != 0 && x.CumNetValue != 0).ToArray();
         if (data.Length < 2) { DrawBlank(); return; }
 
         if (ActualWidth == 0 || ActualHeight == 0) return;
