@@ -24,7 +24,7 @@
         </DataTemplate>
 
         <DataTemplate x:Key="DT.Date">
-            <DatePicker MinWidth="100" SelectedDate="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
+            <DatePicker MinWidth="110" SelectedDate="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
         </DataTemplate>
 
     </UserControl.Resources>
@@ -113,7 +113,7 @@
                                             <DataTemplate>
                                                 <DockPanel>
                                                     <DatePicker
-                                                        Width="100"
+                                                        Width="110"
                                                         SelectedDate="{Binding NewValue.Date}"
                                                         Visibility="{Binding NewValue.IsLongTerm, Converter={StaticResource Boolean2VisibilityReConverter}}" />
                                                     <CheckBox
