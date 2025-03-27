@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using FMO.Models;
 using System.ComponentModel;
 using System.Text.Json;
 
@@ -25,7 +26,7 @@ public interface IEntityModifier<TEntity>
     void UpdateEntity(TEntity entity);
 }
 
-public partial class ChangeableViewModel<TEntity, TProperty> : ObservableObject, IPropertyModifier, IEntityModifier<TEntity> 
+public partial class ChangeableViewModel<TEntity, TProperty> : ObservableObject, IPropertyModifier, IEntityModifier<TEntity>
 {
     [ObservableProperty]
     public partial string? Label { get; set; }
@@ -60,6 +61,7 @@ public partial class ChangeableViewModel<TEntity, TProperty> : ObservableObject,
 
     public Func<TEntity, TProperty?>? InitFunc { get; set; }
 
+
     public Action<TEntity, TProperty?>? UpdateFunc { get; set; }
 
     public Action<TEntity>? ClearFunc { get; set; }
@@ -70,12 +72,20 @@ public partial class ChangeableViewModel<TEntity, TProperty> : ObservableObject,
     {
         if (typeof(TProperty).IsAssignableTo(typeof(ObservableObject)))
             _notnullDefault = (TProperty)Activator.CreateInstance(typeof(TProperty))!;
+
+
+        DisplayFunc = x => x switch { Enum e => EnumDescriptionTypeConverter.GetEnumDescription(e), _ => x?.ToString() };
     }
 
-    public ChangeableViewModel(TEntity entity)
+    public ChangeableViewModel(TEntity entity, Func<TEntity, TProperty?>? init = null, Action<TEntity, TProperty?>? update = null, Action<TEntity>? clear = null, Func<TProperty?, string?>? display = null)
     {
         if (typeof(TProperty).IsAssignableTo(typeof(ObservableObject)))
             _notnullDefault = (TProperty)Activator.CreateInstance(typeof(TProperty))!;
+
+        InitFunc = init;
+        UpdateFunc = update;
+        ClearFunc = clear;
+        DisplayFunc = display ?? (x => x switch { Enum e => EnumDescriptionTypeConverter.GetEnumDescription(e), _ => x?.ToString() });
 
         Init(entity);
     }
@@ -144,6 +154,6 @@ public partial class ChangeableViewModel<TEntity, TProperty> : ObservableObject,
     {
         IsValueChanged = NewValue switch { null => OldValue is not null, _ => !EqualityComparer<TProperty>.Default.Equals(NewValue, OldValue) };
         OnPropertyChanged(nameof(CanConfirm));
-        OnPropertyChanged(nameof(CanDelete)); 
+        OnPropertyChanged(nameof(CanDelete));
     }
 }
