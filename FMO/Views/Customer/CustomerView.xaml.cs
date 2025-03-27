@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
+using FMO.Shared;
 using FMO.Utilities;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -25,7 +25,7 @@ public partial class CustomerView : UserControl
 /// <summary>
 /// customer vm
 /// </summary>
-public partial class CustomerViewModel : ObservableObject
+public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 {
     [TypeConverter(typeof(EnumDescriptionTypeConverter))] public enum NaturalType { [Description("非员工")] NonEmployee, [Description("员工")] Employee };
 
@@ -35,22 +35,22 @@ public partial class CustomerViewModel : ObservableObject
 
 
 
-    public EntityPropertyViewModel<Investor, string> Name { get; } = new() { InitFunc = x => x.Name, UpdateFunc = (x, y) => x.Name = y, ClearFunc = x => x.Name = string.Empty };
+    public ChangeableViewModel<Investor, string> Name { get; } //= new() { InitFunc = x => x.Name, UpdateFunc = (x, y) => x.Name = y, ClearFunc = x => x.Name = string.Empty };
 
-    public EntityPropertyViewModel<Investor, EntityType> EntityType { get; } = new() { InitFunc = x => x.EntityType, UpdateFunc = (x, y) => x.EntityType = y, ClearFunc = x => x.EntityType = Models.EntityType.Unk, Label = "客户类型" };
+    public ChangeableViewModel<Investor, EntityType> EntityType { get; } = new() { InitFunc = x => x.EntityType, UpdateFunc = (x, y) => x.EntityType = y, ClearFunc = x => x.EntityType = Models.EntityType.Unk, Label = "客户类型" };
 
 
     [ObservableProperty]
     public partial AmacInvestorType[]? InvestorTypes { get; set; }
 
 
-    public EntityPropertyViewModel<Investor, AmacInvestorType> Type { get; } = new() { InitFunc = x => x.Type, UpdateFunc = (x, y) => x.Type = y, ClearFunc = x => x.Type = AmacInvestorType.None, Label = "" };
+    public ChangeableViewModel<Investor, AmacInvestorType> Type { get; } = new() { InitFunc = x => x.Type, UpdateFunc = (x, y) => x.Type = y, ClearFunc = x => x.Type = AmacInvestorType.None, Label = "" };
 
 
 
-    public EntityPropertyViewModel<Investor, IDType> IDType { get; } = new() { InitFunc = x => x.Identity.Type, UpdateFunc = (x, y) => x.Identity = x.Identity with { Type = y }, ClearFunc = x => x.Identity = x.Identity with { Type = default }, Label = "证件类型" };
+    public ChangeableViewModel<Investor, IDType> IDType { get; } = new() { InitFunc = x => x.Identity.Type, UpdateFunc = (x, y) => x.Identity = x.Identity with { Type = y }, ClearFunc = x => x.Identity = x.Identity with { Type = default }, Label = "证件类型" };
 
-    public EntityPropertyViewModel<Investor, string> Identity { get; } = new() { InitFunc = x => x.Identity.Id, UpdateFunc = (x, y) => x.Identity = x.Identity with { Id = y }, ClearFunc = x => x.Identity = x.Identity with { Id = string.Empty } };
+    public ChangeableViewModel<Investor, string> Identity { get; } = new() { InitFunc = x => x.Identity.Id, UpdateFunc = (x, y) => x.Identity = x.Identity with { Id = y }, ClearFunc = x => x.Identity = x.Identity with { Id = string.Empty } };
 
 
     [ObservableProperty]
@@ -69,8 +69,8 @@ public partial class CustomerViewModel : ObservableObject
     public partial bool IsSpecial { get; set; }
 
 
-    [ObservableProperty]
-    public partial bool IsReadOnly { get; set; } = true;
+    //[ObservableProperty]
+    //public partial bool IsReadOnly { get; set; } = true;
 
     /// <summary>
     /// 民族
@@ -80,8 +80,8 @@ public partial class CustomerViewModel : ObservableObject
     public partial string? Nation { get; set; }
 
 
-    public EntityDateEfficientViewModel<Investor> Efficient { get; } = new() { InitFunc = x => x.Efficient, UpdateFunc = (x, y) => x.Efficient = y, ClearFunc = x => x.Efficient = default, Label = "证件有效期" };
-    //public EntityPropertyViewModel<Investor, DateEfficient> Efficient { get; } = new() { InitFunc = x => x.Efficient, UpdateFunc = (x, y) => x.Efficient = y, Label = "证件有效期" };
+    //public EntityDateEfficientViewModel<Investor> Efficient { get; } = new() { InitFunc = x => x.Efficient, UpdateFunc = (x, y) => x.Efficient = y, ClearFunc = x => x.Efficient = default, Label = "证件有效期" };
+    public ChangeableViewModel<Investor, DateEfficientViewModel> Efficient { get; } = new() { InitFunc = x => new DateEfficientViewModel(x.Efficient), UpdateFunc = (x, y) => x.Efficient = y?.Build() ?? default, Label = "证件有效期" };
 
     [ObservableProperty]
     public partial RiskLevel? RiskLevel { get; set; }
@@ -95,16 +95,20 @@ public partial class CustomerViewModel : ObservableObject
     [ObservableProperty]
     public partial QualificationViewModel? SelectedQualification { get; set; }
 
-    public CustomerViewModel()
-    {
-        Qualifications = new();
-    }
+    //public CustomerViewModel()
+    //{
+    //    Qualifications = new();
+    //}
 
 
     public CustomerViewModel(Investor investor)
     {
         Id = investor.Id;
-        Name.Init(investor);
+
+        Name = new ChangeableViewModel<Investor, string>(investor, init: x => x.Name, update: (x, y) => x.Name = y ?? string.Empty, clear: x => x.Name = string.Empty);
+
+
+        //Name.Init(investor);
         EntityType.Init(investor);
         EntityType.PropertyChanged += EntityType_PropertyChanged;
         EntityType_PropertyChanged(null, null);
@@ -125,7 +129,7 @@ public partial class CustomerViewModel : ObservableObject
 
     private void Type_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        switch (Type.Data.New)
+        switch (Type.NewValue)
         {
             case AmacInvestorType.NonEmployee:
             case AmacInvestorType.Employee:
@@ -148,7 +152,7 @@ public partial class CustomerViewModel : ObservableObject
             case AmacInvestorType.FundCompanyAssetManagementPlan:
             case AmacInvestorType.FuturesCompanyAssetManagementPlan:
                 IDTypes = [Models.IDType.ProductFilingCode, Models.IDType.ProductRegistrationCode, Models.IDType.Other];
-                break; 
+                break;
             case AmacInvestorType.TrustPlan:
             case AmacInvestorType.CommercialBankFinancialProduct:
             case AmacInvestorType.InsuranceAssetManagementPlan:
@@ -169,7 +173,7 @@ public partial class CustomerViewModel : ObservableObject
 
     private void EntityType_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        switch (EntityType.Data.New)
+        switch (EntityType.NewValue)
         {
             case Models.EntityType.Natural:
                 InvestorTypes = [AmacInvestorType.NonEmployee, AmacInvestorType.Employee];
@@ -185,60 +189,60 @@ public partial class CustomerViewModel : ObservableObject
         }
     }
 
-    [RelayCommand]
-    public void Delete(UnitViewModel unit)
-    {
-        if (unit is IEntityViewModel<Investor> entity)
-        {
-            using var db = DbHelper.Base();
-            var v = db.GetCollection<Investor>().FindById(Id);
+    //[RelayCommand]
+    //public void Delete(UnitViewModel unit)
+    //{
+    //    if (unit is IEntityViewModel<Investor> entity)
+    //    {
+    //        using var db = DbHelper.Base();
+    //        var v = db.GetCollection<Investor>().FindById(Id);
 
-            if (v is not null)
-            {
-                entity.RemoveValue(v);
-                unit.Reset();
-                db.GetCollection<Investor>().Upsert(v);
+    //        if (v is not null)
+    //        {
+    //            entity.RemoveValue(v);
+    //            unit.Reset();
+    //            db.GetCollection<Investor>().Upsert(v);
 
-                WeakReferenceMessenger.Default.Send(v);
-            }
-        }
-    }
+    //            WeakReferenceMessenger.Default.Send(v);
+    //        }
+    //    }
+    //}
 
-    [RelayCommand]
-    public void Reset(UnitViewModel unit)
-    {
-        var ps = unit.GetType().GetProperties().Where(x => x.PropertyType.IsGenericType && x.PropertyType.GetGenericTypeDefinition() == typeof(PropertyViewModel<>));
-        foreach (var item in ps)
-        {
-            var ty = item.PropertyType!;
-            object? obj = item.GetValue(unit);
-            ty.GetProperty("New")!.SetValue(obj, ty.GetProperty("Old")!.GetValue(obj));
-        }
-    }
+    //[RelayCommand]
+    //public void Reset(UnitViewModel unit)
+    //{
+    //    var ps = unit.GetType().GetProperties().Where(x => x.PropertyType.IsGenericType && x.PropertyType.GetGenericTypeDefinition() == typeof(PropertyViewModel<>));
+    //    foreach (var item in ps)
+    //    {
+    //        var ty = item.PropertyType!;
+    //        object? obj = item.GetValue(unit);
+    //        ty.GetProperty("New")!.SetValue(obj, ty.GetProperty("Old")!.GetValue(obj));
+    //    }
+    //}
 
-    [RelayCommand]
-    public void Modify(UnitViewModel unit)
-    {
-        if (unit is IEntityViewModel<Investor> entity)
-        {
-            using var db = DbHelper.Base();
-            var v = db.GetCollection<Investor>().FindById(Id);
+    //[RelayCommand]
+    //public void Modify(UnitViewModel unit)
+    //{
+    //    if (unit is IEntityViewModel<Investor> entity)
+    //    {
+    //        using var db = DbHelper.Base();
+    //        var v = db.GetCollection<Investor>().FindById(Id);
 
-            if (v is not null)
-                entity.UpdateEntity(v);
-            else if (Name.Data.Old is not null)
-                v = new Investor { Name = Name.Data.Old };
+    //        if (v is not null)
+    //            entity.UpdateEntity(v);
+    //        else if (Name.OldValue is not null)
+    //            v = new Investor { Name = Name.OldValue };
 
-            if (v is not null)
-            {
-                db.GetCollection<Investor>().Upsert(v);
-                if (Id == 0) Id = v.Id;
+    //        if (v is not null)
+    //        {
+    //            db.GetCollection<Investor>().Upsert(v);
+    //            if (Id == 0) Id = v.Id;
 
-                WeakReferenceMessenger.Default.Send(v);
-            }
-        }
-        unit.Apply();
-    }
+    //            WeakReferenceMessenger.Default.Send(v);
+    //        }
+    //    }
+    //    unit.Apply();
+    //}
 
 
     [RelayCommand]
@@ -247,13 +251,13 @@ public partial class CustomerViewModel : ObservableObject
         using var db = DbHelper.Base();
         InvestorQualification entity = new InvestorQualification { InvestorId = Id };
         db.GetCollection<InvestorQualification>().Insert(entity);
-        Qualifications.Add(QualificationViewModel.From(entity, Type.Data.Old, EntityType.Data.Old));
+        Qualifications.Add(QualificationViewModel.From(entity, Type.OldValue, EntityType.OldValue));
     }
 
     [RelayCommand]
     public void DeleteQualification(QualificationViewModel v)
     {
-        if (v.Date.Data.Old is not null && HandyControl.Controls.MessageBox.Show("确认删除吗？", button:System.Windows.MessageBoxButton.YesNo) == System.Windows.MessageBoxResult.No)
+        if (v.Date.Data.Old is not null && HandyControl.Controls.MessageBox.Show("确认删除吗？", button: System.Windows.MessageBoxButton.YesNo) == System.Windows.MessageBoxResult.No)
             return;
 
 
@@ -265,6 +269,8 @@ public partial class CustomerViewModel : ObservableObject
             db.GetCollection<InvestorQualification>().Delete(v.Id);
         }
     }
+
+    protected override Investor InitNewEntity() => new Investor { Name = string.Empty };
 }
 
 
@@ -338,4 +344,29 @@ public partial class EntityDateEfficientViewModel<T> : UnitViewModel, IEntityVie
         else
             return Begin.New is not null && Begin.New != default(DateTime) && End.New is not null && End.New != default(DateTime) ? new DateEfficient { LongTerm = false, Begin = DateOnly.FromDateTime(Begin.New!.Value), End = DateOnly.FromDateTime(End.New!.Value) } : null;
     }
+}
+
+public partial class DateEfficientViewModel : ObservableObject
+{
+
+    [ObservableProperty]
+    public partial DateOnly? Begin { get; set; }
+
+    [ObservableProperty]
+    public partial DateOnly? End { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsLongTerm { get; set; }
+
+
+    public DateEfficientViewModel() { }
+
+    public DateEfficientViewModel(DateEfficient efficient)
+    {
+        Begin = efficient.Begin;
+        End = efficient.End;
+        IsLongTerm = efficient.LongTerm;
+    }
+
+    public DateEfficient Build() => new DateEfficient { LongTerm = IsLongTerm, Begin = Begin, End = End };
 }
