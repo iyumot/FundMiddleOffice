@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
@@ -54,7 +55,7 @@ public partial class FundStrategyViewModel : ObservableObject
         }
         StrategyInfoViewModel st = new(new FundStrategy { FundId = FundId });
         st.IsReadOnly = false;
-        st.Start.NewValue = Strategies.Count == 0 ? new DateTime(FundSetupDate, default) : Strategies.LastOrDefault()?.End?.OldValue?.Date?.AddDays(1);
+        st.Start.NewValue = Strategies.Count == 0 ? new DateTime(FundSetupDate, default) : Strategies.LastOrDefault()?.End?.OldValue?.Date switch { DateTime t => t < DateTime.MaxValue.Date ? t.AddDays(1) : t, _ => null }; //?.AddDays(1); 
         Strategies.Add(st);
     }
 
@@ -135,6 +136,10 @@ public partial class StrategyInfoViewModel : EditableControlViewModelBase<FundSt
 
     }
 
+    protected override void NotifyChanged()
+    {
+        WeakReferenceMessenger.Default.Send(new FundStrategyChangedMessage(FundId));
+    }
     //[RelayCommand]
     //public override void Delete(UnitViewModel unit)
     //{

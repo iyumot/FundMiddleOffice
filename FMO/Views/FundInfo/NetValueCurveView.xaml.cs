@@ -192,7 +192,8 @@ public partial class DailyValueCurveViewModel : ObservableObject
 
     public int FundId { get; internal set; }
 
-    public List<FundStrategy>? Strategies { get; internal set; }
+    [ObservableProperty]
+    public partial List<FundStrategy>? Strategies { get;  set; }
 
     #endregion
 
@@ -245,6 +246,11 @@ public partial class DailyValueCurveViewModel : ObservableObject
     [RelayCommand]
     public void SetDateByStrategy(FundStrategy strategy)
     {
+        if (strategy.Start >= strategy.End)
+        {
+            HandyControl.Controls.Growl.Warning("不合法的净值日期范围，起始日期大于终止日期");
+            return;
+        }
         StartDate = strategy.Start;
         DateOnly today = DateOnly.FromDateTime(DateTime.Today);
         EndDate = strategy.End > today ? today : strategy.End;
