@@ -77,11 +77,14 @@
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                             Background="Transparent"
                             LastChildFill="True">
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                Foreground="{StaticResource LabelBrush}"
-                                Text="{Binding Binding.Label, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
 
+                            <ContentPresenter Content="{TemplateBinding local:ChangeableContainer.Header}" DockPanel.Dock="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=StripPlacement}" />
+
+                            <!--<TextBlock
+                                VerticalAlignment="Center"
+                                DockPanel.Dock="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=StripPlacement}"
+                                Foreground="{StaticResource LabelBrush}"
+                                Text="{Binding Binding.Label, RelativeSource={RelativeSource Mode=TemplatedParent}}" />-->
 
                             <DockPanel HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}">
                                 <local:CopyableControl Margin="10,0,0,0" Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}">
@@ -121,6 +124,65 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource Mode=Self}}">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="UserControl">
+                                <DockPanel
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    Background="Transparent"
+                                    LastChildFill="True">
+
+                                    <ContentPresenter Content="{TemplateBinding local:ChangeableContainer.Header}" DockPanel.Dock="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=StripPlacement}" />
+
+                                    <!--<TextBlock
+              VerticalAlignment="Center"
+              DockPanel.Dock="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=StripPlacement}"
+              Foreground="{StaticResource LabelBrush}"
+              Text="{Binding Binding.Label, RelativeSource={RelativeSource Mode=TemplatedParent}}" />-->
+
+                                    <DockPanel HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}">
+                                        <local:CopyableControl Margin="10,0,0,0" Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                            <TextBlock Text="{Binding Binding.Display, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+                                        </local:CopyableControl>
+
+
+                                        <DockPanel Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                                            <DockPanel DockPanel.Dock="Right">
+                                                <Button Panel.ZIndex="99" Style="{StaticResource ResetElement}" />
+                                                <Button Panel.ZIndex="99" Style="{StaticResource SaveElement}" />
+                                                <Grid
+                                                    x:Name="x"
+                                                    Panel.ZIndex="99"
+                                                    Visibility="Collapsed">
+                                                    <Button Style="{StaticResource DeleteElement}" Visibility="{Binding Binding.CanDelete, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                                                </Grid>
+                                            </DockPanel>
+
+                                            <ContentPresenter
+                                                x:Name="PART_Content"
+                                                Margin="4,0"
+                                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                Content="{Binding Binding, RelativeSource={RelativeSource AncestorType=local:ChangeableContainer}}"
+                                                ContentTemplate="{TemplateBinding ContentTemplate}" />
+
+
+                                        </DockPanel>
+                                    </DockPanel>
+                                </DockPanel>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="x" Property="Visibility" Value="Visible" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+
             <!--<Style.Triggers>
                 <Trigger Property="HorizontalContentAlignment" Value="Stretch">
                     <Setter Property="Template">

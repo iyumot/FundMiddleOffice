@@ -13,41 +13,41 @@ public class FundElements
     /// <summary>
     /// 名称
     /// </summary>
-    public Mutable<string>? FullName { get; set; }
+    public Mutable<string> FullName { get; set; } = new Mutable<string>(nameof(FullName));
 
     /// <summary>
     /// 简称
     /// </summary>
-    public Mutable<string>? ShortName { get; set; }
+    public Mutable<string> ShortName { get; set; } = new Mutable<string>(nameof(ShortName));
 
 
 
     /// <summary>
     /// 运作方式
     /// </summary> 
-    public Mutable<DataExtra<FundMode>>? FundModeInfo { get; set; }
+    public Mutable<DataExtra<FundMode>> FundModeInfo { get; set; } = new (nameof(ShortName));
 
     /// <summary>
     /// 封闭期
     /// </summary>
-    public Mutable<SealingRule>? SealingRule { get; set; }
+    public Mutable<SealingRule> SealingRule { get; set; } = new(nameof(SealingRule));
 
     /// <summary>
     /// 锁定期
     /// </summary>
-    //public Mutable<SealingRule>? LockingRule { get; set; }
+    //public Mutable<SealingRule> LockingRule { get; set; }
 
 
 
     /// <summary>
     /// 风险等级
     /// </summary>
-    public Mutable<RiskLevel>? RiskLevel { get; set; }
+    public Mutable<RiskLevel> RiskLevel { get; set; } = new(nameof(RiskLevel));
 
     /// <summary>
     /// 存续期
     /// </summary>
-    public Mutable<int>? DurationInMonths { get; set; }
+    public Mutable<int> DurationInMonths { get; set; } = new(nameof(DurationInMonths));
 
 
 
@@ -55,114 +55,116 @@ public class FundElements
     /// <summary>
     /// 结束日期
     /// </summary>
-    public Mutable<DateOnly>? ExpirationDate { get; set; }
+    public Mutable<DateOnly> ExpirationDate { get; set; } = new(nameof(ExpirationDate));
 
 
     /// <summary>
     /// 主募集账户
     /// </summary>
-    public Mutable<BankAccount>? CollectionAccount { get; set; }
+    public Mutable<BankAccount> CollectionAccount { get; set; } = new(nameof(CollectionAccount));
 
 
     /// <summary>
     /// 主托管账户
     /// </summary>
-    public Mutable<BankAccount>? CustodyAccount { get; set; }
+    public Mutable<BankAccount> CustodyAccount { get; set; } = new(nameof(CustodyAccount));
 
 
     /// <summary>
     /// 份额类别
     /// </summary>
-    public Mutable<ShareClass[]>? ShareClasses { get; set; }
+    public Mutable<ShareClass[]> ShareClasses { get; set; } = new(nameof(ShareClasses));
 
     /// <summary>
     /// 止损线
     /// </summary>
-    public Mutable<decimal>? StopLine { get; set; }
+    public Mutable<decimal> StopLine { get; set; } = new(nameof(StopLine));
 
     /// <summary>
     /// 预警线
     /// </summary>
-    public Mutable<decimal>? WarningLine { get; set; }
+    public Mutable<decimal> WarningLine { get; set; } = new(nameof(WarningLine));
 
     /// <summary>
     /// 开放日规则
     /// </summary>
-    public Mutable<string>? OpenDayInfo { get; set; }
+    public Mutable<string> OpenDayInfo { get; set; } = new(nameof(OpenDayInfo));
 
 
     /// <summary>
     /// 托管费
     /// </summary>
-    public Mutable<ValueWithEnum<FundFeeType, decimal>>? TrusteeFee { get; set; }
+    public Mutable<ValueWithEnum<FundFeeType, decimal>> TrusteeFee { get; set; } = new(nameof(TrusteeFee));
 
     /// <summary>
     /// 托管保底
     /// </summary>
-    public Mutable<ValueWithBoolean<decimal>>? TrusteeGuaranteedFee { get; set; }
+    public Mutable<ValueWithBoolean<decimal>> TrusteeGuaranteedFee { get; set; } = new(nameof(TrusteeGuaranteedFee));
 
 
     /// <summary>
     /// 外包费
     /// </summary>
-    public Mutable<ValueWithEnum<FundFeeType, decimal>>? OutsourcingFee { get; set; }
+    public Mutable<ValueWithEnum<FundFeeType, decimal>> OutsourcingFee { get; set; } = new(nameof(OutsourcingFee));
 
 
     /// <summary>
     /// 外包费保底
     /// </summary>
-    public Mutable<ValueWithBoolean<decimal>>? OutsourcingGuaranteedFee { get; set; }
+    public Mutable<ValueWithBoolean<decimal>> OutsourcingGuaranteedFee { get; set; } = new(nameof(OutsourcingGuaranteedFee));
 
 
-    public Mutable<FundInvestmentManager[]>? InvestmentManagers { get; set; }
+    public Mutable<FundInvestmentManager[]> InvestmentManagers { get; set; } = new(nameof(InvestmentManagers));
 
 
     /// <summary>
     /// 业绩比较基准
     /// </summary>
-    public Mutable<ValueWithBoolean<string>>? PerformanceBenchmarks { get; set; }
+    public Mutable<ValueWithBoolean<string>> PerformanceBenchmarks { get; set; } = new(nameof(PerformanceBenchmarks));
 
     /// <summary>
     /// 投资目标
     /// </summary>
-    public Mutable<string>? InvestmentObjective { get; set; }
+    public Mutable<string> InvestmentObjective { get; set; } = new(nameof(InvestmentObjective));
 
     /// <summary>
     /// 投资范围
     /// </summary>
-    public Mutable<string>? InvestmentScope { get; set; }
+    public Mutable<string> InvestmentScope { get; set; } = new(nameof(InvestmentScope));
 
     /// <summary>
     /// 投资策略
     /// </summary>
-    public Mutable<string>? InvestmentStrategy { get; set; }
+    public Mutable<string> InvestmentStrategy { get; set; } = new(nameof(InvestmentStrategy));
 
 
 
 
-    public PortionMutable<ValueWithEnum<SealingType, int>>? LockingRule { get; set; }
+    public PortionMutable<ValueWithEnum<SealingType, int>> LockingRule { get; set; } = new(nameof(LockingRule));
 
 
     /// <summary>
     /// 管理费
     /// </summary>
-    public PortionMutable<ValueWithEnum<FundFeeType, decimal>>? ManageFee { get; set; }
+    public PortionMutable<ValueWithEnum<FundFeeType, decimal>> ManageFee { get; set; } = new(nameof(ManageFee));
+
+ 
 
     /// <summary>
     /// 认购费
     /// </summary>
-    public PortionMutable<ValueWithEnum<FundFeeType, decimal>>? SubscriptionFee { get; set; }
+    public PortionMutable<ValueWithEnum<FundFeeType, decimal>> SubscriptionFee { get; set; } = new(nameof(SubscriptionFee));
 
     /// <summary>
     /// 申购费
     /// </summary>
-    public PortionMutable<ValueWithEnum<FundFeeType, decimal>>? PurchaseFee { get; set; }
+    public PortionMutable<ValueWithEnum<FundFeeType, decimal>> PurchaseFee { get; set; } = new(nameof(PurchaseFee));
 
 
     /// <summary>
     /// 赎回费
     /// </summary>
-    public PortionMutable<ValueWithEnum<FundFeeType, decimal>>? RedemptionFee { get; set; }
+    public PortionMutable<ValueWithEnum<FundFeeType, decimal>> RedemptionFee { get; set; } = new(nameof(RedemptionFee));
 
 
 
@@ -182,13 +184,7 @@ public class FundElements
     public bool Init()
     {
         bool changed = false;
-
-        if (FullName is null)
-        { changed = true; FullName = new Mutable<string>(nameof(FullName)); }
-
-        if (ShortName is null)
-        { changed = true; ShortName = new Mutable<string>(nameof(ShortName)); }
-
+         
         if (RiskLevel is null)
         { changed = true; RiskLevel = new Mutable<RiskLevel>(nameof(RiskLevel)); }
 
@@ -248,6 +244,7 @@ public class FundElements
 
         if (ManageFee is null)
         { changed = true; ManageFee = new(nameof(ManageFee)); }
+         
 
         if (SubscriptionFee is null)
         { changed = true; SubscriptionFee = new(nameof(SubscriptionFee)); }
@@ -317,7 +314,7 @@ public class FundElements
     //            d.Value[item] = r;
     //}
 
-    //private void SetElementAsDefault<T>(PortionMutable<T>? portion, int flowid) where T : notnull
+    //private void SetElementAsDefault<T>(PortionMutable<T> portion, int flowid) where T : notnull
     //{
     //    if (portion is null) return;
 
@@ -388,4 +385,23 @@ public class FundElements
 
         ShareClasses!.SetValue(old.ToArray(), flowId);
     }
+}
+
+
+public class FundFeeInfo
+{
+    public FundFeeType Type { get; set; }
+
+    public decimal Fee { get; set; }
+
+    /// <summary>
+    /// 保底费用/年
+    /// </summary>
+    public decimal GuaranteedFee { get; set; }
+
+
+    /// <summary>
+    /// 特殊类型
+    /// </summary>
+    public string? Other { get; set; }
 }

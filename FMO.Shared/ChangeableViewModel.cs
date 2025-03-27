@@ -79,7 +79,7 @@ public partial class ChangeableViewModel<TEntity, TProperty> : ObservableObject,
         if (!(typeof(TProperty).IsValueType || typeof(TProperty) == typeof(string) || typeof(TProperty).IsAssignableTo(typeof(IEquatable<TProperty>))))
             throw new InvalidOperationException();
 
-        if (typeof(TProperty).IsAssignableTo(typeof(ObservableObject)))
+        if (typeof(TProperty).IsAssignableTo(typeof(INotifyPropertyChanged)))
             _notnullDefault = (TProperty)Activator.CreateInstance(typeof(TProperty))!;
 
         DisplayFunc = x => x switch { Enum e => EnumDescriptionTypeConverter.GetEnumDescription(e), _ => x?.ToString() };

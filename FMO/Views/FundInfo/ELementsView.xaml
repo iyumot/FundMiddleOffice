@@ -7,6 +7,7 @@
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:model="clr-namespace:FMO.Models;assembly=FMO.Models"
+    xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     d:DataContext="{d:DesignInstance Type=local:ElementsViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
@@ -221,7 +222,7 @@
                     Width="80"
                     Margin="4,0,0,0"
                     ItemsSource="{Binding Source={x:Static local:ElementsViewModel.FundModes}}"
-                    SelectedItem="{Binding Data.New}">
+                    SelectedItem="{Binding NewValue.Data}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
@@ -232,12 +233,12 @@
                 <TextBox
                     x:Name="other"
                     MinWidth="100"
-                    Text="{Binding Extra.New, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                    Text="{Binding NewValue.Extra, UpdateSourceTrigger=PropertyChanged, Delay=300}"
                     Visibility="Collapsed" />
 
             </DockPanel>
             <DataTemplate.Triggers>
-                <DataTrigger Binding="{Binding Data.New}" Value="Other">
+                <DataTrigger Binding="{Binding NewValue.Data}" Value="Other">
                     <Setter TargetName="other" Property="Visibility" Value="Visible" />
                 </DataTrigger>
             </DataTemplate.Triggers>
@@ -292,7 +293,7 @@
                     Width="70"
                     Margin="4,0"
                     ItemsSource="{Binding DataContext.SealingTypes, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
-                    SelectedItem="{Binding Type.New}">
+                    SelectedItem="{Binding NewValue.Type}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
@@ -301,24 +302,30 @@
                 </ComboBox>
 
 
-                <TextBox
-                    x:Name="mon"
-                    MinWidth="40"
-                    Text="{Binding Month.New, UpdateSourceTrigger=PropertyChanged, Delay=300, StringFormat={}{0}个月}"
-                    Visibility="Collapsed" />
+                <Grid x:Name="mon" Visibility="Collapsed">
+                    <TextBox
+                        MinWidth="60"
+                        Padding="6,0,30,0"
+                        Text="{Binding NewValue.Month, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                    <TextBlock
+                        Margin="6,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Text="个月" />
+                </Grid>
 
                 <TextBox
                     x:Name="other"
                     MinWidth="100"
-                    Text="{Binding Extra.New, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                    Text="{Binding NewValue.Extra, UpdateSourceTrigger=PropertyChanged, Delay=300}"
                     Visibility="Collapsed" />
 
             </DockPanel>
             <DataTemplate.Triggers>
-                <DataTrigger Binding="{Binding Type.New}" Value="Other">
+                <DataTrigger Binding="{Binding NewValue.Type}" Value="Other">
                     <Setter TargetName="other" Property="Visibility" Value="Visible" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding Type.New}" Value="Has">
+                <DataTrigger Binding="{Binding NewValue.Type}" Value="Has">
                     <Setter TargetName="mon" Property="Visibility" Value="Visible" />
                 </DataTrigger>
             </DataTemplate.Triggers>
@@ -332,7 +339,7 @@
                     Width="90"
                     Margin="4,0"
                     ItemsSource="{Binding DataContext.FundFeeTypes, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
-                    SelectedItem="{Binding Type.New}">
+                    SelectedItem="{Binding NewValue.Type}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
@@ -371,15 +378,15 @@
 
             </DockPanel>
             <DataTemplate.Triggers>
-                <DataTrigger Binding="{Binding Type.New}" Value="Other">
+                <DataTrigger Binding="{Binding NewValue.Type}" Value="Other">
                     <Setter TargetName="other" Property="Visibility" Value="Visible" />
                     <Setter TargetName="mon" Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding Type.New}" Value="Ratio">
+                <DataTrigger Binding="{Binding NewValue.Type}" Value="Ratio">
                     <Setter TargetName="mon" Property="Visibility" Value="Visible" />
                     <Setter TargetName="a" Property="Visibility" Value="Visible" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding Type.New}" Value="Fix">
+                <DataTrigger Binding="{Binding NewValue.Type}" Value="Fix">
                     <Setter TargetName="mon" Property="Visibility" Value="Visible" />
                     <Setter TargetName="b" Property="Visibility" Value="Visible" />
                 </DataTrigger>
@@ -392,7 +399,7 @@
                     Width="90"
                     Margin="4,0"
                     ItemsSource="{Binding DataContext.FundFeeTypes, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
-                    SelectedItem="{Binding Type.New}">
+                    SelectedItem="{Binding NewValue.Type}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
@@ -447,14 +454,14 @@
                     Visibility="{Binding IsAdopted.New, Converter={StaticResource Boolean2VisibilityConverter}}" />
             </DockPanel>
             <DataTemplate.Triggers>
-                <DataTrigger Binding="{Binding Type.New}" Value="Other">
+                <DataTrigger Binding="{Binding NewValue.Type}" Value="Other">
                     <Setter TargetName="other" Property="Visibility" Value="Visible" />
                     <Setter TargetName="mon" Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding Type.New}" Value="Ratio">
+                <DataTrigger Binding="{Binding NewValue.Type}" Value="Ratio">
                     <Setter TargetName="a" Property="Visibility" Value="Visible" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding Type.New}" Value="Fix">
+                <DataTrigger Binding="{Binding NewValue.Type}" Value="Fix">
                     <Setter TargetName="b" Property="Visibility" Value="Visible" />
                 </DataTrigger>
             </DataTemplate.Triggers>
@@ -495,7 +502,7 @@
                     Width="70"
                     Margin="4,0"
                     ItemsSource="{Binding DataContext.SealingTypes, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
-                    SelectedItem="{Binding Type.New}">
+                    SelectedItem="{Binding NewValue.Type}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
@@ -517,10 +524,10 @@
                     Visibility="Collapsed" />
             </DockPanel>
             <DataTemplate.Triggers>
-                <DataTrigger Binding="{Binding Type.New}" Value="Other">
+                <DataTrigger Binding="{Binding NewValue.Type}" Value="Other">
                     <Setter TargetName="other" Property="Visibility" Value="Visible" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding Type.New}" Value="Has">
+                <DataTrigger Binding="{Binding NewValue.Type}" Value="Has">
                     <Setter TargetName="mon" Property="Visibility" Value="Visible" />
                 </DataTrigger>
             </DataTemplate.Triggers>
@@ -619,20 +626,12 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <ContentControl
-                HorizontalContentAlignment="Stretch"
-                DataContext="{Binding FullName}"
-                Style="{StaticResource ElementContainer}">
-                <TextBox Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
-            </ContentControl>
 
-            <ContentControl
-                Grid.Column="1"
-                HorizontalContentAlignment="Stretch"
-                DataContext="{Binding ShortName}"
-                Style="{StaticResource ElementContainer}">
-                <TextBox Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
-            </ContentControl>
+            <shared:ChangeableContainer Binding="{Binding FullName}" />
+
+            <shared:ChangeableContainer Grid.Column="1" Binding="{Binding ShortName}" />
+
+
 
             <ToggleButton
                 Grid.Column="2"
@@ -652,16 +651,17 @@
         </Grid>
 
         <DockPanel Margin="{StaticResource LineSpacing}" LastChildFill="False">
-            <ContentControl
-                ContentTemplate="{StaticResource FundMode}"
-                DataContext="{Binding FundModeInfo}"
-                Style="{StaticResource ElementContainer}" />
 
-            <ContentControl
+
+            <shared:ChangeableContainer Binding="{Binding FundModeInfo}" ContentTemplate="{StaticResource FundMode}" />
+
+
+
+            <shared:ChangeableContainer
+                Binding="{Binding SealingRule}"
                 ContentTemplate="{StaticResource Sealing}"
-                DataContext="{Binding SealingRule}"
-                Style="{StaticResource ElementContainer}"
                 Visibility="{Binding DataContext.IsSealingFund, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
 
 
 
@@ -817,20 +817,59 @@
             </TextBlock>
 
             <UniformGrid Rows="1">
-                <ContentControl
-                    VerticalContentAlignment="Stretch"
-                    DataContext="{Binding CollectionAccount}"
-                    Style="{StaticResource ElementContainer}">
-                    <TextBox
-                        MinWidth="300"
-                        MinHeight="60"
-                        Padding="30,8"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Stretch"
-                        HorizontalContentAlignment="Left"
-                        AcceptsReturn="True"
-                        Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
-                </ContentControl>
+                <shared:ChangeableContainer Binding="{Binding CollectionAccount}" StripPlacement="Top">
+                    <shared:ChangeableContainer.Header>
+                        <DockPanel HorizontalAlignment="Center" LastChildFill="False">
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.clipboard}"
+                                Command="{Binding SetBankFromClipboardCommand}"
+                                CommandParameter="{Binding CollectionAccount}"
+                                DockPanel.Dock="Right"
+                                Foreground="Green"
+                                Style="{StaticResource ButtonIcon}" />
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Text="募集账户" />
+                        </DockPanel>
+                    </shared:ChangeableContainer.Header>
+                    <shared:ChangeableContainer.ContentTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <StackPanel.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="MinWidth" Value="70" />
+                                        <Setter Property="TextAlignment" Value="Right" />
+                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                        <Setter Property="Margin" Value="0,0,4,0" />
+                                    </Style>
+                                </StackPanel.Resources>
+                                <DockPanel>
+                                    <TextBlock Text="户名" />
+                                    <TextBox Text="{Binding NewValue.Name, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
+                                </DockPanel>
+                                <DockPanel>
+                                    <TextBlock Text="账号" />
+                                    <TextBox Text="{Binding NewValue.Number, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
+                                </DockPanel>
+                                <DockPanel>
+                                    <TextBlock Text="开户行" />
+                                    <TextBox Text="{Binding NewValue.BankOfDeposit, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
+                                </DockPanel>
+
+                                <DockPanel>
+                                    <TextBlock Text="大额支付号" />
+                                    <TextBox Text="{Binding NewValue.LargePayNo, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
+                                </DockPanel>
+                                <DockPanel>
+                                    <TextBlock Text="Swift" />
+                                    <TextBox Text="{Binding NewValue.SwiftCode, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
+                                </DockPanel>
+                            </StackPanel>
+                        </DataTemplate>
+                    </shared:ChangeableContainer.ContentTemplate>
+                </shared:ChangeableContainer>
+
                 <ContentControl
                     VerticalContentAlignment="Stretch"
                     DataContext="{Binding CustodyAccount}"

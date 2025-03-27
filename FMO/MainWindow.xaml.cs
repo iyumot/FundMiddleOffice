@@ -90,7 +90,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
             ele = FundElements.Create(message.Id);
             db.GetCollection<FundElements>().Insert(ele);
         }
-        if (ele.Init()) db.GetCollection<FundElements>().Update(ele);
+        //if (ele.Init()) db.GetCollection<FundElements>().Update(ele);
         db.Dispose();
         if (fund is null) return;
 
