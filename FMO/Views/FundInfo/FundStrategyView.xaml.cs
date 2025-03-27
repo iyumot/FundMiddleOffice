@@ -110,13 +110,14 @@ public partial class StrategyInfoViewModel : EditableControlViewModelBase<FundSt
         };
         End.Init(strategy);
 
-        Description = new ChangeableViewModel<FundStrategy, string>(strategy)
+        Description = new ChangeableViewModel<FundStrategy, string>
         {
             Label = "策略说明",
             InitFunc = x => x.Name,
             UpdateFunc = (a, b) => a.Name = b,
             ClearFunc = x => x.Name = null
         };
+        Description.Init(strategy);
     }
 
     public ChangeableViewModel<FundStrategy, string> Name { get; }
@@ -130,10 +131,9 @@ public partial class StrategyInfoViewModel : EditableControlViewModelBase<FundSt
 
     public int FundId { get; }
 
-    protected override void InitNewEntity(FundStrategy v)
+    protected override FundStrategy InitNewEntity()
     {
-        v.FundId = FundId;
-
+        return new FundStrategy { FundId = FundId };
     }
 
     protected override void NotifyChanged()
