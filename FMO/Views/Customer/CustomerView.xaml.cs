@@ -35,7 +35,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
 
 
-    public ChangeableViewModel<Investor, string> Name { get; } //= new() { InitFunc = x => x.Name, UpdateFunc = (x, y) => x.Name = y, ClearFunc = x => x.Name = string.Empty };
+    public ChangeableViewModel<Investor, string> Name { get; } 
 
     public ChangeableViewModel<Investor, EntityType> EntityType { get; } = new() { InitFunc = x => x.EntityType, UpdateFunc = (x, y) => x.EntityType = y, ClearFunc = x => x.EntityType = Models.EntityType.Unk, Label = "客户类型" };
 
@@ -57,8 +57,6 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
     public partial IDType[]? IDTypes { get; set; }
 
 
-    public int Id { get; private set; }
-
     [ObservableProperty]
     public partial QualifiedInvestorType QualifiedInvestorType { get; set; }
 
@@ -67,10 +65,6 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
     /// </summary>
     [ObservableProperty]
     public partial bool IsSpecial { get; set; }
-
-
-    //[ObservableProperty]
-    //public partial bool IsReadOnly { get; set; } = true;
 
     /// <summary>
     /// 民族
@@ -81,7 +75,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
 
     //public EntityDateEfficientViewModel<Investor> Efficient { get; } = new() { InitFunc = x => x.Efficient, UpdateFunc = (x, y) => x.Efficient = y, ClearFunc = x => x.Efficient = default, Label = "证件有效期" };
-    public ChangeableViewModel<Investor, DateEfficientViewModel> Efficient { get; } = new() { InitFunc = x => new DateEfficientViewModel(x.Efficient), UpdateFunc = (x, y) => x.Efficient = y?.Build() ?? default, Label = "证件有效期" };
+    public ChangeableViewModel<Investor, DateEfficientViewModel> Efficient { get; } = new() { InitFunc = x => new DateEfficientViewModel(x.Efficient), UpdateFunc = (x, y) => x.Efficient = y?.Build() ?? default, Label = "证件有效期"  };
 
     [ObservableProperty]
     public partial RiskLevel? RiskLevel { get; set; }
@@ -257,7 +251,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
     [RelayCommand]
     public void DeleteQualification(QualificationViewModel v)
     {
-        if (v.Date.Data.Old is not null && HandyControl.Controls.MessageBox.Show("确认删除吗？", button: System.Windows.MessageBoxButton.YesNo) == System.Windows.MessageBoxResult.No)
+        if (v.Date.OldValue is not null && HandyControl.Controls.MessageBox.Show("确认删除吗？", button: System.Windows.MessageBoxButton.YesNo) == System.Windows.MessageBoxResult.No)
             return;
 
 
@@ -275,78 +269,78 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
 
 
-public partial class EntityDateEfficientViewModel<T> : UnitViewModel, IEntityViewModel<T> where T : notnull
-{
-    public PropertyViewModel<bool> LongTerm { get; } = new();
+//public partial class EntityDateEfficientViewModel<T> : UnitViewModel, IEntityViewModel<T> where T : notnull
+//{
+//    public PropertyViewModel<bool> LongTerm { get; } = new();
 
-    public PropertyViewModel<DateTime?> Begin { get; } = new();
+//    public PropertyViewModel<DateTime?> Begin { get; } = new();
 
-    public PropertyViewModel<DateTime?> End { get; } = new();
+//    public PropertyViewModel<DateTime?> End { get; } = new();
 
-    public override bool CanConfirm => HasUnsavedValue;
+//    public override bool CanConfirm => HasUnsavedValue;
 
-    public override bool CanDelete => !HasUnsavedValue && (Begin.Old is not null || End.Old is not null || LongTerm.Old);
+//    public override bool CanDelete => !HasUnsavedValue && (Begin.Old is not null || End.Old is not null || LongTerm.Old);
 
-    public override bool HasUnsavedValue => Begin.IsChanged || End.IsChanged || LongTerm.IsChanged;
+//    public override bool HasUnsavedValue => Begin.IsChanged || End.IsChanged || LongTerm.IsChanged;
 
-    public Func<T, DateEfficient>? InitFunc { get; set; }
+//    public Func<T, DateEfficient>? InitFunc { get; set; }
 
-    public Action<T, DateEfficient>? UpdateFunc { get; set; }
+//    public Action<T, DateEfficient>? UpdateFunc { get; set; }
 
-    public Action<T>? ClearFunc { get; set; }
+//    public Action<T>? ClearFunc { get; set; }
 
-    public void Init(T param)
-    {
-        if (param is not null && InitFunc is not null)
-        {
-            var v = InitFunc(param);
-            Begin.Old = v.Begin.HasValue ? new DateTime(v.Begin.Value, default) : null;
-            Begin.New = v.Begin.HasValue ? new DateTime(v.Begin.Value, default) : null;
-            End.Old = v.End.HasValue ? new DateTime(v.End.Value, default) : null;
-            End.New = v.End.HasValue ? new DateTime(v.End.Value, default) : null;
-            LongTerm.Old = v.LongTerm;
-            LongTerm.New = v.LongTerm;
-        }
-        SubscribeChanges();
-    }
+//    public void Init(T param)
+//    {
+//        if (param is not null && InitFunc is not null)
+//        {
+//            var v = InitFunc(param);
+//            Begin.Old = v.Begin.HasValue ? new DateTime(v.Begin.Value, default) : null;
+//            Begin.New = v.Begin.HasValue ? new DateTime(v.Begin.Value, default) : null;
+//            End.Old = v.End.HasValue ? new DateTime(v.End.Value, default) : null;
+//            End.New = v.End.HasValue ? new DateTime(v.End.Value, default) : null;
+//            LongTerm.Old = v.LongTerm;
+//            LongTerm.New = v.LongTerm;
+//        }
+//        SubscribeChanges();
+//    }
 
-    public void UpdateEntity(T obj)
-    {
-        if (obj is not null && UpdateFunc is not null && CanConfirm && BuildDateEfficient() is DateEfficient efficient)
-        {
-            UpdateFunc(obj, efficient);
-            Apply();
-        }
-    }
+//    public void UpdateEntity(T obj)
+//    {
+//        if (obj is not null && UpdateFunc is not null && CanConfirm && BuildDateEfficient() is DateEfficient efficient)
+//        {
+//            UpdateFunc(obj, efficient);
+//            Apply();
+//        }
+//    }
 
-    public void RemoveValue(T obj)
-    {
-        LongTerm.New = false;
-        LongTerm.Old = false;
-        Begin.New = null;
-        Begin.Old = null;
-        End.New = null;
-        End.Old = null;
+//    public void RemoveValue(T obj)
+//    {
+//        LongTerm.New = false;
+//        LongTerm.Old = false;
+//        Begin.New = null;
+//        Begin.Old = null;
+//        End.New = null;
+//        End.Old = null;
 
-        if (obj is not null && ClearFunc is not null)
-            ClearFunc(obj);
-    }
+//        if (obj is not null && ClearFunc is not null)
+//            ClearFunc(obj);
+//    }
 
-    public override string ToString()
-    {
-        return $"{Begin.New?.ToString("yyyy-MM-dd")}-{(LongTerm.New ? "长期" : End.New?.ToString("yyyy-MM-dd"))}";
-    }
+//    public override string ToString()
+//    {
+//        return $"{Begin.New?.ToString("yyyy-MM-dd")}-{(LongTerm.New ? "长期" : End.New?.ToString("yyyy-MM-dd"))}";
+//    }
 
-    private DateEfficient? BuildDateEfficient()
-    {
-        if (LongTerm.New)
-            return Begin.New is not null && Begin.New != default(DateTime) ? new DateEfficient { LongTerm = true, Begin = DateOnly.FromDateTime(Begin.New!.Value) } : null;
-        else
-            return Begin.New is not null && Begin.New != default(DateTime) && End.New is not null && End.New != default(DateTime) ? new DateEfficient { LongTerm = false, Begin = DateOnly.FromDateTime(Begin.New!.Value), End = DateOnly.FromDateTime(End.New!.Value) } : null;
-    }
-}
+//    private DateEfficient? BuildDateEfficient()
+//    {
+//        if (LongTerm.New)
+//            return Begin.New is not null && Begin.New != default(DateTime) ? new DateEfficient { LongTerm = true, Begin = DateOnly.FromDateTime(Begin.New!.Value) } : null;
+//        else
+//            return Begin.New is not null && Begin.New != default(DateTime) && End.New is not null && End.New != default(DateTime) ? new DateEfficient { LongTerm = false, Begin = DateOnly.FromDateTime(Begin.New!.Value), End = DateOnly.FromDateTime(End.New!.Value) } : null;
+//    }
+//}
 
-public partial class DateEfficientViewModel : ObservableObject
+public partial class DateEfficientViewModel : ObservableObject, IEquatable<DateEfficientViewModel>
 {
 
     [ObservableProperty]
@@ -369,4 +363,16 @@ public partial class DateEfficientViewModel : ObservableObject
     }
 
     public DateEfficient Build() => new DateEfficient { LongTerm = IsLongTerm, Begin = Begin, End = End };
+
+    public bool Equals(DateEfficientViewModel? other)
+    {
+        return Begin == other?.Begin && End == other?.End && IsLongTerm == other?.IsLongTerm;
+    }
+
+    public override string ToString()
+    {
+        if (Begin >= End) return string.Empty;
+
+        return $"{Begin?.ToString("yyyy-MM-dd")}-{(IsLongTerm ? "长期" : End?.ToString("yyyy-MM-dd"))}";
+    }
 }

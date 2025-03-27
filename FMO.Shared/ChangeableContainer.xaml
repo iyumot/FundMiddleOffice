@@ -90,6 +90,17 @@
 
 
                                 <DockPanel Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                                    <DockPanel DockPanel.Dock="Right">
+                                        <Button Panel.ZIndex="99" Style="{StaticResource ResetElement}" />
+                                        <Button Panel.ZIndex="99" Style="{StaticResource SaveElement}" />
+                                        <Grid
+                                            x:Name="x"
+                                            Panel.ZIndex="99"
+                                            Visibility="Collapsed">
+                                            <Button Style="{StaticResource DeleteElement}" Visibility="{Binding Binding.CanDelete, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                                        </Grid>
+                                    </DockPanel>
+
                                     <ContentPresenter
                                         x:Name="PART_Content"
                                         Margin="4,0"
@@ -98,14 +109,7 @@
                                         Content="{Binding Binding, RelativeSource={RelativeSource AncestorType=local:ChangeableContainer}}"
                                         ContentTemplate="{TemplateBinding ContentTemplate}" />
 
-                                    <Button Panel.ZIndex="99" Style="{StaticResource ResetElement}" />
-                                    <Button Panel.ZIndex="99" Style="{StaticResource SaveElement}" />
-                                    <Grid
-                                        x:Name="x"
-                                        Panel.ZIndex="99"
-                                        Visibility="Collapsed">
-                                        <Button Style="{StaticResource DeleteElement}" Visibility="{Binding Binding.CanDelete, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource Boolean2VisibilityConverter}}" />
-                                    </Grid>
+
                                 </DockPanel>
                             </DockPanel>
                         </DockPanel>
@@ -117,7 +121,7 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-            <Style.Triggers>
+            <!--<Style.Triggers>
                 <Trigger Property="HorizontalContentAlignment" Value="Stretch">
                     <Setter Property="Template">
                         <Setter.Value>
@@ -127,39 +131,39 @@
                                         VerticalAlignment="Center"
                                         Foreground="{StaticResource LabelBrush}"
                                         Text="{Binding Binding.Label, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
-                                    <local:CopyableControl
-                                        Margin="10,0,0,0"
-                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}">
-                                        <TextBlock Text="{Binding Binding.Display, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
-                                    </local:CopyableControl>
 
-                                    <DockPanel Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}">
-                                        <Button
-                                            Panel.ZIndex="99"
-                                            DockPanel.Dock="Right"
-                                            Style="{StaticResource SaveElement}" />
+                                    <DockPanel HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}">
+                                        <local:CopyableControl Margin="10,0,0,0" Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                            <TextBlock Text="{Binding Binding.Display, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+                                        </local:CopyableControl>
 
-                                        <Button
-                                            Panel.ZIndex="99"
-                                            DockPanel.Dock="Right"
-                                            Style="{StaticResource ResetElement}" />
+                                        <DockPanel Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                                            <Button
+                                                Panel.ZIndex="99"
+                                                DockPanel.Dock="Right"
+                                                Style="{StaticResource SaveElement}" />
 
-                                        <Grid
-                                            x:Name="x"
-                                            Panel.ZIndex="99"
-                                            DockPanel.Dock="Right"
-                                            Visibility="Collapsed">
-                                            <Button Style="{StaticResource DeleteElement}" />
-                                        </Grid>
+                                            <Button
+                                                Panel.ZIndex="99"
+                                                DockPanel.Dock="Right"
+                                                Style="{StaticResource ResetElement}" />
 
-                                        <ContentPresenter
-                                            x:Name="PART_Content"
-                                            Margin="4,0"
-                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                            Content="{Binding Binding, RelativeSource={RelativeSource AncestorType=local:ChangeableContainer}}"
-                                            ContentTemplate="{TemplateBinding ContentTemplate}" />
+                                            <Grid
+                                                x:Name="x"
+                                                Panel.ZIndex="99"
+                                                DockPanel.Dock="Right"
+                                                Visibility="Collapsed">
+                                                <Button Style="{StaticResource DeleteElement}" />
+                                            </Grid>
 
+                                            <ContentPresenter
+                                                x:Name="PART_Content"
+                                                Margin="4,0"
+                                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                Content="{Binding Binding, RelativeSource={RelativeSource AncestorType=local:ChangeableContainer}}"
+                                                ContentTemplate="{TemplateBinding ContentTemplate}" />
+
+                                        </DockPanel>
                                     </DockPanel>
 
                                 </DockPanel>
@@ -172,7 +176,7 @@
                         </Setter.Value>
                     </Setter>
                 </Trigger>
-            </Style.Triggers>
+            </Style.Triggers>-->
         </Style>
     </UserControl.Style>
 </UserControl>

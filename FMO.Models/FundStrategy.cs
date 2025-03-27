@@ -19,5 +19,5 @@ public class FundStrategy
 
     public DateOnly End { get; set; }
 
-
+    public string? Description { get; set; }
 }

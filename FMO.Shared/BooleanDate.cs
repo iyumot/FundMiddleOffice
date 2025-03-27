@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System.Collections;
 
 namespace FMO.Shared;
 
@@ -23,6 +24,7 @@ public partial class BooleanDate : ObservableObject, IEquatable<BooleanDate>
 
         return true;
     }
+
 
     partial void OnIsLongTermChanged(bool value)
     {

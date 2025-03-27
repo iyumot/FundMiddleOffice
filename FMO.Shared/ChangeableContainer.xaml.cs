@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace FMO.Shared;
@@ -25,31 +26,13 @@ public partial class ChangeableContainer : UserControl
 
 
 
-    //public Style ElementStyle
-    //{
-    //    get { return (Style)GetValue(ElementStyleProperty); }
-    //    set { SetValue(ElementStyleProperty, value); }
-    //}
-
-    //// Using a DependencyProperty as the backing store for ElementStyle.  This enables animation, styling, binding, etc...
-    //public static readonly DependencyProperty ElementStyleProperty =
-    //    DependencyProperty.Register("ElementStyle", typeof(Style), typeof(EditableContainer), new PropertyMetadata(null, OnStyleChanged));
-
-    //private static void OnStyleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    //{
-    //    if (d is EditableContainer obj && e.NewValue is Style s && obj.Content.GetType() == s.TargetType && obj.Content is FrameworkElement element)
-    //    {
-    //        element.Style = s;
-    //    }
-    //}
+    //Debouncer _debouncer;
 
     public ChangeableContainer()
     {
         InitializeComponent();
 
-      //  Unloaded += EditableContainer_Unloaded;
-
-       // Loaded += EditableContainer_Loaded;
+        //_debouncer = new Debouncer(() => Binding?.Refresh());
     }
 
     public override void OnApplyTemplate()
@@ -60,31 +43,21 @@ public partial class ChangeableContainer : UserControl
     }
 
 
-    private void EditableContainer_Loaded(object sender, RoutedEventArgs e)
-    {
-        Debug.WriteLine("-------------------------------");
 
-        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(_content); i++)
-        {
-            var obj  = VisualTreeHelper.GetChild(_content, i);
+    //protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
+    //{
+    //    base.OnPreviewMouseDown(e);
 
-            switch (obj)
-            {
-                case TextBox tb:
-                    tb.TextChanged += (a, b) => Binding.Refresh();
-                        break;
-                default:
-                    break;
-            }
+    //    if(e.Source.GetType() == typeof(ChangeableContainer))
+    //        _debouncer.Invoke();
+    //}
 
-            Debug.WriteLine(obj.GetType());
-        }
+    //protected override void OnPreviewKeyDown(KeyEventArgs e)
+    //{
+    //    base.OnPreviewKeyDown(e);
 
-        Debug.WriteLine("\n\n");
-    }
+    //    if (e.Source.GetType() == typeof(ChangeableContainer))
+    //        _debouncer.Invoke();
+    //}
 
-    private void EditableContainer_Unloaded(object sender, RoutedEventArgs e)
-    {
-        
-    }
 }
