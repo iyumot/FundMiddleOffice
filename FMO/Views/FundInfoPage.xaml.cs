@@ -7,6 +7,7 @@ using Microsoft.Win32;
 using Serilog;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Windows.Controls;
@@ -27,7 +28,7 @@ public partial class FundInfoPage : UserControl
 }
 
 
-public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<FundShareChangedMessage>, IRecipient<FundDailyUpdateMessage>
+public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<FundShareChangedMessage>, IRecipient<FundDailyUpdateMessage>, IRecipient<FundStrategyChangedMessage>
 {
     public Fund Fund { get; init; }
 
@@ -262,6 +263,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         e.Accepted = e.Item switch { ContractFinalizeFlowViewModel or ContractModifyFlowViewModel => true, _ => false };
     }
 
+    #region Property
     [ObservableProperty]
     public partial bool IsEditable { get; set; }
 
@@ -366,7 +368,8 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     public partial DailyValueCurveViewModel CurveViewDataContext { get; set; }
 
     [ObservableProperty]
-    public partial FundStrategyViewModel StrategyDataContext { get; set; }
+    public partial FundStrategyViewModel StrategyDataContext { get; set; } 
+    #endregion
 
     /// <summary>
     /// 打开基金公示
@@ -588,6 +591,16 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
             //else throw new NotImplementedException();
 
             CurveViewDataContext.Data = DailyValues.OrderBy(x => x.Date).ToList();
+        }
+    }
+
+    public void Receive(FundStrategyChangedMessage message)
+    {
+        if (message.FundId == FundId)
+        {
+            using var db = DbHelper.Base();
+            var strategies = db.GetCollection<FundStrategy>().Find(x => x.FundId == FundId).ToList();
+            CurveViewDataContext.Strategies = strategies.ToList();
         }
     }
 }

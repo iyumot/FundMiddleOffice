@@ -15,6 +15,16 @@ public partial class EditableControlViewModelBase<T> : ObservableObject where T 
 
     public int Id { get; protected set; }
 
+    protected virtual void NotifyChanged() {}// WeakReferenceMessenger.Default.Send(this);
+
+    private Debouncer _debouncer { get; set; } 
+     
+
+    public EditableControlViewModelBase()
+    {
+        _debouncer = new Debouncer(() => NotifyChanged(), 500);
+    }
+
     [RelayCommand]
     public void Delete(IPropertyModifier unit)
     {
@@ -40,7 +50,6 @@ public partial class EditableControlViewModelBase<T> : ObservableObject where T 
     {
         unit.Reset();
     }
-
 
 
     [RelayCommand]
@@ -75,7 +84,8 @@ public partial class EditableControlViewModelBase<T> : ObservableObject where T 
                 {
                     Id = (int)pi.GetValue(v)!;
                 }
-                //WeakReferenceMessenger.Default.Send(v);
+
+                _debouncer.Invoke();
             }
         }
         unit.Apply();
@@ -87,10 +97,11 @@ public partial class EditableControlViewModelBase<T> : ObservableObject where T 
         var ps = GetType().GetProperties();
         foreach (var p in ps)
         {
-            if (p.PropertyType.IsAssignableTo(typeof(IPropertyModifier)) && p.GetValue(this) is IPropertyModifier v)
+            if (p.PropertyType.IsAssignableTo(typeof(IPropertyModifier)) && p.GetValue(this) is IPropertyModifier v && v.IsValueChanged)
                 Modify(v);
         }
 
+        //NotifyChanged();
         IsReadOnly = true;
     }
 
