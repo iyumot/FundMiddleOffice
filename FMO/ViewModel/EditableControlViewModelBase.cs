@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace FMO;
 
-public partial class EditableControlViewModelBase<T> : ObservableObject where T : class, new()
+public abstract partial class EditableControlViewModelBase<T> : ObservableObject where T : class//, new()
 {
 
     [ObservableProperty]
@@ -60,8 +60,7 @@ public partial class EditableControlViewModelBase<T> : ObservableObject where T 
             T? v = default;
             if (Id == 0)
             {
-                v = new();
-                InitNewEntity(v);
+                v = InitNewEntity();
             }
             else
             {
@@ -69,8 +68,7 @@ public partial class EditableControlViewModelBase<T> : ObservableObject where T 
                 v = db.GetCollection<T>().FindById(Id);
                 if (v is null)
                 {
-                    v = new();
-                    InitNewEntity(v);
+                    v = InitNewEntity();
                 }
             }
 
@@ -106,7 +104,5 @@ public partial class EditableControlViewModelBase<T> : ObservableObject where T 
     }
 
 
-    protected virtual void InitNewEntity(T v)
-    {
-    }
+    protected abstract T InitNewEntity();
 }

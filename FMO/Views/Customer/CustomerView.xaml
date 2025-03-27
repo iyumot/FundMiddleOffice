@@ -193,6 +193,12 @@
             </Setter>
         </Style>
 
+        <DataTemplate x:Key="DT.CenterText">
+            <TextBox
+                BorderThickness="0,0,0,0"
+                Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=200}"
+                TextAlignment="Center" />
+        </DataTemplate>
 
         <DataTemplate x:Key="DT.QualificationItem" DataType="local:QualificationViewModel">
             <TextBlock VerticalAlignment="Center" Text="{Binding Date.Data.Old, StringFormat=yyyy-MM-dd, TargetNullValue=未设置日期}" />
@@ -209,33 +215,44 @@
                 <!--  基本信息  -->
                 <StackPanel>
 
-                    <ContentControl
-                        HorizontalAlignment="Center"
-                        DataContext="{Binding Name}"
-                        Style="{StaticResource ElementContainer}"
-                        TextElement.FontSize="16"
-                        TextElement.FontWeight="Black">
-                        <TextBox
-                            MinWidth="400"
-                            Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}"
-                            TextAlignment="Center" />
-                    </ContentControl>
+
+                    <Border
+                        Margin="0,0,40,0"
+                        BorderBrush="{StaticResource PrimaryBrush}"
+                        BorderThickness="0,0,0,1">
+                        <shared:ChangeableContainer
+                            HorizontalContentAlignment="Center"
+                            Binding="{Binding Name}"
+                            ContentTemplate="{StaticResource DT.CenterText}"
+                            TextElement.FontWeight="Bold" />
+                    </Border>
+
+
 
                     <!--  投资人类型  -->
                     <DockPanel Margin="0,4" LastChildFill="False">
-                        <ContentControl DataContext="{Binding EntityType}" Style="{StaticResource ElementContainer}">
-                            <ComboBox
-                                MinWidth="100"
-                                ItemsSource="{x:Static local:CustomerViewModel.EntityTypes}"
-                                SelectedItem="{Binding Data.New}" />
-                        </ContentControl>
+                        <shared:ChangeableContainer Binding="{Binding EntityType}">
+                            <shared:ChangeableContainer.ContentTemplate>
+                                <DataTemplate>
+                                    <ComboBox
+                                        MinWidth="100"
+                                        ItemsSource="{x:Static local:CustomerViewModel.EntityTypes}"
+                                        SelectedItem="{Binding NewValue}" />
+                                </DataTemplate>
+                            </shared:ChangeableContainer.ContentTemplate>
+                        </shared:ChangeableContainer>
 
-                        <ContentControl DataContext="{Binding Type}" Style="{StaticResource ElementContainer}">
-                            <ComboBox
-                                MinWidth="100"
-                                ItemsSource="{Binding DataContext.InvestorTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}"
-                                SelectedItem="{Binding Data.New}" />
-                        </ContentControl>
+                        <shared:ChangeableContainer Binding="{Binding Type}">
+                            <shared:ChangeableContainer.ContentTemplate>
+                                <DataTemplate>
+                                    <ComboBox
+                                        MinWidth="100"
+                                        ItemsSource="{Binding DataContext.InvestorTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}"
+                                        SelectedItem="{Binding NewValue}" />
+                                </DataTemplate>
+                            </shared:ChangeableContainer.ContentTemplate>
+                        </shared:ChangeableContainer>
+
                     </DockPanel>
 
                     <!--<ComboBox MinWidth="100" ItemsSource="{Binding DataContext.IDTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}" />-->
@@ -243,24 +260,30 @@
 
                     <!--  证件  -->
                     <DockPanel Margin="0,4" LastChildFill="False">
-                        <ContentControl DataContext="{Binding IDType}" Style="{StaticResource ElementContainer}">
-                            <ComboBox
-                                MinWidth="100"
-                                ItemsSource="{Binding DataContext.IDTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}"
-                                SelectedItem="{Binding Data.New}" />
-                        </ContentControl>
+                        <shared:ChangeableContainer Binding="{Binding IDType}">
+                            <shared:ChangeableContainer.ContentTemplate>
+                                <DataTemplate>
+                                    <ComboBox
+                                        MinWidth="100"
+                                        ItemsSource="{Binding DataContext.IDTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}"
+                                        SelectedItem="{Binding NewValue}" />
+                                </DataTemplate>
+                            </shared:ChangeableContainer.ContentTemplate>
+                        </shared:ChangeableContainer>
 
-                        <ContentControl
-                            HorizontalAlignment="Center"
-                            DataContext="{Binding Identity}"
-                            Style="{StaticResource ElementContainer}">
-                            <TextBox
-                                MinWidth="200"
-                                hc:InfoElement.Placeholder="证件号码"
-                                IsReadOnly="{Binding Data.Old, Converter={StaticResource Object2BooleanConverter}}"
-                                Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}"
-                                TextAlignment="Center" />
-                        </ContentControl>
+
+                        <shared:ChangeableContainer Binding="{Binding Identity}">
+                            <shared:ChangeableContainer.ContentTemplate>
+                                <DataTemplate>
+                                    <TextBox
+                                        MinWidth="200"
+                                        hc:InfoElement.Placeholder="证件号码"
+                                        IsReadOnly="{Binding OldValue, Converter={StaticResource Object2BooleanConverter}}"
+                                        Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=100}"
+                                        TextAlignment="Center" />
+                                </DataTemplate>
+                            </shared:ChangeableContainer.ContentTemplate>
+                        </shared:ChangeableContainer>
                     </DockPanel>
 
 
