@@ -201,7 +201,7 @@
         </DataTemplate>
 
         <DataTemplate x:Key="DT.QualificationItem" DataType="local:QualificationViewModel">
-            <TextBlock VerticalAlignment="Center" Text="{Binding Date.Data.Old, StringFormat=yyyy-MM-dd, TargetNullValue=未设置日期}" />
+            <TextBlock VerticalAlignment="Center" Text="{Binding Date.OldValue, StringFormat=yyyy-MM-dd, TargetNullValue=未设置日期}" />
         </DataTemplate>
 
         <ItemsPanelTemplate x:Key="IPT.QualificationItem">
@@ -255,7 +255,6 @@
 
                     </DockPanel>
 
-                    <!--<ComboBox MinWidth="100" ItemsSource="{Binding DataContext.IDTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}" />-->
 
 
                     <!--  证件  -->
@@ -287,24 +286,27 @@
                     </DockPanel>
 
 
-                    <DockPanel>
-                        <ContentControl DataContext="{Binding Efficient}" Style="{StaticResource ElementContainer}">
-                            <DockPanel>
-                                <DatePicker MinWidth="100" SelectedDate="{Binding Begin.New}" />
-                                <DockPanel Visibility="{Binding LongTerm.New, Converter={StaticResource Boolean2VisibilityReConverter}}">
-                                    <TextBlock
+                    <shared:ChangeableContainer Binding="{Binding Efficient}">
+                        <shared:ChangeableContainer.ContentTemplate>
+                            <DataTemplate>
+                                <DockPanel DataContext="{Binding NewValue}">
+                                    <DatePicker MinWidth="100" SelectedDate="{Binding Begin, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
+                                    <DockPanel Visibility="{Binding IsLongTerm, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                                        <TextBlock
+                                            Margin="5,0"
+                                            VerticalAlignment="Center"
+                                            Text="-" />
+                                        <DatePicker MinWidth="100" SelectedDate="{Binding End, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
+                                    </DockPanel>
+                                    <CheckBox
                                         Margin="5,0"
-                                        VerticalAlignment="Center"
-                                        Text="-" />
-                                    <DatePicker MinWidth="100" SelectedDate="{Binding End.New}" />
+                                        Content="长期"
+                                        IsChecked="{Binding IsLongTerm}" />
                                 </DockPanel>
-                                <CheckBox
-                                    Margin="5,0"
-                                    Content="长期"
-                                    IsChecked="{Binding LongTerm.New}" />
-                            </DockPanel>
-                        </ContentControl>
-                    </DockPanel>
+                            </DataTemplate>
+                        </shared:ChangeableContainer.ContentTemplate>
+                    </shared:ChangeableContainer>
+
 
 
                     <local:MultiFileDisplay

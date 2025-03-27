@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using FMO.Models;
+using System.Collections;
 using System.ComponentModel;
 using System.Text.Json;
 
@@ -26,6 +27,11 @@ public interface IEntityModifier<TEntity>
     void UpdateEntity(TEntity entity);
 }
 
+/// <summary>
+/// 
+/// </summary>
+/// <typeparam name="TEntity"></typeparam>
+/// <typeparam name="TProperty">自定义类型必须实现IEquatable<TProperty></typeparam>
 public partial class ChangeableViewModel<TEntity, TProperty> : ObservableObject, IPropertyModifier, IEntityModifier<TEntity>
 {
     [ObservableProperty]
@@ -70,9 +76,11 @@ public partial class ChangeableViewModel<TEntity, TProperty> : ObservableObject,
 
     public ChangeableViewModel()
     {
+        if (!(typeof(TProperty).IsValueType || typeof(TProperty) == typeof(string) || typeof(TProperty).IsAssignableTo(typeof(IEquatable<TProperty>))))
+            throw new InvalidOperationException();
+
         if (typeof(TProperty).IsAssignableTo(typeof(ObservableObject)))
             _notnullDefault = (TProperty)Activator.CreateInstance(typeof(TProperty))!;
-
 
         DisplayFunc = x => x switch { Enum e => EnumDescriptionTypeConverter.GetEnumDescription(e), _ => x?.ToString() };
     }

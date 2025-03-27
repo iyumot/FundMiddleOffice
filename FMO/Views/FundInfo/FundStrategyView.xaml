@@ -127,11 +127,7 @@
                                 </DockPanel>
 
 
-                                <shared:ChangeableContainer
-                                    Margin="0,4"
-                                    Binding="{Binding Description}"
-                                    ContentTemplate="{StaticResource DT.Default}" />
-
+                                <shared:ChangeableContainer Margin="0,4" Binding="{Binding Description}" />
 
                             </StackPanel>
 

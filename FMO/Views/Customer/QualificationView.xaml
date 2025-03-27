@@ -6,6 +6,7 @@
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     d:DataContext="{d:DesignInstance Type=local:QualificationViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
@@ -117,12 +118,16 @@
 
             <DockPanel LastChildFill="False" Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}">
                 <TextBlock VerticalAlignment="Center" Text="日期" />
-                <ContentControl DataContext="{Binding Date}" Style="{DynamicResource ElementContainer}">
-                    <DatePicker
-                        Width="100"
-                        Margin="8,0,0,0"
-                        SelectedDate="{Binding Data.New, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
-                </ContentControl>
+
+
+                <shared:ChangeableContainer Binding="{Binding Date}">
+                    <shared:ChangeableContainer.ContentTemplate>
+                        <DataTemplate>
+                            <DatePicker MinWidth="100" SelectedDate="{Binding NewValue, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
+                        </DataTemplate>
+                    </shared:ChangeableContainer.ContentTemplate>
+                </shared:ChangeableContainer>
+
 
                 <CheckBox
                     Margin="15,0"

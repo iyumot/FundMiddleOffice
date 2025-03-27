@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
+using FMO.Shared;
 using FMO.Utilities;
 using Serilog;
 using System.ComponentModel;
@@ -23,14 +24,10 @@ public partial class QualificationView : UserControl
 }
 
 
-public partial class QualificationViewModel : ObservableObject
-{
-    public int Id { get; private set; }
-
+public partial class QualificationViewModel : EditableControlViewModelBase<InvestorQualification>
+{ 
     public string? Name { get; set; }
-
-    [ObservableProperty]
-    public partial bool IsReadOnly { get; set; } = true;
+     
 
     [ObservableProperty]
     public partial bool IsFinished { get; set; }
@@ -39,7 +36,7 @@ public partial class QualificationViewModel : ObservableObject
     //[ObservableProperty]
     //public partial DateTime? Date { get; set; }
 
-    public EntityValueViewModel<InvestorQualification, DateOnly> Date { get; } = new() { InitFunc = x => x.Date == default ? null : x.Date, UpdateFunc = (x, y) => x.Date = y ?? default, ClearFunc = x => x.Date = default };
+    public ChangeableViewModel<InvestorQualification, DateOnly?> Date { get; } = new() { InitFunc = x => x.Date == default ? null : x.Date, UpdateFunc = (x, y) => x.Date = y ?? default, ClearFunc = x => x.Date = default };
 
     [ObservableProperty]
     public partial QualificationFileType[]? ProofTypes { get; set; }
@@ -410,58 +407,7 @@ public partial class QualificationViewModel : ObservableObject
 
 
 
-    [RelayCommand]
-    public void Delete(UnitViewModel unit)
-    {
-        if (unit is IEntityViewModel<InvestorQualification> entity)
-        {
-            using var db = DbHelper.Base();
-            var v = db.GetCollection<InvestorQualification>().FindById(Id);
-
-            if (v is not null)
-            {
-                entity.RemoveValue(v);
-                entity.Init(v);
-                db.GetCollection<InvestorQualification>().Upsert(v);
-
-                WeakReferenceMessenger.Default.Send(v);
-            }
-        }
-    }
-
-    [RelayCommand]
-    public void Reset(UnitViewModel unit)
-    {
-        var ps = unit.GetType().GetProperties().Where(x => x.PropertyType.IsGenericType && (x.PropertyType.GetGenericTypeDefinition() == typeof(ValueViewModel<>) || x.PropertyType.GetGenericTypeDefinition() == typeof(RefrenceViewModel<>)));
-        foreach (var item in ps)
-        {
-            var ty = item.PropertyType!;
-            object? obj = item.GetValue(unit);
-            ty.GetProperty("New")!.SetValue(obj, ty.GetProperty("Old")!.GetValue(obj));
-        }
-    }
-
-    [RelayCommand]
-    public void Modify(UnitViewModel unit)
-    {
-        if (unit is IEntityViewModel<InvestorQualification> property)
-        {
-            using var db = DbHelper.Base();
-            var v = db.GetCollection<InvestorQualification>().FindById(Id);
-
-            if (v is not null)
-                property.UpdateEntity(v);
-
-            if (v is not null)
-            {
-                db.GetCollection<InvestorQualification>().Upsert(v);
-                if (Id == 0) Id = v.Id;
-
-                //WeakReferenceMessenger.Default.Send(v);
-            }
-        }
-        unit.Apply();
-    }
+    protected override InvestorQualification InitNewEntity() => new InvestorQualification ();
 }
 
 

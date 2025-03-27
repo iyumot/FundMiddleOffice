@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using FMO.Models;
+using FMO.Shared;
 using System.Diagnostics.CodeAnalysis;
 
 namespace FMO;
@@ -25,6 +26,8 @@ public partial class ShareElementsViewModel : ObservableObject
     /// </summary>
     [ObservableProperty]
     public partial PortionElementItemWithEnumViewModel<FundFeeType, decimal>? ManageFee { get; set; }
+
+    public ChangeableViewModel<FundElements, Tuple<FundFeeType, decimal>> ManageFee2 { get;  }
 
 
     /// <summary>
@@ -72,6 +75,8 @@ public partial class ShareElementsViewModel : ObservableObject
 
         ManageFee = new PortionElementItemWithEnumViewModel<FundFeeType, decimal>(elements, shareId, share, nameof(FundElements.ManageFee), flowid, "管理费");
         ManageFee.DisplayGenerator = (a, b, c) => a switch { FundFeeType.Fix => $"每年固定{b}元", FundFeeType.Ratio => $"{b}%", FundFeeType.Other => c, _ => throw new NotImplementedException() };
+
+       // ManageFee2 = new ChangeableViewModel<FundElements, Tuple<FundFeeType, decimal>>(elements,)
 
         SubscriptionFee = new PortionElementItemWithEnumViewModel<FundFeeType, decimal>(elements, shareId, share, nameof(FundElements.SubscriptionFee), flowid, "认购费");
         SubscriptionFee.DisplayGenerator = (a, b, c) => a switch { FundFeeType.Fix => $"单笔{b}元", FundFeeType.Ratio => $"{b}%", FundFeeType.Other => c, _ => throw new NotImplementedException() };

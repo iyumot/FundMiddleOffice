@@ -113,9 +113,9 @@ public partial class StrategyInfoViewModel : EditableControlViewModelBase<FundSt
         Description = new ChangeableViewModel<FundStrategy, string>
         {
             Label = "策略说明",
-            InitFunc = x => x.Name,
-            UpdateFunc = (a, b) => a.Name = b,
-            ClearFunc = x => x.Name = null
+            InitFunc = x => x.Description,
+            UpdateFunc = (a, b) => a.Description = b,
+            ClearFunc = x => x.Description = null
         };
         Description.Init(strategy);
     }
