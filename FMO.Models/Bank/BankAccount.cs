@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Security.AccessControl;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace FMO.Models;
@@ -142,6 +143,22 @@ public class BankAccount
 
     public override string ToString()
     {
-        return $"账号：{Number}\n户名：{Name}\n开户行：{BankOfDeposit}" + (string.IsNullOrWhiteSpace(LargePayNo) ? string.Empty : $"\n大额支付号：{LargePayNo}") + (string.IsNullOrWhiteSpace(SwiftCode) ? string.Empty : $"SWIFT：{SwiftCode}");
+        StringBuilder builder = new StringBuilder();
+        if (!string.IsNullOrWhiteSpace(Name))
+            builder.Append($"户名：{Name}\n");
+
+        if (!string.IsNullOrWhiteSpace(Number))
+            builder.Append($"账号：{Number}\n");
+
+        if (!string.IsNullOrWhiteSpace(BankOfDeposit))
+            builder.Append($"开户行：{BankOfDeposit}\n");
+
+        if (!string.IsNullOrWhiteSpace(LargePayNo))
+            builder.Append($"大额支付号：{LargePayNo}\n");
+
+        if (!string.IsNullOrWhiteSpace(SwiftCode))
+            builder.Append($"SWIFT：{SwiftCode}\n");
+
+        return builder.ToString();
     }
 }
