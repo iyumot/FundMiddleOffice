@@ -51,6 +51,21 @@ public partial class ChangeableContainer : UserControl
 
 
 
+
+    public ControlTemplate EditTemplate
+    {
+        get { return (ControlTemplate)GetValue(EditTemplateProperty); }
+        set { SetValue(EditTemplateProperty, value); }
+    }
+
+    // Using a DependencyProperty as the backing store for EditTemplate.  This enables animation, styling, binding, etc...
+    public static readonly DependencyProperty EditTemplateProperty =
+        DependencyProperty.Register("EditTemplate", typeof(ControlTemplate), typeof(ChangeableContainer), new PropertyMetadata(null));
+
+
+
+
+
     //Debouncer _debouncer;
 
     public ChangeableContainer()

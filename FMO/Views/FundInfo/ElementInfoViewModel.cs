@@ -105,4 +105,22 @@ public partial class InvestmentManagerInfoViewModel;
 
 
 [AutoChangeableViewModel(typeof(BankAccount))]
-public partial class BankAccountInfoViewModel;
+public partial class BankAccountInfoViewModel
+{
+
+    private string? _Deposit;
+
+    public string? Deposit
+    {
+        get { if (string.IsNullOrWhiteSpace(_Deposit)) _Deposit = BankOfDeposit;  return _Deposit; }
+        set { _Deposit = value; BankOfDeposit = value; }
+    }
+
+
+    public bool IsValid() => Bank?.Length > 3 && Name?.Length > 1 && Number?.Length > 5;
+}
+
+public partial class BankChangeableVMiewModel<T> : ChangeableViewModel<T, BankAccountInfoViewModel>
+{
+    public override bool CanConfirm => base.CanConfirm && (NewValue?.IsValid() ?? false);
+}
