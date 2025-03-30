@@ -24,6 +24,11 @@
                 </Setter.Value>
             </Setter>
             <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Header">
+                <Setter.Value>
+                    <TextBlock VerticalAlignment="Center" Text="{Binding Binding.Label, RelativeSource={RelativeSource AncestorType=local:ChangeableContainer}}" />
+                </Setter.Value>
+            </Setter>
             <Setter Property="EditTemplate">
                 <Setter.Value>
                     <ControlTemplate TargetType="UserControl">
@@ -32,7 +37,8 @@
                             Background="Transparent"
                             LastChildFill="True">
 
-                            <ContentPresenter Content="{TemplateBinding local:ChangeableContainer.Header}" DockPanel.Dock="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=StripPlacement}" />
+                            <!--<ContentPresenter Content="{TemplateBinding local:ChangeableContainer.Header}" DockPanel.Dock="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=StripPlacement}" />-->
+                            <TextBlock VerticalAlignment="Center" Text="{Binding Binding.Label, RelativeSource={RelativeSource AncestorType=local:ChangeableContainer}}" DockPanel.Dock="Left"/>
 
                             <DockPanel HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}">
                                 <DockPanel>
