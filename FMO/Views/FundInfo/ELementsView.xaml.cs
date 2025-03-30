@@ -4,6 +4,8 @@ using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
+using HandyControl.Tools.Extension;
+using System.ComponentModel.DataAnnotations;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -51,21 +53,21 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
 
     [ObservableProperty]
-    public partial ChangeableViewModel<FundElements, string>? ShortName { get; set; }
+    public partial ChangeableViewModel<FundElements, string> ShortName { get; set; }
 
 
-    //[ObservableProperty]
-    //public partial ElementValueViewModel<RiskLevel>? RiskLevel { get; set; }
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, RiskLevel> RiskLevel { get; set; }
 
 
 
 
 
-    //[ObservableProperty]
-    //public partial ElementValueViewModel<int>? DurationInMonths { get; set; }
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, int?> DurationInMonths { get; set; }
 
-    //[ObservableProperty]
-    //public partial ElementValueViewModel<DateOnly>? ExpirationDate { get; set; }
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, DateOnly?> ExpirationDate { get; set; }
 
 
 
@@ -75,17 +77,17 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
     [ObservableProperty]
     public partial ChangeableViewModel<FundElements, BankAccountInfoViewModel>? CustodyAccount { get; set; }
-     
 
 
 
-    //[ObservableProperty]
-    //public partial ElementValueViewModel<decimal>? StopLine { get; set; }
+
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, decimal?>? StopLine { get; set; }
 
 
 
-    //[ObservableProperty]
-    //public partial ElementValueViewModel<decimal>? WarningLine { get; set; }
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, decimal?>? WarningLine { get; set; }
 
 
 
@@ -138,16 +140,16 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
     //public partial ElementRefrenceWithBooleanViewModel<string>? PerformanceBenchmarks { get; set; }
 
 
-    //[ObservableProperty]
-    //public partial ChangeableViewModel<FundElements, string>? InvestmentObjective { get; set; }
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, string>? InvestmentObjective { get; set; }
 
 
-    //[ObservableProperty]
-    //public partial ChangeableViewModel<FundElements, string>? InvestmentScope { get; set; }
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, string>? InvestmentScope { get; set; }
 
 
-    //[ObservableProperty]
-    //public partial ChangeableViewModel<FundElements, string>? InvestmentStrategy { get; set; }
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, string>? InvestmentStrategy { get; set; }
 
 
 
@@ -228,11 +230,34 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         };
         SealingRule.Init(elements);
 
-        //RiskLevel = new(elements, nameof(FundElements.RiskLevel), FlowId, "风险等级");
+        RiskLevel = new ChangeableViewModel<FundElements, RiskLevel>
+        {
+            Label = "风险等级",
+            InitFunc = x => x.RiskLevel!.GetValue(newValue).Value,
+            UpdateFunc = (x, y) => x.RiskLevel!.SetValue(y, newValue),
+            ClearFunc = x => x.RiskLevel!.RemoveValue(newValue),
 
-        //DurationInMonths = new(elements, nameof(FundElements.DurationInMonths), FlowId, "存续期");
-        //DurationInMonths.DisplayGenerator = (a) => a % 12 == 0 ? $"{a / 12}年" : $"{a}个月";
-        //ExpirationDate = new(elements, nameof(FundElements.ExpirationDate), FlowId, "到期日");
+        };
+        RiskLevel.Init(elements);
+
+        DurationInMonths = new ChangeableViewModel<FundElements, int?>
+        {
+            Label = "存续期",
+            InitFunc = x => x.DurationInMonths!.GetValue(newValue).Value switch { 0 => null, var n => n },
+            UpdateFunc = (x, y) => { if (y is not null) x.DurationInMonths!.SetValue(y.Value, newValue); },
+            ClearFunc = x => x.DurationInMonths!.RemoveValue(newValue),
+        };
+        DurationInMonths.Init(elements);
+
+        ExpirationDate = new ChangeableViewModel<FundElements, DateOnly?>
+        {
+            Label = "到期日",
+            InitFunc = x => ValueFormat(x.ExpirationDate!.GetValue(newValue).Value),
+            UpdateFunc = (x, y) => { if (y is not null) x.ExpirationDate!.SetValue(y.Value, newValue); },
+            ClearFunc = x => x.ExpirationDate!.RemoveValue(newValue),
+        };
+        ExpirationDate.Init(elements);
+
 
 
         CollectionAccount = new BankChangeableVMiewModel<FundElements>
@@ -253,9 +278,25 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
             ClearFunc = x => x.CustodyAccount.RemoveValue(newValue),
         };
         CustodyAccount.Init(elements);
-        //CollectionAccount = new(elements, nameof(FundElements.CollectionAccount), FlowId, "募集账户");
-        //CustodyAccount = new(elements, nameof(FundElements.CustodyAccount), FlowId, "托管账户");
 
+
+        StopLine = new ChangeableViewModel<FundElements, decimal?>
+        {
+            Label = "止损线",
+            InitFunc = x => ValueFormat(x.StopLine.GetValue(newValue).Value),
+            UpdateFunc = (x, y) => { if (y is not null) x.StopLine!.SetValue(y.Value, newValue); },
+            ClearFunc = x => x.StopLine.RemoveValue(newValue),
+        };
+        StopLine.Init(elements);
+
+        WarningLine = new ChangeableViewModel<FundElements, decimal?>
+        {
+            Label = "预警线",
+            InitFunc = x => ValueFormat(x.WarningLine.GetValue(newValue).Value),
+            UpdateFunc = (x, y) => { if (y is not null) x.WarningLine!.SetValue(y.Value, newValue); },
+            ClearFunc = x => x.WarningLine.RemoveValue(newValue),
+        };
+        WarningLine.Init(elements);
 
         //WarningLine = new(elements, nameof(FundElements.WarningLine), FlowId, "止损线");
         //StopLine = new(elements, nameof(FundElements.StopLine), FlowId, "预警线");
@@ -283,6 +324,34 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         //PerformanceBenchmarks.DisplayGenerator = (a, b) => a switch { true => b, false => "无", _ => ElementItemViewModel.UnsetValue };
 
 
+        InvestmentObjective = new ChangeableViewModel<FundElements, string>
+        {
+            Label = "投资目标",
+            InitFunc = x => x.InvestmentObjective.GetValue(newValue).Value,
+            UpdateFunc = (x, y) => { if (y is not null) x.InvestmentObjective!.SetValue(y, newValue); },
+            ClearFunc = x => x.InvestmentObjective.RemoveValue(newValue),
+        };
+        InvestmentObjective.Init(elements);
+
+
+        InvestmentScope = new ChangeableViewModel<FundElements, string>
+        {
+            Label = "投资范围",
+            InitFunc = x => x.InvestmentScope.GetValue(newValue).Value,
+            UpdateFunc = (x, y) => { if (y is not null) x.InvestmentScope!.SetValue(y, newValue); },
+            ClearFunc = x => x.InvestmentScope.RemoveValue(newValue),
+        };
+        InvestmentScope.Init(elements);
+
+        InvestmentStrategy = new ChangeableViewModel<FundElements, string>
+        {
+            Label = "投资策略",
+            InitFunc = x => x.InvestmentStrategy.GetValue(newValue).Value,
+            UpdateFunc = (x, y) => { if (y is not null) x.InvestmentStrategy!.SetValue(y, newValue); },
+            ClearFunc = x => x.InvestmentStrategy.RemoveValue(newValue),
+        };
+        InvestmentStrategy.Init(elements);
+
         //InvestmentObjective = new(elements, nameof(FundElements.InvestmentObjective), FlowId, "投资目标");
         //InvestmentScope = new(elements, nameof(FundElements.InvestmentScope), FlowId, "投资范围");
         //InvestmentStrategy = new(elements, nameof(FundElements.InvestmentStrategy), FlowId, "投资策略");
@@ -291,6 +360,8 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         InitElementsOfShare(elements);
 
     }
+
+
 
     private void InitElementsOfShare(FundElements elements)
     {
@@ -414,7 +485,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
 
     [RelayCommand]
-    public void SetBankFromClipboard(ChangeableViewModel<FundElements,BankAccountInfoViewModel> v)
+    public void SetBankFromClipboard(ChangeableViewModel<FundElements, BankAccountInfoViewModel> v)
     {
         try
         {
@@ -440,6 +511,15 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
     }
 
     protected override FundElements InitNewEntity() => throw new NotImplementedException();
+
+    private T? ValueFormat<T>(T d) where T : struct
+    {
+        return default(T).Equals(d) ? null : d;
+    }
+    //private DateOnly? ValueFormat(DateOnly d)
+    //{
+    //    return d == default ? null : d;
+    //}
 }
 
 
