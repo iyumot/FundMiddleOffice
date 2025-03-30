@@ -70,12 +70,12 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
 
     [ObservableProperty]
-    public partial ChangeableViewModel<FundElements, BankAccountInfoViewModel>? CollectionAccount { get; set; }
+    public partial BankChangeableVMiewModel<FundElements>? CollectionAccount { get; set; }
 
 
-
-    //[ObservableProperty]
-    //public partial ChangeableViewModel<FundElements, BankAccount>? CustodyAccount { get; set; }
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, BankAccountInfoViewModel>? CustodyAccount { get; set; }
+     
 
 
 
@@ -235,7 +235,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         //ExpirationDate = new(elements, nameof(FundElements.ExpirationDate), FlowId, "到期日");
 
 
-        CollectionAccount = new ChangeableViewModel<FundElements, BankAccountInfoViewModel>
+        CollectionAccount = new BankChangeableVMiewModel<FundElements>
         {
             Label = "募集账户",
             InitFunc = x => new(x.CollectionAccount.GetValue(newValue).Value ?? new()),
@@ -244,6 +244,15 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         };
         CollectionAccount.Init(elements);
 
+
+        CustodyAccount = new ChangeableViewModel<FundElements, BankAccountInfoViewModel>
+        {
+            Label = "托管账户",
+            InitFunc = x => new(x.CustodyAccount.GetValue(newValue).Value ?? new()),
+            UpdateFunc = (x, y) => x.CustodyAccount.SetValue(y!.Build(), newValue),
+            ClearFunc = x => x.CustodyAccount.RemoveValue(newValue),
+        };
+        CustodyAccount.Init(elements);
         //CollectionAccount = new(elements, nameof(FundElements.CollectionAccount), FlowId, "募集账户");
         //CustodyAccount = new(elements, nameof(FundElements.CustodyAccount), FlowId, "托管账户");
 
