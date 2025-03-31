@@ -148,7 +148,7 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
     public void ConfirmShares()
     {
         using var db = DbHelper.Base();
-        var elements = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
+        var elements = db.GetCollection<FundElements>().FindById(FundId);
 
         //// 同步份额相关的要素 
         var rem = Shares.Select(x => (x.Id, x.Name)).ToArray();

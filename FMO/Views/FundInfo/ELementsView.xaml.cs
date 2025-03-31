@@ -4,8 +4,8 @@ using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
-using HandyControl.Tools.Extension;
-using System.ComponentModel.DataAnnotations;
+using System.Collections.ObjectModel;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -72,7 +72,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
 
     [ObservableProperty]
-    public partial BankChangeableVMiewModel<FundElements>? CollectionAccount { get; set; }
+    public partial BankChangeableViewModel<FundElements>? CollectionAccount { get; set; }
 
 
     [ObservableProperty]
@@ -112,26 +112,28 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
 
 
-    //[ObservableProperty]
-    //public partial ChangeableViewModel<FundElements, string>? OpenDayInfo { get; set; }
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, string> OpenDayInfo { get; set; }
 
 
 
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, AgencyInfoViewModel> TrusteeInfo { get; set; }
+
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, AgencyInfoViewModel> OutsourcingInfo { get; set; }
 
 
-    //[ObservableProperty]
-    //public partial ElementItemWithEnumViewModel<FundFeeType, decimal, decimal>? TrusteeFee { get; set; }
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, FundFeeInfoViewModel> TrusteeFee { get; set; }
 
 
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, FundFeeInfoViewModel> OutsourcingFee { get; set; }
 
 
-
-    //[ObservableProperty]
-    //public partial ElementItemWithEnumViewModel<FundFeeType, decimal, decimal>? OutsourcingFee { get; set; }
-
-
-    //// [ObservableProperty]
-    ////public partial ObservableCollection<FundInvestmentManager>? InvestmentManagers { get; set; }
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, string> InvestmentManagers { get; set; }
 
 
 
@@ -153,11 +155,11 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
 
 
-    ///// <summary>
-    ///// 与份额相关的
-    ///// </summary>
-    //[ObservableProperty]
-    //public partial ObservableCollection<ShareElementsViewModel> PortionElements { get; set; } = new();
+    /// <summary>
+    /// 与份额相关的
+    /// </summary>
+    [ObservableProperty]
+    public partial ObservableCollection<ShareElementsViewModel> PortionElements { get; set; } = new();
 
 
     [ObservableProperty]
@@ -171,12 +173,15 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
     partial void OnFlowIdChanged(int oldValue, int newValue)
     {
-        Id = newValue;
+        Id = FundId;
         using var db = DbHelper.Base();
         var fund = db.GetCollection<Fund>().FindById(FundId);
         var flow = db.GetCollection<FundFlow>().FindById(newValue);
         bool isori = flow is ContractFinalizeFlow;
-        var elements = db.GetCollection<FundElements>().FindById(newValue);
+        var elements = db.GetCollection<FundElements>().FindById(FundId);
+
+        if (elements is null)
+            elements = new FundElements { FundId = FundId };
 
         var type = GetType();
         SetupDate = fund.SetupDate;
@@ -223,7 +228,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         SealingRule = new ChangeableViewModel<FundElements, SealingInfoViewModel>
         {
             Label = "封闭期",
-            InitFunc = x => new(x.SealingRule!.GetValue(newValue).Value ?? new()),
+            InitFunc = x => new(x.SealingRule!.GetValue(newValue).Value),
             UpdateFunc = (x, y) => x.SealingRule!.SetValue(y!.Build(), newValue),
             ClearFunc = x => x.SealingRule!.RemoveValue(newValue),
             DisplayFunc = x => x?.Type switch { SealingType.No => "无", SealingType.Has => $"{x.Month}个月", SealingType.Other => x.Other, _ => "-" }
@@ -260,12 +265,13 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
 
 
-        CollectionAccount = new BankChangeableVMiewModel<FundElements>
+        CollectionAccount = new BankChangeableViewModel<FundElements>
         {
             Label = "募集账户",
-            InitFunc = x => new(x.CollectionAccount.GetValue(newValue).Value ?? new()),
+            InitFunc = x => new(x.CollectionAccount.GetValue(newValue).Value),
             UpdateFunc = (x, y) => x.CollectionAccount.SetValue(y!.Build(), newValue),
             ClearFunc = x => x.CollectionAccount.RemoveValue(newValue),
+            DisplayFunc = x => BankString(x)
         };
         CollectionAccount.Init(elements);
 
@@ -273,9 +279,10 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         CustodyAccount = new ChangeableViewModel<FundElements, BankAccountInfoViewModel>
         {
             Label = "托管账户",
-            InitFunc = x => new(x.CustodyAccount.GetValue(newValue).Value ?? new()),
+            InitFunc = x => new(x.CustodyAccount.GetValue(newValue).Value),
             UpdateFunc = (x, y) => x.CustodyAccount.SetValue(y!.Build(), newValue),
             ClearFunc = x => x.CustodyAccount.RemoveValue(newValue),
+            DisplayFunc = x => BankString(x)
         };
         CustodyAccount.Init(elements);
 
@@ -298,9 +305,6 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         };
         WarningLine.Init(elements);
 
-        //WarningLine = new(elements, nameof(FundElements.WarningLine), FlowId, "止损线");
-        //StopLine = new(elements, nameof(FundElements.StopLine), FlowId, "预警线");
-
         //FundModeInfo = new ElementItemFundModeViewModel(elements, nameof(FundElements.FundModeInfo), FlowId, "运作方式");
 
         //SealingRule = new ElementItemViewModelSealing(elements, nameof(FundElements.SealingRule), FlowId, "封闭期");
@@ -309,16 +313,53 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
         //IsSealingFund = FundModeInfo.Data.New == Models.FundMode.Close;
 
+        OpenDayInfo = new ChangeableViewModel<FundElements, string>
+        {
+            Label = "开放日规则",
+            InitFunc = x => x.OpenDayInfo.GetValue(newValue).Value,
+            UpdateFunc = (x, y) => x.OpenDayInfo.SetValue(y!, newValue),
+            ClearFunc = x => x.OpenDayInfo.RemoveValue(newValue)
+        };
+        OpenDayInfo.Init(elements);
 
-        //OpenDayInfo = new(elements, nameof(FundElements.OpenDayInfo), FlowId, "开放日规则");
+        TrusteeFee = new ChangeableViewModel<FundElements, FundFeeInfoViewModel>
+        {
+            Label = "托管费",
+            InitFunc = x => new(x.TrusteeFee.GetValue(newValue).Value),
+            UpdateFunc = (x, y) => x.TrusteeFee.SetValue(y!.Build(), newValue),
+            ClearFunc = x => x.TrusteeFee.RemoveValue(newValue),
+            DisplayFunc = x => x?.ToString() ?? "-"
+        };
+        TrusteeFee.Init(elements);
 
-        //TrusteeFee = new(elements, nameof(FundElements.TrusteeFee), nameof(FundElements.TrusteeGuaranteedFee), FlowId, "托管费");
-        //TrusteeFee.DisplayGenerator = (a, b, c, d, e) => a switch { FundFeeType.Fix => $"每年固定{b}元", FundFeeType.Ratio => $"{b}%", FundFeeType.Other => "c", _ => throw new NotImplementedException() } + (d ? $" 保底{e}元" : "");
-        ////TrusteeGuaranteedFee = new(elements, nameof(FundElements.TrusteeGuaranteedFee), FlowId, "托管费保底");
-        //OutsourcingFee = new(elements, nameof(FundElements.OutsourcingFee), nameof(FundElements.OutsourcingGuaranteedFee), FlowId, "外包费");
-        //OutsourcingFee.DisplayGenerator = (a, b, c, d, e) => a switch { FundFeeType.Fix => $"每年固定{b}元", FundFeeType.Ratio => $"{b}%", FundFeeType.Other => "c", _ => throw new NotImplementedException() } + (d ? $" 保底{e}元" : "");
-        ////OutsourcingGuaranteedFee = new(elements, nameof(FundElements.OutsourcingGuaranteedFee), FlowId, "外包费保底");
 
+        OutsourcingFee = new ChangeableViewModel<FundElements, FundFeeInfoViewModel>
+        {
+            Label = "外包费",
+            InitFunc = x => new(x.OutsourcingFee.GetValue(newValue).Value),
+            UpdateFunc = (x, y) => x.OutsourcingFee.SetValue(y!.Build(), newValue),
+            ClearFunc = x => x.OutsourcingFee.RemoveValue(newValue),
+            DisplayFunc = x => x is null ? "-" : x.ToString()
+        };
+        OutsourcingFee.Init(elements);
+
+        TrusteeInfo = new ChangeableViewModel<FundElements, AgencyInfoViewModel>
+        {
+            Label = "托管机构",
+            InitFunc = x => new(x.TrusteeInfo.GetValue(newValue).Value),
+            UpdateFunc = (x, y) => { if (y is not null) x.TrusteeInfo!.SetValue(y.Build(), newValue); },
+            ClearFunc = x => x.TrusteeInfo.RemoveValue(newValue),
+        };
+        TrusteeInfo.Init(elements);
+
+        OutsourcingInfo = new ChangeableViewModel<FundElements, AgencyInfoViewModel>
+        {
+            Label = "外包机构",
+            InitFunc = x => new(x.OutsourcingInfo.GetValue(newValue).Value),
+            UpdateFunc = (x, y) => { if (y is not null) x.OutsourcingInfo!.SetValue(y.Build(), newValue); },
+            ClearFunc = x => x.OutsourcingInfo.RemoveValue(newValue),
+        };
+        OutsourcingInfo.Init(elements);
 
         //PerformanceBenchmarks = new(elements, nameof(FundElements.PerformanceBenchmarks), FlowId, "业绩比较基准");
         //PerformanceBenchmarks.DisplayGenerator = (a, b) => a switch { true => b, false => "无", _ => ElementItemViewModel.UnsetValue };
@@ -352,22 +393,47 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         };
         InvestmentStrategy.Init(elements);
 
-        //InvestmentObjective = new(elements, nameof(FundElements.InvestmentObjective), FlowId, "投资目标");
-        //InvestmentScope = new(elements, nameof(FundElements.InvestmentScope), FlowId, "投资范围");
-        //InvestmentStrategy = new(elements, nameof(FundElements.InvestmentStrategy), FlowId, "投资策略");
-
+        InvestmentManagers = new ChangeableViewModel<FundElements, string>
+        {
+            Label = "投资经理",
+            InitFunc = x => x.InvestmentManager.GetValue(newValue).Value,
+            UpdateFunc = (x, y) => { if (y is not null) x.InvestmentStrategy!.SetValue(y, newValue); },
+            ClearFunc = x => x.InvestmentStrategy.RemoveValue(newValue),
+        };
+        InvestmentManagers.Init(elements);
 
         InitElementsOfShare(elements);
 
     }
 
+    private string BankString(BankAccountInfoViewModel? x)
+    {
+        if (x is null) return "-";
 
+        StringBuilder builder = new StringBuilder();
+        if (!string.IsNullOrWhiteSpace(x.Name))
+            builder.Append($"户名：{x.Name}\n");
+
+        if (!string.IsNullOrWhiteSpace(x.Number))
+            builder.Append($"账号：{x.Number}\n");
+
+        if (!string.IsNullOrWhiteSpace(x.BankOfDeposit))
+            builder.Append($"开户行：{x.BankOfDeposit}\n");
+
+        if (!string.IsNullOrWhiteSpace(x.LargePayNo))
+            builder.Append($"大额支付号：{x.LargePayNo}\n");
+
+        if (!string.IsNullOrWhiteSpace(x.SwiftCode))
+            builder.Append($"SWIFT：{x.SwiftCode}\n");
+
+        return builder.ToString();
+    }
 
     private void InitElementsOfShare(FundElements elements)
     {
-        //var shares = elements.ShareClasses!.GetValue(FlowId);
-        //if (shares.Value is not null)
-        //    PortionElements = new ObservableCollection<ShareElementsViewModel>(shares.Value.Select(x => new ShareElementsViewModel(x.Id, x.Name, elements, FlowId)));
+        var shares = elements.ShareClasses!.GetValue(FlowId);
+        if (shares.Value is not null)
+            PortionElements = new ObservableCollection<ShareElementsViewModel>(shares.Value.Select(x => new ShareElementsViewModel(x.Id, x.Name, elements, FlowId)));
         //else
         //    throw new Exception();//  PortionElements = new ObservableCollection<ShareElementsViewModel>([new ShareElementsViewModel(FundElements.SingleShareKey, elements, FlowId)]);
 

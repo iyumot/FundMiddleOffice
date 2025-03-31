@@ -91,31 +91,25 @@ public class FundElements
     public Mutable<string> OpenDayInfo { get; set; } = new(nameof(OpenDayInfo));
 
 
+    public Mutable<AgencyInfo> TrusteeInfo { get; set; } = new(nameof(TrusteeInfo));
+
     /// <summary>
     /// 托管费
-    /// </summary>
-    public Mutable<ValueWithEnum<FundFeeType, decimal>> TrusteeFee { get; set; } = new(nameof(TrusteeFee));
+    /// </summary> 
+    public Mutable<FundFeeInfo> TrusteeFee { get; set; } = new(nameof(TrusteeFee));
 
-    /// <summary>
-    /// 托管保底
-    /// </summary>
-    public Mutable<ValueWithBoolean<decimal>> TrusteeGuaranteedFee { get; set; } = new(nameof(TrusteeGuaranteedFee));
-
+    public Mutable<AgencyInfo> OutsourcingInfo { get; set; } = new(nameof(OutsourcingInfo));
 
     /// <summary>
     /// 外包费
     /// </summary>
-    public Mutable<ValueWithEnum<FundFeeType, decimal>> OutsourcingFee { get; set; } = new(nameof(OutsourcingFee));
-
-
-    /// <summary>
-    /// 外包费保底
-    /// </summary>
-    public Mutable<ValueWithBoolean<decimal>> OutsourcingGuaranteedFee { get; set; } = new(nameof(OutsourcingGuaranteedFee));
-
+    public Mutable<FundFeeInfo> OutsourcingFee { get; set; } = new(nameof(OutsourcingFee));
+     
 
     public Mutable<FundInvestmentManager[]> InvestmentManagers { get; set; } = new(nameof(InvestmentManagers));
 
+
+    public Mutable<string> InvestmentManager { get; set; } = new(nameof(InvestmentManager));
 
     /// <summary>
     /// 业绩比较基准
@@ -146,25 +140,25 @@ public class FundElements
     /// <summary>
     /// 管理费
     /// </summary>
-    public PortionMutable<ValueWithEnum<FundFeeType, decimal>> ManageFee { get; set; } = new(nameof(ManageFee));
+    public PortionMutable<FundFeeInfo> ManageFee { get; set; } = new(nameof(ManageFee));
 
  
 
     /// <summary>
     /// 认购费
     /// </summary>
-    public PortionMutable<ValueWithEnum<FundFeeType, decimal>> SubscriptionFee { get; set; } = new(nameof(SubscriptionFee));
+    public PortionMutable<FundFeeInfo> SubscriptionFee { get; set; } = new(nameof(SubscriptionFee));
 
     /// <summary>
     /// 申购费
     /// </summary>
-    public PortionMutable<ValueWithEnum<FundFeeType, decimal>> PurchaseFee { get; set; } = new(nameof(PurchaseFee));
+    public PortionMutable<FundFeeInfo> PurchaseFee { get; set; } = new(nameof(PurchaseFee));
 
 
     /// <summary>
     /// 赎回费
     /// </summary>
-    public PortionMutable<ValueWithEnum<FundFeeType, decimal>> RedemptionFee { get; set; } = new(nameof(RedemptionFee));
+    public PortionMutable<FundFeeInfo> RedemptionFee { get; set; } = new(nameof(RedemptionFee));
 
 
 
@@ -176,7 +170,7 @@ public class FundElements
         return new FundElements
         {
             FundId = fundid,
-
+            Id = fundid
         };
     }
 
@@ -232,15 +226,8 @@ public class FundElements
         { changed = true; TrusteeFee = new(nameof(TrusteeFee)); }
 
 
-        if (TrusteeGuaranteedFee is null)
-        { changed = true; TrusteeGuaranteedFee = new(nameof(TrusteeGuaranteedFee)); }
-
         if (OutsourcingFee is null)
         { changed = true; OutsourcingFee = new(nameof(OutsourcingFee)); }
-
-
-        if (OutsourcingGuaranteedFee is null)
-        { changed = true; OutsourcingGuaranteedFee = new(nameof(OutsourcingGuaranteedFee)); }
 
         if (ManageFee is null)
         { changed = true; ManageFee = new(nameof(ManageFee)); }
@@ -394,6 +381,9 @@ public class FundFeeInfo
 
     public decimal Fee { get; set; }
 
+
+    public bool HasGuaranteedFee { get; set; }
+
     /// <summary>
     /// 保底费用/年
     /// </summary>
@@ -404,4 +394,15 @@ public class FundFeeInfo
     /// 特殊类型
     /// </summary>
     public string? Other { get; set; }
+}
+
+/// <summary>
+/// 托管、外包、投顾
+/// </summary>
+public class AgencyInfo
+{
+    public bool HasAgency { get; set; }
+
+    public string? Name { get; set; }
+     
 }

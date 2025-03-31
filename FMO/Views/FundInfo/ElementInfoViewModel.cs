@@ -105,7 +105,7 @@ public partial class InvestmentManagerInfoViewModel;
 
 
 [AutoChangeableViewModel(typeof(BankAccount))]
-public partial class BankAccountInfoViewModel
+public partial class BankAccountInfoViewModel: IDataValidation
 {
 
     private string? _Deposit;
@@ -120,7 +120,29 @@ public partial class BankAccountInfoViewModel
     public bool IsValid() => Bank?.Length > 3 && Name?.Length > 1 && Number?.Length > 5;
 }
 
-public partial class BankChangeableVMiewModel<T> : ChangeableViewModel<T, BankAccountInfoViewModel>
+public partial class BankChangeableViewModel<T> : ChangeableViewModel<T, BankAccountInfoViewModel>
 {
     public override bool CanConfirm => base.CanConfirm && (NewValue?.IsValid() ?? false);
+}
+
+
+
+
+[AutoChangeableViewModel(typeof(FundFeeInfo))]
+public partial class FundFeeInfoViewModel
+{
+    public override string ToString()
+    {
+        return Type switch { FundFeeType.Fix => $"固定费用：{Fee}元 / 年", FundFeeType.Ratio => $"{Fee}% / 年", FundFeeType.Other => Other, _ => $"未设置" } + (GuaranteedFee > 0 ? $" 有保底：{GuaranteedFee} / 年" : "");
+    }
+}
+
+
+
+[AutoChangeableViewModel(typeof(AgencyInfo))]
+public partial class AgencyInfoViewModel : IDataValidation
+{
+    public bool IsValid() => !HasAgency || !string.IsNullOrWhiteSpace(Name);
+
+    public override string ToString() => HasAgency switch { true => Name!, _ => "-" };
 }

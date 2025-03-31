@@ -16,40 +16,34 @@ public partial class ShareElementsViewModel : ObservableObject
     /// <summary>
     /// 锁定期
     /// </summary>
-    [ObservableProperty]
-    public partial PortionElementItemWithEnumViewModel<SealingType, int>? LockingRule { get; set; }
+   // [ObservableProperty]
+   // public partial PortionElementItemWithEnumViewModel<SealingType, int>? LockingRule { get; set; }
 
 
 
     /// <summary>
     /// 管理费
     /// </summary>
-    [ObservableProperty]
-    public partial PortionElementItemWithEnumViewModel<FundFeeType, decimal>? ManageFee { get; set; }
-
-    public ChangeableViewModel<FundElements, ManageFeeInfoViewModel> ManageFee2 { get; }
+    public ChangeableViewModel<FundElements, FundFeeInfoViewModel> ManageFee { get; }
 
 
     /// <summary>
     /// 认购费
     /// </summary>
-    [ObservableProperty]
-    public partial PortionElementItemWithEnumViewModel<FundFeeType, decimal>? SubscriptionFee { get; set; }
+    public ChangeableViewModel<FundElements, FundFeeInfoViewModel> SubscriptionFee { get; set; }
 
 
     /// <summary>
     /// 申购费
     /// </summary>
-    [ObservableProperty]
-    public partial PortionElementItemWithEnumViewModel<FundFeeType, decimal>? PurchaseFee { get; set; }
+    public ChangeableViewModel<FundElements, FundFeeInfoViewModel> PurchaseFee { get; set; }
 
 
 
     /// <summary>
     /// 赎回费
     /// </summary>
-    [ObservableProperty]
-    public partial PortionElementItemWithEnumViewModel<FundFeeType, decimal>? RedemptionFee { get; set; }
+    public ChangeableViewModel<FundElements, FundFeeInfoViewModel> RedemptionFee { get; set; }
 
 
 
@@ -70,25 +64,46 @@ public partial class ShareElementsViewModel : ObservableObject
 
         //LockingRule = new ElementItemViewModelSealing(elements, nameof(FundElements.LockingRule), flowid, "锁定期");
 
-        LockingRule = new PortionElementItemWithEnumViewModel<SealingType, int>(elements, shareId, share, nameof(FundElements.LockingRule), flowid, "锁定期");
-        LockingRule.DisplayGenerator = (a, b, c) => a switch { SealingType.No => "无", SealingType.Has => $"{b}个月", SealingType.Other => c, _ => throw new NotImplementedException() };
+        //LockingRule = new PortionElementItemWithEnumViewModel<SealingType, int>(elements, shareId, share, nameof(FundElements.LockingRule), flowid, "锁定期");
+        //LockingRule.DisplayGenerator = (a, b, c) => a switch { SealingType.No => "无", SealingType.Has => $"{b}个月", SealingType.Other => c, _ => throw new NotImplementedException() };
+ 
+        ManageFee = new ChangeableViewModel<FundElements, FundFeeInfoViewModel>
+        {
+            Label = "管理费",
+            InitFunc = x => new(x.ManageFee.GetValue(shareId, flowid).Value),
+            UpdateFunc = (x,y) => { if (y is not null) x.ManageFee.SetValue(shareId, y.Build(), flowid); },
+            ClearFunc = x=>x.ManageFee.RemoveValue(shareId, flowid)
+        };
+        ManageFee.Init(elements);
 
-        ManageFee = new PortionElementItemWithEnumViewModel<FundFeeType, decimal>(elements, shareId, share, nameof(FundElements.ManageFee), flowid, "管理费");
-        ManageFee.DisplayGenerator = (a, b, c) => a switch { FundFeeType.Fix => $"每年固定{b}元", FundFeeType.Ratio => $"{b}%", FundFeeType.Other => c, _ => throw new NotImplementedException() };
-         
+        SubscriptionFee = new ChangeableViewModel<FundElements, FundFeeInfoViewModel>
+        {
+            Label = "认购费",
+            InitFunc = x => new(x.SubscriptionFee.GetValue(shareId, flowid).Value),
+            UpdateFunc = (x, y) => { if (y is not null) x.SubscriptionFee.SetValue(shareId, y.Build(), flowid); },
+            ClearFunc = x => x.SubscriptionFee.RemoveValue(shareId, flowid)
+        };
+        SubscriptionFee.Init(elements);
 
-        SubscriptionFee = new PortionElementItemWithEnumViewModel<FundFeeType, decimal>(elements, shareId, share, nameof(FundElements.SubscriptionFee), flowid, "认购费");
-        SubscriptionFee.DisplayGenerator = (a, b, c) => a switch { FundFeeType.Fix => $"单笔{b}元", FundFeeType.Ratio => $"{b}%", FundFeeType.Other => c, _ => throw new NotImplementedException() };
+        PurchaseFee = new ChangeableViewModel<FundElements, FundFeeInfoViewModel>
+        {
+            Label = "申购费",
+            InitFunc = x => new(x.PurchaseFee.GetValue(shareId, flowid).Value),
+            UpdateFunc = (x, y) => { if (y is not null) x.PurchaseFee.SetValue(shareId, y.Build(), flowid); },
+            ClearFunc = x => x.ManageFee.RemoveValue(shareId, flowid)
+        };
+        SubscriptionFee.Init(elements);
 
-        PurchaseFee = new PortionElementItemWithEnumViewModel<FundFeeType, decimal>(elements, shareId, share, nameof(FundElements.PurchaseFee), flowid, "申购费");
-        PurchaseFee.DisplayGenerator = (a, b, c) => a switch { FundFeeType.Fix => $"单笔{b}元", FundFeeType.Ratio => $"{b}%", FundFeeType.Other => c, _ => throw new NotImplementedException() };
+        RedemptionFee = new ChangeableViewModel<FundElements, FundFeeInfoViewModel>
+        {
+            Label = "赎回费",
+            InitFunc = x => new(x.RedemptionFee.GetValue(shareId, flowid).Value),
+            UpdateFunc = (x, y) => { if (y is not null) x.RedemptionFee.SetValue(shareId, y.Build(), flowid); },
+            ClearFunc = x => x.RedemptionFee.RemoveValue(shareId, flowid)
+        };
+        RedemptionFee.Init(elements);
 
-
-        RedemptionFee = new PortionElementItemWithEnumViewModel<FundFeeType, decimal>(elements, shareId, share, nameof(FundElements.RedemptionFee), flowid, "赎回费");
-        RedemptionFee.DisplayGenerator = (a, b, c) => a switch { FundFeeType.Fix => $"单笔{b}元", FundFeeType.Ratio => $"{b}%", FundFeeType.Other => c, _ => throw new NotImplementedException() };
-
-
-
+   
     }
 
 }

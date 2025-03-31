@@ -26,28 +26,41 @@ public partial class ChangeableContainer : UserControl
 
 
 
-    public object Header
+    public ChangeableEntityViewModel Entity
     {
-        get { return (object)GetValue(HeaderProperty); }
-        set { SetValue(HeaderProperty, value); }
+        get { return (ChangeableEntityViewModel)GetValue(EntityProperty); }
+        set { SetValue(EntityProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for Header.  This enables animation, styling, binding, etc...
-    public static readonly DependencyProperty HeaderProperty =
-        DependencyProperty.Register("Header", typeof(object), typeof(ChangeableContainer), new PropertyMetadata(null));
+    // Using a DependencyProperty as the backing store for Entity.  This enables animation, styling, binding, etc...
+    public static readonly DependencyProperty EntityProperty =
+        DependencyProperty.Register("Entity", typeof(ChangeableEntityViewModel), typeof(ChangeableContainer), new PropertyMetadata(null));
 
 
 
 
-    public Dock StripPlacement
-    {
-        get { return (Dock)GetValue(StripPlacementProperty); }
-        set { SetValue(StripPlacementProperty, value); }
-    }
+    //public object Header
+    //{
+    //    get { return (object)GetValue(HeaderProperty); }
+    //    set { SetValue(HeaderProperty, value); }
+    //}
 
-    // Using a DependencyProperty as the backing store for StripPlacement.  This enables animation, styling, binding, etc...
-    public static readonly DependencyProperty StripPlacementProperty =
-        DependencyProperty.Register("StripPlacement", typeof(Dock), typeof(ChangeableContainer), new PropertyMetadata(Dock.Left));
+    //// Using a DependencyProperty as the backing store for Header.  This enables animation, styling, binding, etc...
+    //public static readonly DependencyProperty HeaderProperty =
+    //    DependencyProperty.Register("Header", typeof(object), typeof(ChangeableContainer), new PropertyMetadata(null));
+
+
+
+
+    //public Dock StripPlacement
+    //{
+    //    get { return (Dock)GetValue(StripPlacementProperty); }
+    //    set { SetValue(StripPlacementProperty, value); }
+    //}
+
+    //// Using a DependencyProperty as the backing store for StripPlacement.  This enables animation, styling, binding, etc...
+    //public static readonly DependencyProperty StripPlacementProperty =
+    //    DependencyProperty.Register("StripPlacement", typeof(Dock), typeof(ChangeableContainer), new PropertyMetadata(Dock.Left));
 
 
 
