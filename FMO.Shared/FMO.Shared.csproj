@@ -9,6 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ChangeableContainer.xaml.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Remove="ChangeableContainer.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="HandyControl" Version="3.5.1" />
   </ItemGroup>

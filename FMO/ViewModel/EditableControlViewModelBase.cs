@@ -1,32 +1,26 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
+﻿using CommunityToolkit.Mvvm.Messaging;
 using FMO.Shared;
 using FMO.Utilities;
 using System.Reflection;
 
 namespace FMO;
 
-public abstract partial class EditableControlViewModelBase<T> : ObservableObject where T : class//, new()
+
+
+
+public abstract partial class EditableControlViewModelBase<T> : ChangeableEntityViewModel where T : class//, new()
 {
+    protected virtual void NotifyChanged() { }// WeakReferenceMessenger.Default.Send(this);
 
-    [ObservableProperty]
-    public partial bool IsReadOnly { get; set; } = true;
+    private Debouncer _debouncer { get; set; }
 
-    public int Id { get; protected set; }
-
-    protected virtual void NotifyChanged() {}// WeakReferenceMessenger.Default.Send(this);
-
-    private Debouncer _debouncer { get; set; } 
-     
 
     public EditableControlViewModelBase()
     {
         _debouncer = new Debouncer(() => NotifyChanged(), 500);
     }
 
-    [RelayCommand]
-    public void Delete(IPropertyModifier unit)
+    protected override void DeleteOverride(IPropertyModifier unit)
     {
 
         if (unit is IEntityModifier<T> entity)
@@ -45,15 +39,13 @@ public abstract partial class EditableControlViewModelBase<T> : ObservableObject
         }
     }
 
-    [RelayCommand]
-    public void Reset(IPropertyModifier unit)
+    protected override void ResetOverride(IPropertyModifier unit)
     {
         unit.Reset();
     }
 
 
-    [RelayCommand]
-    public void Modify(IPropertyModifier unit)
+    protected override void ModifyOverride(IPropertyModifier unit)
     {
         if (unit is IEntityModifier<T> property)
         {
@@ -89,8 +81,7 @@ public abstract partial class EditableControlViewModelBase<T> : ObservableObject
         unit.Apply();
     }
 
-    [RelayCommand]
-    public void Save()
+    protected override void SaveOverride()
     {
         var ps = GetType().GetProperties();
         foreach (var p in ps)

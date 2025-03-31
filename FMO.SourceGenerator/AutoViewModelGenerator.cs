@@ -110,36 +110,41 @@ namespace FMO.SourceGenerator
             source.AppendLine($"    public partial class {classSymbol.Name} : INotifyPropertyChanged, IEquatable<{classSymbol.Name}>");
             source.AppendLine("    {");
             source.AppendLine("        public event PropertyChangedEventHandler PropertyChanged;");
-            source.AppendLine($"        private {targetTypeSymbol.ToDisplayString()} _wrappedInstance;");
+
+            var properties = targetTypeSymbol.GetMembers().OfType<IPropertySymbol>();
 
             // 构造函数
             source.AppendLine($"        public {classSymbol.Name}({targetTypeSymbol.ToDisplayString()} instance)");
             source.AppendLine("        {");
-            source.AppendLine("            _wrappedInstance = instance;");
+            source.AppendLine("             if(instance is not null)");
+            source.AppendLine("                 {");
+            foreach (var property in properties)
+                source.AppendLine($"            _{property.Name.ToCamelCase()} = instance.{property.Name};");
+
+            source.AppendLine("                 }");
             source.AppendLine("        }");
 
             // 构造函数
             source.AppendLine($"        public {classSymbol.Name}()");
             source.AppendLine("        {");
-            source.AppendLine("            _wrappedInstance = new();");
             source.AppendLine("        }");
 
-            var properties = targetTypeSymbol.GetMembers().OfType<IPropertySymbol>();
             foreach (var property in properties)
             {
                 string pname = property.Name.ToCamelCase();
                 string type = property.Type.ToDisplayString();
-                if (!type.EndsWith("?")) type += "?";
+                if (type != "bool" && !type.EndsWith("?")) type += "?";
 
+                source.AppendLine($"        private {type} _{property.Name.ToCamelCase()};");
                 source.AppendLine($"        public {type} {property.Name}");
                 source.AppendLine("        {");
-                source.AppendLine($"            get => _wrappedInstance.{property.Name};");
+                source.AppendLine($"            get => _{property.Name.ToCamelCase()};");
                 source.AppendLine($"            set");
                 source.AppendLine("            {");
-                source.AppendLine($"                if (!EqualityComparer<{type}>.Default.Equals(_wrappedInstance.{property.Name}, value))");
+                source.AppendLine($"                if (!EqualityComparer<{type}>.Default.Equals(_{property.Name.ToCamelCase()}, value))");
                 source.AppendLine("                {");
-                source.AppendLine($"                    _wrappedInstance.{property.Name} = value??default;");
-                source.AppendLine($"                    OnPropertyChanged(nameof({property.Name}));");
+                source.AppendLine($"                   _{property.Name.ToCamelCase()} = value;");
+                source.AppendLine($"                   OnPropertyChanged(nameof({property.Name}));");
                 source.AppendLine("                }");
                 source.AppendLine("            }");
                 source.AppendLine("        }");
@@ -155,11 +160,15 @@ namespace FMO.SourceGenerator
             {
                 var firstProperty = properties.First();
                 var type = firstProperty.Type.ToDisplayString();
-                source.AppendLine($"            return EqualityComparer<{type}>.Default.Equals(_wrappedInstance.{firstProperty.Name}, other._wrappedInstance.{firstProperty.Name})");
+                if (type != "bool" && !type.EndsWith("?")) type += "?";
+
+                source.AppendLine($"            return EqualityComparer<{type}>.Default.Equals(_{firstProperty.Name.ToCamelCase()}, other._{firstProperty.Name.ToCamelCase()})");
                 foreach (var property in properties.Skip(1))
                 {
                     type = property.Type.ToDisplayString();
-                    source.AppendLine($"                && EqualityComparer<{type}>.Default.Equals(_wrappedInstance.{property.Name}, other._wrappedInstance.{property.Name})");
+                    if (type != "bool" && !type.EndsWith("?")) type += "?";
+
+                    source.AppendLine($"                && EqualityComparer<{type}>.Default.Equals(_{property.Name.ToCamelCase()}, other._{property.Name.ToCamelCase()})");
                 }
                 source.AppendLine(";");
             }
@@ -176,13 +185,19 @@ namespace FMO.SourceGenerator
 
             source.AppendLine($"        public {targetTypeSymbol.ToDisplayString()} Build()");
             source.AppendLine("        {");
-            source.AppendLine("            return _wrappedInstance;");
+            source.AppendLine($"            var result = new {targetTypeSymbol.ToDisplayString()}();");
+            foreach (var property in properties)
+            {
+                var type = property.Type.ToDisplayString();
+                if(type != "bool")
+                    source.AppendLine($"            result.{property.Name} = _{property.Name.ToCamelCase()}??default;");
+                else
+                    source.AppendLine($"            result.{property.Name} = _{property.Name.ToCamelCase()};");
+            }
+            source.AppendLine("            return result;");
             source.AppendLine("        }");
 
-            source.AppendLine($"        public override string ToString()");
-            source.AppendLine("        {");
-            source.AppendLine("            return _wrappedInstance.ToString();");
-            source.AppendLine("        }");
+          
 
 
             source.AppendLine("    }");

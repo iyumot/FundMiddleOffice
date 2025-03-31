@@ -22,9 +22,9 @@
             <Setter Property="Foreground" Value="Black" />
             <Setter Property="hc:IconElement.Geometry" Value="{StaticResource f.circle-check}" />
             <Setter Property="hc:IconElement.Width" Value="15" />
-            <Setter Property="Visibility" Value="{Binding Binding.CanConfirm, RelativeSource={RelativeSource AncestorType=local:ChangeableContainer}, Converter={StaticResource Boolean2VisibilityConverter}}" />
-            <Setter Property="Command" Value="{Binding ModifyCommand}" />
-            <Setter Property="CommandParameter" Value="{Binding Binding, RelativeSource={RelativeSource AncestorType=local:ChangeableContainer}}" />
+            <Setter Property="Visibility" Value="{Binding Binding.CanConfirm, Converter={StaticResource Boolean2VisibilityConverter}}" />
+            <Setter Property="Command" Value="{Binding Entity.ModifyCommand}" />
+            <Setter Property="CommandParameter" Value="{Binding Binding}" />
         </Style>
         <Style
             x:Key="DeleteElement"
@@ -37,9 +37,9 @@
             <Setter Property="Height" Value="14" />
             <Setter Property="Padding" Value="1" />
             <Setter Property="hc:IconElement.Geometry" Value="{StaticResource f.xmark}" />
-            <Setter Property="Visibility" Value="{Binding Binding.CanDelete, RelativeSource={RelativeSource AncestorType=local:ChangeableContainer}, Converter={StaticResource Boolean2VisibilityConverter}}" />
-            <Setter Property="Command" Value="{Binding DeleteCommand}" />
-            <Setter Property="CommandParameter" Value="{Binding Binding, RelativeSource={RelativeSource AncestorType=local:ChangeableContainer}}" />
+            <Setter Property="Visibility" Value="{Binding Binding.CanDelete, Converter={StaticResource Boolean2VisibilityConverter}}" />
+            <Setter Property="Command" Value="{Binding Entity.DeleteCommand}" />
+            <Setter Property="CommandParameter" Value="{Binding Binding}" />
         </Style>
         <Style
             x:Key="ResetElement"
@@ -53,9 +53,9 @@
             <Setter Property="Padding" Value="0" />
             <Setter Property="hc:IconElement.Geometry" Value="{StaticResource f.rotate-left}" />
             <Setter Property="hc:IconElement.Width" Value="12" />
-            <Setter Property="Visibility" Value="{Binding Binding.IsValueChanged, RelativeSource={RelativeSource AncestorType=local:ChangeableContainer}, Converter={StaticResource Boolean2VisibilityConverter}}" />
-            <Setter Property="Command" Value="{Binding DataContext.ResetCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-            <Setter Property="CommandParameter" Value="{Binding Binding, RelativeSource={RelativeSource AncestorType=local:ChangeableContainer}}" />
+            <Setter Property="Visibility" Value="{Binding Binding.IsValueChanged, Converter={StaticResource Boolean2VisibilityConverter}}" />
+            <Setter Property="Command" Value="{Binding Entity.ResetCommand}" />
+            <Setter Property="CommandParameter" Value="{Binding Binding}" />
         </Style>
     </UserControl.Resources>
     <DockPanel>
@@ -64,8 +64,8 @@
         <Grid
             x:Name="x"
             Panel.ZIndex="99"
-            Visibility="{Binding RelativeSource={RelativeSource AncestorType=local:ChangeableContainer}, Path=IsMouseOver, Converter={StaticResource Boolean2VisibilityConverter}}">
-            <Button Style="{StaticResource DeleteElement}" Visibility="{Binding Binding.CanDelete, RelativeSource={RelativeSource AncestorType=local:ChangeableContainer}, Converter={StaticResource Boolean2VisibilityConverter}}" />
+            Visibility="{Binding Path=IsMouseOver, Converter={StaticResource Boolean2VisibilityConverter}}">
+            <Button Style="{StaticResource DeleteElement}" />
         </Grid>
     </DockPanel>
 </UserControl>

@@ -16,6 +16,8 @@
     </UserControl.Resources>
     <UserControl.Style>
         <Style TargetType="local:ChangeableContainer">
+            <Setter Property="Entity" Value="{Binding DataContext, RelativeSource={RelativeSource Mode=Self}}" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="ContentTemplate">
                 <Setter.Value>
                     <DataTemplate>
@@ -23,26 +25,22 @@
                     </DataTemplate>
                 </Setter.Value>
             </Setter>
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="Header">
-                <Setter.Value>
-                    <TextBlock VerticalAlignment="Center" Text="{Binding Binding.Label, RelativeSource={RelativeSource AncestorType=local:ChangeableContainer}}" />
-                </Setter.Value>
-            </Setter>
             <Setter Property="EditTemplate">
                 <Setter.Value>
-                    <ControlTemplate TargetType="UserControl">
+                    <ControlTemplate TargetType="local:ChangeableContainer">
                         <DockPanel
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                             Background="Transparent"
                             LastChildFill="True">
 
-                            <!--<ContentPresenter Content="{TemplateBinding local:ChangeableContainer.Header}" DockPanel.Dock="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=StripPlacement}" />-->
-                            <TextBlock VerticalAlignment="Center" Text="{Binding Binding.Label, RelativeSource={RelativeSource AncestorType=local:ChangeableContainer}}" DockPanel.Dock="Left"/>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                DockPanel.Dock="Left"
+                                Text="{Binding Binding.Label, RelativeSource={RelativeSource AncestorType=local:ChangeableContainer}}" />
 
                             <DockPanel HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}">
                                 <DockPanel>
-                                    <local:ChangeableControlButtons DockPanel.Dock="Right" />
+                                    <local:ChangeableControlButtons DataContext="{Binding ., RelativeSource={RelativeSource Mode=TemplatedParent}}" DockPanel.Dock="Right" />
 
                                     <ContentPresenter
                                         x:Name="PART_Content"
@@ -51,8 +49,6 @@
                                         VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                         Content="{Binding Binding, RelativeSource={RelativeSource AncestorType=local:ChangeableContainer}}"
                                         ContentTemplate="{TemplateBinding ContentTemplate}" />
-
-
                                 </DockPanel>
                             </DockPanel>
                         </DockPanel>
@@ -61,7 +57,7 @@
             </Setter>
             <Setter Property="Template" Value="{Binding RelativeSource={RelativeSource Self}, Path=EditTemplate}" />
             <Style.Triggers>
-                <DataTrigger Binding="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource Mode=Self}}" Value="True">
+                <DataTrigger Binding="{Binding Entity.IsReadOnly, RelativeSource={RelativeSource Mode=Self}}" Value="True">
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="UserControl">
@@ -77,7 +73,7 @@
                                         Text="{Binding Binding.Label, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
 
 
-                                    <local:CopyableControl Margin="10,0,0,0" Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                    <local:CopyableControl Margin="10,0,0,0" Visibility="{Binding Entity.IsReadOnly, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource Boolean2VisibilityConverter}}">
                                         <TextBlock Text="{Binding Binding.Display, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
                                     </local:CopyableControl>
 
@@ -88,62 +84,6 @@
                 </DataTrigger>
             </Style.Triggers>
 
-            <!--<Style.Triggers>
-                <Trigger Property="HorizontalContentAlignment" Value="Stretch">
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="UserControl">
-                                <DockPanel Background="Transparent">
-                                    <TextBlock
-                                        VerticalAlignment="Center"
-                                        Foreground="{StaticResource LabelBrush}"
-                                        Text="{Binding Binding.Label, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
-
-                                    <DockPanel HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}">
-                                        <local:CopyableControl Margin="10,0,0,0" Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}">
-                                            <TextBlock Text="{Binding Binding.Display, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
-                                        </local:CopyableControl>
-
-                                        <DockPanel Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}">
-                                            <Button
-                                                Panel.ZIndex="99"
-                                                DockPanel.Dock="Right"
-                                                Style="{StaticResource SaveElement}" />
-
-                                            <Button
-                                                Panel.ZIndex="99"
-                                                DockPanel.Dock="Right"
-                                                Style="{StaticResource ResetElement}" />
-
-                                            <Grid
-                                                x:Name="x"
-                                                Panel.ZIndex="99"
-                                                DockPanel.Dock="Right"
-                                                Visibility="Collapsed">
-                                                <Button Style="{StaticResource DeleteElement}" />
-                                            </Grid>
-
-                                            <ContentPresenter
-                                                x:Name="PART_Content"
-                                                Margin="4,0"
-                                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                Content="{Binding Binding, RelativeSource={RelativeSource AncestorType=local:ChangeableContainer}}"
-                                                ContentTemplate="{TemplateBinding ContentTemplate}" />
-
-                                        </DockPanel>
-                                    </DockPanel>
-
-                                </DockPanel>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="x" Property="Visibility" Value="Visible" />
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Trigger>
-            </Style.Triggers>-->
         </Style>
     </UserControl.Style>
 </UserControl>

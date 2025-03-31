@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using FMO.Models;
-using System.Collections;
 using System.ComponentModel;
 using System.Text.Json;
 
@@ -27,6 +26,14 @@ public interface IEntityModifier<TEntity>
     void UpdateEntity(TEntity entity);
 }
 
+
+
+public interface IDataValidation
+{
+    bool IsValid();
+}
+
+
 /// <summary>
 /// 
 /// </summary>
@@ -52,7 +59,7 @@ public partial class ChangeableViewModel<TEntity, TProperty> : ObservableObject,
 
     public string? Display => DisplayFunc is not null ? DisplayFunc(OldValue) : OldValue?.ToString();
 
-    public virtual bool CanConfirm => NewValue is not null /*&& !NewValue.Equals(default(TProperty))*/ && IsValueChanged;
+    public virtual bool CanConfirm => NewValue is not null /*&& !NewValue.Equals(default(TProperty))*/ && IsValueChanged && NewValue switch { IDataValidation d => d.IsValid(), _ => true };
 
     public bool CanDelete => !IsValueChanged && OldValue is not null && !EqualityComparer<TProperty>.Default.Equals(_notnullDefault, OldValue);
 
