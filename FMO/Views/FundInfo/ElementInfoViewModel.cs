@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using FMO.Models;
 using FMO.Shared;
+using System.Xml.Linq;
 
 namespace FMO;
 
@@ -145,4 +146,22 @@ public partial class AgencyInfoViewModel : IDataValidation
     public bool IsValid() => !HasAgency || !string.IsNullOrWhiteSpace(Name);
 
     public override string ToString() => HasAgency switch { true => Name!, _ => "-" };
+}
+
+[AutoChangeableViewModel(typeof(TemporarilyOpenInfo))]
+public partial class TemporarilyOpenInfoViewModel : IDataValidation
+{ 
+    public bool IsValid() => !IsAllowed || (AllowPurchase || AllowRedemption);
+
+    public override string ToString() => !IsAllowed ? "不允许临开" : $"允许{(AllowPurchase ? "申购":"")}{(AllowRedemption ? "赎回" : "")}";
+}
+
+
+[AutoChangeableViewModel(typeof(FundPurchaseRule))]
+public partial class FundPurchaseRuleViewModel
+{
+    public override string ToString()
+    {
+        return MinDeposit is null ? "未设置": $"{MinDeposit/ 10000}万起投" + (AdditionalDeposit > 0 ? $"，追加{AdditionalDeposit/10000}万起":"") + (HasRequirement ? Statement : "");
+    }
 }

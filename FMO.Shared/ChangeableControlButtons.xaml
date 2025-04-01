@@ -65,7 +65,9 @@
             x:Name="x"
             Panel.ZIndex="99"
             Visibility="{Binding Path=IsMouseOver, Converter={StaticResource Boolean2VisibilityConverter}}">
-            <Button Style="{StaticResource DeleteElement}" />
+            <Grid Visibility="{Binding Binding.IsInherited, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                <Button Style="{StaticResource DeleteElement}" />
+            </Grid>
         </Grid>
     </DockPanel>
 </UserControl>

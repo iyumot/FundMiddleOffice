@@ -132,6 +132,7 @@ public class FundElements
     public Mutable<string> InvestmentStrategy { get; set; } = new(nameof(InvestmentStrategy));
 
 
+    public Mutable<TemporarilyOpenInfo> TemporarilyOpenInfo { get; set; } = new(nameof(TemporarilyOpenInfo));
 
 
     public PortionMutable<ValueWithEnum<SealingType, int>> LockingRule { get; set; } = new(nameof(LockingRule));
@@ -149,11 +150,17 @@ public class FundElements
     /// </summary>
     public PortionMutable<FundFeeInfo> SubscriptionFee { get; set; } = new(nameof(SubscriptionFee));
 
+
+    public PortionMutable<FundPurchaseRule> SubscriptionRule { get; set; } = new(nameof(SubscriptionRule));
+
+
+
     /// <summary>
     /// 申购费
     /// </summary>
     public PortionMutable<FundFeeInfo> PurchaseFee { get; set; } = new(nameof(PurchaseFee));
 
+    public PortionMutable<FundPurchaseRule> PurchasRule { get; set; } = new(nameof(PurchasRule));
 
     /// <summary>
     /// 赎回费
@@ -372,37 +379,4 @@ public class FundElements
 
         ShareClasses!.SetValue(old.ToArray(), flowId);
     }
-}
-
-
-public class FundFeeInfo
-{
-    public FundFeeType Type { get; set; }
-
-    public decimal Fee { get; set; }
-
-
-    public bool HasGuaranteedFee { get; set; }
-
-    /// <summary>
-    /// 保底费用/年
-    /// </summary>
-    public decimal GuaranteedFee { get; set; }
-
-
-    /// <summary>
-    /// 特殊类型
-    /// </summary>
-    public string? Other { get; set; }
-}
-
-/// <summary>
-/// 托管、外包、投顾
-/// </summary>
-public class AgencyInfo
-{
-    public bool HasAgency { get; set; }
-
-    public string? Name { get; set; }
-     
 }

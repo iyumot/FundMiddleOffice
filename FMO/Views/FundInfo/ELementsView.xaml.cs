@@ -137,6 +137,10 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
 
 
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, TemporarilyOpenInfoViewModel> TemporarilyOpenInfo { get; set; }
+
+
 
     //[ObservableProperty]
     //public partial ElementRefrenceWithBooleanViewModel<string>? PerformanceBenchmarks { get; set; }
@@ -190,6 +194,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         {
             Label = "基金全称",
             InitFunc = x => x.FullName.GetValue(newValue).Value,
+            InheritedFunc = x => x.FullName.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
             UpdateFunc = (x, y) => x.FullName.SetValue(y!, newValue),
             ClearFunc = x => x.FullName.RemoveValue(newValue)
         };
@@ -199,6 +204,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         {
             Label = "基金简称",
             InitFunc = x => x.ShortName.GetValue(newValue).Value,
+            InheritedFunc = x => x.ShortName.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
             UpdateFunc = (x, y) => x.ShortName.SetValue(y!, newValue),
             ClearFunc = x => x.ShortName.RemoveValue(newValue)
         };
@@ -218,6 +224,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         {
             Label = "运作方式",
             InitFunc = x => new(x.FundModeInfo!.GetValue(newValue).Value),
+            InheritedFunc = x => x.FundModeInfo.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
             UpdateFunc = (x, y) => x.FundModeInfo!.SetValue(y!.Build(), newValue),
             ClearFunc = x => x.FundModeInfo!.RemoveValue(newValue),
             DisplayFunc = x => x?.Data switch { FundMode.Open => "开放式", FundMode.Close => "封闭式", FundMode.Other => x.Other, _ => "-" }
@@ -229,6 +236,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         {
             Label = "封闭期",
             InitFunc = x => new(x.SealingRule!.GetValue(newValue).Value),
+            InheritedFunc = x => x.SealingRule.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
             UpdateFunc = (x, y) => x.SealingRule!.SetValue(y!.Build(), newValue),
             ClearFunc = x => x.SealingRule!.RemoveValue(newValue),
             DisplayFunc = x => x?.Type switch { SealingType.No => "无", SealingType.Has => $"{x.Month}个月", SealingType.Other => x.Other, _ => "-" }
@@ -239,6 +247,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         {
             Label = "风险等级",
             InitFunc = x => x.RiskLevel!.GetValue(newValue).Value,
+            InheritedFunc = x => x.RiskLevel.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
             UpdateFunc = (x, y) => x.RiskLevel!.SetValue(y, newValue),
             ClearFunc = x => x.RiskLevel!.RemoveValue(newValue),
 
@@ -249,7 +258,16 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         {
             Label = "存续期",
             InitFunc = x => x.DurationInMonths!.GetValue(newValue).Value switch { 0 => null, var n => n },
-            UpdateFunc = (x, y) => { if (y is not null) x.DurationInMonths!.SetValue(y.Value, newValue); },
+            InheritedFunc = x => x.DurationInMonths.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
+            UpdateFunc = (x, y) =>
+            {
+                if (y is not null)
+                {
+                    x.DurationInMonths!.SetValue(y.Value, newValue);
+                    ExpirationDate.NewValue = SetupDate.AddMonths(y.Value).AddDays(-1);
+                    ExpirationDate.OldValue = ExpirationDate.NewValue;
+                }
+            },
             ClearFunc = x => x.DurationInMonths!.RemoveValue(newValue),
         };
         DurationInMonths.Init(elements);
@@ -257,7 +275,8 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         ExpirationDate = new ChangeableViewModel<FundElements, DateOnly?>
         {
             Label = "到期日",
-            InitFunc = x => ValueFormat(x.ExpirationDate!.GetValue(newValue).Value),
+            InitFunc = x => ExpirationDateFormat(x.ExpirationDate!.GetValue(newValue).Value),
+            InheritedFunc = x => x.ExpirationDate.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
             UpdateFunc = (x, y) => { if (y is not null) x.ExpirationDate!.SetValue(y.Value, newValue); },
             ClearFunc = x => x.ExpirationDate!.RemoveValue(newValue),
         };
@@ -269,6 +288,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         {
             Label = "募集账户",
             InitFunc = x => new(x.CollectionAccount.GetValue(newValue).Value),
+            InheritedFunc = x => x.CollectionAccount.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
             UpdateFunc = (x, y) => x.CollectionAccount.SetValue(y!.Build(), newValue),
             ClearFunc = x => x.CollectionAccount.RemoveValue(newValue),
             DisplayFunc = x => BankString(x)
@@ -280,6 +300,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         {
             Label = "托管账户",
             InitFunc = x => new(x.CustodyAccount.GetValue(newValue).Value),
+            InheritedFunc = x => x.CustodyAccount.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
             UpdateFunc = (x, y) => x.CustodyAccount.SetValue(y!.Build(), newValue),
             ClearFunc = x => x.CustodyAccount.RemoveValue(newValue),
             DisplayFunc = x => BankString(x)
@@ -290,7 +311,8 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         StopLine = new ChangeableViewModel<FundElements, decimal?>
         {
             Label = "止损线",
-            InitFunc = x => ValueFormat(x.StopLine.GetValue(newValue).Value),
+            InitFunc = x => ValueFormat(x.StopLine.GetValue(newValue).Value), 
+            InheritedFunc = x => x.StopLine.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
             UpdateFunc = (x, y) => { if (y is not null) x.StopLine!.SetValue(y.Value, newValue); },
             ClearFunc = x => x.StopLine.RemoveValue(newValue),
         };
@@ -300,6 +322,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         {
             Label = "预警线",
             InitFunc = x => ValueFormat(x.WarningLine.GetValue(newValue).Value),
+            InheritedFunc = x => x.WarningLine.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
             UpdateFunc = (x, y) => { if (y is not null) x.WarningLine!.SetValue(y.Value, newValue); },
             ClearFunc = x => x.WarningLine.RemoveValue(newValue),
         };
@@ -315,8 +338,9 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
         OpenDayInfo = new ChangeableViewModel<FundElements, string>
         {
-            Label = "开放日规则",
+            Label = "固定开放日",
             InitFunc = x => x.OpenDayInfo.GetValue(newValue).Value,
+            InheritedFunc = x => x.OpenDayInfo.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
             UpdateFunc = (x, y) => x.OpenDayInfo.SetValue(y!, newValue),
             ClearFunc = x => x.OpenDayInfo.RemoveValue(newValue)
         };
@@ -326,6 +350,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         {
             Label = "托管费",
             InitFunc = x => new(x.TrusteeFee.GetValue(newValue).Value),
+            InheritedFunc = x => x.TrusteeFee.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
             UpdateFunc = (x, y) => x.TrusteeFee.SetValue(y!.Build(), newValue),
             ClearFunc = x => x.TrusteeFee.RemoveValue(newValue),
             DisplayFunc = x => x?.ToString() ?? "-"
@@ -337,6 +362,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         {
             Label = "外包费",
             InitFunc = x => new(x.OutsourcingFee.GetValue(newValue).Value),
+            InheritedFunc = x => x.OutsourcingFee.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
             UpdateFunc = (x, y) => x.OutsourcingFee.SetValue(y!.Build(), newValue),
             ClearFunc = x => x.OutsourcingFee.RemoveValue(newValue),
             DisplayFunc = x => x is null ? "-" : x.ToString()
@@ -347,6 +373,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         {
             Label = "托管机构",
             InitFunc = x => new(x.TrusteeInfo.GetValue(newValue).Value),
+            InheritedFunc = x => x.TrusteeInfo.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
             UpdateFunc = (x, y) => { if (y is not null) x.TrusteeInfo!.SetValue(y.Build(), newValue); },
             ClearFunc = x => x.TrusteeInfo.RemoveValue(newValue),
         };
@@ -356,6 +383,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         {
             Label = "外包机构",
             InitFunc = x => new(x.OutsourcingInfo.GetValue(newValue).Value),
+            InheritedFunc = x => x.OutsourcingInfo.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
             UpdateFunc = (x, y) => { if (y is not null) x.OutsourcingInfo!.SetValue(y.Build(), newValue); },
             ClearFunc = x => x.OutsourcingInfo.RemoveValue(newValue),
         };
@@ -369,6 +397,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         {
             Label = "投资目标",
             InitFunc = x => x.InvestmentObjective.GetValue(newValue).Value,
+            InheritedFunc = x => x.InvestmentObjective.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
             UpdateFunc = (x, y) => { if (y is not null) x.InvestmentObjective!.SetValue(y, newValue); },
             ClearFunc = x => x.InvestmentObjective.RemoveValue(newValue),
         };
@@ -379,6 +408,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         {
             Label = "投资范围",
             InitFunc = x => x.InvestmentScope.GetValue(newValue).Value,
+            InheritedFunc = x => x.InvestmentScope.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
             UpdateFunc = (x, y) => { if (y is not null) x.InvestmentScope!.SetValue(y, newValue); },
             ClearFunc = x => x.InvestmentScope.RemoveValue(newValue),
         };
@@ -388,6 +418,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         {
             Label = "投资策略",
             InitFunc = x => x.InvestmentStrategy.GetValue(newValue).Value,
+            InheritedFunc = x => x.InvestmentStrategy.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
             UpdateFunc = (x, y) => { if (y is not null) x.InvestmentStrategy!.SetValue(y, newValue); },
             ClearFunc = x => x.InvestmentStrategy.RemoveValue(newValue),
         };
@@ -397,13 +428,36 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         {
             Label = "投资经理",
             InitFunc = x => x.InvestmentManager.GetValue(newValue).Value,
+            InheritedFunc = x => x.InvestmentManager.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
             UpdateFunc = (x, y) => { if (y is not null) x.InvestmentStrategy!.SetValue(y, newValue); },
             ClearFunc = x => x.InvestmentStrategy.RemoveValue(newValue),
         };
         InvestmentManagers.Init(elements);
 
+
+        TemporarilyOpenInfo = new ChangeableViewModel<FundElements, TemporarilyOpenInfoViewModel>
+        {
+            Label = "临开规则",
+            InitFunc = x => new(x.TemporarilyOpenInfo.GetValue(newValue).Value),
+            InheritedFunc = x => x.TemporarilyOpenInfo.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
+            UpdateFunc = (x, y) => { if (y is not null) x.TemporarilyOpenInfo!.SetValue(y.Build(), newValue); },
+            ClearFunc = x => x.TemporarilyOpenInfo.RemoveValue(newValue),
+        };
+        TemporarilyOpenInfo.Init(elements);
+
+
         InitElementsOfShare(elements);
 
+    }
+
+    private DateOnly? ExpirationDateFormat(DateOnly value)
+    {
+        if (value == default)
+        {
+            if (DurationInMonths.NewValue is not null && DurationInMonths.NewValue > 0)
+                return SetupDate.AddMonths(DurationInMonths.NewValue.Value).AddDays(-1);
+        }
+        return null;
     }
 
     private string BankString(BankAccountInfoViewModel? x)

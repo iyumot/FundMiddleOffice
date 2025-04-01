@@ -108,7 +108,7 @@
 
         <DockPanel HorizontalAlignment="Right" VerticalAlignment="Top">
             <Button hc:IconElement.Geometry="{StaticResource f.arrows-rotate}" Command="{Binding RefreshNetValuesCommand}" />
-            <Button hc:IconElement.Geometry="{StaticResource f.file-export}" Command="{Binding ExportNetValuesCommand}" />
+            <!--<Button hc:IconElement.Geometry="{StaticResource f.file-export}" Command="{Binding ExportNetValuesCommand}" />-->
         </DockPanel>
     </Grid>
 </UserControl>

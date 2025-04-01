@@ -72,8 +72,13 @@ public partial class ChangeableViewModel<TEntity, TProperty> : ObservableObject,
     public partial bool IsValueChanged { get; set; }
 
 
+    [ObservableProperty]
+    public partial bool IsInherited { get; set; }
+
+
     public Func<TEntity, TProperty?>? InitFunc { get; set; }
 
+    public Func<TEntity, bool>? InheritedFunc { get; set; }
 
     public Action<TEntity, TProperty?>? UpdateFunc { get; set; }
 
@@ -122,10 +127,7 @@ public partial class ChangeableViewModel<TEntity, TProperty> : ObservableObject,
         IsValueChanged = NewValue switch { null => OldValue is not null, _ => !EqualityComparer<TProperty>.Default.Equals(NewValue, OldValue) };
     }
 
-    private void SubjectPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
 
-    }
 
     public virtual void Apply()
     {
@@ -134,6 +136,8 @@ public partial class ChangeableViewModel<TEntity, TProperty> : ObservableObject,
             OldValue = NewValue;
         else
             OldValue = JsonSerializer.Deserialize<TProperty>(JsonSerializer.Serialize(NewValue));
+
+        IsInherited = false;
     }
 
     public void Reset()
@@ -146,17 +150,23 @@ public partial class ChangeableViewModel<TEntity, TProperty> : ObservableObject,
 
     public virtual void Init(TEntity entity)
     {
-        if (entity is not null && InitFunc is not null)
+        if (entity is  null)
+            return;
+         
+        if(InitFunc is not null)
         {
             OldValue = InitFunc(entity);
             NewValue = InitFunc(entity);
         }
+        if (InheritedFunc is not null)
+            IsInherited = InheritedFunc(entity);
     }
 
     public virtual void UpdateEntity(TEntity entity)
     {
         if (entity is not null && UpdateFunc is not null && NewValue is not null)
             UpdateFunc(entity, NewValue);
+        
     }
 
     public virtual void RemoveValue(TEntity entity)
