@@ -124,6 +124,7 @@ namespace FMO.SourceGenerator
             source.AppendLine("                 }");
             source.AppendLine("        }");
 
+
             // 构造函数
             source.AppendLine($"        public {classSymbol.Name}()");
             source.AppendLine("        {");
