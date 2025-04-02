@@ -19,8 +19,18 @@ public partial class ShareClassViewModel : ObservableObject
     [ObservableProperty]
     public required partial string Name { get; set; }
 
+    [ObservableProperty]
+    public partial string? Requirement { get; set; }
 
+    public ShareClassViewModel() { }
 
+    [SetsRequiredMembers]
+    public ShareClassViewModel(ShareClass s)
+    {
+        Id = s.Id;
+        Name = s.Name;
+        Requirement = s.Requirement;
+    }
 }
 public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IElementChangable
 {

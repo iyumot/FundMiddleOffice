@@ -808,6 +808,54 @@
 
 
 
+                        <DockPanel DockPanel.Dock="Top" LastChildFill="False">
+                            <TextBlock
+                                Margin="0,0,10,0"
+                                VerticalAlignment="Center"
+                                Text="基金份额" />
+
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.pencil}"
+                                Command="{Binding BeginChangedShareCommand}"
+                                CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
+                                Style="{StaticResource ButtonIcon.Small}"
+                                ToolTip="修改"
+                                Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+
+                            <ListBox
+                                VerticalAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                BorderThickness="0"
+                                ItemsSource="{Binding Shares}"
+                                Style="{StaticResource ListBoxCustom}">
+                                <ListBox.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel IsItemsHost="True" />
+                                    </ItemsPanelTemplate>
+                                </ListBox.ItemsPanel>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <DockPanel Margin="5,0">
+                                            <TextBlock Text="{Binding Name}" />
+                                            <TextBlock x:Name="tb" Text=" ：" />
+                                            <TextBlock
+                                                x:Name="tb2"
+                                                MinWidth="80"
+                                                Text="{Binding Requirement}" />
+                                        </DockPanel>
+
+                                        <DataTemplate.Triggers>
+                                            <DataTrigger Binding="{Binding Items.Count, RelativeSource={RelativeSource AncestorType=ListBox}}" Value="1">
+                                                <Setter TargetName="tb" Property="Visibility" Value="Collapsed" />
+                                                <Setter TargetName="tb2" Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+
+                                        </DataTemplate.Triggers>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </DockPanel>
                     </DockPanel>
 
                 </StackPanel>

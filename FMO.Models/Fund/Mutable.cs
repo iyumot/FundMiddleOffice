@@ -91,7 +91,15 @@ public class Mutable<T> where T : notnull
 //}
 
 
-public class PortionMutable<T> : Mutable<Dictionary<int, T>> where T : notnull
+public interface IPortionMutable
+{
+    void RemoveValue(int share, int flowid);
+
+    void SwitchToSingle(int share, int flowid);
+
+}
+
+public class PortionMutable<T> : Mutable<Dictionary<int, T>>, IPortionMutable where T : notnull
 {
     [SetsRequiredMembers]
     public PortionMutable(string name) : base(name, new())
@@ -118,8 +126,8 @@ public class PortionMutable<T> : Mutable<Dictionary<int, T>> where T : notnull
                 return (x.Key, x.Value[share]);
 
             /// 如果只有一个值
-            //if (x.Value.Count == 1 && x.Value.First().Key == FundElements.SingleShareKey)
-            //    return (x.Key, x.Value.First().Value);
+            if (x.Value.Count == 1 && x.Value.First().Key == -1)
+                return (x.Key, x.Value.First().Value);
         }
 
         return (-1, default);
@@ -134,4 +142,22 @@ public class PortionMutable<T> : Mutable<Dictionary<int, T>> where T : notnull
         dic.Remove(share);
     }
 
+    /// <summary>
+    /// share变成单一份额，id 改成-1
+    /// </summary>
+    /// <param name="share"></param>
+    /// <param name="flowid"></param>
+    public void SwitchToSingle(int share, int flowid)
+    {
+        if (!Changes.ContainsKey(flowid))
+            return;
+
+        var dic = Changes[flowid];
+
+        if (dic.ContainsKey(share))
+        {
+            dic[-1] = dic[share];
+            dic.Remove(share);
+        }
+    }
 }

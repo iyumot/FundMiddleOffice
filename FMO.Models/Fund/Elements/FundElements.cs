@@ -25,7 +25,7 @@ public class FundElements
     /// <summary>
     /// 运作方式
     /// </summary> 
-    public Mutable<DataExtra<FundMode>> FundModeInfo { get; set; } = new (nameof(ShortName));
+    public Mutable<DataExtra<FundMode>> FundModeInfo { get; set; } = new(nameof(ShortName));
 
     /// <summary>
     /// 封闭期
@@ -104,7 +104,7 @@ public class FundElements
     /// 外包费
     /// </summary>
     public Mutable<FundFeeInfo> OutsourcingFee { get; set; } = new(nameof(OutsourcingFee));
-     
+
 
     public Mutable<FundInvestmentManager[]> InvestmentManagers { get; set; } = new(nameof(InvestmentManagers));
 
@@ -143,7 +143,7 @@ public class FundElements
     /// </summary>
     public PortionMutable<FundFeeInfo> ManageFee { get; set; } = new(nameof(ManageFee));
 
- 
+
 
     /// <summary>
     /// 认购费
@@ -174,18 +174,16 @@ public class FundElements
 
     public static FundElements Create(int fundid)
     {
-        return new FundElements
-        {
-            FundId = fundid,
-            Id = fundid
-        };
+        var e = new FundElements { FundId = fundid, Id = fundid, };
+        e.ShareClasses.SetValue([new ShareClass { Id = -1, Name = FundElements.SingleShareKey }], 0);
+        return e;
     }
 
 
     public bool Init()
     {
         bool changed = false;
-         
+
         if (RiskLevel is null)
         { changed = true; RiskLevel = new Mutable<RiskLevel>(nameof(RiskLevel)); }
 
@@ -238,7 +236,7 @@ public class FundElements
 
         if (ManageFee is null)
         { changed = true; ManageFee = new(nameof(ManageFee)); }
-         
+
 
         if (SubscriptionFee is null)
         { changed = true; SubscriptionFee = new(nameof(SubscriptionFee)); }
@@ -277,6 +275,7 @@ public class FundElements
     /// <param name="share"></param>
     public void RemoveShareRelated(int flowid, int share)
     {
+        if (share == -1) return;
         foreach (var p in GetType().GetProperties())
         {
             if (p.PropertyType.IsGenericType && p.PropertyType.GetGenericTypeDefinition() == typeof(PortionMutable<>))
@@ -286,6 +285,16 @@ public class FundElements
                 var obj = p.GetValue(this);
                 method?.Invoke(obj, new object[] { share, flowid });
             }
+        }
+    }
+
+    public void SwitchShareAsUnion(int flowid, int share)
+    {
+        if (share == -1) return;
+        foreach (var p in GetType().GetProperties())
+        {
+            if (p.PropertyType.IsAssignableTo(typeof(IPortionMutable)) && p.GetValue(this) is IPortionMutable m)
+                m.SwitchToSingle(share, flowid);
         }
     }
 
@@ -358,7 +367,7 @@ public class FundElements
     //}
 
     public void ShareClassChange(int flowId, (int Id, string Name)[] add, (int Id, string Name)[] remove, (int Id, string Name)[] change)
-    { 
+    {
         var old = ShareClasses!.GetValue(flowId).Value?.ToList() ?? new();
         old.AddRange(add.Select(x => new ShareClass { Id = x.Id, Name = x.Name }));
 
@@ -378,5 +387,39 @@ public class FundElements
         if (old.Count == 1) old[0].Name = SingleShareKey;
 
         ShareClasses!.SetValue(old.ToArray(), flowId);
+    }
+
+    public void ShareClassChange(int flowId, (int Id, string Name, string? Requirement)[] add, ShareClass[] remove, (int Id, string Name, string? Requirement)[] change)
+    {
+        var old = ShareClasses!.GetValue(flowId).Value?.ToList() ?? new();
+        old.AddRange(add.Select(x => new ShareClass { Id = x.Id, Name = x.Name, Requirement = x.Requirement }));
+
+        //删除份额类型
+        foreach (var item in remove)
+            RemoveShareRelated(flowId, item.Id);
+        old.RemoveAll(x => remove.Any(y => x.Id == y.Id));
+
+        //更名
+        foreach (var item in change)
+        {
+            var v = old.FirstOrDefault(x => x.Id == item.Id);
+            if (v is not null)
+            {
+                v.Name = item.Name;
+                v.Requirement = item.Requirement;
+            }
+        }
+
+        //如果只有一个，强制更名
+        if (old.Count == 1)
+        {
+            old[0].Name = SingleShareKey;
+            SwitchShareAsUnion(flowId, old[0].Id);
+            old[0].Id = -1;
+        }
+        else if (old.Count > 1 && old.FirstOrDefault(x => x.Id == -1) is ShareClass sc)
+            old.Remove(sc);
+
+        ShareClasses!.SetValue(old.DistinctBy(x => x.Id).ToArray(), flowId);
     }
 }
