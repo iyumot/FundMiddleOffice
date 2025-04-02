@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace FMO;
 
@@ -44,6 +45,16 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
 
     public DateOnly SetupDate { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsDividingShare { get; set; }
+
+
+    [ObservableProperty]
+    public partial ObservableCollection<ShareClassViewModel> Shares { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsSharesInherited { get; set; }
 
     #region 要素
 
@@ -189,6 +200,9 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
         var type = GetType();
         SetupDate = fund.SetupDate;
+        var cinfo = elements.ShareClasses.GetValue(newValue);
+        IsSharesInherited = cinfo.FlowId < newValue;
+        Shares = cinfo.Value is not null ? new(cinfo.Value.Select(x => new ShareClassViewModel { Id = x.Id, Name = x.Name, Requirement = x.Requirement })) : new();
 
         FullName = new ChangeableViewModel<FundElements, string>
         {
@@ -311,7 +325,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         StopLine = new ChangeableViewModel<FundElements, decimal?>
         {
             Label = "止损线",
-            InitFunc = x => ValueFormat(x.StopLine.GetValue(newValue).Value), 
+            InitFunc = x => ValueFormat(x.StopLine.GetValue(newValue).Value),
             InheritedFunc = x => x.StopLine.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
             UpdateFunc = (x, y) => { if (y is not null) x.StopLine!.SetValue(y.Value, newValue); },
             ClearFunc = x => x.StopLine.RemoveValue(newValue),
@@ -616,6 +630,38 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
         }
         catch { }
+    }
+
+    [RelayCommand]
+    public void BeginChangedShare(FrameworkElement panel)
+    {
+        var wnd = new ModifyShareClassWindow();
+        wnd.DataContext = new ModifyShareClassWindowViewModel(FundId, FlowId);
+        wnd.Owner = App.Current.MainWindow;
+        Window window = Window.GetWindow(panel);
+        Point point = panel.TransformToAncestor(window).Transform(new Point(panel.ActualWidth / 2, panel.ActualHeight / 2));
+
+        wnd.Left = window.Left + point.X - wnd.Width / 2;
+        wnd.Top = window.Top + point.Y + panel.ActualHeight;
+
+        var r = wnd.ShowDialog();
+
+        if (r??false) OnFlowIdChanged(FlowId, FlowId);
+    }
+
+    public void InitShare(Mutable<ShareClass[]>? shareClass = null)
+    {
+        if (shareClass is null)
+        {
+            using var db = DbHelper.Base();
+            shareClass = db.GetCollection<FundElements>().FindById(FundId)?.ShareClasses;
+        }
+
+        if (shareClass is not null && shareClass.GetValue(FlowId).Value is ShareClass[] shares)
+            Shares = new ObservableCollection<ShareClassViewModel>(shares.Select(x => new ShareClassViewModel { Id = x.Id, Name = x.Name }));
+        else
+            throw new Exception(); //Shares = new ObservableCollection<ShareClassViewModel>([new ShareClassViewModel { Id = IdGenerator.GetNextId(nameof(ShareClass)), Name = FundElements.SingleShareKey }]);
+
     }
 
     public void Receive(FundShareChangedMessage message)

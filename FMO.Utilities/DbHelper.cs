@@ -71,6 +71,11 @@ public static class DbHelper
         return new BaseDatabase(@$"FileName=data\base.db;Password={_password};Connection=Shared"); 
     }
 
+    public static BaseDatabase ShareClass()
+    {
+        return new BaseDatabase(@$"FileName=data\sc.db;Password={_password};Connection=Shared");
+    }
+
 
     public static LiteDatabase Trustee() => new LiteDatabase(@$"FileName=data\trustee.db;Password={_password};Connection=Shared");
 

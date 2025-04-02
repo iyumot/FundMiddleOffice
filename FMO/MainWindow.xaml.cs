@@ -82,14 +82,19 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
 
     public void Receive(OpenFundMessage message)
     {
-        var db = DbHelper.Base();
+        var db = DbHelper.Base(); 
         var fund = db.GetCollection<Fund>().FindById(message.Id);
-        var ele = db.GetCollection<FundElements>().FindOne(x => x.FundId == message.Id);
+        var ele = db.GetCollection<FundElements>().FindById(message.Id);
         if (ele is null)
         {
             ele = FundElements.Create(message.Id);
             db.GetCollection<FundElements>().Insert(ele);
         }
+
+        // 检查要求
+        //var flows = db.GetCollection<FundFlow>().Find(x => x.FundId == fund.Id).Select(x => x.Id).ToArray();
+        
+
         //if (ele.Init()) db.GetCollection<FundElements>().Update(ele);
         db.Dispose();
         if (fund is null) return;
