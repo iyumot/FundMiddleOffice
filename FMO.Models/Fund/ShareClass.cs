@@ -19,10 +19,13 @@ public class ShareClass
     /// </summary>
     public string? Requirement { get; set; }
 
+
+    public static ShareClass DefaultShare => new ShareClass { Id = -1, Name = FundElements.SingleShareKey };
+
     /// <summary>
     /// 仅用于serialize
     /// </summary>
-    public ShareClass() { }
+    public ShareClass() {   }
 
     /// <summary>
     /// 此项用于手动创建

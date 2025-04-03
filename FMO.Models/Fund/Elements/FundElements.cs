@@ -135,7 +135,17 @@ public class FundElements
     public Mutable<TemporarilyOpenInfo> TemporarilyOpenInfo { get; set; } = new(nameof(TemporarilyOpenInfo));
 
 
+    public Mutable<decimal> HugeRedemptionRatio { get; set; } = new(nameof(HugeRedemptionRatio));
+
+
+    public Mutable<CoolingPeriodInfo> CoolingPeriod { get; set; } = new(nameof(CoolingPeriod));
+
+
+    public Mutable<CallbackInfo> Callback { get; set; } = new(nameof(Callback));
+
+
     public PortionMutable<ValueWithEnum<SealingType, int>> LockingRule { get; set; } = new(nameof(LockingRule));
+
 
 
     /// <summary>
@@ -143,7 +153,7 @@ public class FundElements
     /// </summary>
     public PortionMutable<FundFeeInfo> ManageFee { get; set; } = new(nameof(ManageFee));
 
-
+    public Mutable<FeePayInfo> ManageFeePay { get; set; } = new(nameof(ManageFeePay));
 
     /// <summary>
     /// 认购费
