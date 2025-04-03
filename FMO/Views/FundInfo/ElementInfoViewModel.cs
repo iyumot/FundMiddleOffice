@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using FMO.Models;
 using FMO.Shared;
-using System.Xml.Linq;
 
 namespace FMO;
 
@@ -47,7 +46,7 @@ public partial class DataExtraViewModel<T> : ObservableObject, IEquatable<DataEx
     public partial string? Other { get; set; }
 
 
-    public DataExtraViewModel(){}
+    public DataExtraViewModel() { }
 
     public DataExtraViewModel(DataExtra<T>? info)
     {
@@ -96,7 +95,7 @@ public partial class SealingInfoViewModel : ObservableObject, IEquatable<Sealing
 
     internal SealingRule Build()
     {
-        return new SealingRule {  Type = Type??default , Month = Month??0, Extra = Other };
+        return new SealingRule { Type = Type ?? default, Month = Month ?? 0, Extra = Other };
     }
 }
 
@@ -106,14 +105,14 @@ public partial class InvestmentManagerInfoViewModel;
 
 
 [AutoChangeableViewModel(typeof(BankAccount))]
-public partial class BankAccountInfoViewModel: IDataValidation
+public partial class BankAccountInfoViewModel : IDataValidation
 {
 
     private string? _Deposit;
 
     public string? Deposit
     {
-        get { if (string.IsNullOrWhiteSpace(_Deposit)) _Deposit = BankOfDeposit;  return _Deposit; }
+        get { if (string.IsNullOrWhiteSpace(_Deposit)) _Deposit = BankOfDeposit; return _Deposit; }
         set { _Deposit = value; BankOfDeposit = value; }
     }
 
@@ -150,10 +149,10 @@ public partial class AgencyInfoViewModel : IDataValidation
 
 [AutoChangeableViewModel(typeof(TemporarilyOpenInfo))]
 public partial class TemporarilyOpenInfoViewModel : IDataValidation
-{ 
+{
     public bool IsValid() => !IsAllowed || (AllowPurchase || AllowRedemption);
 
-    public override string ToString() => !IsAllowed ? "不允许临开" : $"允许{(AllowPurchase ? "申购":"")}{(AllowRedemption ? "赎回" : "")}";
+    public override string ToString() => !IsAllowed ? "不允许临开" : $"允许{(AllowPurchase ? "申购" : "")}{(AllowRedemption ? "赎回" : "")}";
 }
 
 
@@ -162,6 +161,38 @@ public partial class FundPurchaseRuleViewModel
 {
     public override string ToString()
     {
-        return MinDeposit is null ? "未设置": $"{MinDeposit/ 10000}万起投" + (AdditionalDeposit > 0 ? $"，追加{AdditionalDeposit/10000}万起":"") + (HasRequirement ? Statement : "");
+        return MinDeposit is null ? "未设置" : $"{MinDeposit / 10000}万起投" + (AdditionalDeposit > 0 ? $"，追加{AdditionalDeposit / 10000}万起" : "") + (HasRequirement ? Statement : "");
+    }
+}
+
+[AutoChangeableViewModel(typeof(FeePayInfo))]
+public partial class FeePayInfoViewModel
+{
+    public override string? ToString()
+    {
+        return Type switch { FeePayFrequency.Month => "按月支付", FeePayFrequency.Quarter => "按季支付", FeePayFrequency.Other => Other,  _ => "未设置" };
+    }
+}
+
+
+
+
+[AutoChangeableViewModel(typeof(CoolingPeriodInfo))]
+public partial class CoolingPeriodInfoViewModel
+{
+    public override string? ToString()
+    {
+        return Type switch { CoolingPeriodType.OneDay => "24小时",  CoolingPeriodType.Other => Other, _ => "未设置" };
+    }
+}
+
+
+
+[AutoChangeableViewModel(typeof(CallbackInfo))]
+public partial class CallbackInfoViewModel
+{
+    public override string? ToString()
+    {
+        return IsRequired ? "需要" : "不适用";
     }
 }

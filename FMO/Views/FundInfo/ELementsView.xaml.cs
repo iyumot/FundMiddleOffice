@@ -8,7 +8,6 @@ using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 
 namespace FMO;
 
@@ -32,6 +31,11 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
     public static FundMode[] FundModes { get; } = [Models.FundMode.Open, Models.FundMode.Close, Models.FundMode.Other];
 
     public static FundFeeType[] FundFeeTypes { get; } = [FundFeeType.Ratio, FundFeeType.Fix, FundFeeType.Other];
+
+    public static FeePayFrequency[] FeePayFrequencies { get; } = [FeePayFrequency.Month, FeePayFrequency.Quarter, FeePayFrequency.Other];
+
+
+    public static CoolingPeriodType[] CoolingPeriodTypes { get; } = [CoolingPeriodType.OneDay, CoolingPeriodType.Other];
 
     /// <summary>
     /// 
@@ -101,6 +105,8 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
     public partial ChangeableViewModel<FundElements, decimal?>? WarningLine { get; set; }
 
 
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, decimal?>? HugeRedemptionRatio { get; set; }
 
 
     [ObservableProperty]
@@ -168,6 +174,11 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
     [ObservableProperty]
     public partial ChangeableViewModel<FundElements, string>? InvestmentStrategy { get; set; }
 
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, CoolingPeriodInfoViewModel>? CoolingPeriod { get; set; }
+
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, CallbackInfoViewModel>? Callback { get; set; }
 
 
     /// <summary>
@@ -175,6 +186,37 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
     /// </summary>
     [ObservableProperty]
     public partial ObservableCollection<ShareElementsViewModel> PortionElements { get; set; } = new();
+
+
+    [ObservableProperty]
+    public partial ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel> ManageFee { get; set; }
+
+
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, FeePayInfoViewModel> ManageFeePay { get; set; }
+
+
+    [ObservableProperty]
+    public partial ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel> SubscriptionFee { get; set; }
+
+
+    [ObservableProperty]
+    public partial ShareElementsViewModel2<FundPurchaseRule, FundPurchaseRuleViewModel> SubscriptionRule { get; set; }
+
+
+    [ObservableProperty]
+    public partial ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel> PurchaseFee { get; set; }
+
+
+    [ObservableProperty]
+    public partial ShareElementsViewModel2<FundPurchaseRule, FundPurchaseRuleViewModel> PurchasRule { get; set; }
+
+
+
+    [ObservableProperty]
+    public partial ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel> RedemptionFee { get; set; }
+
+
 
 
     [ObservableProperty]
@@ -202,7 +244,8 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         SetupDate = fund.SetupDate;
         var cinfo = elements.ShareClasses.GetValue(newValue);
         IsSharesInherited = cinfo.FlowId < newValue;
-        Shares = cinfo.Value is not null ? new(cinfo.Value.Select(x => new ShareClassViewModel { Id = x.Id, Name = x.Name, Requirement = x.Requirement })) : new();
+        var sc = cinfo.Value ?? [ShareClass.DefaultShare];
+        Shares = new(sc.Select(x => new ShareClassViewModel { Id = x.Id, Name = x.Name, Requirement = x.Requirement }));
 
         FullName = new ChangeableViewModel<FundElements, string>
         {
@@ -233,6 +276,9 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
             if (ShortName.NewValue == default)
                 ShortName.NewValue = fund.ShortName;
         }
+
+
+        #region MyRegion
 
         FundModeInfo = new ChangeableViewModel<FundElements, DataExtraViewModel<FundMode>>
         {
@@ -342,6 +388,17 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         };
         WarningLine.Init(elements);
 
+
+        HugeRedemptionRatio = new ChangeableViewModel<FundElements, decimal?>
+        {
+            Label = "巨额赎回比例",
+            InitFunc = x => ValueFormat(x.HugeRedemptionRatio.GetValue(newValue).Value),
+            InheritedFunc = x => x.HugeRedemptionRatio.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
+            UpdateFunc = (x, y) => { if (y is not null) x.HugeRedemptionRatio!.SetValue(y.Value, newValue); },
+            ClearFunc = x => x.HugeRedemptionRatio.RemoveValue(newValue),
+            DisplayFunc = x=> x?.ToString("P")
+        };
+        HugeRedemptionRatio.Init(elements);
         //FundModeInfo = new ElementItemFundModeViewModel(elements, nameof(FundElements.FundModeInfo), FlowId, "运作方式");
 
         //SealingRule = new ElementItemViewModelSealing(elements, nameof(FundElements.SealingRule), FlowId, "封闭期");
@@ -459,8 +516,48 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         };
         TemporarilyOpenInfo.Init(elements);
 
+        #endregion
 
-        InitElementsOfShare(elements);
+        SubscriptionFee = new ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel>(FundId, FlowId, elements, sc, x => x.SubscriptionFee, x => new(x), x => x!.Build());
+        SubscriptionRule = new ShareElementsViewModel2<FundPurchaseRule, FundPurchaseRuleViewModel>(FundId, FlowId, elements, sc, x => x.SubscriptionRule, x => new(x), x => x!.Build());
+
+        PurchaseFee = new ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel>(FundId, FlowId, elements, sc, x => x.PurchaseFee, x => new(x), x => x!.Build());
+        PurchasRule = new ShareElementsViewModel2<FundPurchaseRule, FundPurchaseRuleViewModel>(FundId, FlowId, elements, sc, x => x.PurchasRule, x => new(x), x => x!.Build());
+
+        RedemptionFee = new ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel>(FundId, FlowId, elements, sc, x => x.RedemptionFee, x => new(x), x => x!.Build());
+
+        ManageFee = new ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel>(FundId, FlowId, elements, sc, x => x.ManageFee, x => new(x), x => x!.Build());
+        ManageFeePay = new ChangeableViewModel<FundElements, FeePayInfoViewModel>
+        {
+            Label = "支付频率",
+            InitFunc = x => new(x.ManageFeePay!.GetValue(newValue).Value),
+            InheritedFunc = x => x.ManageFeePay.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
+            UpdateFunc = (x, y) => x.ManageFeePay!.SetValue(y!.Build(), newValue),
+            ClearFunc = x => x.ManageFeePay!.RemoveValue(newValue),
+        };
+        ManageFeePay.Init(elements);
+
+        CoolingPeriod = new ChangeableViewModel<FundElements, CoolingPeriodInfoViewModel>
+        {
+            Label = "冷静期",
+            InitFunc = x => new(x.CoolingPeriod!.GetValue(newValue).Value),
+            InheritedFunc = x => x.CoolingPeriod.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
+            UpdateFunc = (x, y) => x.CoolingPeriod!.SetValue(y!.Build(), newValue),
+            ClearFunc = x => x.CoolingPeriod!.RemoveValue(newValue),
+        };
+        CoolingPeriod.Init(elements);
+
+        Callback = new ChangeableViewModel<FundElements, CallbackInfoViewModel>
+        {
+            Label = "回访",
+            InitFunc = x => new(x.Callback!.GetValue(newValue).Value),
+            InheritedFunc = x => x.Callback.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
+            UpdateFunc = (x, y) => x.Callback!.SetValue(y!.Build(), newValue),
+            ClearFunc = x => x.Callback!.RemoveValue(newValue),
+        };
+        Callback.Init(elements);
+
+        // InitElementsOfShare(elements);
 
     }
 
@@ -646,7 +743,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
         var r = wnd.ShowDialog();
 
-        if (r??false) OnFlowIdChanged(FlowId, FlowId);
+        if (r ?? false) OnFlowIdChanged(FlowId, FlowId);
     }
 
     public void InitShare(Mutable<ShareClass[]>? shareClass = null)
