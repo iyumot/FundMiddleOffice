@@ -63,7 +63,7 @@
             <!--<Trigger Property="EditTemplate" Value="{x:Null}">
                 <Setter Property="Template" Value="{StaticResource Tpl.Changeable.Default}" />
             </Trigger>-->
-            <DataTrigger Binding="{Binding Entity.IsReadOnly, RelativeSource={RelativeSource Mode=Self}}" Value="True">
+            <Trigger Property="IsReadOnly" Value="True">
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="local:ChangeableContainer">
@@ -79,7 +79,7 @@
                                     Text="{Binding Binding.Label, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
 
 
-                                <local:CopyableControl Margin="10,0,0,0" Visibility="{Binding Entity.IsReadOnly, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <local:CopyableControl Margin="10,0,0,0">
                                     <TextBlock Text="{Binding Binding.Display, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
                                 </local:CopyableControl>
 
@@ -87,7 +87,7 @@
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
-            </DataTrigger>
+            </Trigger>
         </Style.Triggers>
 
     </Style>

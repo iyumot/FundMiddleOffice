@@ -16,8 +16,12 @@
         <Style BasedOn="{StaticResource {x:Type shared:ChangeableContainer}}" TargetType="shared:ChangeableContainer">
             <Setter Property="Margin" Value="0,1" />
             <Setter Property="Entity" Value="{Binding RelativeSource={RelativeSource AncestorType=local:ElementsView}, Path=DataContext}" />
+            <Setter Property="IsReadOnly" Value="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}}" />
         </Style>
 
+        <Style BasedOn="{StaticResource {x:Type local:PortionElementView}}" TargetType="local:PortionElementView">
+            <Setter Property="IsReadOnly" Value="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}}" />
+        </Style>
         <Style TargetType="TextBox">
             <Setter Property="BorderThickness" Value="0,0,0,1" />
             <Setter Property="Padding" Value="1" />
@@ -1105,30 +1109,30 @@
                         <StackPanel>
 
                             <local:PortionElementView
+                                Content="{Binding ManageFee}"
                                 ContentTemplate="{StaticResource DT.Fee}"
-                                DataContext="{Binding ManageFee}"
                                 EditTemplate="{StaticResource CT.Fee}"
                                 Header="管理费" />
 
                             <shared:ChangeableContainer Binding="{Binding ManageFeePay}" ContentTemplate="{StaticResource DT.FeePay}" />
 
                             <local:PortionElementView
+                                Content="{Binding SubscriptionRule}"
                                 ContentTemplate="{StaticResource DT.Subscription}"
-                                DataContext="{Binding SubscriptionRule}"
                                 Header="认购规则" />
 
 
 
                             <local:PortionElementView
+                                Content="{Binding PurchasRule}"
                                 ContentTemplate="{StaticResource DT.Purchase}"
-                                DataContext="{Binding PurchasRule}"
                                 Header="申购规则" />
 
 
 
                             <local:PortionElementView
+                                Content="{Binding RedemptionFee}"
                                 ContentTemplate="{StaticResource DT.Fee}"
-                                DataContext="{Binding RedemptionFee}"
                                 EditTemplate="{StaticResource CT.Fee}"
                                 Header="赎回费" />
 

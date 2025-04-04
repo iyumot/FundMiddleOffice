@@ -385,7 +385,7 @@
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}">
-                        <DockPanel>
+                        <DockPanel DataContext="{TemplateBinding Content}">
                             <!--  header  -->
                             <ContentPresenter
                                 VerticalAlignment="Center"
@@ -393,6 +393,7 @@
                                 TextElement.Foreground="{DynamicResource LabelBrush}" />
 
                             <ListBox
+                                x:Name="list"
                                 Margin="5,0,0,0"
                                 BorderThickness="0"
                                 ItemContainerStyle="{StaticResource Style.ListItem.PortionElement}"
@@ -401,6 +402,17 @@
                                 Style="{StaticResource ListBoxCustom}" />
                         </DockPanel>
                     </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsReadOnly" Value="True">
+                            <Setter TargetName="list" Property="ItemsPanel">
+                                <Setter.Value>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel IsItemsHost="True" />
+                                    </ItemsPanelTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
