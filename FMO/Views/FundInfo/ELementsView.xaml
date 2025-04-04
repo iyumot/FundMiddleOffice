@@ -638,6 +638,7 @@
                         HorizontalContentAlignment="Center"
                         Text="{Binding MinDeposit, StringFormat=N0, UpdateSourceTrigger=PropertyChanged, Delay=300}"
                         TextAlignment="Center" />
+                    <TextBlock VerticalAlignment="Center" Text="元" />
 
                     <CheckBox
                         Margin="8,0,0,0"
@@ -759,12 +760,14 @@
                         HorizontalContentAlignment="Center"
                         Text="{Binding MinDeposit, StringFormat=N0, UpdateSourceTrigger=PropertyChanged, Delay=300}"
                         TextAlignment="Center" />
+                    <TextBlock VerticalAlignment="Center" Text="元" />
                     <TextBlock VerticalAlignment="Center" Text="，追加金额" />
                     <TextBox
                         MinWidth="60"
                         HorizontalContentAlignment="Center"
                         Text="{Binding AdditionalDeposit, StringFormat=N0, Delay=300, UpdateSourceTrigger=PropertyChanged}"
                         TextAlignment="Center" />
+                    <TextBlock VerticalAlignment="Center" Text="元" />
 
 
                     <CheckBox
@@ -1170,149 +1173,8 @@
 
                     <Separator />
 
-                    <!--  账户  -->
-                    <DockPanel Margin="{StaticResource LineSpacing}">
-                        <DockPanel.Resources>
-                            <DataTemplate x:Key="DT.Bank">
-                                <StackPanel>
-                                    <StackPanel.Resources>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="MinWidth" Value="70" />
-                                            <Setter Property="TextAlignment" Value="Right" />
-                                            <Setter Property="VerticalAlignment" Value="Center" />
-                                            <Setter Property="Margin" Value="0,0,4,0" />
-                                        </Style>
-                                        <Style BasedOn="{StaticResource TextBoxBaseStyle}" TargetType="TextBox">
-                                            <Setter Property="HorizontalAlignment" Value="Stretch" />
-                                        </Style>
-                                    </StackPanel.Resources>
-                                    <DockPanel>
-                                        <TextBlock Text="户名" />
-                                        <TextBox Text="{Binding NewValue.Name, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-                                    </DockPanel>
-                                    <DockPanel>
-                                        <TextBlock Text="账号" />
-                                        <TextBox Text="{Binding NewValue.Number, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-                                    </DockPanel>
-                                    <DockPanel>
-                                        <TextBlock Text="开户行" />
-                                        <TextBox Text="{Binding NewValue.Deposit, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-                                    </DockPanel>
-
-                                    <DockPanel>
-                                        <TextBlock Text="大额支付号" />
-                                        <TextBox Text="{Binding NewValue.LargePayNo, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-                                    </DockPanel>
-                                    <DockPanel>
-                                        <TextBlock Text="Swift" />
-                                        <TextBox Text="{Binding NewValue.SwiftCode, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-                                    </DockPanel>
-                                </StackPanel>
-                            </DataTemplate>
-
-                            <ControlTemplate x:Key="CT.Bank" TargetType="shared:ChangeableContainer">
-                                <DockPanel
-                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                    Background="Transparent"
-                                    LastChildFill="True">
-
-                                    <Grid DockPanel.Dock="Top">
-
-                                        <shared:ChangeableControlButtons
-                                            Margin="110,0"
-                                            HorizontalAlignment="Right"
-                                            DataContext="{Binding ., RelativeSource={RelativeSource AncestorType=shared:ChangeableContainer}}" />
-
-                                        <DockPanel HorizontalAlignment="Center" LastChildFill="False">
-                                            <Button
-                                                hc:IconElement.Geometry="{StaticResource f.clipboard}"
-                                                Command="{Binding SetBankFromClipboardCommand}"
-                                                CommandParameter="{Binding CollectionAccount}"
-                                                DockPanel.Dock="Right"
-                                                Foreground="Green"
-                                                Style="{StaticResource ButtonIcon}" />
-                                            <Grid>
-                                                <TextBlock
-                                                    VerticalAlignment="Center"
-                                                    DockPanel.Dock="Left"
-                                                    Text="{Binding Binding.Label, RelativeSource={RelativeSource TemplatedParent}}" />
-
-                                                <TextBlock
-                                                    HorizontalAlignment="Right"
-                                                    FontSize="6"
-                                                    Foreground="Purple"
-                                                    Text="▼"
-                                                    Visibility="{Binding Binding.IsInherited, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource Boolean2VisibilityConverter}}" />
-                                            </Grid>
-
-                                        </DockPanel>
-                                    </Grid>
-
-                                    <DockPanel HorizontalAlignment="Stretch">
-
-                                        <ContentPresenter
-                                            Margin="4,0"
-                                            HorizontalAlignment="Stretch"
-                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                            Content="{Binding Binding, RelativeSource={RelativeSource AncestorType=shared:ChangeableContainer}}"
-                                            ContentTemplate="{TemplateBinding ContentTemplate}" />
-
-                                    </DockPanel>
-                                </DockPanel>
-
-                            </ControlTemplate>
-                        </DockPanel.Resources>
-                        <Border Margin="0,0,10,0" Background="SaddleBrown">
-                            <TextBlock Style="{StaticResource CategoryTab}" Text="账户信息" />
-                        </Border>
-
-                        <TextBlock
-                            Margin="10"
-                            DockPanel.Dock="Right"
-                            Foreground="Gray"
-                            IsHitTestVisible="False"
-                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}">
-                            <Run>可复制后点击绿色按键</Run>
-                            <LineBreak />
-                            <Run>自动识别账户信息</Run>
-                            <LineBreak />
-                            <LineBreak />
-                            <Run>账户 | 账户名称：xxxxxx</Run>
-                            <LineBreak />
-                            <Run>账号：00000</Run>
-                            <LineBreak />
-                            <Run>开户行：xxxx</Run>
-                            <LineBreak />
-                            <Run>.....</Run>
-                        </TextBlock>
-
-                        <StackPanel>
-                            <shared:ChangeableContainer
-                                Binding="{Binding CollectionAccount}"
-                                ContentTemplate="{StaticResource DT.Bank}"
-                                EditTemplate="{StaticResource CT.Bank}" />
 
 
-                            <shared:ChangeableContainer
-                                Binding="{Binding CustodyAccount}"
-                                ContentTemplate="{StaticResource DT.Bank}"
-                                EditTemplate="{StaticResource CT.Bank}" />
-
-                        </StackPanel>
-                    </DockPanel>
-
-
-                    <!--  与份额相关的要素  -->
-                    <!--
-                    <Grid>
-                        <ListBox
-                            Margin="0,20,0,0"
-                            BorderThickness="0"
-                            ItemTemplate="{StaticResource DT.Portion}"
-                            ItemsPanel="{DynamicResource PortionItemsPanel}"
-                            ItemsSource="{Binding PortionElements}"
-                            Style="{StaticResource ListBoxCustom}" />
-                    </Grid>-->
                 </StackPanel>
 
 
@@ -1451,6 +1313,141 @@
                     </DockPanel>
                     <!--#endregion-->
 
+
+                    <Separator />
+
+
+                    <!--  账户  -->
+                    <DockPanel Margin="{StaticResource LineSpacing}">
+                        <DockPanel.Resources>
+                            <DataTemplate x:Key="DT.Bank">
+                                <StackPanel>
+                                    <StackPanel.Resources>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="MinWidth" Value="70" />
+                                            <Setter Property="TextAlignment" Value="Right" />
+                                            <Setter Property="VerticalAlignment" Value="Center" />
+                                            <Setter Property="Margin" Value="0,0,4,0" />
+                                        </Style>
+                                        <Style BasedOn="{StaticResource TextBoxBaseStyle}" TargetType="TextBox">
+                                            <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                        </Style>
+                                    </StackPanel.Resources>
+                                    <DockPanel>
+                                        <TextBlock Text="户名" />
+                                        <TextBox Text="{Binding NewValue.Name, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                                    </DockPanel>
+                                    <DockPanel>
+                                        <TextBlock Text="账号" />
+                                        <TextBox Text="{Binding NewValue.Number, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                                    </DockPanel>
+                                    <DockPanel>
+                                        <TextBlock Text="开户行" />
+                                        <TextBox Text="{Binding NewValue.Deposit, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                                    </DockPanel>
+
+                                    <DockPanel>
+                                        <TextBlock Text="大额支付号" />
+                                        <TextBox Text="{Binding NewValue.LargePayNo, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                                    </DockPanel>
+                                    <DockPanel>
+                                        <TextBlock Text="Swift" />
+                                        <TextBox Text="{Binding NewValue.SwiftCode, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                                    </DockPanel>
+                                </StackPanel>
+                            </DataTemplate>
+
+                            <ControlTemplate x:Key="CT.Bank" TargetType="shared:ChangeableContainer">
+                                <DockPanel
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    Background="Transparent"
+                                    LastChildFill="True">
+
+                                    <Grid DockPanel.Dock="Top">
+
+                                        <shared:ChangeableControlButtons
+                                            Margin="110,0"
+                                            HorizontalAlignment="Right"
+                                            DataContext="{Binding ., RelativeSource={RelativeSource AncestorType=shared:ChangeableContainer}}" />
+
+                                        <DockPanel HorizontalAlignment="Center" LastChildFill="False">
+                                            <Button
+                                                hc:IconElement.Geometry="{StaticResource f.clipboard}"
+                                                Command="{Binding SetBankFromClipboardCommand}"
+                                                CommandParameter="{Binding CollectionAccount}"
+                                                DockPanel.Dock="Right"
+                                                Foreground="Green"
+                                                Style="{StaticResource ButtonIcon}" />
+                                            <Grid>
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    DockPanel.Dock="Left"
+                                                    Text="{Binding Binding.Label, RelativeSource={RelativeSource TemplatedParent}}" />
+
+                                                <TextBlock
+                                                    HorizontalAlignment="Right"
+                                                    FontSize="6"
+                                                    Foreground="Purple"
+                                                    Text="▼"
+                                                    Visibility="{Binding Binding.IsInherited, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                                            </Grid>
+
+                                        </DockPanel>
+                                    </Grid>
+
+                                    <DockPanel HorizontalAlignment="Stretch">
+
+                                        <ContentPresenter
+                                            Margin="4,0"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                            Content="{Binding Binding, RelativeSource={RelativeSource AncestorType=shared:ChangeableContainer}}"
+                                            ContentTemplate="{TemplateBinding ContentTemplate}" />
+
+                                    </DockPanel>
+                                </DockPanel>
+
+                            </ControlTemplate>
+                        </DockPanel.Resources>
+                        <Border Margin="0,0,10,0" Background="SaddleBrown">
+                            <TextBlock Style="{StaticResource CategoryTab}" Text="账户信息" />
+                        </Border>
+
+                        <TextBlock
+                            Margin="10"
+                            DockPanel.Dock="Right"
+                            Foreground="Gray"
+                            IsHitTestVisible="False"
+                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                            <Run>可复制后点击绿色按键</Run>
+                            <LineBreak />
+                            <Run>自动识别账户信息</Run>
+                            <LineBreak />
+                            <LineBreak />
+                            <Run>账户 | 账户名称：xxxxxx</Run>
+                            <LineBreak />
+                            <Run>账号：00000</Run>
+                            <LineBreak />
+                            <Run>开户行：xxxx</Run>
+                            <LineBreak />
+                            <Run>.....</Run>
+                        </TextBlock>
+
+                        <StackPanel>
+                            <shared:ChangeableContainer
+                                Binding="{Binding CollectionAccount}"
+                                ContentTemplate="{StaticResource DT.Bank}"
+                                EditTemplate="{StaticResource CT.Bank}" />
+
+
+                            <shared:ChangeableContainer
+                                Binding="{Binding CustodyAccount}"
+                                ContentTemplate="{StaticResource DT.Bank}"
+                                EditTemplate="{StaticResource CT.Bank}" />
+
+                        </StackPanel>
+                    </DockPanel>
+
                 </StackPanel>
             </Grid>
 
@@ -1458,20 +1455,24 @@
 
         </ScrollViewer>
         <!--  编辑/查看  -->
-        <ToggleButton
-            Margin="10,0"
+        <DockPanel
+            Margin="10,-25"
             HorizontalAlignment="Right"
-            VerticalAlignment="Top"
-            IsChecked="{Binding IsReadOnly}"
-            Style="{StaticResource ToggleButtonFlip}">
-            <hc:StatusSwitchElement.CheckedElement>
-                <Viewbox Width="16" Height="16">
-                    <Path Data="{StaticResource f.pen}" Fill="Green" />
+            VerticalAlignment="Top">
+            <Button
+                hc:IconElement.Geometry="{StaticResource f.floppy-disk}"
+                Command="{Binding SaveCommand}"
+                Style="{StaticResource ButtonIcon}" />
+            <ToggleButton IsChecked="{Binding IsReadOnly}" Style="{StaticResource ToggleButtonFlip}">
+                <hc:StatusSwitchElement.CheckedElement>
+                    <Viewbox Width="16" Height="16">
+                        <Path Data="{StaticResource f.pen}" Fill="Green" />
+                    </Viewbox>
+                </hc:StatusSwitchElement.CheckedElement>
+                <Viewbox Width="18" Height="18">
+                    <Path Data="{StaticResource f.eye}" Fill="Black" />
                 </Viewbox>
-            </hc:StatusSwitchElement.CheckedElement>
-            <Viewbox Width="18" Height="18">
-                <Path Data="{StaticResource f.eye}" Fill="Black" />
-            </Viewbox>
-        </ToggleButton>
+            </ToggleButton>
+        </DockPanel>
     </Grid>
 </UserControl>
