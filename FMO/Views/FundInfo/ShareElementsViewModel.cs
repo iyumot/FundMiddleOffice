@@ -85,16 +85,16 @@ public partial class ShareElementsViewModel : ObservableObject
         };
         ManageFee.Init(elements);
 
-        SubscriptionFee = new ChangeableViewModel<FundElements, FundFeeInfoViewModel>
-        {
-            Label = "认购费",
-            InitFunc = x => new(x.SubscriptionFee.GetValue(shareId, flowid).Value),
-            InheritedFunc = x => x.SubscriptionFee.GetValue(shareId, flowid).FlowId switch { -1 => false, int i => i < flowid },
-            UpdateFunc = (x, y) => { if (y is not null) x.SubscriptionFee.SetValue(shareId, y.Build(), flowid); },
-            ClearFunc = x => x.SubscriptionFee.RemoveValue(shareId, flowid),
-            DisplayFunc = x => x?.HasFee ?? false ? x?.Type switch { FundFeeType.Fix => $"固定{x.Fee}元", FundFeeType.Ratio => $"{x.Fee}%", FundFeeType.Other => x.Other, _ => $"未设置" } + (x?.GuaranteedFee > 0 ? $" 有保底：{x.GuaranteedFee}元" : "") : "无"
-        };
-        SubscriptionFee.Init(elements);
+        //SubscriptionFee = new ChangeableViewModel<FundElements, FundFeeInfoViewModel>
+        //{
+        //    Label = "认购费",
+        //    InitFunc = x => new(x.SubscriptionFee.GetValue(shareId, flowid).Value),
+        //    InheritedFunc = x => x.SubscriptionFee.GetValue(shareId, flowid).FlowId switch { -1 => false, int i => i < flowid },
+        //    UpdateFunc = (x, y) => { if (y is not null) x.SubscriptionFee.SetValue(shareId, y.Build(), flowid); },
+        //    ClearFunc = x => x.SubscriptionFee.RemoveValue(shareId, flowid),
+        //    DisplayFunc = x => x?.HasFee ?? false ? x?.Type switch { FundFeeType.Fix => $"固定{x.Fee}元", FundFeeType.Ratio => $"{x.Fee}%", FundFeeType.Other => x.Other, _ => $"未设置" } + (x?.GuaranteedFee > 0 ? $" 有保底：{x.GuaranteedFee}元" : "") : "无"
+        //};
+        //SubscriptionFee.Init(elements);
 
         SubscriptionRule = new ChangeableViewModel<FundElements, FundPurchaseRuleViewModel>
         {
@@ -108,16 +108,16 @@ public partial class ShareElementsViewModel : ObservableObject
 
 
 
-        PurchaseFee = new ChangeableViewModel<FundElements, FundFeeInfoViewModel>
-        {
-            Label = "申购费",
-            InitFunc = x => new(x.PurchaseFee.GetValue(shareId, flowid).Value),
-            InheritedFunc = x => x.PurchaseFee.GetValue(shareId, flowid).FlowId switch { -1 => false, int i => i < flowid },
-            UpdateFunc = (x, y) => { if (y is not null) x.PurchaseFee.SetValue(shareId, y.Build(), flowid); },
-            ClearFunc = x => x.PurchaseFee.RemoveValue(shareId, flowid),
-            DisplayFunc = x => x?.HasFee ?? false ? x?.Type switch { FundFeeType.Fix => $"固定{x.Fee}元", FundFeeType.Ratio => $"{x.Fee}%", FundFeeType.Other => x.Other, _ => $"未设置" } + (x?.GuaranteedFee > 0 ? $" 有保底：{x.GuaranteedFee}元" : "") : "无"
-        };
-        PurchaseFee.Init(elements);
+        //PurchaseFee = new ChangeableViewModel<FundElements, FundFeeInfoViewModel>
+        //{
+        //    Label = "申购费",
+        //    InitFunc = x => new(x.PurchaseFee.GetValue(shareId, flowid).Value),
+        //    InheritedFunc = x => x.PurchaseFee.GetValue(shareId, flowid).FlowId switch { -1 => false, int i => i < flowid },
+        //    UpdateFunc = (x, y) => { if (y is not null) x.PurchaseFee.SetValue(shareId, y.Build(), flowid); },
+        //    ClearFunc = x => x.PurchaseFee.RemoveValue(shareId, flowid),
+        //    DisplayFunc = x => x?.HasFee ?? false ? x?.Type switch { FundFeeType.Fix => $"固定{x.Fee}元", FundFeeType.Ratio => $"{x.Fee}%", FundFeeType.Other => x.Other, _ => $"未设置" } + (x?.GuaranteedFee > 0 ? $" 有保底：{x.GuaranteedFee}元" : "") : "无"
+        //};
+        //PurchaseFee.Init(elements);
 
         PurchasRule = new ChangeableViewModel<FundElements, FundPurchaseRuleViewModel>
         {

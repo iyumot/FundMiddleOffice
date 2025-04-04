@@ -7,6 +7,7 @@ namespace FMO.Models;
 /// <summary>
 /// 基金费用
 /// </summary>
+[TypeConverter(typeof(EnumDescriptionTypeConverter))]
 public enum FundFeeType
 {
 
@@ -17,6 +18,17 @@ public enum FundFeeType
     [Description("其它")] Other
 }
 
+
+[TypeConverter(typeof(EnumDescriptionTypeConverter))]
+public enum FundFeePayType
+{
+
+    [Description("额外收取")] Extra,
+
+    [Description("价外法")] Out,
+
+    [Description("其它")] Other
+}
 
 
 
