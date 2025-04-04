@@ -158,7 +158,7 @@ public class FundElements
     /// <summary>
     /// 认购费
     /// </summary>
-    public PortionMutable<FundFeeInfo> SubscriptionFee { get; set; } = new(nameof(SubscriptionFee));
+    //public PortionMutable<FundFeeInfo> SubscriptionFee { get; set; } = new(nameof(SubscriptionFee));
 
 
     public PortionMutable<FundPurchaseRule> SubscriptionRule { get; set; } = new(nameof(SubscriptionRule));
@@ -168,7 +168,7 @@ public class FundElements
     /// <summary>
     /// 申购费
     /// </summary>
-    public PortionMutable<FundFeeInfo> PurchaseFee { get; set; } = new(nameof(PurchaseFee));
+    //public PortionMutable<FundFeeInfo> PurchaseFee { get; set; } = new(nameof(PurchaseFee));
 
     public PortionMutable<FundPurchaseRule> PurchasRule { get; set; } = new(nameof(PurchasRule));
 
@@ -248,11 +248,11 @@ public class FundElements
         { changed = true; ManageFee = new(nameof(ManageFee)); }
 
 
-        if (SubscriptionFee is null)
-        { changed = true; SubscriptionFee = new(nameof(SubscriptionFee)); }
+        //if (SubscriptionFee is null)
+        //{ changed = true; SubscriptionFee = new(nameof(SubscriptionFee)); }
 
-        if (PurchaseFee is null)
-        { changed = true; PurchaseFee = new(nameof(PurchaseFee)); }
+        //if (PurchaseFee is null)
+        //{ changed = true; PurchaseFee = new(nameof(PurchaseFee)); }
 
         if (RedemptionFee is null)
         { changed = true; RedemptionFee = new(nameof(RedemptionFee)); }

@@ -621,65 +621,252 @@
 
 
         <DataTemplate x:Key="DT.Subscription">
-            <DockPanel DataContext="{Binding NewValue}">
-                <DockPanel.Resources>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="VerticalAlignment" Value="Center" />
-                    </Style>
-                </DockPanel.Resources>
-                <TextBlock VerticalAlignment="Center" Text="起投金额" />
-                <TextBox
-                    MinWidth="60"
-                    HorizontalContentAlignment="Center"
-                    Text="{Binding MinDeposit, StringFormat=N0, UpdateSourceTrigger=PropertyChanged, Delay=300}"
-                    TextAlignment="Center" />
+            <WrapPanel DataContext="{Binding NewValue}">
+                <DockPanel Margin="0,0,10,0">
+                    <DockPanel.Resources>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                        </Style>
+                    </DockPanel.Resources>
+                    <TextBlock VerticalAlignment="Center" Text="起投金额" />
+                    <TextBox
+                        MinWidth="60"
+                        HorizontalContentAlignment="Center"
+                        Text="{Binding MinDeposit, StringFormat=N0, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                        TextAlignment="Center" />
 
-                <CheckBox
-                    Margin="8,0,0,0"
-                    Content="附加条件"
-                    IsChecked="{Binding HasRequirement}" />
+                    <CheckBox
+                        Margin="8,0,0,0"
+                        Content="附加条件"
+                        IsChecked="{Binding HasRequirement}" />
 
-                <TextBox
-                    MinWidth="150"
-                    HorizontalContentAlignment="Center"
-                    Text="{Binding Statement, UpdateSourceTrigger=PropertyChanged}"
-                    Visibility="{Binding HasRequirement, Converter={StaticResource Boolean2VisibilityConverter}}" />
-            </DockPanel>
+                    <TextBox
+                        MinWidth="150"
+                        HorizontalContentAlignment="Center"
+                        Text="{Binding Statement, UpdateSourceTrigger=PropertyChanged}"
+                        Visibility="{Binding HasRequirement, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                </DockPanel>
+
+
+                <DockPanel Margin="0,2">
+                    <CheckBox Content="认购费" IsChecked="{Binding HasFee}" />
+                    <DockPanel Visibility="{Binding HasFee, Converter={StaticResource Boolean2VisibilityConverter}}">
+                        <ComboBox
+                            Width="90"
+                            ItemsSource="{Binding DataContext.FundFeeTypes, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
+                            SelectedItem="{Binding Type}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+
+
+                        <TextBox
+                            x:Name="mon"
+                            MinWidth="40"
+                            HorizontalContentAlignment="Center"
+                            Text="{Binding Fee, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                        <TextBlock
+                            x:Name="a"
+                            Margin="4,0"
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            Text="%"
+                            Visibility="Collapsed" />
+                        <TextBlock
+                            x:Name="b"
+                            Margin="4,0"
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            Text="元"
+                            Visibility="Collapsed" />
+                        <TextBox
+                            x:Name="other"
+                            MinWidth="300"
+                            Text="{Binding Other, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                            Visibility="Collapsed" />
+                        <CheckBox
+                            Margin="4,0"
+                            Content="保底"
+                            IsChecked="{Binding HasGuaranteedFee}" />
+
+
+                        <TextBox
+                            x:Name="gr"
+                            MinWidth="60"
+                            HorizontalContentAlignment="Center"
+                            Text="{Binding GuaranteedFee, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                            Visibility="{Binding HasGuaranteedFee, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                        <TextBlock
+                            x:Name="ad"
+                            Margin="4,0"
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            Text="元"
+                            Visibility="{Binding HasGuaranteedFee, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+
+                    </DockPanel>
+                </DockPanel>
+
+                <DockPanel Visibility="{Binding HasFee, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    <TextBlock VerticalAlignment="Center" Text="收费方式" />
+                    <ComboBox
+                        MinWidth="70"
+                        Margin="4,0,0,0"
+                        ItemsSource="{Binding DataContext.FundFeePayTypes, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
+                        SelectedItem="{Binding PayMethod}" />
+
+                    <TextBox
+                        x:Name="po"
+                        MinWidth="150"
+                        Text="{Binding PayOther, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                        Visibility="Collapsed" />
+                </DockPanel>
+            </WrapPanel>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding NewValue.Type}" Value="Ratio">
+                    <Setter TargetName="a" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding NewValue.Type}" Value="Fix">
+                    <Setter TargetName="b" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding NewValue.PayMethod}" Value="Other">
+                    <Setter TargetName="po" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
         </DataTemplate>
 
         <DataTemplate x:Key="DT.Purchase">
-            <DockPanel DataContext="{Binding NewValue}">
-                <DockPanel.Resources>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="VerticalAlignment" Value="Center" />
-                    </Style>
-                </DockPanel.Resources>
-                <TextBlock VerticalAlignment="Center" Text="起投金额" />
-                <TextBox
-                    MinWidth="60"
-                    HorizontalContentAlignment="Center"
-                    Text="{Binding MinDeposit, StringFormat=N0, Delay=300, UpdateSourceTrigger=PropertyChanged}"
-                    TextAlignment="Center" />
+            <WrapPanel DataContext="{Binding NewValue}">
+                <DockPanel Margin="0,0,10,0">
+                    <DockPanel.Resources>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                        </Style>
+                    </DockPanel.Resources>
+                    <TextBlock VerticalAlignment="Center" Text="起投金额" />
+                    <TextBox
+                        MinWidth="60"
+                        HorizontalContentAlignment="Center"
+                        Text="{Binding MinDeposit, StringFormat=N0, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                        TextAlignment="Center" />
+                    <TextBlock VerticalAlignment="Center" Text="，追加金额" />
+                    <TextBox
+                        MinWidth="60"
+                        HorizontalContentAlignment="Center"
+                        Text="{Binding AdditionalDeposit, StringFormat=N0, Delay=300, UpdateSourceTrigger=PropertyChanged}"
+                        TextAlignment="Center" />
 
-                <TextBlock VerticalAlignment="Center" Text="，追加金额" />
-                <TextBox
-                    MinWidth="60"
-                    HorizontalContentAlignment="Center"
-                    Text="{Binding AdditionalDeposit, StringFormat=N0, Delay=300, UpdateSourceTrigger=PropertyChanged}"
-                    TextAlignment="Center" />
+
+                    <CheckBox
+                        Margin="8,0,0,0"
+                        Content="附加条件"
+                        IsChecked="{Binding HasRequirement}" />
+
+                    <TextBox
+                        MinWidth="150"
+                        HorizontalContentAlignment="Center"
+                        Text="{Binding Statement, UpdateSourceTrigger=PropertyChanged}"
+                        Visibility="{Binding HasRequirement, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                </DockPanel>
 
 
-                <CheckBox
-                    Margin="8,0,0,0"
-                    Content="附加条件"
-                    IsChecked="{Binding HasRequirement}" />
+                <DockPanel Margin="0,2,10,2">
+                    <CheckBox Content="申购费" IsChecked="{Binding HasFee}" />
+                    <DockPanel Visibility="{Binding HasFee, Converter={StaticResource Boolean2VisibilityConverter}}">
+                        <ComboBox
+                            Width="90"
+                            ItemsSource="{Binding DataContext.FundFeeTypes, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
+                            SelectedItem="{Binding Type}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
 
-                <TextBox
-                    MinWidth="150"
-                    HorizontalContentAlignment="Center"
-                    Text="{Binding Statement, UpdateSourceTrigger=PropertyChanged}"
-                    Visibility="{Binding HasRequirement, Converter={StaticResource Boolean2VisibilityConverter}}" />
-            </DockPanel>
+
+                        <TextBox
+                            x:Name="mon"
+                            MinWidth="40"
+                            HorizontalContentAlignment="Center"
+                            Text="{Binding Fee, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                        <TextBlock
+                            x:Name="a"
+                            Margin="4,0"
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            Text="%"
+                            Visibility="Collapsed" />
+                        <TextBlock
+                            x:Name="b"
+                            Margin="4,0"
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            Text="元"
+                            Visibility="Collapsed" />
+                        <TextBox
+                            x:Name="other"
+                            MinWidth="300"
+                            Text="{Binding Other, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                            Visibility="Collapsed" />
+                        <CheckBox
+                            Margin="4,0"
+                            Content="保底"
+                            IsChecked="{Binding HasGuaranteedFee}" />
+
+
+                        <TextBox
+                            x:Name="gr"
+                            MinWidth="60"
+                            HorizontalContentAlignment="Center"
+                            Text="{Binding GuaranteedFee, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                            Visibility="{Binding HasGuaranteedFee, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                        <TextBlock
+                            x:Name="ad"
+                            Margin="4,0"
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            Text="元"
+                            Visibility="{Binding HasGuaranteedFee, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+
+                    </DockPanel>
+                </DockPanel>
+
+                <DockPanel Visibility="{Binding HasFee, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    <TextBlock VerticalAlignment="Center" Text="收费方式" />
+                    <ComboBox
+                        MinWidth="70"
+                        Margin="4,0,0,0"
+                        ItemsSource="{Binding DataContext.FundFeePayTypes, RelativeSource={RelativeSource AncestorType=local:ElementsView}}"
+                        SelectedItem="{Binding PayMethod}" />
+
+                    <TextBox
+                        x:Name="po"
+                        MinWidth="150"
+                        Text="{Binding PayOther, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                        Visibility="Collapsed" />
+                </DockPanel>
+            </WrapPanel>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding NewValue.Type}" Value="Ratio">
+                    <Setter TargetName="a" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding NewValue.Type}" Value="Fix">
+                    <Setter TargetName="b" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding NewValue.PayMethod}" Value="Other">
+                    <Setter TargetName="po" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
         </DataTemplate>
 
         <DataTemplate x:Key="DT.Portion" d:DataType="local:ShareElementsViewModel">
@@ -762,7 +949,7 @@
     <Grid Margin="0,10">
         <ScrollViewer HorizontalScrollBarVisibility="Disabled">
 
-            <Grid>
+            <Grid Background="Transparent">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition Width="8" />
@@ -930,25 +1117,12 @@
                                 DataContext="{Binding SubscriptionRule}"
                                 Header="认购规则" />
 
-                            <local:PortionElementView
-                                ContentTemplate="{StaticResource DT.Fee}"
-                                DataContext="{Binding SubscriptionFee}"
-                                EditTemplate="{StaticResource CT.Fee}"
-                                Header="认购费" />
-
 
 
                             <local:PortionElementView
                                 ContentTemplate="{StaticResource DT.Purchase}"
                                 DataContext="{Binding PurchasRule}"
                                 Header="申购规则" />
-
-
-                            <local:PortionElementView
-                                ContentTemplate="{StaticResource DT.Fee}"
-                                DataContext="{Binding PurchaseFee}"
-                                EditTemplate="{StaticResource CT.Fee}"
-                                Header="申购费" />
 
 
 
@@ -1246,7 +1420,7 @@
                                             <TextBox
                                                 Width="50"
                                                 HorizontalContentAlignment="Center"
-                                                Text="{Binding ., UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                                                Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
                                             <TextBlock
                                                 Margin="4,0"
                                                 Foreground="Gray"
@@ -1264,7 +1438,7 @@
                                 <shared:ChangeableContainer.ContentTemplate>
                                     <DataTemplate>
                                         <DockPanel>
-                                            <CheckBox HorizontalContentAlignment="Center" IsChecked="{Binding IsRequired}" />
+                                            <CheckBox HorizontalContentAlignment="Center" IsChecked="{Binding NewValue.IsRequired}" />
                                         </DockPanel>
                                     </DataTemplate>
                                 </shared:ChangeableContainer.ContentTemplate>

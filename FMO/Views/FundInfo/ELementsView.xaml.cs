@@ -31,6 +31,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
     public static FundMode[] FundModes { get; } = [Models.FundMode.Open, Models.FundMode.Close, Models.FundMode.Other];
 
     public static FundFeeType[] FundFeeTypes { get; } = [FundFeeType.Ratio, FundFeeType.Fix, FundFeeType.Other];
+    public static FundFeePayType[] FundFeePayTypes { get; } = [ FundFeePayType.Extra, FundFeePayType.Out,  FundFeePayType.Other];
 
     public static FeePayFrequency[] FeePayFrequencies { get; } = [FeePayFrequency.Month, FeePayFrequency.Quarter, FeePayFrequency.Other];
 
@@ -518,10 +519,10 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
         #endregion
 
-        SubscriptionFee = new ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel>(FundId, FlowId, elements, sc, x => x.SubscriptionFee, x => new(x), x => x!.Build());
+        //SubscriptionFee = new ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel>(FundId, FlowId, elements, sc, x => x.SubscriptionFee, x => new(x), x => x!.Build());
         SubscriptionRule = new ShareElementsViewModel2<FundPurchaseRule, FundPurchaseRuleViewModel>(FundId, FlowId, elements, sc, x => x.SubscriptionRule, x => new(x), x => x!.Build());
 
-        PurchaseFee = new ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel>(FundId, FlowId, elements, sc, x => x.PurchaseFee, x => new(x), x => x!.Build());
+        //PurchaseFee = new ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel>(FundId, FlowId, elements, sc, x => x.PurchaseFee, x => new(x), x => x!.Build());
         PurchasRule = new ShareElementsViewModel2<FundPurchaseRule, FundPurchaseRuleViewModel>(FundId, FlowId, elements, sc, x => x.PurchasRule, x => new(x), x => x!.Build());
 
         RedemptionFee = new ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel>(FundId, FlowId, elements, sc, x => x.RedemptionFee, x => new(x), x => x!.Build());
