@@ -72,6 +72,8 @@ public static class Automation
             if (_context == null)
                 _context = await _playwright.Chromium.LaunchPersistentContextAsync(Path.Combine(Directory.GetCurrentDirectory(), "config\\platform"),
                     new BrowserTypeLaunchPersistentContextOptions { Channel = "msedge", Headless = false, Args = new[] { "--disable-gpu" } });
+
+            _context.Close += (s,e) => _context = null;
         }
         finally
         {

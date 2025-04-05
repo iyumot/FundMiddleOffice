@@ -66,6 +66,7 @@ public class Assist : AssistBase
         catch (Exception e)
         {
             Log.Error($"Login {Domain} Set User Password Error : {e.Message}");
+            return false;
         }
 
         return true;
