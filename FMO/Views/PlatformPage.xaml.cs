@@ -232,16 +232,24 @@ public partial class PlatformPageViewModelDigital : ObservableRecipient//, IReci
 
         Task.Run(async () =>
         {
-            using var page = await Automation.AcquirePage(assist.Identifier);
-            //var page = pw.Page;
+            try
+            {
 
-            await assist.PrepareLoginAsync(page);
+                using var page = await Automation.AcquirePage(assist.Identifier);
+                //var page = pw.Page;
 
-            IsLogin = await assist.LoginValidationAsync(page);
+                await assist.PrepareLoginAsync(page);
 
-            if (IsLogin)
-                await assist.EndLoginAsync(page);
+                IsLogin = await assist.LoginValidationAsync(page);
 
+                if (IsLogin)
+                    await assist.EndLoginAsync(page);
+
+            }
+            catch (Exception e)
+            {
+                HandyControl.Controls.Growl.Error($"初始化登录{assist.Name}失败");
+            }
             IsInitialized = true;
         });
 
@@ -253,7 +261,11 @@ public partial class PlatformPageViewModelDigital : ObservableRecipient//, IReci
     {
         NeedLogin = false;
 
-        IsLogin = await Assist.LoginAsync();
+        try
+        {
+            IsLogin = await Assist.LoginAsync();
+        }
+        catch { IsLogin = false; }
 
         NeedLogin = true;
     }
