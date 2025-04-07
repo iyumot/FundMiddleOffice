@@ -24,7 +24,7 @@ public partial class ElementsView : UserControl
 
 
 
-public partial class ElementsViewModel : EditableControlViewModelBase<FundElements>, IRecipient<FundShareChangedMessage>
+public partial class ElementsViewModel : EditableControlViewModelBase<FundElements>
 {
     public static RiskLevel[] RiskLevels { get; } = [Models.RiskLevel.R1, Models.RiskLevel.R2, Models.RiskLevel.R3, Models.RiskLevel.R4, Models.RiskLevel.R5];
 
@@ -181,12 +181,6 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
     [ObservableProperty]
     public partial ChangeableViewModel<FundElements, CallbackInfoViewModel>? Callback { get; set; }
 
-
-    /// <summary>
-    /// 与份额相关的
-    /// </summary>
-    [ObservableProperty]
-    public partial ObservableCollection<ShareElementsViewModel> PortionElements { get; set; } = new();
 
 
     [ObservableProperty]
@@ -595,125 +589,6 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         return builder.ToString();
     }
 
-    private void InitElementsOfShare(FundElements elements)
-    {
-        var shares = elements.ShareClasses!.GetValue(FlowId);
-        if (shares.Value is not null)
-            PortionElements = new ObservableCollection<ShareElementsViewModel>(shares.Value.Select(x => new ShareElementsViewModel(x.Id, x.Name, elements, FlowId)));
-        //else
-        //    throw new Exception();//  PortionElements = new ObservableCollection<ShareElementsViewModel>([new ShareElementsViewModel(FundElements.SingleShareKey, elements, FlowId)]);
-
-
-        //OnlyOneShare = PortionElements.Count == 1;
-    }
-
-
-    //[RelayCommand]
-    //public void Modify(ElementItemViewModel s)
-    //{
-    //    switch (s)
-    //    {
-
-    //        case ElementItemViewModelSealing v:
-    //            using (var db = DbHelper.Base())
-    //            {
-    //                var elements = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
-    //                v.UpdateEntity(elements, FlowId);
-
-    //                db.GetCollection<FundElements>().Update(elements);
-
-    //            }
-    //            v.Apply();
-    //            break;
-
-
-    //        case ElementItemViewModel v:
-    //            using (var db = DbHelper.Base())
-    //            {
-    //                var elements = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
-    //                v.UpdateEntity(elements, FlowId);
-
-    //                if (v.Property == nameof(DurationInMonths) && SetupDate != default && DurationInMonths!.Data.New.HasValue)
-    //                    elements.ExpirationDate!.SetValue(SetupDate.AddMonths(DurationInMonths!.Data.New.Value).AddDays(-1), FlowId);
-
-    //                db.GetCollection<FundElements>().Update(elements);
-    //            }
-    //            v.Apply();
-
-    //            if (v.Property == nameof(FundElements.FullName))
-    //            {
-    //                ShortName!.Data.New = Fund.GetDefaultShortName(FullName!.Data.New);
-    //                ShortName.Data.Old = ShortName.Data.New;
-    //            }
-
-    //            if (v.Property == nameof(DurationInMonths) && SetupDate != default && DurationInMonths!.Data.New.HasValue)
-    //            {
-    //                ExpirationDate!.Data.New = SetupDate.AddMonths(DurationInMonths!.Data.New.Value).AddDays(-1);
-    //                ExpirationDate.Data.Old = ExpirationDate.Data.New;
-    //            }
-
-    //            break;
-    //        default:
-
-
-    //            break;
-    //    }
-
-    //}
-
-
-    //[RelayCommand]
-    //public void Delete(ElementItemViewModel s)
-    //{
-    //    switch (s)
-    //    {
-
-    //        case ElementItemViewModelSealing v:
-    //            using (var db = DbHelper.Base())
-    //            {
-    //                var elements = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
-    //                v.RemoveValue(elements, FlowId);
-    //                db.GetCollection<FundElements>().Update(elements);
-    //            }
-    //            v.Apply();
-    //            break;
-
-
-    //        case ElementItemViewModel v:
-    //            using (var db = DbHelper.Base())
-    //            {
-    //                var elements = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
-    //                v.RemoveValue(elements, FlowId);
-
-    //                db.GetCollection<FundElements>().Update(elements);
-    //            }
-    //            v.Apply();
-
-    //            break;
-    //        default:
-
-
-    //            break;
-    //    }
-    //}
-
-
-    //[RelayCommand]
-    //public void Reset(ElementItemViewModel s)
-    //{
-    //    var ps = s.GetType().GetProperties();
-    //    foreach (var p in ps)
-    //    {
-    //        if (p.PropertyType.IsGenericType && (p.PropertyType.GetGenericTypeDefinition() == typeof(ValueViewModel<>) || p.PropertyType.GetGenericTypeDefinition() == typeof(RefrenceViewModel<>)))
-    //        {
-    //            var obj = p.GetValue(s);
-    //            if (obj is null) continue;
-
-    //            var old = obj.GetType().GetProperty("Old")!.GetValue(obj);
-    //            obj.GetType().GetProperty("New")!.SetValue(obj, old);
-    //        }
-    //    }
-    //}
 
 
     [RelayCommand]
@@ -762,17 +637,17 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
     }
 
-    public void Receive(FundShareChangedMessage message)
-    {
-        if (message.FundId == FundId && message.FlowId <= FlowId)
-        {
-            using var db = DbHelper.Base();
-            var elements = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
-            InitElementsOfShare(elements);
-        }
+    //public void Receive(FundShareChangedMessage message)
+    //{
+    //    if (message.FundId == FundId && message.FlowId <= FlowId)
+    //    {
+    //        using var db = DbHelper.Base();
+    //        var elements = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
+    //        //InitElementsOfShare(elements);
+    //    }
 
-        //  OnFlowIdChanged(0, FlowId);
-    }
+    //    //  OnFlowIdChanged(0, FlowId);
+    //}
 
     protected override FundElements InitNewEntity() => throw new NotImplementedException();
 

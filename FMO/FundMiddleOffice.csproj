@@ -14,7 +14,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ViewModel\Elements\**" />
+    <EmbeddedResource Remove="ViewModel\Elements\**" />
+    <None Remove="ViewModel\Elements\**" />
+    <Page Remove="ViewModel\Elements\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="PageView.cs" />
+    <Compile Remove="ViewModel\UnitViewModel.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,7 +43,7 @@
     <ProjectReference Include="..\FMO.InterOp\FMO.IO.Trustee\FMO.IO.Trustee.csproj" />
     <ProjectReference Include="..\FMO.IO.DS\FMO.IO.DS.csproj" />
     <ProjectReference Include="..\FMO.Shared\FMO.Shared.csproj" />
-    <ProjectReference Include="..\FMO.SourceGenerator\FMO.SourceGenerator.csproj"  OutputItemType="Analyzer"/>
+    <ProjectReference Include="..\FMO.SourceGenerator\FMO.SourceGenerator.csproj" OutputItemType="Analyzer" />
     <ProjectReference Include="..\FMO.Utilities\FMO.Utilities.csproj" />
     <ProjectReference Include="..\FMO.Models\FMO.Models.csproj" />
   </ItemGroup>
