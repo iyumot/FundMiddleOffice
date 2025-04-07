@@ -21,6 +21,7 @@ public class Assist : AssistBase
 
     public override Regex HoldingCheck { get; } = new Regex(@"vipfunds\.simu800\.com|sso\.simu800\.com");
 
+    private string? token { get; set; }
 
     public override async Task<bool> PrepareLoginAsync(IPage page)
     {
@@ -76,6 +77,13 @@ public class Assist : AssistBase
     public override async Task<bool> LoginValidationOverrideAsync(IPage page)
     {
         return (await page.GetByText("易直销").CountAsync() > 0);
+    }
+
+    public override Task<bool> EndLoginAsync(IPage page)
+    {
+        var m = Regex.Match(page.Url, @"ascription=([\w%]+)");
+        if (m.Success) token = m.Groups[1].Value;
+        return base.EndLoginAsync(page);
     }
 
     /// <summary>
@@ -223,6 +231,7 @@ public class Assist : AssistBase
 
 
         using var page = await Automation.AcquirePage(Identifier);
+        await page.GotoAsync($"https://vipfunds.simu800.com/vipmanager/investorAppropriatenessManagement/investorsProcessList?ascription={token}&v={(int)(DateTime.Now - new DateTime(1970, 1, 1)).TotalMicroseconds}");
         //var page = pw.Page;
         await page.Keyboard.PressAsync("Escape");
         await page.Keyboard.PressAsync("Escape");
@@ -273,42 +282,11 @@ public class Assist : AssistBase
 
         try
         {
-            var db = DbHelper.Base();
+            using var db = DbHelper.Base();
             var data = db.GetCollection<InvestorQualification>();
 
             for (int i = 0; i < 999; i++)
             {
-                //IResponse? response = null;
-                //try
-                //{
-                //    await page.RunAndWaitForResponseAsync(async () => await locator.Last.ClickAsync()/* await page.GotoAsync($"https://vipfunds.simu800.com/vipmanager/investorManagement/customerInfo/:timestamp?v={DateTime.Now.TimeStampBySeconds()}")*/, x =>
-                //           {
-                //               if (x.Request.Url?.Contains("identify/flow/getPage") ?? false)
-                //               {
-                //                   response = x;
-                //                   return true;
-                //               }
-                //               return false;
-                //           });
-                //}
-                //catch (Exception e)
-                //{
-                //    Log.Error(log + $"未获取到Json数据 {e.Message}");
-                //    WeakReferenceMessenger.Default.Send("同步合投资料失败，请查看log", "toast");
-                //    return false;
-                //}
-
-                //if (response is null)
-                //{
-                //    Log.Error($"{Identifier}.{nameof(SynchronizeQualificatoinAsync)} 未获取到数据json的response");
-                //    WeakReferenceMessenger.Default.Send("同步合投资料失败，请查看log", "toast");
-                //    return false;
-                //}
-                //var json = await response.TextAsync();
-
-                //var result = await HandleQualificationJson(json);
-                //if (!result) return false;
-
                 var table = page.Locator("div.ant-table-container");
                 var rows = await table.Locator("tr").AllAsync();
 
@@ -394,65 +372,35 @@ public class Assist : AssistBase
                         using var zip = ZipFile.OpenRead(file.FullName);
                         foreach (var item in zip.Entries)
                         {
+                            using var fs = new FileStream(@$"files\qualification\{q.Id}\{item.Name}", FileMode.Create);
+                            using var stream = item.Open();
+                            stream.CopyTo(fs);
+                            fs.Flush();
+
+
                             if (item.Name.Contains("合格投资者承诺函"))
                             {
-                                using var stream = item.Open();
-                                using var fs = new FileStream(@$"files\qualification\{q.Id}\{item.Name}", FileMode.Create);
-                                stream.Seek(0, SeekOrigin.Begin);
-                                stream.CopyTo(fs);
-                                fs.Flush();
-
                                 q.CommitmentLetter = new FileStorageInfo { Name = item.Name, Time = item.LastWriteTime.LocalDateTime, Path = fs.Name, Hash = FileHelper.ComputeHash(fs) };
                             }
-
                             else if (item.Name.Contains("基本信息表"))
                             {
-                                using var stream = item.Open();
-                                using var fs = new FileStream(@$"files\qualification\{q.Id}\{item.Name}", FileMode.Create);
-                                stream.Seek(0, SeekOrigin.Begin);
-                                stream.CopyTo(fs);
-                                fs.Flush();
-
                                 q.InfomationSheet = new FileStorageInfo { Name = item.Name, Time = item.LastWriteTime.LocalDateTime, Path = fs.Name, Hash = FileHelper.ComputeHash(fs) };
                             }
                             else if (item.Name.Contains("告知书"))
                             {
-                                using var stream = item.Open();
-                                using var fs = new FileStream(@$"files\qualification\{q.Id}\{item.Name}", FileMode.Create);
-                                stream.Seek(0, SeekOrigin.Begin);
-                                stream.CopyTo(fs);
-                                fs.Flush();
-
                                 q.Notice = new FileStorageInfo { Name = item.Name, Time = item.LastWriteTime.LocalDateTime, Path = fs.Name, Hash = FileHelper.ComputeHash(fs) };
                             }
                             else if (item.Name.Contains("税收居民身份声明"))
                             {
-                                using var stream = item.Open();
-                                using var fs = new FileStream(@$"files\qualification\{q.Id}\{item.Name}", FileMode.Create);
-                                stream.Seek(0, SeekOrigin.Begin);
-                                stream.CopyTo(fs);
-                                fs.Flush();
 
                                 q.TaxDeclaration = new FileStorageInfo { Name = item.Name, Time = item.LastWriteTime.LocalDateTime, Path = fs.Name, Hash = FileHelper.ComputeHash(fs) };
                             }
                             else if (item.Name.Contains("经办人身份证件"))
                             {
-                                using var stream = item.Open();
-                                using var fs = new FileStream(@$"files\qualification\{q.Id}\{item.Name}", FileMode.Create);
-                                stream.Seek(0, SeekOrigin.Begin);
-                                stream.CopyTo(fs);
-                                fs.Flush();
-
                                 q.Agent = new FileStorageInfo { Name = item.Name, Time = item.LastWriteTime.LocalDateTime, Path = fs.Name, Hash = FileHelper.ComputeHash(fs) };
                             }
                             else if (item.Name.Contains("授权委托书"))
                             {
-                                using var stream = item.Open();
-                                using var fs = new FileStream(@$"files\qualification\{q.Id}\{item.Name}", FileMode.Create);
-                                stream.Seek(0, SeekOrigin.Begin);
-                                stream.CopyTo(fs);
-                                fs.Flush();
-
                                 q.Authorization = new FileStorageInfo { Name = item.Name, Time = item.LastWriteTime.LocalDateTime, Path = fs.Name, Hash = FileHelper.ComputeHash(fs) };
                             }
                         }
@@ -467,6 +415,9 @@ public class Assist : AssistBase
                         Log.Error($"{Identifier}.{nameof(SynchronizeQualificatoinAsync)} 解析 {name} 文件出错 {e.Message}");
                         WeakReferenceMessenger.Default.Send($"同步{name}合投资料失败，请查看log", "toast");
                     }
+
+
+                    await Task.Delay(300);
                 }
 
 
@@ -475,6 +426,8 @@ public class Assist : AssistBase
                 if (await locator.CountAsync() == 0)
                     break;
             }
+
+            await Task.Delay(300);
         }
         catch (Exception e)
         {

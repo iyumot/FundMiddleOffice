@@ -106,8 +106,8 @@ public static class Automation
             var page = await _context!.NewPageAsync();
 
             info.Pages.Add(new WebPageInfo { Page = page, IsUsing = true, IsMajor = info.Pages.Count == 0 });
-            if (info.Pages.Count > 1)
-                await page.GotoAsync(info.Pages[0].Page.Url);
+            //if (info.Pages.Count > 1)
+            //    await page.GotoAsync(info.Pages[0].Page.Url);
 
             return new IPageWraper(identifier, page);
         }
