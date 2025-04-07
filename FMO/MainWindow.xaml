@@ -19,7 +19,7 @@
     <Grid Background="White">
 
         <DockPanel>
-            <hc:SideMenu Margin="0,20,0,0" AutoSelect="True">
+            <hc:SideMenu Margin="0,20,0,0" AutoSelect="True" >
                 <hc:SideMenuItem
                     Width="120"
                     Command="{Binding OpenPageCommand}"
@@ -51,7 +51,10 @@
                         </Viewbox>
                     </hc:SideMenuItem.Icon>
                 </hc:SideMenuItem>
-                <hc:SideMenuItem Header="TA">
+                <hc:SideMenuItem
+                    Command="{Binding OpenPageCommand}" 
+                    CommandParameter="TA"
+                    Header="TA">
                     <hc:SideMenuItem.Icon>
                         <Viewbox Width="16" Height="16">
                             <Path Data="{StaticResource f.table}" Fill="Black" />

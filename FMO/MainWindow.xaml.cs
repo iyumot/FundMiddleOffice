@@ -208,6 +208,19 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                     break;
                 }
 
+            case "TA":
+                {
+                    var page = Pages.FirstOrDefault(x => x.Content is TransferRecordPage);
+                    if (page is null)
+                    {
+                        page = new TabItem { Header = GenerateHeader(" TA "), Content = new TransferRecordPage() };
+                        Pages.Add(page);
+                    }
+
+                    page.IsSelected = true;
+                    break;
+                }
+
 
             default:
                 {
@@ -240,6 +253,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
             tabItem.Content = null;
             tabItem.DataContext = null;
             Pages.Remove(tabItem);
+            
         }
     }
 
