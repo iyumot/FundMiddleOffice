@@ -19,7 +19,7 @@
     <Grid Background="White">
 
         <DockPanel>
-            <hc:SideMenu Margin="0,20,0,0" AutoSelect="True" >
+            <hc:SideMenu Margin="0,20,0,0" AutoSelect="True">
                 <hc:SideMenuItem
                     Width="120"
                     Command="{Binding OpenPageCommand}"
@@ -37,7 +37,7 @@
                     Header="基金">
                     <hc:SideMenuItem.Icon>
                         <Viewbox Width="16" Height="16">
-                            <Path Data="{StaticResource f.fire}" Fill="Black" />
+                            <Path Data="{StaticResource f.fire}" Fill="Violet" />
                         </Viewbox>
                     </hc:SideMenuItem.Icon>
                 </hc:SideMenuItem>
@@ -47,12 +47,12 @@
                     Header="客户">
                     <hc:SideMenuItem.Icon>
                         <Viewbox Width="16" Height="16">
-                            <Path Data="{StaticResource G.User}" Fill="Black" />
+                            <Path Data="{StaticResource G.User}" Fill="#49bc69" />
                         </Viewbox>
                     </hc:SideMenuItem.Icon>
                 </hc:SideMenuItem>
                 <hc:SideMenuItem
-                    Command="{Binding OpenPageCommand}" 
+                    Command="{Binding OpenPageCommand}"
                     CommandParameter="TA"
                     Header="TA">
                     <hc:SideMenuItem.Icon>
@@ -60,6 +60,16 @@
                             <Path Data="{StaticResource f.table}" Fill="Black" />
                         </Viewbox>
                     </hc:SideMenuItem.Icon>
+                    <hc:SideMenuItem
+                        Padding="30,0,0,0"
+                        Command="{Binding OpenPageCommand}"
+                        CommandParameter="TA"
+                        Header="交易确认" />
+                    <hc:SideMenuItem
+                        Padding="30,0,0,0"
+                        Command="{Binding OpenPageCommand}"
+                        CommandParameter="TAReq"
+                        Header="交易申请" />
                 </hc:SideMenuItem>
                 <hc:SideMenuItem Command="{Binding OpenPageCommand}" CommandParameter="Trustee">
                     <hc:SideMenuItem.Header>
@@ -110,7 +120,14 @@
             <TabControl
                 Margin="5,0"
                 BorderThickness="0"
-                ItemsSource="{Binding Pages}" />
+                ItemsSource="{Binding Pages}" >
+                <TabControl.ItemContainerStyle>
+                    <Style TargetType="TabItem" BasedOn="{StaticResource TabItemSliding}">
+                       
+                    </Style>
+                </TabControl.ItemContainerStyle>
+            </TabControl>
+            
         </DockPanel>
 
         <ScrollViewer
