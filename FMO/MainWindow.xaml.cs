@@ -30,7 +30,7 @@ public partial class MainWindow : HandyControl.Controls.Window
         // 管理人名称
         using var db = DbHelper.Base();// DbHelper.Base();
         Title += " - " + db.GetCollection<Manager>().FindOne(x => x.IsMaster)?.Name;
-        if(db.FileStorage.Exists("icon.main"))
+        if (db.FileStorage.Exists("icon.main"))
         {
             using var ms = new MemoryStream();
             db.FileStorage.Download("icon.main", ms);
@@ -77,12 +77,12 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
     protected override void OnActivated()
     {
         WeakReferenceMessenger.Default.Register<OpenFundMessage>(this);
-        WeakReferenceMessenger.Default.Register<string,string>(this, "toast");
+        WeakReferenceMessenger.Default.Register<string, string>(this, "toast");
     }
 
     public void Receive(OpenFundMessage message)
     {
-        var db = DbHelper.Base(); 
+        var db = DbHelper.Base();
         var fund = db.GetCollection<Fund>().FindById(message.Id);
         var ele = db.GetCollection<FundElements>().FindById(message.Id);
         if (ele is null)
@@ -93,7 +93,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
 
         // 检查要求
         //var flows = db.GetCollection<FundFlow>().Find(x => x.FundId == fund.Id).Select(x => x.Id).ToArray();
-        
+
 
         //if (ele.Init()) db.GetCollection<FundElements>().Update(ele);
         db.Dispose();
@@ -126,7 +126,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
     private DockPanel GenerateHeader(string head)
     {
         var dock = new DockPanel();
-        var btn = new Button();
+        var btn = new Button { Background = Brushes.Transparent };
         btn.SetBinding(Button.CommandProperty, "ClosePageCommand");
         btn.SetBinding(Button.CommandParameterProperty, new Binding { RelativeSource = new RelativeSource { AncestorType = typeof(TabItem) } });
         btn.Style = App.Current.Resources["ButtonDefault.Small"] as Style;
@@ -156,12 +156,12 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                     break;
                 }
 
-            case "Funds":
+            case "FundsPage":
                 {
                     var page = Pages.FirstOrDefault(x => x.Content is FundsPage);
                     if (page is null)
                     {
-                        page = new TabItem { Header = GenerateHeader("基金总览"), Content = new FundsPage() };
+                        page = new TabItem { Header = GenerateHeader("基金总览"), Background = Brushes.Violet, Content = new FundsPage() };
                         Pages.Add(page);
                     }
 
@@ -200,7 +200,12 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                     var page = Pages.FirstOrDefault(x => x.Content is CustomerPage);
                     if (page is null)
                     {
-                        page = new TabItem { Header = GenerateHeader("投资人"), Content = new CustomerPage() };
+                        page = new TabItem
+                        {
+                            Header = GenerateHeader("投资人"), 
+                            Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#49bc69")),
+                            Content = new CustomerPage()
+                        };
                         Pages.Add(page);
                     }
 
@@ -213,7 +218,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                     var page = Pages.FirstOrDefault(x => x.Content is TransferRecordPage);
                     if (page is null)
                     {
-                        page = new TabItem { Header = GenerateHeader(" TA "), Content = new TransferRecordPage() };
+                        page = new TabItem { Header = GenerateHeader("交易申请"), Background = Brushes.Orange, Content = new TransferRecordPage() };
                         Pages.Add(page);
                     }
 
@@ -253,7 +258,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
             tabItem.Content = null;
             tabItem.DataContext = null;
             Pages.Remove(tabItem);
-            
+
         }
     }
 
