@@ -328,8 +328,7 @@ public partial class PlatformPageViewModelTrustee : ObservableRecipient, IRecipi
         Buttons = [ new SyncButtonData((Geometry)App.Current.Resources["f.receipt"]  , SynchronizeDataCommand, SyncFundRaisingRecord, "募集户流水"),
             new SyncButtonData((Geometry)App.Current.Resources["f.file-invoice"]  , SynchronizeDataCommand, SyncBankRecord,"托管户流水"),
             new SyncButtonData((Geometry)App.Current.Resources["f.address-card"]  , SynchronizeDataCommand, SyncCustomers,"客户资料"),
-            new SyncButtonData((Geometry)App.Current.Resources["f.rectangle-list"]  , SynchronizeDataCommand, SyncTA,"交易申请"),
-            new SyncButtonData((Geometry)App.Current.Resources["f.list-check"]  , SynchronizeDataCommand, SyncTA,"交易确认"),            ];
+            new SyncButtonData((Geometry)App.Current.Resources["f.money-bill-transfer"]  , SynchronizeDataCommand, SyncTA,"TA"),     ];
 
         using var db = DbHelper.Trustee();
         Config = db.GetCollection<TrusteeConfig>().FindOne(x => x.Id == Assist.Identifier) ?? new TrusteeConfig { Id = assist.Identifier };
@@ -458,10 +457,9 @@ public partial class PlatformPageViewModelTrustee : ObservableRecipient, IRecipi
 
     public async Task SyncTA()
     {
+       // await Assist.SynchronizeTransferRequestAsync();
 
-        await Assist.SynchronizeTAAsync();
-
-
+        await Assist.SynchronizeTransferRecordAsync(); 
     }
 
     public async Task SyncFundRaisingRecord()

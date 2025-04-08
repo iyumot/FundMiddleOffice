@@ -18,7 +18,7 @@ public class TransferRequest
     /// <summary>
     /// 平台identifier
     /// </summary>
-    public string? PID { get; set; }
+    public string? Source { get; set; }
 
 
     /// <summary>

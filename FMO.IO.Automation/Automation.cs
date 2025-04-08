@@ -17,7 +17,7 @@ public static class PlatformDatabase
 
         return new LiteDatabase(connectionString, null);
     }
-     
+
 }
 
 public class WebPageInfo
@@ -73,7 +73,7 @@ public static class Automation
                 _context = await _playwright.Chromium.LaunchPersistentContextAsync(Path.Combine(Directory.GetCurrentDirectory(), "config\\platform"),
                     new BrowserTypeLaunchPersistentContextOptions { Channel = "msedge", Headless = false, Args = new[] { "--disable-gpu" } });
 
-            _context.Close += (s,e) => _context = null;
+            _context.Close += (s, e) => _context = null;
         }
         finally
         {
@@ -184,7 +184,7 @@ public static class Automation
 
 
     public static async Task DisposeAsync()
-     {
+    {
         if (_browser is not null)
             await _browser.DisposeAsync();
         _playwright?.Dispose();

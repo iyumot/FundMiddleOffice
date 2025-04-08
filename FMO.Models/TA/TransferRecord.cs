@@ -12,19 +12,38 @@ public class TransferRecord : IEquatable<TransferRecord>
 
     public int FundId { get; set; }
 
+    public string? FundName { get; set; }
+
+    public string? FundCode { get; set; }
+
+    public string? ExternalId { get; set; }
+
+    public string? ExternalRequestId { get; set; }
+
+    public int RequestId { get; set; }
+
     /// <summary>
     /// 份额类型
     /// </summary>
     public string? ShareClass { get; set; }
 
+
+    /// <summary>
+    /// 内部id
+    /// </summary>
+    public int CustomerId { get; set; }
+
     /// <summary>
     /// 客户Id
     /// </summary>
     [Description("证件号码")]
-    public required string CustomerId { get; set; }
+    public required string CustomerIdentity { get; set; }
 
     [Description("客户名称")]
     public required string CustomerName { get; set; }
+
+
+    public DateOnly CreateDate { get; set; }
 
     /// <summary>
     /// 申请时间
@@ -87,13 +106,12 @@ public class TransferRecord : IEquatable<TransferRecord>
     public decimal PerformanceFee { get; set; }
 
     [Description("销售机构")]
-    public string? Saler { get; set; }
+    public string? Agency { get; set; }
 
     /// <summary>
     /// 数据来源
     /// </summary>
     public string? Source { get; set; }
-
 
     public override int GetHashCode()
     {
@@ -103,7 +121,7 @@ public class TransferRecord : IEquatable<TransferRecord>
     {
         if (other is null) return false;
 
-        return FundId == other.FundId && CustomerId == other.CustomerId && RequestDate == other.RequestDate && Type == other.Type;
+        return FundId == other.FundId && CustomerIdentity == other.CustomerIdentity && RequestDate == other.RequestDate && Type == other.Type;
     }
 
     public decimal ShareChange()

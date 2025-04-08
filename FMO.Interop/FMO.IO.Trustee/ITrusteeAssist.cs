@@ -11,43 +11,8 @@ namespace FMO.IO.Trustee;
 /// 必须指定名称
 /// 可以设置logo，放在主文件夹内，命名logo.xxx，生成类型为嵌入的资源
 /// </summary>
-public interface ITrusteeAssist : IDisposable
-{
-
-    /// <summary>
-    /// 标识 
-    /// 不可重复
-    /// cstisc 中信证券
-    /// </summary>
-    string Identifier { get; }
-
-
-    /// <summary>
-    /// 公司名称
-    /// </summary>
-    string Name { get; }
-
-
-    /// <summary>
-    /// 是否已登录
-    /// </summary>
-    bool IsLogedIn { get; }
-
-
-    /// <summary>
-    /// 验证登录的方法
-    /// </summary>
-    /// <param name="page"></param>
-    /// <param name="wait_seconds">最大等待时间（秒）</param>
-    /// <returns></returns>
-    Task<bool> LoginValidationAsync(IPage page, int wait_seconds = 5);
-
-    /// <summary>
-    /// 登录
-    /// </summary>
-    /// <returns></returns>
-    Task<bool> LoginAsync();
-
+public interface ITrusteeAssist : IExternPlatform
+{ 
     /// <summary>
     /// 同步募集流水，单向
     /// </summary>
@@ -64,11 +29,16 @@ public interface ITrusteeAssist : IDisposable
 
 
     /// <summary>
-    /// 同步TA
+    /// 同步交易申请
     /// </summary>
     /// <returns></returns>
-    Task<bool> SynchronizeTAAsync();
+    Task<bool> SynchronizeTransferRequestAsync();
 
+    /// <summary>
+    /// 同步交易确认
+    /// </summary>
+    /// <returns></returns>
+    Task<bool> SynchronizeTransferRecordAsync();
 
 
 

@@ -58,7 +58,7 @@ public class CSTISCAssistTests
 
         using ITrusteeAssist assist = new CSTISCAssist();
 
-        await assist.SynchronizeTAAsync();
+        await assist.SynchronizeTransferRecordAsync();
     }
 
 
@@ -75,7 +75,7 @@ public class CSTISCAssistTests
 
         using ITrusteeAssist assist = new CSTISCAssist();
 
-        await assist.SynchronizeTAAsync();
+        await assist.SynchronizeTransferRecordAsync();
     }
 
 

@@ -10,6 +10,7 @@ public class IPageWraper : IDisposable, IPage
     public required string Identifier { get; init; }
 
     public required IPage Page { get; set; }
+    public bool IsNew { get; private set; }
 
     public IClock Clock => Page.Clock;
 
@@ -41,10 +42,11 @@ public class IPageWraper : IDisposable, IPage
     public IReadOnlyList<IWorker> Workers => Page.Workers;
 
     [SetsRequiredMembers]
-    public IPageWraper(string identifier, IPage page)
+    public IPageWraper(string identifier, IPage page, bool isNew= false)
     {
         Identifier = identifier;
         Page = page;
+        IsNew = isNew;
 
         // 订阅所有Page事件
         Page.Close += OnPageClose;
@@ -268,7 +270,7 @@ public class IPageWraper : IDisposable, IPage
 
     public Task<IResponse?> GoForwardAsync(PageGoForwardOptions? options = null) => Page.GoForwardAsync(options);
 
-    public Task<IResponse?> GotoAsync(string url, PageGotoOptions? options = null) => Page.GotoAsync(url, options);
+    public Task<IResponse?> GotoAsync(string url, PageGotoOptions? options = null) { IsNew = false; return Page.GotoAsync(url, options);}
 
     public Task HoverAsync(string selector, PageHoverOptions? options = null) => Page.HoverAsync(selector, options);
 

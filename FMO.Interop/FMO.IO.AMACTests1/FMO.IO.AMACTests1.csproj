@@ -16,10 +16,17 @@
   <ItemGroup>
     <ProjectReference Include="..\..\FMO.Utilities\FMO.Utilities.csproj" />
     <ProjectReference Include="..\FMO.IO.AMAC\FMO.IO.AMAC.csproj" />
+    <ProjectReference Include="..\FMO.IO.CITISC\FMO.IO.Trustee.CITISC.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ta.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
