@@ -19,7 +19,7 @@ public class Assist : AssistBase
 
 
 
-    public override Regex HoldingCheck { get; } = new Regex(@"vipfunds\.simu800\.com|sso\.simu800\.com");
+    public override Regex HoldingCheck { get; init; } = new Regex(@"vipfunds\.simu800\.com|sso\.simu800\.com");
 
     private string? token { get; set; }
 
@@ -476,7 +476,7 @@ public class Assist : AssistBase
         using var db2 = PlatformDatabase.Instance();
         var history = db2.GetCollection<QualificationSyncHistory>(Identifier).FindAll();
 
-        var page = await Automation.AcquirePage(Identifier);
+        using var page = await Automation.AcquirePage(Identifier);
 
         foreach (var item in list)
         {

@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using FMO.Utilities;
 using Microsoft.Playwright;
-using Serilog;
+using System.Text.RegularExpressions;
 
 
 
@@ -16,9 +16,9 @@ namespace FMO.IO.Trustee;
 /// <summary>
 /// 提供部分实现的基类
 /// </summary>
-public abstract class TrusteeAssistBase : ITrusteeAssist, IDisposable
+public abstract class TrusteeAssistBase : ITrusteeAssist
 {
-    private IPage? _mainPage;
+    //private IPage? _mainPage;
 
 
     public abstract string Identifier { get; }
@@ -38,6 +38,11 @@ public abstract class TrusteeAssistBase : ITrusteeAssist, IDisposable
 
     public TrusteeSynchronizeTime TrusteeSynchronizeTime { get; init; }
 
+    public string? UserID { get; set; }
+
+    public string? Password { get; set; }
+
+    public abstract Regex HoldingCheck { get; init; }
 
     protected TrusteeAssistBase()
     {
@@ -53,53 +58,33 @@ public abstract class TrusteeAssistBase : ITrusteeAssist, IDisposable
     /// <returns></returns>
     public async Task<bool> LoginValidationAsync(IPage page, int wait_seconds = 5)
     {
-        var b = await LoginValidationOverrideAsync(page, wait_seconds);
-        if (!b) WeakReferenceMessenger.Default.Send(Identifier, "Trustee.LogOut");
+        bool b = false;
+        for (var i = 0; i < wait_seconds; i++)
+        {
+            await Task.Delay(1000);
+
+            try { b = await LoginValidationOverrideAsync(page); } catch { }
+            if (b) break;
+        }
+
+        if (!b) WeakReferenceMessenger.Default.Send($"{Name}平台登陆失败", "toast");
         return b;
     }
 
-    public abstract Task<bool> LoginValidationOverrideAsync(IPage page, int wait_seconds = 5);
+    public abstract Task<bool> LoginValidationOverrideAsync(IPage page);
 
-
-    protected async Task<IPage> GetPageAsync()
+    public virtual async Task<bool> PrepareLoginAsync(IPage page)
     {
-        if (_mainPage is null || _mainPage.IsClosed)
-        {
-            _mainPage = await Automation.NewPageAsync();
-            await _mainPage.GotoAsync(Domain);
-        }
-        return _mainPage;
+        return (await page.GotoAsync(Domain))?.Ok ?? false;
     }
 
-
-    public virtual async Task<bool> LoginAsync()
+    public virtual async Task<bool> EndLoginAsync(IPage page)
     {
-        try
-        {
-            var playwright = await Playwright.CreateAsync();
-
-            var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Channel = "msedge", Headless = false });
-
-            var context = await Automation.LoadContext(browser);
-
-            var page = await context.NewPageAsync();
-
-            await page.GotoAsync(Domain);
-
-            // 验证
-            IsLogedIn = await LoginValidationAsync(page, 100);
-
-            await context.StorageStateAsync(new BrowserContextStorageStateOptions { Path = "context" });
-            //await Automation.SaveContextAsync();
-
-            await page.CloseAsync();
-            await browser.CloseAsync();
-            playwright.Dispose();
-        }
-        catch (Exception e) { IsLogedIn = false; Log.Error($"Trustee Login Failed : {e.Message}"); }
-
-        return IsLogedIn;
+        await page!.Keyboard.PressAsync("Escape");
+        await page.Keyboard.PressAsync("Escape");
+        return true;
     }
+     
 
     public abstract Task<bool> SynchronizeFundRaisingRecord();
 
@@ -110,8 +95,9 @@ public abstract class TrusteeAssistBase : ITrusteeAssist, IDisposable
     /// <returns></returns>
     public abstract Task<bool> SynchronizeCustomerAsync();
 
-    public abstract Task<bool> SynchronizeTAAsync();
-
+    public abstract Task<bool> SynchronizeTransferRequestAsync();
+     
+    public abstract Task<bool> SynchronizeTransferRecordAsync();
 
 
     protected async Task<ILocator> FirstVisible(ILocator loc)
@@ -128,12 +114,6 @@ public abstract class TrusteeAssistBase : ITrusteeAssist, IDisposable
         return loc;
     }
 
-
-    public async void Dispose()
-    {
-        if (_mainPage is not null)
-            await _mainPage.CloseAsync();
-    }
 
 
 }

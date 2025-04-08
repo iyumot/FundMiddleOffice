@@ -141,10 +141,15 @@
                         <DataGridTextColumn Binding="{Binding FundName}" Header="产品" />
                         <DataGridTextColumn Binding="{Binding CustomerName}" Header="投资人" />
                         <DataGridTextColumn Binding="{Binding CustomerIdentity}" Header="证件" />
-                        <DataGridTextColumn Binding="{Binding RequestType}" Header="类型" />
-                        <DataGridTextColumn Binding="{Binding RequestShare, Converter={StaticResource ZeroToBlankConverter}}" Header="份额" />
-                        <DataGridTextColumn Binding="{Binding RequestAmount, Converter={StaticResource ZeroToBlankConverter}}" Header="金额" />
+                        <DataGridTextColumn Binding="{Binding Type}" Header="类型" />
+                        <DataGridTextColumn Binding="{Binding RequestShare, Converter={StaticResource ZeroToBlankConverter}}" Header="申请份额" />
+                        <DataGridTextColumn Binding="{Binding RequestAmount, Converter={StaticResource ZeroToBlankConverter}}" Header="申请金额" />
+                        <DataGridTextColumn Binding="{Binding ConfirmedShare, Converter={StaticResource ZeroToBlankConverter}}" Header="确认份额" />
+                        <DataGridTextColumn Binding="{Binding ConfirmedAmount, Converter={StaticResource ZeroToBlankConverter}}" Header="确认金额" />
+                        <DataGridTextColumn Binding="{Binding ConfirmedNetAmount, Converter={StaticResource ZeroToBlankConverter}}" Header="净确认金额" />
                         <DataGridTextColumn Binding="{Binding Agency}" Header="销售" />
+                        <DataGridTextColumn Binding="{Binding Fee, Converter={StaticResource ZeroToBlankConverter}}" Header="费用" />
+                        <DataGridTextColumn Binding="{Binding PerformanceFee, Converter={StaticResource ZeroToBlankConverter}}" Header="业绩报酬" />
                     </DataGrid.Columns>
                 </DataGrid>
             </TabItem>

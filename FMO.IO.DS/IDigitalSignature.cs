@@ -48,7 +48,7 @@ public abstract class AssistBase : IDigitalSignature
     public SynchronizeTime SynchronizeTime { get; init; }
 
 
-    public abstract Regex HoldingCheck { get; }
+    public abstract Regex HoldingCheck { get; init; }
 
     public string? UserID { get; set; }
 

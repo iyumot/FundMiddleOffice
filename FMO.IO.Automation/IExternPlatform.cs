@@ -71,6 +71,8 @@ public interface IExternPlatform //: IDisposable
     {
         using var page = await Automation.AcquirePage(Identifier);
 
+        if (page.IsNew) await page.GotoAsync(Domain);
+
         if (page is not null && await LoginValidationOverrideAsync(page))
             return true;
 

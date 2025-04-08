@@ -457,7 +457,7 @@ public class DataItem
             RequestShare = Shares,
             CreateDate = RequestDate,
             ExternalId = RequestNo,
-            PID = pid,
+            Source = pid,
             FeeDiscount = DefinedFee,
             RequestAmount = Balance,
             LargeRedemptionFlag = ExceedFlag switch { "0" => LargeRedemptionFlag.CancelRemaining, "1" => LargeRedemptionFlag.RollOver, _ => LargeRedemptionFlag.Unk }
