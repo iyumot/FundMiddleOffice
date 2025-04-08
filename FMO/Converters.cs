@@ -112,7 +112,7 @@ public class DataTimeDateOnlySwitchConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value switch { DateTime d => DateOnly.FromDateTime(d), DateOnly d => new DateTime(d, new TimeOnly()), _=> value };
+        return value switch { DateTime d => DateOnly.FromDateTime(d), DateOnly d => new DateTime(d, new TimeOnly()), _ => value };
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -140,7 +140,7 @@ public class EnumDescriptionConverter : IValueConverter
 {
     public object? Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if(value is Enum e)
+        if (value is Enum e)
         {
             var fieldInfo = value.GetType().GetField(e.ToString());
             var descriptionAttribute = Attribute.GetCustomAttribute(fieldInfo!, typeof(DescriptionAttribute)) as DescriptionAttribute;
@@ -171,6 +171,20 @@ public class EnumIsOtherToVisibilityConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         return value is Enum e && e.ToString() == "Other" ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+
+public class ZeroToBlankConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value switch { 0 or 0d or 0L or 0m => "", _ => value };
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

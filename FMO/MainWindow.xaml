@@ -60,16 +60,7 @@
                             <Path Data="{StaticResource f.table}" Fill="Black" />
                         </Viewbox>
                     </hc:SideMenuItem.Icon>
-                    <hc:SideMenuItem
-                        Padding="30,0,0,0"
-                        Command="{Binding OpenPageCommand}"
-                        CommandParameter="TA"
-                        Header="交易确认" />
-                    <hc:SideMenuItem
-                        Padding="30,0,0,0"
-                        Command="{Binding OpenPageCommand}"
-                        CommandParameter="TAReq"
-                        Header="交易申请" />
+
                 </hc:SideMenuItem>
                 <hc:SideMenuItem Command="{Binding OpenPageCommand}" CommandParameter="Trustee">
                     <hc:SideMenuItem.Header>
@@ -120,14 +111,12 @@
             <TabControl
                 Margin="5,0"
                 BorderThickness="0"
-                ItemsSource="{Binding Pages}" >
+                ItemsSource="{Binding Pages}">
                 <TabControl.ItemContainerStyle>
-                    <Style TargetType="TabItem" BasedOn="{StaticResource TabItemSliding}">
-                       
-                    </Style>
+                    <Style BasedOn="{StaticResource TabItemSliding}" TargetType="TabItem" />
                 </TabControl.ItemContainerStyle>
             </TabControl>
-            
+
         </DockPanel>
 
         <ScrollViewer

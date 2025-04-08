@@ -10,4 +10,5 @@
     <local:DataTimeDateOnlySwitchConverter x:Key="DataTimeDateOnlySwitchConverter" />
     <local:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
     <local:EnumIsOtherToVisibilityConverter x:Key="EnumIsOtherToVisibilityConverter" />
+    <local:ZeroToBlankConverter x:Key="ZeroToBlankConverter" />
 </ResourceDictionary>

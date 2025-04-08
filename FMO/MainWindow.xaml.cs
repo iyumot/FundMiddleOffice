@@ -218,14 +218,14 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                     var page = Pages.FirstOrDefault(x => x.Content is TransferRecordPage);
                     if (page is null)
                     {
-                        page = new TabItem { Header = GenerateHeader("交易申请"), Background = Brushes.Orange, Content = new TransferRecordPage() };
+                        page = new TabItem { Header = GenerateHeader("  TA  "), Background = Brushes.Orange, Content = new TransferRecordPage() };
                         Pages.Add(page);
                     }
 
                     page.IsSelected = true;
                     break;
                 }
-
+ 
 
             default:
                 {
