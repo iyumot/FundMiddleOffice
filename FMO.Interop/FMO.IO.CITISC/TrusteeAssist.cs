@@ -4,6 +4,7 @@ using FMO.Models;
 using FMO.Utilities;
 using Microsoft.Playwright;
 using Serilog;
+using System.Data;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -369,7 +370,7 @@ public class CSTISCAssist : TrusteeAssistBase
     /// <param name="start"></param>
     /// <param name="end"></param>
     /// <returns></returns>
-    private async Task<TD[]?> GetFuncResultAsync<T, TD>(IPage page, string func, int funcid, DateOnly start, DateOnly end, Func<T, int> getdatacount, Func<T, IEnumerable<TD>> getdata, Func<T, bool> hasnext)
+    private async Task<TD[]?> GetFuncResultAsync<T, TD>(IPage page, string func, string url, DateOnly start, DateOnly end, Func<T, int> getdatacount, Func<T, IEnumerable<TD>> getdata, Func<T, bool> hasnext)
     {
 
         List<TD> data = new();
@@ -428,7 +429,7 @@ public class CSTISCAssist : TrusteeAssistBase
                 loc = await FirstVisible(loc);
                 await page.RunAndWaitForResponseAsync(async () => await loc.ClickAsync(), resp =>
                 {
-                    if (resp.Url != $"https://iservice.citics.com/api/sys/midPlatformCommonMethod?funcId={funcid}") return false;
+                    if (resp.Url != url) return false;
                     response = resp;
                     return true;
                 }, new PageRunAndWaitForResponseOptions { Timeout = 5000 });
@@ -480,7 +481,7 @@ public class CSTISCAssist : TrusteeAssistBase
 
             await page.RunAndWaitForResponseAsync(async () => await loc.ClickAsync(), resp =>
             {
-                if (resp.Url != $"https://iservice.citics.com/api/sys/midPlatformCommonMethod?funcId={funcid}") return false;
+                if (resp.Url != url) return false;
                 response = resp;
                 return true;
             });
@@ -571,7 +572,8 @@ public class CSTISCAssist : TrusteeAssistBase
                 if (ori > start)
                     start = ori;
 
-                var vals = await GetFuncResultAsync<CITISC.Json.TransferRequest.JsonRootDto, CITISC.Json.TransferRequest.DataItem>(page, nameof(SynchronizeTransferRequestAsync), fid, start, end, x => x.Data.Total, x => x.Data.List, x => x.Data.HasNextPage);
+                var vals = await GetFuncResultAsync<CITISC.Json.TransferRequest.JsonRootDto, CITISC.Json.TransferRequest.DataItem>(page, nameof(SynchronizeTransferRequestAsync),
+                    $"https://iservice.citics.com/api/sys/midPlatformCommonMethod?funcId={fid}", start, end, x => x.Data.Total, x => x.Data.List, x => x.Data.HasNextPage);
                 if (vals is not null)
                 {
 
@@ -694,7 +696,8 @@ public class CSTISCAssist : TrusteeAssistBase
                 if (ori > start)
                     start = ori;
 
-                var vals = await GetFuncResultAsync<CITISC.Json.TransferRecord.Root, CITISC.Json.TransferRecord.List>(page, nameof(SynchronizeTransferRecordAsync), fid, start, end, x => x.data.total, x => x.data.list, x => x.data.hasNextPage);
+                var vals = await GetFuncResultAsync<CITISC.Json.TransferRecord.Root, CITISC.Json.TransferRecord.List>(page, nameof(SynchronizeTransferRecordAsync),
+                    $"https://iservice.citics.com/api/sys/midPlatformCommonMethod?funcId={fid}", start, end, x => x.data.total, x => x.data.list, x => x.data.hasNextPage);
                 if (vals is not null)
                 {
 
@@ -760,4 +763,55 @@ public class CSTISCAssist : TrusteeAssistBase
 
         return true;
     }
+
+
+    public async override Task<(string Code, ManageFeeDetail[] Fee)[]> GetManageFeeDetails(DateOnly start, DateOnly end)
+    {
+        // 判断登陆状态
+        if (!IsLogedIn && !await ((IExternPlatform)this).LoginAsync())
+            return Array.Empty<(string Code, ManageFeeDetail[] Fee)>();
+
+        var func = nameof(GetManageFeeDetails);
+        using var page = await Automation.AcquirePage(Identifier);
+        if (page.IsNew) await page.GotoAsync(Domain);
+
+        try
+        {
+            // 跳转
+            var url = $"https://iservice.citics.com/iservice/fygl/fymxcx?refresh={DateTime.Now.TimeStampBySeconds()}";
+            await page.GotoAsync(url);
+
+            // 选择日频
+            await page.WaitForSelectorAsync("label.ivu-radio-wrapper:has-text('日')");
+            var loc = page.Locator("label.ivu-radio-wrapper:has-text('日')");
+            loc = await FirstVisible(loc);
+
+            await loc.CheckAsync();
+
+            // 100条
+            loc = page.Locator("span.ivu-select-selected-value").Filter(new() { HasText = "条/页" });
+            loc = await FirstVisible(loc);
+            await loc.ClickAsync();
+            loc = page.Locator("div.main-page-box.main-select-content.ivu-row >> div.ivu-select-dropdown >> ul.ivu-select-dropdown-list").Last;
+            await loc.ClickAsync();
+
+
+            var data = await GetFuncResultAsync<FMO.IO.Trustee.CITISC.Json.FeeDetail.Root, FMO.IO.Trustee.CITISC.Json.FeeDetail.Item>(page, func,
+                "https://iservice.citics.com/api/value/commonQuery?funcId=028", start, end, x => x.data.size ?? 0, x => x.data.list, x => x.data.hasNextPage ?? false);
+
+            if (data is null)
+                return Array.Empty<(string Code, ManageFeeDetail[] Fee)>();
+
+            var glf = data.GroupBy(x => x.fcpdm).Select(x => (x.Key, x.Select(y => y.ToFeeDetail()).ToArray())).ToArray();
+
+            return glf;
+        }
+        catch (Exception e)
+        {
+            Log.Error($"{Identifier}.{func} 获取数据失败：{e.Message}");
+
+            return Array.Empty<(string Code, ManageFeeDetail[] Fee)>();
+        }
+    }
+
 }

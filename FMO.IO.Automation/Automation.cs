@@ -186,7 +186,10 @@ public static class Automation
     public static async Task DisposeAsync()
     {
         if (_browser is not null)
+        {
+            await _browser.CloseAsync();
             await _browser.DisposeAsync();
+        }
         _playwright?.Dispose();
     }
 

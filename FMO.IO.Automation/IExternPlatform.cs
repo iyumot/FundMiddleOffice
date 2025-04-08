@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
+using FMO.Models;
 using Microsoft.Playwright;
 using System.Text.RegularExpressions;
 
@@ -114,6 +115,7 @@ public interface IExternPlatform //: IDisposable
     /// <param name="page"></param>
     /// <returns></returns>
     Task<bool> EndLoginAsync(IPage page);
+
 }
 
 /// <summary>

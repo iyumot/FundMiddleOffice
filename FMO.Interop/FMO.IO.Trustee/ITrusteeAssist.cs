@@ -1,4 +1,5 @@
-﻿using LiteDB;
+﻿using FMO.Models;
+using LiteDB;
 using Microsoft.Playwright;
 
 
@@ -39,11 +40,7 @@ public interface ITrusteeAssist : IExternPlatform
     /// </summary>
     /// <returns></returns>
     Task<bool> SynchronizeTransferRecordAsync();
-
-
-
-
-
+    Task<(string Code, ManageFeeDetail[] Fee)[]> GetManageFeeDetails(DateOnly start, DateOnly end);
 }
 
 
