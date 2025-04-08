@@ -23,10 +23,15 @@
   <ItemGroup>
     <Compile Remove="PageView.cs" />
     <Compile Remove="ViewModel\UnitViewModel.cs" />
+    <Compile Remove="Views\TransferRequestPage.xaml.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="res\logo.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Remove="Views\TransferRequestPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>

@@ -89,6 +89,11 @@ public class TransferRecord : IEquatable<TransferRecord>
     [Description("销售机构")]
     public string? Saler { get; set; }
 
+    /// <summary>
+    /// 数据来源
+    /// </summary>
+    public string? Source { get; set; }
+
 
     public override int GetHashCode()
     {
