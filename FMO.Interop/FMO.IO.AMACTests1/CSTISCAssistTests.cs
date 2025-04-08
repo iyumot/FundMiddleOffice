@@ -42,7 +42,20 @@ namespace FMO.IO.Trustee.Tests
         {
             using var fs = new StreamReader("ta.json");
 
-             var ss = JsonSerializer.Deserialize<FMO.IO.Trustee.CITISC.Json.TransferRecord.Root>(fs.ReadToEnd());
+            var ss = JsonSerializer.Deserialize<FMO.IO.Trustee.CITISC.Json.TransferRecord.Root>(fs.ReadToEnd());
+        }
+
+        [TestMethod()]
+        public async Task GetManageFeeDetailsTest()
+        {
+
+            Directory.SetCurrentDirectory(@"E:\funds");
+
+            CSTISCAssist assist = new CSTISCAssist();
+            var data = await  assist.GetManageFeeDetails(new DateOnly(2025, 1, 1), new DateOnly(2025, 3, 31));
+
+            await Automation.DisposeAsync();
+            Assert.Fail();
         }
     }
 }

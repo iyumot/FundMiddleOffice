@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
+using FMO.Models;
 using FMO.Utilities;
 using Microsoft.Playwright;
 using System.Text.RegularExpressions;
@@ -99,6 +100,8 @@ public abstract class TrusteeAssistBase : ITrusteeAssist
      
     public abstract Task<bool> SynchronizeTransferRecordAsync();
 
+
+    public abstract Task<(string Code, ManageFeeDetail[] Fee)[]> GetManageFeeDetails(DateOnly start, DateOnly end);
 
     protected async Task<ILocator> FirstVisible(ILocator loc)
     {
