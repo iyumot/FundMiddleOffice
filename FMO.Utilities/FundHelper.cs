@@ -36,7 +36,7 @@ public static class FundHelper
     /// <param name="fundId"></param>
     /// <param name="begin"></param>
     /// <param name="end"></param>
-    public static Dictionary<DateOnly, Dictionary<int, decimal>> GenerateShareSheet(int fundId, DateOnly begin, DateOnly end)
+    public static (IList<DateOnly> Dates, IList<int> CustomerIds, IList<string> Names, decimal[,] Data) GenerateShareSheet(int fundId, DateOnly begin, DateOnly end)
     {
         using var db = DbHelper.Base();
 
@@ -53,48 +53,38 @@ public static class FundHelper
 
         var data = db.GetCollection<TransferRecord>().Find(x => x.FundId == fundId).OrderBy(x => x.ConfirmedDate).ToList();
 
-        Dictionary<DateOnly, Dictionary<int, decimal>> result = new();
-        var tab = new DataTable();
-        tab.Columns.Add("Date", typeof(DateOnly));
+
+        /// 生成行、列头
+        List<DateOnly> dates = new List<DateOnly>();
+        var idname = data.Select(x => (x.Id, x.CustomerName)).DistinctBy(x => x.Id);
+        var ids = idname.Select(x => x.Id).ToList();
+        var names = idname.Select(x => x.CustomerName).ToList();
+
         var date = begin;
         while (date <= end)
         {
-            var row = data.Where(x => x.ConfirmedDate < date).GroupBy(x => x.CustomerId).ToDictionary(x => x.Key, x => x.ToArray());
-
-            result.Add(date, row.ToDictionary(x => x.Key, x => x.Value.Sum(y => y.ShareChange())));
-
-            foreach (var item in row)
-            {
-                if(!tab.Columns.Contains(item.Key.ToString()))
-                    tab.Columns.Add(item.Key.ToString(), typeof(decimal)); 
-            }
-
-
-            var dar = tab.NewRow();
-            dar["Date"] = date;
-            foreach (var item in row)
-            {
-                dar[item.Key.ToString()] = item.Value.Sum(x=>x.ShareChange());
-            }
-            tab.Rows.Add(dar);
-
+            dates.Add(date);
             date = date.AddDays(1);
         }
 
-        for (var i = tab.Columns.Count - 1;i>= 0;i--)
+        var array = new decimal[dates.Count, ids.Count];
+
+        Dictionary<DateOnly, Dictionary<int, decimal>> result = new();
+
+
+        for (int i = 0; i < dates.Count; i++)
         {
-            var col = tab.Columns[i];
+            foreach (var d in data)
+            {
+                if (d.ConfirmedDate >= dates[i]) continue;
 
-            if (col.DataType != typeof(decimal)) continue;
-
-            var sum = tab.AsEnumerable().Select(r => r[col]).Sum(x => x switch { decimal d=>d, _=>0 });//.OfType<decimal>.Sum()
-
-            if(sum == 0) 
-                tab.Columns.RemoveAt(i);
+                var cid = ids.IndexOf(d.CustomerId);
+                array[i, cid] += d.ShareChange();
+            }
         }
          
 
-        return result;
+        return (dates, ids, names, array);
     }
 
 

@@ -276,23 +276,24 @@ public partial class MainWindowViewModel : ObservableObject
 
     private void Calc(FundInfo f, List<ManageFeeDetail> fees, List<DateOnly> dates)
     {
-        var share = FundHelper.GenerateShareSheet(f.Fund.Id, dates[0], dates[^1]);
+        var (dd, ids, names, array)  = FundHelper.GenerateShareSheet(f.Fund.Id, dates[0], dates[^1]);
 
 
         using (var workbook = new XLWorkbook())
         {
             var sheet = workbook.Worksheets.Add("份额明细表");
 
-            var row = 2;
-            foreach (var item in share)
+            // 客户名
+            for (int i = 0; i < ids.Count; i++) 
+                sheet.Cell(1, i + 2).Value = names[i]; 
+
+            for (var i = 0;i < dd.Count; i++)
             {
-                sheet.Cell(row, 1).Value = item.Key.ToString("yyyy-MM-dd");
+                sheet.Cell(2 + i, 1).Value = dd[i].ToString("yyyy-MM-dd");
 
-
-                ++row;
-            }
-
-
+                for (var j = 0; j < ids.Count; j++)
+                    sheet.Cell(i + 2, j + 2).Value = array[i, j];
+            } 
 
             string path = $"files/fee/{f.Fund.ShortName}_{dates[0]:yyyy.MM.dd}-{dates[^1]:yyyy.MM.dd}.xlsx";
             workbook.SaveAs(path);
