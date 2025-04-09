@@ -76,7 +76,7 @@ public partial class PlatformPageViewModel : ObservableObject
 
 
 
-        // using var db = DbHelper.Trustee();
+        // using var db = DbHelper.Platform();
 
 
     }
@@ -219,7 +219,7 @@ public partial class PlatformPageViewModelDigital : ObservableRecipient//, IReci
             new SyncButtonData((Geometry)App.Current.Resources["f.address-card"]  , SynchronizeDataCommand, SyncCustomers,"客户资料"),
             new SyncButtonData((Geometry)App.Current.Resources["f.certificate"]  , SynchronizeDataCommand, SyncQualifications,"合投材料"),  ];
 
-        //using var db = DbHelper.Trustee();
+        //using var db = DbHelper.Platform();
         ////Config = db.GetCollection<TrusteeConfig>().FindOne(x => x.Id == Assist.Identifier) ?? new TrusteeConfig { Id = assist.Identifier };
 
         //IsActive = true;
@@ -330,7 +330,7 @@ public partial class PlatformPageViewModelTrustee : ObservableRecipient, IRecipi
             new SyncButtonData((Geometry)App.Current.Resources["f.address-card"]  , SynchronizeDataCommand, SyncCustomers,"客户资料"),
             new SyncButtonData((Geometry)App.Current.Resources["f.money-bill-transfer"]  , SynchronizeDataCommand, SyncTA,"TA"),     ];
 
-        using var db = DbHelper.Trustee();
+        using var db = DbHelper.Platform();
         Config = db.GetCollection<TrusteeConfig>().FindOne(x => x.Id == Assist.Identifier) ?? new TrusteeConfig { Id = assist.Identifier };
 
         IsActive = true;
@@ -396,7 +396,7 @@ public partial class PlatformPageViewModelTrustee : ObservableRecipient, IRecipi
 
     protected void SaveConfig()
     {
-        using var db = DbHelper.Trustee();
+        using var db = DbHelper.Platform();
         LiteDB.ILiteCollection<TrusteeConfig> c = db.GetCollection<TrusteeConfig>();
 
         c.Upsert(Config);
@@ -457,9 +457,11 @@ public partial class PlatformPageViewModelTrustee : ObservableRecipient, IRecipi
 
     public async Task SyncTA()
     {
-       // await Assist.SynchronizeTransferRequestAsync();
+        await Assist.SynchronizeTransferRequestAsync();
 
         await Assist.SynchronizeTransferRecordAsync(); 
+
+        await Assist.SynchronizeDistributionAsync();
     }
 
     public async Task SyncFundRaisingRecord()
@@ -500,7 +502,7 @@ public partial class PlatformPageViewModelTrustee : ObservableRecipient, IRecipi
         {
             IsLogin = false;
 
-            using var db = DbHelper.Trustee();
+            using var db = DbHelper.Platform();
             var config = db.GetCollection<TrusteeConfig>().FindOne(x => x.Id == Assist.Identifier) ?? new TrusteeConfig { Id = Assist.Identifier };
 
             config.IsLogedIn = false;

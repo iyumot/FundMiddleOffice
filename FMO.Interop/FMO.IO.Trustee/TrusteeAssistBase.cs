@@ -36,9 +36,6 @@ public abstract class TrusteeAssistBase : ITrusteeAssist
 
     public bool IsLogedIn { get; protected set; }
 
-
-    public TrusteeSynchronizeTime TrusteeSynchronizeTime { get; init; }
-
     public string? UserID { get; set; }
 
     public string? Password { get; set; }
@@ -47,8 +44,6 @@ public abstract class TrusteeAssistBase : ITrusteeAssist
 
     protected TrusteeAssistBase()
     {
-        using var db = DbHelper.Trustee();
-        TrusteeSynchronizeTime = db.GetCollection<TrusteeSynchronizeTime>().FindById(Identifier) ?? new TrusteeSynchronizeTime { Identifier = Identifier };
     }
 
     /// <summary>
@@ -96,9 +91,18 @@ public abstract class TrusteeAssistBase : ITrusteeAssist
     /// <returns></returns>
     public abstract Task<bool> SynchronizeCustomerAsync();
 
+    /// <summary>
+    /// 同步交易申请
+    /// </summary>
+    /// <returns></returns>
     public abstract Task<bool> SynchronizeTransferRequestAsync();
      
+
     public abstract Task<bool> SynchronizeTransferRecordAsync();
+
+    public abstract Task<bool> SynchronizeDistributionAsync();
+
+
 
 
     public abstract Task<(string Code, ManageFeeDetail[] Fee)[]> GetManageFeeDetails(DateOnly start, DateOnly end);

@@ -2,11 +2,13 @@
 using FMO.IO.Trustee.CITISC;
 using FMO.Models;
 using FMO.Utilities;
+using LiteDB;
 using Microsoft.Playwright;
 using Serilog;
 using System.Data;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 
 namespace FMO.IO.Trustee;
@@ -348,7 +350,10 @@ public class CSTISCAssist : TrusteeAssistBase
                 }
             }
 
-
+            // 更新同步记录
+            using var dbp = DbHelper.Platform();
+            var last = new PlatformSynchronizeTime { Identifier = Identifier, Method = nameof(SynchronizeCustomerAsync), Time = DateTime.Now };
+            dbp.GetCollection<PlatformSynchronizeTime>().Upsert(last);
         }
         catch (Exception e)
         {
@@ -531,14 +536,19 @@ public class CSTISCAssist : TrusteeAssistBase
         await page.GotoAsync($"https://iservice.citics.com/iservice/zcdj/jyqrcx?refresh={DateTime.Now.TimeStampBySeconds()}");
 
 
+        const string func = nameof(SynchronizeTransferRequestAsync);
         try
         {
-            var db = DbHelper.Base();
-            var last = db.GetCollection<TransferRequest>().Query().OrderByDescending(x => x.RequestDate).FirstOrDefault();
+            ILiteDatabase db = DbHelper.Base();
+            var early = db.GetCollection<Fund>().Query().Select(x => x.SetupDate).ToArray().Min();
+            db.Dispose();
+
+            db = DbHelper.Platform();
+            var last = db.GetCollection<PlatformSynchronizeTime>().FindOne(x => x.Identifier == Identifier && x.Method == func);
             db.Dispose();
 
             if (last is null)
-                Log.Information($"{nameof(CSTISCAssist)}.{nameof(SynchronizeTransferRequestAsync)}->初始建档");
+                Log.Information($"{nameof(CSTISCAssist)}.{func}->初始建档");
 
             string url = $"https://iservice.citics.com/iservice/zcdj/jysqcx?refresh={DateTime.Now.TimeStampBySeconds()}";
 
@@ -552,13 +562,13 @@ public class CSTISCAssist : TrusteeAssistBase
 
             if (response is null)
             {
-                Log.Warning($"{nameof(CSTISCAssist)}.{nameof(SynchronizeTransferRequestAsync)}->获取json数据异常，可能托管修改了流程");
+                Log.Warning($"{nameof(CSTISCAssist)}.{func}->获取json数据异常，可能托管修改了流程");
                 return false;
             }
 
 
             //
-            DateOnly ori = last?.RequestDate ?? new DateOnly(1970, 1, 1), start = DateOnly.FromDateTime(DateTime.Today.AddYears(-5)), end = DateOnly.FromDateTime(DateTime.Today);
+            DateOnly ori = last is null ? early : DateOnly.FromDateTime(last.Time.Date), start = DateOnly.FromDateTime(DateTime.Today.AddYears(-5)), end = DateOnly.FromDateTime(DateTime.Today);
             if (ori != end)
             {
                 await page.GetByText("历史交易申请查询").First.ClickAsync();
@@ -572,7 +582,7 @@ public class CSTISCAssist : TrusteeAssistBase
                 if (ori > start)
                     start = ori;
 
-                var vals = await GetFuncResultAsync<CITISC.Json.TransferRequest.JsonRootDto, CITISC.Json.TransferRequest.DataItem>(page, nameof(SynchronizeTransferRequestAsync),
+                var vals = await GetFuncResultAsync<CITISC.Json.TransferRequest.JsonRootDto, CITISC.Json.TransferRequest.DataItem>(page, func,
                     $"https://iservice.citics.com/api/sys/midPlatformCommonMethod?funcId={fid}", start, end, x => x.Data.Total, x => x.Data.List, x => x.Data.HasNextPage);
                 if (vals is not null)
                 {
@@ -612,28 +622,37 @@ public class CSTISCAssist : TrusteeAssistBase
                 else Log.Error("");
             }
 
+            // fundid
+            var ids3 = db.GetCollection<Fund>().Query().Select(x => new { x.Id, x.Code, x.Name }).ToList();
+            foreach (var item in data)
+                item.FundId = (ids3.FirstOrDefault(x => x.Code == item.FundCode) ?? ids3.FirstOrDefault(x => x.Name == item.FundName))?.Id ?? 0;
+
+
             // 排除同id数据
-            var hasids = data.Select(x => x.ExternalId);
-            db.GetCollection<TransferRequest>().DeleteMany(x => x.Source == Identifier && hasids.Contains(x.ExternalId));
-            db.GetCollection<TransferRequest>().Insert(data);
+            db.GetCollection<TransferRequest>().EnsureIndex(x => new { x.Source, x.ExternalId }, true);
+            db.GetCollection<TransferRequest>().Upsert(data);
             db.Dispose();
 
+
+            // 更新同步记录
+            db = DbHelper.Platform();
+            if (last is null) last = new PlatformSynchronizeTime { Identifier = Identifier, Method = func, Time = DateTime.Now };
+            else last.Time = DateTime.Now;
+            db.GetCollection<PlatformSynchronizeTime>().Upsert(last);
+            db.Dispose();
             return true;
         }
         catch (JsonException e)
         {
-            Log.Error($"{Identifier}.{nameof(SynchronizeTransferRequestAsync)} 同步失败：Json 解析异常 {e.Path} {e.InnerException?.Message}");
+            Log.Error($"{Identifier}.{func} 同步失败：Json 解析异常 {e.Path} {e.InnerException?.Message}");
             return false;
         }
         catch (Exception e)
         {
-            Log.Error($"{Identifier}.{nameof(SynchronizeTransferRequestAsync)} 同步失败：{e.Message}");
+            Log.Error($"{Identifier}.{func} 同步失败：{e.Message}");
             return false;
         }
 
-
-
-        return true;
     }
 
 
@@ -658,14 +677,19 @@ public class CSTISCAssist : TrusteeAssistBase
         await page.GotoAsync($"https://iservice.citics.com/iservice/zcdj/jyqrcx?refresh={DateTime.Now.TimeStampBySeconds()}");
 
 
+        const string func = nameof(SynchronizeTransferRecordAsync);
         try
         {
-            var db = DbHelper.Base();
-            var last = db.GetCollection<TransferRecord>().Query().OrderByDescending(x => x.RequestDate).FirstOrDefault();
+            ILiteDatabase db = DbHelper.Base();
+            var early = db.GetCollection<Fund>().Query().Select(x => x.SetupDate).ToArray().Min();
+            db.Dispose();
+
+            db = DbHelper.Platform();
+            var last = db.GetCollection<PlatformSynchronizeTime>().FindOne(x => x.Identifier == Identifier && x.Method == func);
             db.Dispose();
 
             if (last is null)
-                Log.Information($"{nameof(CSTISCAssist)}.{nameof(SynchronizeTransferRecordAsync)}->初始建档");
+                Log.Information($"{nameof(CSTISCAssist)}.{func}->初始建档");
 
             string url = $"https://iservice.citics.com/iservice/zcdj/jyqrcx?refresh={DateTime.Now.TimeStampBySeconds()}";
 
@@ -679,13 +703,13 @@ public class CSTISCAssist : TrusteeAssistBase
 
             if (response is null)
             {
-                Log.Warning($"{nameof(CSTISCAssist)}.{nameof(SynchronizeTransferRecordAsync)}->获取json数据异常，可能托管修改了流程");
+                Log.Warning($"{nameof(CSTISCAssist)}.{func}->获取json数据异常，可能托管修改了流程");
                 return false;
             }
 
 
             //
-            DateOnly ori = last?.RequestDate ?? new DateOnly(1970, 1, 1), start = DateOnly.FromDateTime(DateTime.Today.AddYears(-5)), end = DateOnly.FromDateTime(DateTime.Today);
+            DateOnly ori = last is null ? early : DateOnly.FromDateTime(last.Time.Date), start = DateOnly.FromDateTime(DateTime.Today.AddYears(-5)), end = DateOnly.FromDateTime(DateTime.Today);
 
 
 
@@ -696,7 +720,7 @@ public class CSTISCAssist : TrusteeAssistBase
                 if (ori > start)
                     start = ori;
 
-                var vals = await GetFuncResultAsync<CITISC.Json.TransferRecord.Root, CITISC.Json.TransferRecord.List>(page, nameof(SynchronizeTransferRecordAsync),
+                var vals = await GetFuncResultAsync<CITISC.Json.TransferRecord.Root, CITISC.Json.TransferRecord.List>(page, func,
                     $"https://iservice.citics.com/api/sys/midPlatformCommonMethod?funcId={fid}", start, end, x => x.data.total, x => x.data.list, x => x.data.hasNextPage);
                 if (vals is not null)
                 {
@@ -740,28 +764,179 @@ public class CSTISCAssist : TrusteeAssistBase
             foreach (var item in data)
                 item.RequestId = ids2.Find(x => x.ExternalId == item.ExternalRequestId).Id;
 
+            // fundid
+            var ids3 = db.GetCollection<Fund>().Query().Select(x => new { x.Id, x.Code, x.Name }).ToList();
+            foreach (var item in data)
+                item.FundId = (ids3.FirstOrDefault(x => x.Code == item.FundCode) ?? ids3.FirstOrDefault(x => x.Name == item.FundName))?.Id ?? 0;
+
+
             // 排除同id数据
-            var hasids = data.Select(x => x.ExternalId);
-            db.GetCollection<TransferRecord>().DeleteMany(x => x.Source == Identifier && hasids.Contains(x.ExternalId));
-            db.GetCollection<TransferRecord>().Insert(data);
+            db.GetCollection<TransferRecord>().EnsureIndex(x => new { x.Source, x.ExternalId }, true);
+            db.GetCollection<TransferRecord>().Upsert(data);
             db.Dispose();
 
+            // 更新同步记录
+            db = DbHelper.Platform();
+            if (last is null) last = new PlatformSynchronizeTime { Identifier = Identifier, Method = func, Time = DateTime.Now };
+            else last.Time = DateTime.Now;
+            db.GetCollection<PlatformSynchronizeTime>().Upsert(last);
+            db.Dispose();
             return true;
         }
         catch (JsonException e)
         {
-            Log.Error($"{Identifier}.{nameof(SynchronizeTransferRecordAsync)} 同步失败：Json 解析异常 {e.Path} {e.InnerException?.Message}");
+            Log.Error($"{Identifier}.{func} 同步失败：Json 解析异常 {e.Path} {e.InnerException?.Message}");
             return false;
         }
         catch (Exception e)
         {
-            Log.Error($"{Identifier}.{nameof(SynchronizeTransferRecordAsync)} 同步失败：{e.Message}");
+            Log.Error($"{Identifier}.{func} 同步失败：{e.Message}");
             return false;
         }
 
 
 
         return true;
+    }
+
+
+    public async override Task<bool> SynchronizeDistributionAsync()
+    {
+        // 判断登陆状态
+        if (!IsLogedIn && !await ((IExternPlatform)this).LoginAsync())
+            return false;
+
+        int fid = 753;
+        using var page = await Automation.AcquirePage(Identifier);
+        if (page.IsNew) await page.GotoAsync(Domain);
+
+        if (!await LoginValidationAsync(page, 5))
+        {
+            IsLogedIn = false;
+            return false;
+        }
+
+        // 网址https://iservice.citics.com/iservice/zcdj/jyqrcx?refresh=1744077069249
+        await page.GotoAsync($"https://iservice.citics.com/iservice/zcdj/fhxxcx?refresh={DateTime.Now.TimeStampBySeconds()}");
+
+
+        const string func = nameof(SynchronizeDistributionAsync);
+        try
+        {
+            ILiteDatabase db = DbHelper.Base();
+            var early = db.GetCollection<Fund>().Query().Select(x => x.SetupDate).ToArray().Min();
+            db.Dispose();
+
+            db = DbHelper.Platform();
+            var last = db.GetCollection<PlatformSynchronizeTime>().FindOne(x => x.Identifier == Identifier && x.Method == func);
+            db.Dispose();
+
+            if (last is null)
+                Log.Information($"{nameof(CSTISCAssist)}.{func}->初始建档");
+
+            string url = $"https://iservice.citics.com/iservice/zcdj/fhxxcx?refresh={DateTime.Now.TimeStampBySeconds()}";
+
+            IResponse? response = null;
+            await page.RunAndWaitForResponseAsync(async () => await page.GotoAsync(url), resp =>
+            {
+                if (resp.Url != $"https://iservice.citics.com/api/sys/midPlatformCommonMethod?funcId={fid}") return false;
+                response = resp;
+                return true;
+            });
+
+            if (response is null)
+            {
+                Log.Warning($"{nameof(CSTISCAssist)}.{func}->获取json数据异常，可能托管修改了流程");
+                return false;
+            }
+
+
+            //
+            DateOnly ori = last is null ? early : DateOnly.FromDateTime(last.Time.Date), start = DateOnly.FromDateTime(DateTime.Today.AddYears(-5)), end = DateOnly.FromDateTime(DateTime.Today);
+
+
+
+            int empty_year = 0;
+            List<TransferRecord> data = new();
+            while (end >= ori)
+            {
+                if (ori > start)
+                    start = ori;
+
+                var vals = await GetFuncResultAsync<CITISC.Json.Distribution.Root, CITISC.Json.Distribution.Item>(page, func,
+                    $"https://iservice.citics.com/api/sys/midPlatformCommonMethod?funcId={fid}", start, end, x => x.data.total ?? 0, x => x.data.list, x => x.data.hasNextPage ?? false);
+                if (vals is not null)
+                {
+
+                    data.AddRange(vals.Select(x => x.ToObject(Identifier)));
+
+
+                    if (vals.Length == 0) ++empty_year;
+                }
+
+                if (empty_year > 0) break;
+
+                end = start.AddDays(-1);
+                start = end.AddYears(-5);
+            }
+
+            data = data.OrderBy(x => x.CustomerIdentity).ToList();
+
+            // 保存到数据库
+            db = DbHelper.Base();
+            // 客户映射
+            var ids = data.Select(x => x.CustomerIdentity).Distinct().ToList();
+
+            var customers = db.GetCollection<Investor>().Query().ToArray();
+            Investor? lastc = null;
+            foreach (var item in data)
+            {
+                if (lastc is not null && lastc.Name == item.CustomerName && lastc.Identity.Id == item.CustomerIdentity)
+                {
+                    item.CustomerId = lastc.Id;
+                    continue;
+                }
+
+                lastc = customers.FirstOrDefault(x => x.Name == item.CustomerName && x.Identity.Id == item.CustomerIdentity);
+                if (lastc is not null)
+                    item.CustomerId = lastc.Id;
+                else Log.Error("");
+            }
+
+            var ids2 = db.GetCollection<TransferRequest>().Find(x => x.Source == Identifier).Select(x => (x.Id, x.ExternalId)).ToList();
+            foreach (var item in data)
+                item.RequestId = ids2.Find(x => x.ExternalId == item.ExternalRequestId).Id;
+
+            // fundid
+            var ids3 = db.GetCollection<Fund>().Query().Select(x => new { x.Id, x.Code, x.Name }).ToList();
+            foreach (var item in data)
+                item.FundId = (ids3.FirstOrDefault(x => x.Code == item.FundCode) ?? ids3.FirstOrDefault(x => x.Name == item.FundName))?.Id ?? 0;
+
+
+            // 排除同id数据
+            //var hasids = data.Select(x => x.ExternalId);
+            //db.GetCollection<TransferRecord>().DeleteMany(x => x.Source == Identifier && hasids.Contains(x.ExternalId));
+            db.GetCollection<TransferRecord>().EnsureIndex(x => new { x.Source, x.ExternalId }, true);
+            db.GetCollection<TransferRecord>().Upsert(data);
+            db.Dispose();
+
+            db = DbHelper.Platform();
+            if (last is null) last = new PlatformSynchronizeTime { Identifier = Identifier, Method = func, Time = DateTime.Now };
+            else last.Time = DateTime.Now;
+            db.GetCollection<PlatformSynchronizeTime>().Upsert(last);
+            db.Dispose();
+            return true;
+        }
+        catch (JsonException e)
+        {
+            Log.Error($"{Identifier}.{func} 同步失败：Json 解析异常 {e.Path} {e.InnerException?.Message}");
+            return false;
+        }
+        catch (Exception e)
+        {
+            Log.Error($"{Identifier}.{func} 同步失败：{e.Message}");
+            return false;
+        }
     }
 
 
@@ -802,7 +977,7 @@ public class CSTISCAssist : TrusteeAssistBase
             if (data is null)
                 return Array.Empty<(string Code, ManageFeeDetail[] Fee)>();
 
-            var glf = data.GroupBy(x => x.fcpdm).Select(x => (x.Key, x.Select(y => y.ToFeeDetail()).ToArray())).ToArray();
+            var glf = data.Select(x => (Code:x.fcpdm, x.ToFeeDetail())).GroupBy(x=>x.Code).Select(x=>(x.Key, x.Select(y=>y.Item2).ToArray())).ToArray();//.GroupBy(x => x.fcpdm).Select(x => (x.Key, x.Select(y => y.ToFeeDetail()).ToArray())).ToArray();
 
             return glf;
         }

@@ -40,23 +40,19 @@ public interface ITrusteeAssist : IExternPlatform
     /// </summary>
     /// <returns></returns>
     Task<bool> SynchronizeTransferRecordAsync();
+
+    /// <summary>
+    /// 同步分红数据
+    /// </summary>
+    /// <returns></returns>
+    Task<bool> SynchronizeDistributionAsync();
+
+    /// <summary>
+    /// 获取管理费明细
+    /// </summary>
+    /// <param name="start"></param>
+    /// <param name="end"></param>
+    /// <returns></returns>
     Task<(string Code, ManageFeeDetail[] Fee)[]> GetManageFeeDetails(DateOnly start, DateOnly end);
 }
 
-
-public class TrusteeSynchronizeTime
-{
-    [BsonId]
-    public required string Identifier { get; set; }
-
-
-    /// <summary>
-    /// 客户同步时间
-    /// </summary>
-    public DateTime Customer { get; set; }
-
-    /// <summary>
-    /// TA同步时间
-    /// </summary>
-    public DateTime TA { get; set; }
-}
