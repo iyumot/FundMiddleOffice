@@ -50,6 +50,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.SourceGenerator", "FMO.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.FeeCalc", "FMO.FeeCalc\FMO.FeeCalc.csproj", "{DA56D98E-42A8-4E8D-AABD-215DF1954B6A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.IO.Trustee.CITISCTests", "FMO.InterOp\FMO.IO.Trustee.CITISCTests\FMO.IO.Trustee.CITISCTests.csproj", "{7BFB924F-8601-4330-B730-028EC223D3EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -132,6 +134,10 @@ Global
 		{DA56D98E-42A8-4E8D-AABD-215DF1954B6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA56D98E-42A8-4E8D-AABD-215DF1954B6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA56D98E-42A8-4E8D-AABD-215DF1954B6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BFB924F-8601-4330-B730-028EC223D3EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BFB924F-8601-4330-B730-028EC223D3EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BFB924F-8601-4330-B730-028EC223D3EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BFB924F-8601-4330-B730-028EC223D3EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

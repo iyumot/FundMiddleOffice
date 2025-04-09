@@ -7,7 +7,20 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>logo.ico</ApplicationIcon>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.104.2" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="HandyControl" Version="3.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FMO.InterOp\FMO.IO.Trustee\FMO.IO.Trustee.csproj" />
+    <ProjectReference Include="..\FMO.Models\FMO.Models.csproj" />
+    <ProjectReference Include="..\FMO.Utilities\FMO.Utilities.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
     <Resource Include="logo.ico" />

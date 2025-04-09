@@ -20,7 +20,7 @@
             HorizontalAlignment="Left"
             VerticalAlignment="Top"
             Panel.ZIndex="99">
-            <Button Content="费用计算" />
+            <Button Command="{Binding CalcFeeCommand}" Content="费用计算" />
         </DockPanel>
 
         <TabControl Margin="0,8" Style="{StaticResource TabControlCapsule}">

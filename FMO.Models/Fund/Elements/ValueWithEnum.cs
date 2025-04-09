@@ -60,7 +60,7 @@ public class ValueWithBoolean<T>
 
 
 
-
+/*
 /// <summary>
 /// 收费规则
 /// </summary>
@@ -107,4 +107,4 @@ public class TieredRatesFeeRule : FeeRule
     public decimal? Left { get; set; }
 
     public decimal? Right { get; set; }
-}
+}*/

@@ -78,7 +78,7 @@ public class Item
 
     public ManageFeeDetail ToFeeDetail()
     {
-        return new ManageFeeDetail(DateOnly.Parse(cdate), decimal.Parse(jtglf));
+        return new ManageFeeDetail(DateOnly.Parse(cdate), decimal.Parse(jtglf), decimal.Parse(fe));
     }
 }
 

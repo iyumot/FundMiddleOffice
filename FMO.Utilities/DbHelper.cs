@@ -24,11 +24,17 @@ public static class DatabaseAssist
 
             //db.GetCollection(nameof(Manager)).Update(new BsonDocument(dict));
         }
+
+
+        using (var db = DbHelper.Platform())
+        {
+            LiteDB.ILiteCollection<PlatformSynchronizeTime> coll = db.GetCollection<PlatformSynchronizeTime>();
+            coll.EnsureIndex(x => new { x.Identifier, x.Method }, true);
+        }
     }
 
     
 }
-
 
 
 public class BaseDatabase : LiteDatabase
@@ -75,13 +81,7 @@ public static class DbHelper
     {
         return new BaseDatabase(@$"FileName=data\sc.db;Password={_password};Connection=Shared");
     }
-
-
-    public static LiteDatabase Trustee() => new LiteDatabase(@$"FileName=data\trustee.db;Password={_password};Connection=Shared");
-
-
-    public static LiteDatabase Digital() => new LiteDatabase(@$"FileName=data\digital.db;Password={_password};Connection=Shared");
-
+     
 
     public static LiteDatabase Platform() => new LiteDatabase(@$"FileName=data\platform.db;Password={_password};Connection=Shared");
 

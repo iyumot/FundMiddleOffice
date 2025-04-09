@@ -1,5 +1,4 @@
-﻿using System.Configuration;
-using System.Data;
+﻿using System.IO;
 using System.Windows;
 
 namespace FMO.FeeCalc
@@ -9,6 +8,12 @@ namespace FMO.FeeCalc
     /// </summary>
     public partial class App : Application
     {
+        public App()
+        {
+#if DEBUG
+            Directory.SetCurrentDirectory("e:\\funds");
+#endif
+        }
     }
 
 }

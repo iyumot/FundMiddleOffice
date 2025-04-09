@@ -43,10 +43,7 @@ public abstract class AssistBase : IDigitalSignature
 
 
     public bool IsLogedIn { get; protected set; }
-
-
-    public SynchronizeTime SynchronizeTime { get; init; }
-
+     
 
     public abstract Regex HoldingCheck { get; init; }
 
@@ -55,9 +52,7 @@ public abstract class AssistBase : IDigitalSignature
     public string? Password { get; set; }
 
     protected AssistBase()
-    {
-        using var db = DbHelper.Digital();
-        SynchronizeTime = db.GetCollection<SynchronizeTime>().FindById(Identifier) ?? new SynchronizeTime { Identifier = Identifier };
+    { 
     }
 
 
