@@ -15,32 +15,12 @@
     <UserControl.Resources>
         <Style BasedOn="{StaticResource {x:Type shared:ChangeableContainer}}" TargetType="shared:ChangeableContainer">
             <Setter Property="Entity" Value="{Binding RelativeSource={RelativeSource AncestorType=local:CustomerView}, Path=DataContext}" />
+            <Setter Property="IsReadOnly" Value="{Binding RelativeSource={RelativeSource AncestorType=local:CustomerView}, Path=DataContext.IsReadOnly}" />
         </Style>
 
         <SolidColorBrush x:Key="LabelBrush">Gray</SolidColorBrush>
 
 
-        <Style
-            x:Key="SimpleElement"
-            BasedOn="{StaticResource ElementContainer}"
-            TargetType="ContentControl">
-            <Setter Property="Content">
-                <Setter.Value>
-                    <TextBox Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style
-            x:Key="SimpleElement.Stretch"
-            BasedOn="{StaticResource ElementContainer}"
-            TargetType="ContentControl">
-            <Setter Property="Content">
-                <Setter.Value>
-                    <TextBox HorizontalAlignment="Stretch" Text="{Binding Data.New, UpdateSourceTrigger=PropertyChanged, Delay=100}" />
-                </Setter.Value>
-            </Setter>
-        </Style>
 
         <DataTemplate x:Key="DT.CenterText">
             <TextBox
