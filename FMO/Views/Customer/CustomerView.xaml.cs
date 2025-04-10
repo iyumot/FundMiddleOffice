@@ -33,8 +33,8 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
     public static EntityType[] EntityTypes { get; } = [Models.EntityType.Natural, Models.EntityType.Institution, Models.EntityType.Product,];
 
-     
-    public ChangeableViewModel<Investor, string> Name { get; } 
+
+    public ChangeableViewModel<Investor, string> Name { get; }
 
     public ChangeableViewModel<Investor, EntityType> EntityType { get; } = new() { InitFunc = x => x.EntityType, UpdateFunc = (x, y) => x.EntityType = y, ClearFunc = x => x.EntityType = Models.EntityType.Unk, Label = "客户类型" };
 
@@ -74,7 +74,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
 
     //public EntityDateEfficientViewModel<Investor> Efficient { get; } = new() { InitFunc = x => x.Efficient, UpdateFunc = (x, y) => x.Efficient = y, ClearFunc = x => x.Efficient = default, Label = "证件有效期" };
-    public ChangeableViewModel<Investor, DateEfficientViewModel> Efficient { get; } = new() { InitFunc = x => new DateEfficientViewModel(x.Efficient), UpdateFunc = (x, y) => x.Efficient = y?.Build() ?? default, Label = "证件有效期"  };
+    public ChangeableViewModel<Investor, DateEfficientViewModel> Efficient { get; } = new() { InitFunc = x => new DateEfficientViewModel(x.Efficient), UpdateFunc = (x, y) => x.Efficient = y?.Build() ?? default, Label = "证件有效期" };
 
     [ObservableProperty]
     public partial RiskLevel? RiskLevel { get; set; }
@@ -116,7 +116,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
         Efficient.Init(investor);
 
         using var db = DbHelper.Base();
-        var iq = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == Id).ToArray();
+        var iq = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == Id || (x.InvestorId == 0 && x.InvestorName == investor.Name && x.IdentityCode == investor.Identity.Id)).ToArray();
         Qualifications = new(iq.Select(x => QualificationViewModel.From(x, investor.Type, investor.EntityType)));
     }
 
