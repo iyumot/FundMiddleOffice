@@ -192,3 +192,18 @@ public class ZeroToBlankConverter : IValueConverter
         throw new NotImplementedException();
     }
 }
+
+public class LongTextToShortConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        int cnt = parameter switch { int n => n, string s => int.TryParse(s, out var n) ? n : 16, _ => 16 };
+        int a = cnt / 3, b = cnt * 2 / 3;
+        return value switch { string s => s.Length > a + b ? s[..a] + " ...... " + s[^b..] : s, _ => value };
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}

@@ -99,6 +99,7 @@ public class Assist : AssistBase
             return false;
 
         using var page = await Automation.AcquirePage(Identifier);
+        page.SetDefaultTimeout(5000);
         //var page = pw.Page;
         await page.Keyboard.PressAsync("Escape");
         await page.Keyboard.PressAsync("Escape");
@@ -236,8 +237,8 @@ public class Assist : AssistBase
 
 
         using var page = await Automation.AcquirePage(Identifier);
-        await page.GotoAsync($"https://vipfunds.simu800.com/vipmanager/investorAppropriatenessManagement/investorsProcessList?ascription={token}&v={(int)(DateTime.Now - new DateTime(1970, 1, 1)).TotalMicroseconds}");
-        //var page = pw.Page;
+        await page.GotoAsync($"https://vipfunds.simu800.com/vipmanager/investorAppropriatenessManagement/investorsProcessList?ascription={token}&v={(int)(DateTime.Now - new DateTime(1970, 1, 1)).TotalMicroseconds}", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle});
+        //var page = pw.Page; 
         await page.Keyboard.PressAsync("Escape");
         await page.Keyboard.PressAsync("Escape");
 
@@ -377,6 +378,8 @@ public class Assist : AssistBase
                         using var zip = ZipFile.OpenRead(file.FullName);
                         foreach (var item in zip.Entries)
                         {
+                            if (string.IsNullOrWhiteSpace(item.Name) || item.Name.EndsWith("/")) continue;
+
                             using var fs = new FileStream(@$"files\qualification\{q.Id}\{item.Name}", FileMode.Create);
                             using var stream = item.Open();
                             stream.CopyTo(fs);

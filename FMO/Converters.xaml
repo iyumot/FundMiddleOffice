@@ -11,4 +11,5 @@
     <local:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
     <local:EnumIsOtherToVisibilityConverter x:Key="EnumIsOtherToVisibilityConverter" />
     <local:ZeroToBlankConverter x:Key="ZeroToBlankConverter" />
+    <local:LongTextToShortConverter x:Key="LongTextToShortConverter" />
 </ResourceDictionary>

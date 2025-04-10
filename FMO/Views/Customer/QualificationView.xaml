@@ -37,7 +37,11 @@
                             Stroke="Black" />
                     </Viewbox>
 
-                    <TextBlock Margin="5,2" Text="{Binding File.Name}" />
+                    <TextBlock
+                        MaxWidth="240"
+                        Margin="5,2"
+                        Padding="0"
+                        Text="{Binding File.Name, Converter={StaticResource LongTextToShortConverter}, ConverterParameter=20}" />
 
                     <Grid Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityReConverter}}">
                         <Button
