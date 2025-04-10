@@ -165,7 +165,7 @@ public class Assist : AssistBase
 
             // 获取已存在的
             var exist_ids = db.GetCollection<Investor>().FindAll().ToList();//.Where(x => data.Any(y => y.Item1.Identity == x.Identity)).ToArray();
-
+            var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
             //
             foreach (var item in data)
             {
@@ -201,6 +201,9 @@ public class Assist : AssistBase
                     old.RiskLevel = item.RiskLevel;
 
                     if (old.Type == default) old.Type = item.Type;
+                    if (item.Name == manager?.Name) old.Type = AmacInvestorType.Manager;
+                    
+                    
                     db.GetCollection<Investor>().Update(old);
                 }
             }

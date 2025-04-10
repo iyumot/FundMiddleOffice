@@ -498,6 +498,7 @@ public class ListItem
             RiskLevel = riskType switch { >= 5 => RiskLevel.R5, > 0 => (RiskLevel)riskType, _ => RiskLevel.Unk }
         };
 
+
         if (customerName!.Contains("私募"))
             v.Type = AmacInvestorType.PrivateFundProduct;
         else if (Regex.IsMatch(customerName, ".{2,}期货.*资产管理计划"))
@@ -506,6 +507,13 @@ public class ListItem
             v.Type = AmacInvestorType.SecuritiesCompanyAssetManagementPlan;
         else if (Regex.IsMatch(customerName, ".{2,}基金.*资产管理计划"))
             v.Type = AmacInvestorType.FundCompanyAssetManagementPlan;
+        else if (Regex.IsMatch(customerName, "有限公司"))
+            v.Type = AmacInvestorType.LegalEntity;
+        else if (Regex.IsMatch(customerName, "有限合伙"))
+            v.Type = AmacInvestorType.NonLegalEntity;
+
+        if (v.EntityType == EntityType.Natural)
+            v.Type = AmacInvestorType.NonEmployee;
 
         return v;
     }
