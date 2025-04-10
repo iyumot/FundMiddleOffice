@@ -33,8 +33,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
     public static EntityType[] EntityTypes { get; } = [Models.EntityType.Natural, Models.EntityType.Institution, Models.EntityType.Product,];
 
-
-
+     
     public ChangeableViewModel<Investor, string> Name { get; } 
 
     public ChangeableViewModel<Investor, EntityType> EntityType { get; } = new() { InitFunc = x => x.EntityType, UpdateFunc = (x, y) => x.EntityType = y, ClearFunc = x => x.EntityType = Models.EntityType.Unk, Label = "客户类型" };
