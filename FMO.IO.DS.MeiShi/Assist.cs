@@ -83,6 +83,8 @@ public class Assist : AssistBase
     {
         var m = Regex.Match(page.Url, @"ascription=([\w%]+)");
         if (m.Success) token = m.Groups[1].Value;
+
+        IsLogedIn = true;
         return base.EndLoginAsync(page);
     }
 

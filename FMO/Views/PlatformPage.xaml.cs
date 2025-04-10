@@ -10,7 +10,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -229,30 +228,29 @@ public partial class PlatformPageViewModelDigital : ObservableRecipient//, IReci
         NeedLogin = !IsLogin;
         //if (IsEnabled) Task.Run(async () => { await Task.Delay(2000); StartWork(); });
 
-
-        Task.Run(async () =>
-        {
-            try
+        if (IsEnabled)
+            Task.Run(async () =>
             {
+                try
+                {
 
-                using var page = await Automation.AcquirePage(assist.Identifier);
-                //var page = pw.Page;
+                    using var page = await Automation.AcquirePage(assist.Identifier);
+                    //var page = pw.Page;
 
-                await assist.PrepareLoginAsync(page);
+                    await assist.PrepareLoginAsync(page);
 
-                IsLogin = await assist.LoginValidationAsync(page);
+                    IsLogin = await assist.LoginValidationAsync(page);
 
-                if (IsLogin)
-                    await assist.EndLoginAsync(page);
+                    if (IsLogin)
+                        await assist.EndLoginAsync(page);
 
-            }
-            catch (Exception e)
-            {
-                HandyControl.Controls.Growl.Error($"初始化登录{assist.Name}失败");
-            }
-            IsInitialized = true;
-        });
-
+                }
+                catch (Exception e)
+                {
+                    HandyControl.Controls.Growl.Error($"初始化登录{assist.Name}失败");
+                }
+                IsInitialized = true;
+            });
     }
 
 
@@ -280,7 +278,7 @@ public partial class PlatformPageViewModelDigital : ObservableRecipient//, IReci
         SyncCommandCanExecute = false;
 
         btn.IsRunning = true;
-        try { await btn.SyncProcess(); } catch (Exception ex) { }
+        try { await btn.SyncProcess(); IsLogin = Assist.IsLogedIn; } catch (Exception ex) { }
         btn.IsRunning = false;
 
         SyncCommandCanExecute = true;
@@ -299,13 +297,41 @@ public partial class PlatformPageViewModelDigital : ObservableRecipient//, IReci
     }
 
 
+    partial void OnIsEnabledChanged(bool value)
+    {
+        if (!value) return;
+
+        Task.Run(async () =>
+        {
+            var assist = Assist;
+            try
+            {
+                using var page = await Automation.AcquirePage(assist.Identifier);
+                //var page = pw.Page;
+
+                await assist.PrepareLoginAsync(page);
+
+                IsLogin = await assist.LoginValidationAsync(page);
+
+                if (IsLogin)
+                    await assist.EndLoginAsync(page);
+
+            }
+            catch (Exception e)
+            {
+                HandyControl.Controls.Growl.Error($"初始化登录{assist.Name}失败");
+            }
+            IsInitialized = true;
+        });
+    }
+
     [RelayCommand]
     public void SaveAccount()
     {
         Assist.UserID = UserId;
         Assist.Password = Password;
         using var db = DbHelper.Platform();
-        db.GetCollection<PlatformAccount>().Upsert(new PlatformAccount { Id=Assist.Identifier, UserId = UserId, Password = Password });
+        db.GetCollection<PlatformAccount>().Upsert(new PlatformAccount { Id = Assist.Identifier, UserId = UserId, Password = Password });
     }
 
 }
@@ -340,7 +366,29 @@ public partial class PlatformPageViewModelTrustee : ObservableRecipient, IRecipi
         NeedLogin = !IsLogin;
         if (IsEnabled) Task.Run(async () => { await Task.Delay(2000); StartWork(); });
 
+        if (IsEnabled)
+            Task.Run(async () =>
+            {
+                try
+                {
 
+                    using var page = await Automation.AcquirePage(assist.Identifier);
+                    //var page = pw.Page;
+
+                    await assist.PrepareLoginAsync(page);
+
+                    IsLogin = await assist.LoginValidationAsync(page);
+
+                    if (IsLogin)
+                        await assist.EndLoginAsync(page);
+
+                }
+                catch (Exception e)
+                {
+                    HandyControl.Controls.Growl.Error($"初始化登录{assist.Name}失败");
+                }
+                IsInitialized = true;
+            });
     }
 
     /// <summary>
@@ -367,6 +415,24 @@ public partial class PlatformPageViewModelTrustee : ObservableRecipient, IRecipi
     /// 同步项
     /// </summary>
     public SyncButtonData[] Buttons { get; set; }
+
+
+    [ObservableProperty]
+    public partial bool IsInitialized { get; set; }
+
+
+
+    [ObservableProperty]
+    public partial bool ShowAccount { get; set; }
+
+    [ObservableProperty]
+    public partial string? UserId { get; set; }
+
+
+    [ObservableProperty]
+    public partial string? Password { get; set; }
+
+
 
     /// <summary>
     /// 是否启用
@@ -408,21 +474,26 @@ public partial class PlatformPageViewModelTrustee : ObservableRecipient, IRecipi
     /// <exception cref="NotImplementedException"></exception>
     private async void StartWork()
     {
-        //if (IsEnabled && !await Assist.LoginAsync())
-        //{
-        //    IsLogin = false;
-        //    return;
-        //}
 
-        //IsLogin = true;
-        //HandyControl.Controls.Growl.Success($"托管平台【{Assist.Name}】登陆成功");
+        var assist = Assist;
+        try
+        {
+            using var page = await Automation.AcquirePage(assist.Identifier);
+            //var page = pw.Page;
 
+            await assist.PrepareLoginAsync(page);
 
-        /// 同步募集户流水
-        //Task.Run(() =>
-        //{
+            IsLogin = await assist.LoginValidationAsync(page);
 
-        //});
+            if (IsLogin)
+                await assist.EndLoginAsync(page);
+
+        }
+        catch (Exception e)
+        {
+            HandyControl.Controls.Growl.Error($"初始化登录{assist.Name}失败");
+        }
+        IsInitialized = true;
 
 
 
@@ -459,7 +530,7 @@ public partial class PlatformPageViewModelTrustee : ObservableRecipient, IRecipi
     {
         await Assist.SynchronizeTransferRequestAsync();
 
-        await Assist.SynchronizeTransferRecordAsync(); 
+        await Assist.SynchronizeTransferRecordAsync();
 
         await Assist.SynchronizeDistributionAsync();
     }
@@ -494,6 +565,15 @@ public partial class PlatformPageViewModelTrustee : ObservableRecipient, IRecipi
 
 
 
+
+    [RelayCommand]
+    public void SaveAccount()
+    {
+        Assist.UserID = UserId;
+        Assist.Password = Password;
+        using var db = DbHelper.Platform();
+        db.GetCollection<PlatformAccount>().Upsert(new PlatformAccount { Id = Assist.Identifier, UserId = UserId, Password = Password });
+    }
 
 
     public void Receive(string message)
