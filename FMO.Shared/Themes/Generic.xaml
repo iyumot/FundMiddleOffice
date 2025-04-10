@@ -68,6 +68,7 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="local:ChangeableContainer">
                             <DockPanel
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                 Background="Transparent"
                                 LastChildFill="True">
