@@ -351,7 +351,7 @@
                             Style="{StaticResource ListBoxCustom}" />
                     </StackPanel>
 
-                    <DockPanel DockPanel.Dock="Top" LastChildFill="False">
+                    <!--<DockPanel DockPanel.Dock="Top" LastChildFill="False">
                         <TextBlock
                             Margin="0,0,10,0"
                             VerticalAlignment="Center"
@@ -437,7 +437,7 @@
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
-                    </DockPanel>
+                    </DockPanel>-->
 
                     <TextBlock />
                 </DockPanel>
@@ -563,7 +563,7 @@
                     </StackPanel>
 
 
-                    <DockPanel
+                    <!--<DockPanel
                         DockPanel.Dock="Top"
                         LastChildFill="False"
                         Visibility="{Binding ModifyShareClass, Converter={StaticResource Boolean2VisibilityConverter}}">
@@ -652,7 +652,7 @@
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
-                    </DockPanel>
+                    </DockPanel>-->
 
                     <TextBlock />
                 </DockPanel>
