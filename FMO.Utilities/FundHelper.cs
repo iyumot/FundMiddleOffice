@@ -56,8 +56,8 @@ public static class FundHelper
 
         /// 生成行、列头
         List<DateOnly> dates = new List<DateOnly>();
-        var idname = data.Select(x => (x.Id, x.CustomerName)).DistinctBy(x => x.Id);
-        var ids = idname.Select(x => x.Id).ToList();
+        var idname = data.Select(x => (x.CustomerId, x.CustomerName)).DistinctBy(x => x.CustomerId);
+        var ids = idname.Select(x => x.CustomerId).ToList();
         var names = idname.Select(x => x.CustomerName).ToList();
 
         var date = begin;

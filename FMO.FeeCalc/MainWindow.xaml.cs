@@ -6,6 +6,7 @@ using FMO.Models;
 using FMO.Utilities;
 using LiteDB;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Windows;
@@ -116,7 +117,7 @@ public partial class MainWindowViewModel : ObservableObject
         Funds = db.GetCollection<Fund>().FindAll().Where(x => x.Status <= FundStatus.StartLiquidation || Begin switch { DateTime d => x.ClearDate > DateOnly.FromDateTime(d), _ => true }).Select(x => new FundInfo { Fund = x }).ToArray();
 
         foreach (var f in Funds)
-            f.PropertyChanged += (s, e) => Application.Current.Dispatcher.BeginInvoke(()=> CalcCommand.NotifyCanExecuteChanged());// OnPropertyChanged(nameof(CanCalc));
+            f.PropertyChanged += (s, e) => Application.Current.Dispatcher.BeginInvoke(() => CalcCommand.NotifyCanExecuteChanged());// OnPropertyChanged(nameof(CanCalc));
 
     }
 
@@ -194,8 +195,6 @@ public partial class MainWindowViewModel : ObservableObject
                 await Calc(f!, dates);
             });
 
-
-            await Task.Delay(10000);
             IsWorking = false;
         });
 
@@ -209,7 +208,7 @@ public partial class MainWindowViewModel : ObservableObject
             using var db = new LiteDatabase(@"FileName=data\feecalc.db;Connection=Shared");
             var begin = dates[0];
             var end = dates[^1];
-            var fees = db.GetCollection<ManageFeeDetail>($"f{f.Fund.Id}").Find(x => x.Date >= begin && x.Date <= end).OrderBy(x=>x.Date).ToList();
+            var fees = db.GetCollection<ManageFeeDetail>($"f{f.Fund.Id}").Find(x => x.Date >= begin && x.Date <= end).OrderBy(x => x.Date).ToList();
             var fdate = fees.Select(x => x.Date).ToArray();
 
             // 核验日期
@@ -276,27 +275,149 @@ public partial class MainWindowViewModel : ObservableObject
 
     private void Calc(FundInfo f, List<ManageFeeDetail> fees, List<DateOnly> dates)
     {
-        var (dd, ids, names, array)  = FundHelper.GenerateShareSheet(f.Fund.Id, dates[0], dates[^1]);
-
-
-        using (var workbook = new XLWorkbook())
+        try
         {
-            var sheet = workbook.Worksheets.Add("份额明细表");
+            var (dd, ids, names, array) = FundHelper.GenerateShareSheet(f.Fund.Id, dates[0], dates[^1]);
 
-            // 客户名
-            for (int i = 0; i < ids.Count; i++) 
-                sheet.Cell(1, i + 2).Value = names[i]; 
-
-            for (var i = 0;i < dd.Count; i++)
+            int joff = 5;
+            using (var workbook = new XLWorkbook())
             {
-                sheet.Cell(2 + i, 1).Value = dd[i].ToString("yyyy-MM-dd");
+                var sheet = workbook.Worksheets.Add("每日明细表");
+
+                sheet.Cell(1, 1).Value = "日期";
+                sheet.Cell(1, 2).Value = "每日管理费";
+                sheet.Cell(1, 3).Value = "上日总份额";
+                // 客户名
+                for (int i = 0; i < ids.Count; i++)
+                    sheet.Cell(1, i + joff).Value = names[i];
+
+                for (var i = 0; i < dd.Count; i++)
+                {
+                    sheet.Cell(2 + i, 1).Value = dd[i].ToString("yyyy-MM-dd");
+
+                    // 费用和份额
+                    sheet.Cell(i + 2, 2).Value = fees[i].Fee;
+                    if (i > 0)
+                        sheet.Cell(i + 2, 3).Value = fees[i - 1].Share;
+
+                    // 客户每日份额
+                    for (var j = 0; j < ids.Count; j++)
+                        sheet.Cell(i + 2, j + joff).Value = array[i, j];
+
+                    sheet.Cell(i + 2, 4).FormulaR1C1 = $"=sum(R{i + 2}C{joff}:R{i + 2}C{ids.Count + joff - 1})";
+                }
+
+                // 设置格式 
+                // 设置整行单元格为居中对齐
+                // 设置整行单元格自动换行
+                var row = sheet.Row(1);
+                row.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                row.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                row.Style.Alignment.WrapText = true;
+
+                sheet.Column(1).Width = 14;
+                sheet.Column(2).Width = 12;
+                sheet.Column(3).Width = 14;
+                sheet.Column(4).Width = 14;
+
+
+                //表2 
+                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                sheet = workbook.AddWorksheet("费用明细表", 0);
+                sheet.Cell(1, 1).Value = "日期";
+                sheet.Cell(1, 2).Value = "每日管理费";
+
+                // 客户名
+                for (int i = 0; i < ids.Count; i++)
+                    sheet.Cell(1, i + joff).Value = names[i];
+
+                for (var i = 0; i < dd.Count; i++)
+                {
+                    sheet.Cell(2 + i, 1).Value = dd[i].ToString("yyyy-MM-dd");
+
+                    // 费用 
+                    sheet.Cell(i + 2, 2).Value = fees[i].Fee;
+
+                    // 客户每日费用
+                    for (var j = 0; j < ids.Count; j++)
+                        sheet.Cell(i + 2, j + joff).FormulaR1C1 = $"=R{i + 2}C2 * (每日明细表!R{i + 2}C{j + joff}/每日明细表!R{i + 2}C4)";
+
+                }
+
+                //sum
+                sheet.Cell(dates.Count + 2, 1).Value = "汇总";
+                sheet.Cell(dates.Count + 2, 2).FormulaR1C1 = $"SUM(R2C2:R{dates.Count + 1}C2)";
+                sheet.Row(dates.Count + 2).Height = 12;
 
                 for (var j = 0; j < ids.Count; j++)
-                    sheet.Cell(i + 2, j + 2).Value = array[i, j];
-            } 
+                    sheet.Cell(dates.Count + 2, j + joff).FormulaR1C1 = $"SUM(R2C{j + joff}:R{dates.Count + 1}C{j + joff})";
+                sheet.Row(dates.Count + 2).Style.Fill.BackgroundColor = XLColor.LightGray;
 
-            string path = $"files/fee/{f.Fund.ShortName}_{dates[0]:yyyy.MM.dd}-{dates[^1]:yyyy.MM.dd}.xlsx";
-            workbook.SaveAs(path);
+                // 数字格式
+                sheet.Range(2, joff, dates.Count + 2, ids.Count + joff).Style.NumberFormat.Format = "#,##0.00;-#,##0.00;";
+                // 设置格式 
+                // 设置整行单元格为居中对齐
+                // 设置整行单元格自动换行
+                row = sheet.Row(1);
+                row.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                row.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                row.Style.Alignment.WrapText = true;
+
+                sheet.Column(1).Width = 14;
+                sheet.Column(2).Width = 12;
+                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                ///表3
+
+                var sheet3 = workbook.AddWorksheet("分成表", 0);
+                sheet3.Cell(2, 1).Value = "管理费";
+                sheet3.Cell(2, 1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                sheet3.Cell(1, 2).Value = "投资人";
+                sheet3.Cell(1, 3).Value = "费用";
+                int ar = 2;
+                for (int j = 0; j < ids.Count; j++)
+                {
+                    if (sheet.Cell(dates.Count + 2, j + joff).Value.GetNumber() == 0) continue;
+
+                    // 客户
+                    sheet3.Cell(ar, 2).Value = sheet.Cell(1, j + joff).Value;
+                    // 
+                    sheet3.Cell(ar, 3).FormulaR1C1 = $"费用明细表!R{dates.Count + 2}C{j + joff}";
+
+                    ++ar;
+                }
+
+                sheet3.Range(2, 1, --ar, 1).Merge();
+                sheet3.Range(2, 1, ar, 1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                sheet3.Range(2, 1, ar, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                sheet3.Column(2).Width = 40;
+                sheet3.Column(3).Width = 20;
+                sheet3.Column(3).Style.NumberFormat.Format = "0.00";
+
+                // 写入业绩报酬 
+                using var db = DbHelper.Base();
+                var per = db.GetCollection<TransferRecord>().Find(x => x.FundId == f.Fund.Id && x.PerformanceFee > 0).Where(x => x.ConfirmedDate >= dd[0]).ToArray();
+                for (int i = 0; i < per.Length; i++)
+                {
+                    sheet3.Cell(ar + i + 3, 2).Value = $"{per[i].CustomerName} {per[i].ConfirmedDate.ToString("yyyy-MM-dd")} {EnumDescriptionTypeConverter.GetEnumDescription(per[i].Type)}";
+                    sheet3.Cell(ar + i + 3, 3).Value = per[i].PerformanceFee;
+                }
+                sheet3.Cell(ar + 3, 1).Value = "业绩报酬";
+                sheet3.Range(ar + 3, 1, ar + per.Length + 3, 1).Merge();
+                sheet3.Range(ar + 3, 1, ar + per.Length + 3, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                sheet3.Range(ar + 3, 1, ar + per.Length + 3, 1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+                //汇总
+                sheet3.Cell(ar + per.Length + 3, 2).Value = "汇总";
+                sheet3.Cell(ar + per.Length + 3, 3).FormulaR1C1 = $"SUM(R{ar + 3}C{3}:R{ar + per.Length + 2}C{3})";
+
+
+                string path = $"files/fee/{f.Fund.ShortName}_{dates[0]:yyyy.MM.dd}-{dates[^1]:yyyy.MM.dd}.xlsx";
+                workbook.SaveAs(path);
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e.Message);
         }
 
     }
