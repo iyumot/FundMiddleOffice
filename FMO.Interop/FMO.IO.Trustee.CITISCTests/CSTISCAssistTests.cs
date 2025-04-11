@@ -21,7 +21,17 @@ namespace FMO.IO.Trustee.Tests
             await assist.SynchronizeTransferRequestAsync();
             //await assist.SynchronizeTransferRecordAsync();
             //await assist.SynchronizeDistributionAsync();
-           // Assert.Fail();
+            // Assert.Fail();
+        }
+
+        [TestMethod()]
+        public void SynchronizeTransferRequestAsyncTest1()
+        {
+
+            
+
+
+            Assert.Fail();
         }
     }
 }
