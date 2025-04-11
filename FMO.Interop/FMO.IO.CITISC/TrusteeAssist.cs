@@ -526,12 +526,7 @@ public class CSTISCAssist : TrusteeAssistBase
         int fid = 291;
         using var page = await Automation.AcquirePage(Identifier);
         if (page.IsNew) await page.GotoAsync(Domain);
-
-        if (!await LoginValidationAsync(page, 5))
-        {
-            IsLogedIn = false;
-            return false;
-        }
+         
 
         await page.GotoAsync($"https://iservice.citics.com/iservice/zcdj/jyqrcx?refresh={DateTime.Now.TimeStampBySeconds()}");
 
@@ -667,12 +662,7 @@ public class CSTISCAssist : TrusteeAssistBase
         using var page = await Automation.AcquirePage(Identifier);
         if (page.IsNew) await page.GotoAsync(Domain);
 
-        if (!await LoginValidationAsync(page, 5))
-        {
-            IsLogedIn = false;
-            return false;
-        }
-
+ 
         // 网址https://iservice.citics.com/iservice/zcdj/jyqrcx?refresh=1744077069249
         await page.GotoAsync($"https://iservice.citics.com/iservice/zcdj/jyqrcx?refresh={DateTime.Now.TimeStampBySeconds()}");
 
