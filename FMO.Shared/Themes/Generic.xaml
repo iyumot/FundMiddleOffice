@@ -81,7 +81,7 @@
 
 
                                 <local:CopyableControl Margin="10,0,0,0">
-                                    <TextBlock Text="{Binding Binding.Display, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+                                    <TextBlock Text="{Binding Binding.Display, RelativeSource={RelativeSource Mode=TemplatedParent}}" TextWrapping="WrapWithOverflow" />
                                 </local:CopyableControl>
 
                             </DockPanel>

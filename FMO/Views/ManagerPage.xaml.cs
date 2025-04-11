@@ -1,9 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
+using FMO.Shared;
 using FMO.Utilities;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -32,96 +32,8 @@ public partial class ManagerPage : UserControl
     }
 }
 
-public interface IDatabaseUpdater
-{
-    void Update();
-}
 
-
-
-
-public partial class ReadOnlyDataItem<T> : ObservableObject
-{
-    public required string Label { get; set; }
-
-
-    [ObservableProperty]
-    //[NotifyPropertyChangedFor("IsChanged")]
-    public partial T? NewValue { get; set; }
-
-
-    public string? Format { get; set; }
-
-}
-
-
-public abstract partial class DataItem<T, TEntity> : ReadOnlyDataItem<T>
-{
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsChanged))]
-    public partial T? OldValue { get; set; }
-
-    public bool IsChanged => NewValue is not null && (NewValue is string s ? !string.IsNullOrWhiteSpace(s) : true) && !NewValue.Equals(OldValue);
-
-    public required Action<T?, TEntity> Updater { get; set; }
-
-    public abstract void Update();
-
-
-    protected override void OnPropertyChanged(PropertyChangedEventArgs e)
-    {
-        base.OnPropertyChanged(e);
-
-        if (e.PropertyName == nameof(NewValue))
-            OnPropertyChanged(nameof(IsChanged));
-    }
-}
-
-public partial class ManagerDataItem<T> : DataItem<T, Manager>, IDatabaseUpdater
-{
-
-    public override void Update()
-    {
-        using var db = DbHelper.Base();
-        var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
-        Updater(NewValue, manager);
-        db.GetCollection<Manager>().Update(manager);
-        OldValue = NewValue;
-    }
-}
-
-public partial class ManagerDateExItem : DataItem<DateOnly?, Manager>, IDatabaseUpdater
-{
-
-    /// <summary>
-    /// 无固定期限
-    /// </summary>
-    [ObservableProperty]
-    public partial bool? IsLongTerm { get; set; }
-
-    public override void Update()
-    {
-        using var db = DbHelper.Base();
-        var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
-        if (IsLongTerm ?? false)
-            Updater(DateOnly.MaxValue, manager);
-        else
-            Updater(NewValue, manager);
-        db.GetCollection<Manager>().Update(manager);
-        OldValue = NewValue;
-    }
-
-
-    partial void OnIsLongTermChanged(bool? oldValue, bool? newValue)
-    {
-        if (oldValue is not null)
-            Update();
-    }
-}
-
-
-
-public partial class ManagerPageViewModel : ObservableObject
+public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager>
 {
     private int FilesId;
 
@@ -129,90 +41,74 @@ public partial class ManagerPageViewModel : ObservableObject
 
     /// <summary>
     /// 管理人名称
-    /// </summary>
-    [ObservableProperty]
-    public partial ManagerDataItem<string> ManagerName { get; set; }
+    /// </summary>  
+    public ChangeableViewModel<Manager, string> ManagerName { get; }
 
     /// <summary>
     /// 实控人
     /// </summary>
-    [ObservableProperty]
-    public partial ManagerDataItem<string> ArtificialPerson { get; set; }
+    public ChangeableViewModel<Manager, string> ArtificialPerson { get; }
 
 
-    public ReadOnlyDataItem<string> RegisterNo { get; set; }
+    public ChangeableViewModel<Manager, string> RegisterNo { get; }
 
     /// <summary>
     /// 注册资本
     /// </summary>
-    [ObservableProperty]
-    public partial ManagerDataItem<decimal> RegisterCapital { get; set; }
+    public ChangeableViewModel<Manager, decimal?> RegisterCapital { get; }
 
     /// <summary>
     /// 实缴
     /// </summary>
-    [ObservableProperty]
-    public partial ManagerDataItem<decimal?> RealCapital { get; set; }
+    public ChangeableViewModel<Manager, decimal?> RealCapital { get; }
 
+    public ChangeableViewModel<Manager, DateTime?> SetupDate { get; }
 
-    [ObservableProperty]
-    public partial ManagerDataItem<DateOnly> SetupDate { get; set; }
-
-    [ObservableProperty]
-    public partial ManagerDateExItem ExpireDate { get; set; }
+    public ChangeableViewModel<Manager, BooleanDate?> ExpireDate { get; }
 
 
 
-
-    [ObservableProperty]
-    public partial ManagerDataItem<DateOnly> RegisterDate { get; set; }
+    public ChangeableViewModel<Manager, DateTime?> RegisterDate { get; }
 
 
     /// <summary>
     /// 电话
-    /// </summary>
-    [ObservableProperty]
-    public partial ManagerDataItem<string> Telephone { get; set; }
+    /// </summary> 
+    public ChangeableViewModel<Manager, string> Telephone { get; }
 
     /// <summary>
     /// 传真
-    /// </summary>
-    [ObservableProperty]
-    public partial ManagerDataItem<string> Fax { get; set; }
+    /// </summary> 
+    public ChangeableViewModel<Manager, string> Fax { get; }
 
     /// <summary>
     /// 统一信用代码
-    /// </summary> 
-    [ObservableProperty]
-    public partial ReadOnlyDataItem<string> InstitutionCode { get; set; }
+    /// </summary>  
+    public ChangeableViewModel<Manager, string> InstitutionCode { get; }
 
     /// <summary>
     /// 注册地址
-    /// </summary>
-    [ObservableProperty]
-    public partial ReadOnlyDataItem<string> RegisterAddress { get; set; }
+    /// </summary> 
+    public ChangeableViewModel<Manager, string> RegisterAddress { get; }
 
 
 
     /// <summary>
     /// 办公地址
-    /// </summary>
-    [ObservableProperty]
-    public partial ManagerDataItem<string?> OfficeAddress { get; set; }
+    /// </summary> 
+    public ChangeableViewModel<Manager, string> OfficeAddress { get; }
 
 
     /// <summary>
     /// 经营范围
-    /// </summary>
-    [ObservableProperty]
-    public partial ManagerDataItem<string> BusinessScope { get; set; }
+    /// </summary> 
+    public ChangeableViewModel<Manager, string> BusinessScope { get; }
 
 
     /// <summary>
     /// 官网
-    /// </summary>
-    [ObservableProperty]
-    public partial ManagerDataItem<string> WebSite { get; set; }
+    /// </summary> 
+    public ChangeableViewModel<Manager, string> WebSite { get; }
 
     [ObservableProperty]
     public partial ImageSource? MainLogo { get; set; }
@@ -252,8 +148,6 @@ public partial class ManagerPageViewModel : ObservableObject
 
 
 
-    [ObservableProperty]
-    public partial bool IsReadOnly { get; set; } = true;
 
 
     public ManagerPageViewModel()
@@ -285,32 +179,157 @@ public partial class ManagerPageViewModel : ObservableObject
 
         AmacPageUrl = $"https://gs.amac.org.cn/amac-infodisc/res/pof/manager/{manager.AmacId}.html";
 
-        ManagerName = new ManagerDataItem<string> { Label = "管理人", OldValue = manager.Name, NewValue = manager.Name, Updater = (a, b) => b.Name = a! };
+        ManagerName = new ChangeableViewModel<Manager, string>
+        {
+            Label = "管理人",
+            InitFunc = x => x.Name,
+            UpdateFunc = (x, y) => x.Name = y ?? "",
+            ClearFunc = x => x.Name = string.Empty,
+        };
+        ManagerName.Init(manager);
 
-        ArtificialPerson = new ManagerDataItem<string> { Label = "实控人", OldValue = manager.ArtificialPerson, NewValue = manager.ArtificialPerson, Updater = (a, b) => b.ArtificialPerson = a! };
+        ArtificialPerson = new ChangeableViewModel<Manager, string>
+        {
+            Label = "实控人",
+            InitFunc = x => x.ArtificialPerson,
+            UpdateFunc = (x, y) => x.ArtificialPerson = y,
+            ClearFunc = x => x.ArtificialPerson = null,
+        };
+        ArtificialPerson.Init(manager);
 
-        RegisterNo = new ReadOnlyDataItem<string> { Label = "编码", NewValue = manager.RegisterNo };//new ManagerDataItem<string> { Label = "实控人", OldValue = manager.RegisterNo, NewValue = manager.RegisterNo, Updater = (a, b) => b.RegisterNo = a! };
+
+        RegisterNo = new ChangeableViewModel<Manager, string>
+        {
+            Label = "编码",
+            InitFunc = x => x.RegisterNo,
+            UpdateFunc = (x, y) => throw new Exception(),
+            ClearFunc = x => throw new Exception(),
+        };
+        RegisterNo.Init(manager);
+
+
+        RegisterCapital = new ChangeableViewModel<Manager, decimal?>
+        {
+            Label = "注册资本",
+            InitFunc = x => x.RegisterCapital,
+            UpdateFunc = (x, y) => x.RegisterCapital = y ?? 0,
+            ClearFunc = x => x.RegisterCapital = 0,
+            DisplayFunc = x => $"{x}万元"
+        };
+        RegisterCapital.Init(manager);
+
+        RealCapital = new ChangeableViewModel<Manager, decimal?>
+        {
+            Label = "实缴资本",
+            InitFunc = x => x.RealCapital,
+            UpdateFunc = (x, y) => x.RealCapital = y ?? 0,
+            ClearFunc = x => x.RealCapital = 0,
+            DisplayFunc = x => $"{x}万元"
+        };
+        RealCapital.Init(manager);
+
+        SetupDate = new ChangeableViewModel<Manager, DateTime?>
+        {
+            Label = "成立日期",
+            InitFunc = x => new DateTime(x.SetupDate, default),
+            UpdateFunc = (x, y) => x.SetupDate = y is null ? default : DateOnly.FromDateTime(y.Value),
+            ClearFunc = x => x.SetupDate = default,
+            DisplayFunc = x => x?.ToString("yyyy-MM-dd")
+        };
+        SetupDate.Init(manager);
+
+
+        ExpireDate = new ChangeableViewModel<Manager, BooleanDate?>
+        {
+            Label = "核销日期",
+            InitFunc = x => new BooleanDate { IsLongTerm = x.ExpireDate == DateOnly.MaxValue, Date = x.ExpireDate == default || x.ExpireDate == DateOnly.MaxValue ? null : new DateTime(x.ExpireDate, default) },
+            UpdateFunc = (x, y) => x.ExpireDate = y is null || y.Date is null ? default : (y.IsLongTerm ? DateOnly.MaxValue : DateOnly.FromDateTime(y.Date.Value)),
+            ClearFunc = x => x.ExpireDate = default,
+            DisplayFunc = x => x.IsLongTerm ? "长期" : x?.Date?.ToString("yyyy-MM-dd")
+        };
+        ExpireDate.Init(manager);
+
+        RegisterDate = new ChangeableViewModel<Manager, DateTime?>
+        {
+            Label = "登记日期",
+            InitFunc = x => new DateTime(x.RegisterDate, default),
+            UpdateFunc = (x, y) => x.RegisterDate = y is null ? default : DateOnly.FromDateTime(y.Value),
+            ClearFunc = x => x.RegisterDate = default,
+            DisplayFunc = x => x?.ToString("yyyy-MM-dd")
+        };
+        RegisterDate.Init(manager);
+
+
+        Telephone = new ChangeableViewModel<Manager, string>
+        {
+            Label = "固定电话",
+            InitFunc = x => x.Telephone,
+            UpdateFunc = (x, y) => x.Telephone = y,
+            ClearFunc = x => x.Telephone = null,
+        };
+        Telephone.Init(manager);
+
+        Fax = new ChangeableViewModel<Manager, string>
+        {
+            Label = "传真",
+            InitFunc = x => x.Fax,
+            UpdateFunc = (x, y) => x.Fax = y,
+            ClearFunc = x => x.Fax = null,
+        };
+        Fax.Init(manager);
 
 
 
-        RegisterCapital = new ManagerDataItem<decimal> { Label = "注册资本", OldValue = manager.RegisterCapital, NewValue = manager.RegisterCapital, Format = "{0}万元", Updater = (a, b) => b.RegisterCapital = a! };
-        RealCapital = new ManagerDataItem<decimal?> { Label = "实缴资本", OldValue = manager.RealCapital, NewValue = manager.RealCapital, Format = "{0}万元", Updater = (a, b) => b.RegisterCapital = a ?? default };
+        InstitutionCode = new ChangeableViewModel<Manager, string>
+        {
+            Label = "统一信用代码",
+            InitFunc = x => x.Id,
+            UpdateFunc = (x, y) => throw new Exception(),
+            ClearFunc = x => throw new Exception(),
+        };
+        InstitutionCode.Init(manager);
 
 
-        SetupDate = new ManagerDataItem<DateOnly> { Label = "成立日期", OldValue = manager.SetupDate, NewValue = manager.SetupDate, Format = "yyyy-MM-dd", Updater = (a, b) => b.SetupDate = a };
-        DateOnly? ed = manager.ExpireDate == default || manager.ExpireDate == DateOnly.MaxValue ? null : manager.ExpireDate;
-        ExpireDate = new ManagerDateExItem { Label = "核销日期", OldValue = ed, NewValue = ed, IsLongTerm = manager.ExpireDate == DateOnly.MaxValue, Format = "yyyy-MM-dd", Updater = (a, b) => b.ExpireDate = a ?? default };
-        RegisterDate = new ManagerDataItem<DateOnly> { Label = "登记日期", OldValue = manager.RegisterDate, NewValue = manager.RegisterDate, Format = "yyyy-MM-dd", Updater = (a, b) => b.RegisterDate = a };
 
-        Telephone = new ManagerDataItem<string> { Label = "固定电话", OldValue = manager.Telephone, NewValue = manager.Telephone, Updater = (a, b) => b.Telephone = a };
-        Fax = new ManagerDataItem<string> { Label = "传真", OldValue = manager.Fax, NewValue = manager.Fax, Updater = (a, b) => b.Fax = a };
+        RegisterAddress = new ChangeableViewModel<Manager, string>
+        {
+            Label = "注册地址",
+            InitFunc = x => x.RegisterAddress,
+            UpdateFunc = (x, y) => x.RegisterAddress = y,
+            ClearFunc = x => x.RegisterAddress = null,
+        };
+        RegisterAddress.Init(manager);
 
-        InstitutionCode = new ReadOnlyDataItem<string> { Label = "统一信用代码", NewValue = manager.Id, };
-        RegisterAddress = new ReadOnlyDataItem<string> { Label = "注册地址", NewValue = manager.RegisterAddress, };
-        OfficeAddress = new ManagerDataItem<string?> { Label = "办公地址", OldValue = manager.OfficeAddress, NewValue = manager.OfficeAddress, Updater = (a, b) => b.OfficeAddress = a };
-        BusinessScope = new ManagerDataItem<string> { Label = "经营范围", OldValue = manager.BusinessScope, NewValue = manager.BusinessScope, Updater = (a, b) => b.BusinessScope = a };
 
-        WebSite = new ManagerDataItem<string> { Label = "官网", OldValue = manager.WebSite, NewValue = manager.WebSite, Updater = (a, b) => b.WebSite = a };
+
+        OfficeAddress = new ChangeableViewModel<Manager, string>
+        {
+            Label = "办公地址",
+            InitFunc = x => x.OfficeAddress,
+            UpdateFunc = (x, y) => x.OfficeAddress = y,
+            ClearFunc = x => x.OfficeAddress = null,
+        };
+        OfficeAddress.Init(manager);
+
+
+
+        BusinessScope = new ChangeableViewModel<Manager, string>
+        {
+            Label = "经营范围",
+            InitFunc = x => x.BusinessScope,
+            UpdateFunc = (x, y) => x.BusinessScope = y,
+            ClearFunc = x => x.BusinessScope = null,
+        };
+        BusinessScope.Init(manager);
+
+        WebSite = new ChangeableViewModel<Manager, string>
+        {
+            Label = "官网",
+            InitFunc = x => x.WebSite,
+            UpdateFunc = (x, y) => x.WebSite = y,
+            ClearFunc = x => x.WebSite = null,
+        };
+        WebSite.Init(manager);
 
 
 
@@ -334,17 +353,16 @@ public partial class ManagerPageViewModel : ObservableObject
     }
 
 
-    [RelayCommand]
-    public void UpdateManagerInfo(IDatabaseUpdater dataItem)
+    public override Manager EntityOverride(LiteDB.ILiteDatabase db)
     {
-        dataItem.Update();
+        return db.GetCollection<Manager>().FindOne(x => x.IsMaster);
     }
 
     [RelayCommand]
-    public void OpenLink(ManagerDataItem<string> obj)
+    public void OpenLink()
     {
-        if (!string.IsNullOrWhiteSpace(obj.NewValue))
-            try { Process.Start(new ProcessStartInfo(obj.NewValue) { UseShellExecute = true }); } catch { }
+        if (!string.IsNullOrWhiteSpace(WebSite.OldValue))
+            try { Process.Start(new ProcessStartInfo(WebSite.OldValue) { UseShellExecute = true }); } catch { }
     }
 
     [RelayCommand]
@@ -579,6 +597,13 @@ public partial class ManagerPageViewModel : ObservableObject
 
             App.Current.MainWindow.Icon = MainLogo;
         }
+    }
+
+    protected override Manager InitNewEntity()
+    {
+        using var db = DbHelper.Base();
+        var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
+        return manager;
     }
     #endregion
 }

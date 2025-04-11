@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using FMO.Shared;
 using FMO.Utilities;
+using LiteDB;
 using System.Reflection;
 
 namespace FMO;
@@ -20,13 +21,18 @@ public abstract partial class EditableControlViewModelBase<T> : ChangeableEntity
         _debouncer = new Debouncer(() => NotifyChanged(), 500);
     }
 
+    public virtual T EntityOverride(ILiteDatabase db)
+    {
+        return db.GetCollection<T>().FindById(Id);
+    }
+
     protected override void DeleteOverride(IPropertyModifier unit)
     {
 
         if (unit is IEntityModifier<T> entity)
         {
             using var db = DbHelper.Base();
-            var v = db.GetCollection<T>().FindById(Id);
+            var v = EntityOverride(db);
 
             if (v is not null)
             {
@@ -57,11 +63,9 @@ public abstract partial class EditableControlViewModelBase<T> : ChangeableEntity
             else
             {
                 using var db = DbHelper.Base();
-                v = db.GetCollection<T>().FindById(Id);
+                v = EntityOverride(db);
                 if (v is null)
-                {
                     v = InitNewEntity();
-                }
             }
 
             property.UpdateEntity(v);

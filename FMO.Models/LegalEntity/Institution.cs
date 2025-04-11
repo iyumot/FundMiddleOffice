@@ -32,7 +32,7 @@ public class Institution : LegalEntity
     /// <summary>
     /// 注册地址
     /// </summary>
-    public string? RegisterAddress { get; init; }
+    public string? RegisterAddress { get; set; }
 
     /// <summary>
     /// 办公地址
