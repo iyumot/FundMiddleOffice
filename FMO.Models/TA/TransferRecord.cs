@@ -16,7 +16,6 @@ public class TransferRecord : IEquatable<TransferRecord>
 
     public string? FundCode { get; set; }
 
-    public string? ShareClass { get; set; }
 
     public string? ExternalId { get; set; }
 

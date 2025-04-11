@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FMO.Utilities\FMO.Utilities.csproj" />
+    <ProjectReference Include="..\..\FMO.Utilities\FMO.Utilities.csproj" />
   </ItemGroup>
 
 </Project>
