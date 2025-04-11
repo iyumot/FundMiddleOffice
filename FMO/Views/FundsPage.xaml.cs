@@ -1,12 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using FMO.IO.AMAC;
 using FMO.Models;
 using FMO.Utilities;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Net.Http;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
@@ -98,7 +100,7 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
     /// <param name="message"></param>
     public void Receive(Fund fund)
     {
-        var fvm = Funds.FirstOrDefault(x => x.Id == fund.Id);
+        var fvm = Funds.FirstOrDefault(x => x.Id == fund.Id || x.Code == fund.Code);
         if (fvm is not null)
         {
             if (!fvm.IsEnable && fund.PublicDisclosureSynchronizeTime != default)
@@ -133,8 +135,68 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
 
 
 
+    /// <summary>
+    /// 从协会更新基金数据
+    /// </summary>
+    /// <returns></returns>
+    [RelayCommand]
+    public async Task SyncFromAmac()
+    {
+        try
+        {
+            using var db = DbHelper.Base();
+            var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
+
+            var funds = await AmacAssist.CrawleManagerInfo(manager);
+
+            /// 新增或者改名的
+            var newf = funds./*ExceptBy(Funds.Select(x => x.Name), x => x.Name).*/Select(x => new Fund
+            {
+                Name = x.Name!,
+                ShortName = Fund.GetDefaultShortName(x.Name!),
+                Url = "https://gs.amac.org.cn/amac-infodisc/res/pof" + x.Url,
+                AsAdvisor = x.IsAdvisor
+            });
+
+            using HttpClient client = new HttpClient();
+
+            foreach (var f in newf)
+            {
+                await AmacAssist.SyncFundInfoAsync(f, client);
+
+                var old = Funds.FirstOrDefault(x => x.Code == f.Code);
+
+                if (old is null)
+                {
+                    db.GetCollection<Fund>().Insert(f);
+                    Funds.Add(FundViewModel.FromFund(f));
+                    TotalCount += 1;
+                    if (f.Status > FundStatus.StartLiquidation)
+                        ClearCount += 1;
+                }
+                else
+                {
+                    if (!old.IsCleared && f.Status > FundStatus.StartLiquidation)
+                    {
+                        old.IsCleared = true;
+                        var oldf = db.GetCollection<Fund>().FindById(old.Id);
+                        oldf.Status = f.Status;
+                        db.GetCollection<Fund>().Update(oldf);
+                        ClearCount += 1;
+                    }
+                }
+                await Task.Delay(200);
+            }
+             
+            HandyControl.Controls.Growl.Error($"更新基金信息完成");
+        }
+        catch (Exception e)
+        {
+            HandyControl.Controls.Growl.Error($"更新基金信息失败，{e.Message}");
+        }
 
 
+    }
 
 
     private void UiConfig_PropertyChanged(object? sender, PropertyChangedEventArgs e)
