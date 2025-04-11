@@ -176,7 +176,11 @@
                     Foreground="Red"
                     Style="{StaticResource ButtonDefault.Small}" />
 
-                
+                <Button
+                    hc:IconElement.Geometry="{StaticResource f.circle-minus}"
+                    Command="{Binding GeneratePfidSheetCommand}"
+                    Content="生成pfid账号"
+                    Style="{StaticResource ButtonDefault.Small}" />
             </DockPanel>
         </DockPanel>
 

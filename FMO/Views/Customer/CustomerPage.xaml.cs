@@ -1,10 +1,12 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using ClosedXML.Excel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
 using Serilog;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -55,7 +57,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         //        new Investor { Id = 3, Name = "某产品", EntityType = EntityType.Product},
         //    ];
 
-        Customers = new(cusomers.Select(x=> new InvestorReadOnlyViewModel(x)));// new(cusomers.Select(x => new CustomerViewModel(x)));
+        Customers = new(cusomers.Select(x => new InvestorReadOnlyViewModel(x)));// new(cusomers.Select(x => new CustomerViewModel(x)));
 
 
 
@@ -86,6 +88,71 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         Application.Current.Dispatcher.BeginInvoke((() => { Customers.Remove(Selected); Selected = null; }));
 
     }
+
+    [RelayCommand]
+    public void GeneratePfidSheet()
+    {
+        try
+        {
+            // 加载模板
+            var file = new FileInfo(@"files\tpl\pfid_investor.xlsx");
+            if (!file.Exists)
+            {
+                HandyControl.Controls.Growl.Error("未找到模板文件");
+                return;
+            }
+
+            using FileStream stream = file.OpenRead();
+            using var workbook = new XLWorkbook(stream);
+            var sheet = workbook.Worksheet("投资者信息");
+            if (sheet is null)
+                return;
+
+            using var db = DbHelper.Base();
+            var customer = db.GetCollection<Investor>().FindAll().ToList();
+            var ta = db.GetCollection<TransferRecord>().FindAll().ToList();
+
+            int row = 2;
+
+            foreach (var c in customer)
+            {
+                // 检查有无仓位
+                bool has = false;
+                var cta = ta.Where(x => x.CustomerId == c.Id).GroupBy(x => x.FundCode);
+                foreach (var t in cta)
+                {
+                    var fundc = t.Key;
+
+                    if (t.Sum(x => x.ShareChange()) > 0)
+                    {
+                        has = true;
+
+                        sheet.Cell(row, 1).Value = $"xxsc{c.Identity.Id[^6..]}";
+                        sheet.Cell(row, 2).Value = c.Name;
+                        sheet.Cell(row, 3).Value = EnumDescriptionTypeConverter.GetEnumDescription(c.Type);
+                        sheet.Cell(row, 4).Value = EnumDescriptionTypeConverter.GetEnumDescription(c.Identity.Type);
+                        if (c.Identity.Type == IDType.Other)
+                            sheet.Cell(row, 5).Value = c.Identity.Other;
+
+                        sheet.Cell(row, 6).Value = c.Identity.Id; 
+                        sheet.Cell(row, 8).Value = c.Email;
+                        if(string.IsNullOrWhiteSpace(c.Email))
+                            sheet.Cell(row, 7).Value = c.Phone;
+                        sheet.Cell(row, 9).Value = "启用";
+                        sheet.Cell(row, 10).Value = fundc;
+                        ++row;
+                    }
+                }  
+            }
+
+            workbook.SaveAs(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "投资者账号.xlsx"));
+        }
+        catch (Exception e)
+        {
+            HandyControl.Controls.Growl.Error($"生成失败：{e.Message}");
+        }
+    }
+
 
     partial void OnSelectedChanged(InvestorReadOnlyViewModel? oldValue, InvestorReadOnlyViewModel? newValue)
     {
@@ -156,7 +223,7 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
         RiskLevel = investor.RiskLevel;
         Investor = investor;
     }
-    
+
     public void Update(Investor investor)
     {
         Name = investor.Name;
