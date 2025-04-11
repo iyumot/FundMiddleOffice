@@ -23,6 +23,11 @@ public enum TARecordType
     [Description("份额调增")] Increase,
 
     /// <summary>
+    /// 
+    /// </summary>
+    [Description("转入")] MoveIn,
+
+    /// <summary>
     /// 分红
     /// </summary>
     [Description("分红")] Distribution = 9,
@@ -43,6 +48,7 @@ public enum TARecordType
     /// </summary>
     [Description("份额调减")] Decrease,
 
+    [Description("转出")] MoveOut,
 
     /// <summary>
     /// 二次或多次清算产生的金额

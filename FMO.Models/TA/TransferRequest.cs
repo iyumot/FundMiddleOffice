@@ -52,12 +52,12 @@ public class TransferRequest
     public int FundId { get; set; }
 
     /// <summary>
-    /// 基金名称
+    /// 基金名称 存在xxxA\ xxxxB等形式
     /// </summary>
     public required string FundName { get; set; }
 
     /// <summary>
-    /// 代码
+    /// 代码 存在xxxxxA、xxxxxB与基金代码不一致
     /// </summary>
     public string? FundCode { get; set; }
 
@@ -85,6 +85,12 @@ public class TransferRequest
     /// 费用折扣
     /// </summary>
     public decimal FeeDiscount { get; set; }
+
+
+    /// <summary>
+    /// 费用折扣
+    /// </summary>
+    public decimal Fee { get; set; }
 
     /// <summary>
     /// 销售机构
