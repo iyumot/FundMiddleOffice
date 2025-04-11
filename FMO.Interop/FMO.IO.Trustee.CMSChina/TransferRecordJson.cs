@@ -89,12 +89,12 @@ public class Item
     public string CLEARING_DATE { get; set; }
 
     internal Models.TransferRecord ToObject(string identifier)
-    {  
+    {
         TARecordType type = TARecordType.UNK;
         switch (VC_YWLX)
         {
             case "认购结果":
-                type =TARecordType.Subscription;
+                type = TARecordType.Subscription;
                 break;
             case "申购确认":
                 type = TARecordType.Purchase;
@@ -121,9 +121,8 @@ public class Item
                 break;
         }
 
-        if(VC_CPMC)
 
-        return new Models.TransferRecord
+        var obj = new Models.TransferRecord
         {
             CustomerName = VC_KHMC,
             CustomerIdentity = VC_ZJHM,
@@ -142,9 +141,16 @@ public class Item
             ExternalId = VC_QRLS,
             ExternalRequestId = VC_SQDH,
             Source = identifier,
-            Fee = fee - pf,
-            PerformanceFee = pf,
+            Fee = decimal.Parse(EN_SXFY),
+            PerformanceFee = decimal.Parse(EN_YJBC),
         };
+
+
+        // 有子份额
+        if (VC_CPMC.Length > MFUNDNAME.Length)
+            obj.ShareClass = VC_CPMC[MFUNDNAME.Length..];
+
+        return obj;
     }
 }
 

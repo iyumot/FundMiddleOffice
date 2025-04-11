@@ -2,7 +2,6 @@
 using FMO.Utilities;
 using Microsoft.Playwright;
 using Serilog;
-using System;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -35,7 +34,7 @@ namespace FMO.IO.Trustee.CMSChina
 
         public override Task<bool> SynchronizeDistributionAsync()
         {
-            throw new NotImplementedException();
+            return Task.FromResult(true);
         }
 
         public override Task<bool> SynchronizeFundRaisingRecord()
@@ -49,7 +48,7 @@ namespace FMO.IO.Trustee.CMSChina
             try
             {
                 // 判断登陆状态
-                if (!IsLogedIn && !await((IExternPlatform)this).LoginAsync())
+                if (!IsLogedIn && !await ((IExternPlatform)this).LoginAsync())
                     return false;
 
             }
@@ -87,7 +86,7 @@ namespace FMO.IO.Trustee.CMSChina
                 IResponse? response = null;
                 await page.RunAndWaitForResponseAsync(async () => await page.GotoAsync(url), resp =>
                 {
-                    if (resp.Url != $"\r\nhttps://i.cmschina.com/tgfw-ta/hisTranConfirm/hisTranConfirm/getHisTranConfirmList") return false;
+                    if (resp.Url != $"https://i.cmschina.com/tgfw-ta/hisTranConfirm/hisTranConfirm/getHisTranConfirmList") return false;
                     response = resp;
                     return true;
                 });
@@ -126,7 +125,7 @@ namespace FMO.IO.Trustee.CMSChina
                     {
                         await page.RunAndWaitForResponseAsync(async () => await page.GetByRole(AriaRole.Button, new() { Name = "查 询" }).ClickAsync(), resp =>
                         {
-                            if (resp.Url != $"https://i.cmschina.com/tgfw-ta/hisTranApply/hisTranApplyList/getList") return false;
+                            if (resp.Url != $"https://i.cmschina.com/tgfw-ta/hisTranConfirm/hisTranConfirm/getHisTranConfirmList") return false;
                             response = resp;
                             return true;
                         });
@@ -138,14 +137,16 @@ namespace FMO.IO.Trustee.CMSChina
                 }
 
                 // 解析json
-                List<TransferRequest> data = new();
+                List<TransferRecord> data = new();
 
                 for (int i = 0; i < 99; i++)
                 {
                     if (response is null) break;
 
                     var json = await response.TextAsync();
-                    var obj = JsonSerializer.Deserialize<CMSChina.Json.TransferRequestJson.Root>(json);
+                    var obj = JsonSerializer.Deserialize<CMSChina.Json.TransferRecordJson.Root>(json);
+
+                    ///////////////////////
                     data.AddRange(obj!.rows.Select(x => x.ToObject(Identifier)));
                     response = null;
 
@@ -156,7 +157,7 @@ namespace FMO.IO.Trustee.CMSChina
 
                     await page.RunAndWaitForResponseAsync(async () => await locator.ClickAsync(), resp =>
                     {
-                        if (resp.Url != $"https://i.cmschina.com/tgfw-ta/hisTranApply/hisTranApplyList/getList") return false;
+                        if (resp.Url != $"https://i.cmschina.com/tgfw-ta/hisTranConfirm/hisTranConfirm/getHisTranConfirmList") return false;
                         response = resp;
                         return true;
                     });
@@ -166,6 +167,7 @@ namespace FMO.IO.Trustee.CMSChina
                 if (data.Count == 0) return false;
                 // 保存到数据库
                 db = DbHelper.Base();
+
                 // 客户映射
                 var ids = data.Select(x => x.CustomerIdentity).Distinct().ToList();
 
@@ -188,19 +190,18 @@ namespace FMO.IO.Trustee.CMSChina
                 // fundid
                 var ids3 = db.GetCollection<Fund>().Query().Select(x => new { x.Id, x.Code, x.Name }).ToList();
                 foreach (var item in data) // 存在子份额名称与基金不一致
-                    item.FundId = (ids3.FirstOrDefault(x => x.Code == item.FundCode) ?? ids3.FirstOrDefault(x => item.FundName.StartsWith(x.Name)))?.Id ?? 0;
+                    item.FundId = (ids3.FirstOrDefault(x => x.Code == item.FundCode) ?? ids3.FirstOrDefault(x => item.FundName == x.Name))?.Id ?? 0;
 
 
-                // 排除同id数据
-                db.GetCollection<TransferRequest>().EnsureIndex(x => new { x.Source, x.ExternalId }, true);
-                db.GetCollection<TransferRequest>().Upsert(data);
+                // 设置idnex
+                db.GetCollection<TransferRecord>().EnsureIndex(x => new { x.Source, x.ExternalId }, true);
+                db.GetCollection<TransferRecord>().Upsert(data);
                 db.Dispose();
 
 
                 // 更新同步记录
                 db = DbHelper.Platform();
-                if (last is null) last = new PlatformSynchronizeTime { Identifier = Identifier, Method = fun, Time = DateTime.Now };
-                else last.Time = DateTime.Now;
+                last.Time = DateTime.Now;
                 db.GetCollection<PlatformSynchronizeTime>().Upsert(last);
                 db.Dispose();
                 return true;
@@ -382,7 +383,7 @@ namespace FMO.IO.Trustee.CMSChina
                 Log.Error($"{fun} 获取页面出错 {e.Message}");
                 return false;
             }
-             
+
         }
     }
 }

@@ -14,8 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\FMO.IO.Automation\FMO.IO.Automation.csproj" />
     <ProjectReference Include="..\..\FMO.Utilities\FMO.Utilities.csproj" />
+    <ProjectReference Include="..\FMO.IO.Automation\FMO.IO.Automation.csproj" />
   </ItemGroup>
 
 </Project>
