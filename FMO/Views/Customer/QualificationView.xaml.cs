@@ -1,10 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
 using Serilog;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Reflection;
@@ -25,9 +25,9 @@ public partial class QualificationView : UserControl
 
 
 public partial class QualificationViewModel : EditableControlViewModelBase<InvestorQualification>
-{ 
+{
     public string? Name { get; set; }
-     
+
 
     [ObservableProperty]
     public partial bool IsFinished { get; set; }
@@ -99,6 +99,8 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
 
 
     public FileViewModel CertificationMaterials { get; }
+
+    public ObservableCollection<FileViewModel> CertificationFiles { get; set; }
 
     public FileViewModel ProofOfExperience { get; }
 
@@ -232,6 +234,18 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
             StoreFunc = x => StoreFile(x),
             ClearFunc = x => ClearFile(x)
         };
+
+        CertificationFiles = new(obj.CertificationFiles?.Select(x => new FileViewModel
+        {
+            Id = nameof(CertificationFiles),
+            Label = "证明文件",
+            File = x.Path is null ? null : new FileInfo(x.Path),
+            SaveFunc = x => Save(x),
+            StoreFunc = x => StoreFile(x),
+            ClearFunc = x => ClearFile(x)
+        }) ?? []);
+
+
 
         ProofOfExperience = new FileViewModel
         {
@@ -407,7 +421,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
 
 
 
-    protected override InvestorQualification InitNewEntity() => new InvestorQualification ();
+    protected override InvestorQualification InitNewEntity() => new InvestorQualification();
 }
 
 

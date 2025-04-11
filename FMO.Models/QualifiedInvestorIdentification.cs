@@ -189,6 +189,7 @@ public class InvestorQualification
     /// </summary>
     public FileStorageInfo? CertificationMaterials { get; set; }
 
+    public List<FileStorageInfo>? CertificationFiles { get; set; }
 
 
     public FileStorageInfo? ProofOfExperience { get; set; }
