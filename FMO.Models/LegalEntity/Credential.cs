@@ -135,6 +135,8 @@ public record struct Identity
     /// </summary>
     public required string Id { get; set; }
 
+    public string? Other { get; set; }
+
     public override int GetHashCode()
     {
         return Type.GetHashCode() ^ (Id??"").GetHashCode();
