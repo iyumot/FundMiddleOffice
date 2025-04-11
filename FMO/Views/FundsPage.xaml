@@ -52,6 +52,14 @@
                     </Style>
 
                 </DockPanel.Resources>
+
+                <Button
+                    Command="{Binding SyncFromAmacCommand}"
+                    Content="更新"
+                    Style="{StaticResource ButtonInfo.Small}" />
+
+                <Rectangle Width="100" />
+
                 <TextBlock Margin="5,0" Text="筛选" />
                 <ToggleButton Content="已清算" IsChecked="{Binding UiConfig.ShowCleared}" />
 
