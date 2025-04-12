@@ -32,10 +32,19 @@ public partial class TransferRecordPageViewModel : ObservableObject
 
     public TransferRecordPageViewModel()
     {
-        using var db = DbHelper.Base();
+        Task.Run(() =>
+        {
+            using var db = DbHelper.Base();
 
-        Records = new ObservableCollection<TransferRecord>(db.GetCollection<TransferRecord>().FindAll().OrderByDescending(x => x.ConfirmedDate));
-        Requests = new ObservableCollection<TransferRequest>(db.GetCollection<TransferRequest>().FindAll().OrderByDescending(x => x.RequestDate));
+            IOrderedEnumerable<TransferRecord> tr = db.GetCollection<TransferRecord>().FindAll().OrderByDescending(x => x.ConfirmedDate);
+            IOrderedEnumerable<TransferRequest> tr2 = db.GetCollection<TransferRequest>().FindAll().OrderByDescending(x => x.RequestDate);
+
+            App.Current.Dispatcher.BeginInvoke(() =>
+            {
+                Records = new ObservableCollection<TransferRecord>(tr);
+                Requests = new ObservableCollection<TransferRequest>(tr2);
+            });
+        });
     }
 
 
