@@ -128,10 +128,9 @@ public abstract class AssistBase : IDigitalSignature
 
     public abstract Task<bool> SynchronizeQualificatoinAsync();
 
-    protected async Task<ILocator> FirstVisible(ILocator loc)
+    protected async Task<ILocator?> FirstVisible(ILocator loc)
     {
-        var lcnt = await loc.CountAsync();
-        if (lcnt <= 1) return loc;
+        var lcnt = await loc.CountAsync(); 
 
         for (int i = 0; i < lcnt; i++)
         {
@@ -139,7 +138,7 @@ public abstract class AssistBase : IDigitalSignature
             if (await l.IsVisibleAsync())
                 return l;
         }
-        return loc;
+        return null;
     }
 
 }
