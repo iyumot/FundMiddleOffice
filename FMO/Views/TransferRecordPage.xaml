@@ -138,6 +138,19 @@
                     ItemsSource="{Binding Records}"
                     Style="{StaticResource DataGrid.Small}">
                     <DataGrid.Columns>
+                        <DataGridTemplateColumn>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button
+                                        hc:IconElement.Geometry="{StaticResource f.file-pdf}"
+                                        Command="{Binding DataContext.OpenConfirmFileCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
+                                        CommandParameter="{Binding File}"
+                                        Foreground="Blue"
+                                        Style="{StaticResource ButtonIcon.Small}"
+                                        Visibility="{Binding FileExists, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                         <DataGridTextColumn Binding="{Binding RequestDate, StringFormat=yyyy-MM-dd}" Header="日期" />
                         <DataGridTextColumn Binding="{Binding FundCode}" Header="代码" />
                         <DataGridTextColumn Binding="{Binding FundName}" Header="产品" />

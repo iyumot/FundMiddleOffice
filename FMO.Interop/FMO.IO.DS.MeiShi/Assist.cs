@@ -99,7 +99,7 @@ public class Assist : AssistBase
             return false;
 
         await using var page = await Automation.AcquirePage(Identifier);
-        page.SetDefaultTimeout(5000);
+        //page.SetDefaultTimeout(5000);
         //var page = pw.Page;
         await page.Keyboard.PressAsync("Escape");
         await page.Keyboard.PressAsync("Escape");
@@ -142,7 +142,8 @@ public class Assist : AssistBase
 
             // 判断是否有下一页
             locator = page.Locator("li.ant-pagination-next");
-            if (await locator.CountAsync() == 0)
+            locator = await FirstVisible(locator);
+            if (locator is null)
                 break;
         }
 

@@ -207,3 +207,19 @@ public class LongTextToShortConverter : IValueConverter
         throw new NotImplementedException();
     }
 }
+
+/// <summary>
+/// ta确认函是否存在
+/// </summary>
+public class TACExistConveter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value switch { int id => File.Exists(@$"files\tac\{id}.pdf"), _ => value };
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
