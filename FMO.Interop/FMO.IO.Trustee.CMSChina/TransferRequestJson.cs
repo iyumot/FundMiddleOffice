@@ -53,15 +53,16 @@ public class Item
             CreateDate = DateOnly.FromDateTime(DateTime.Now),
             RequestType = VC_YWLX switch { "认购"=> RequestType.Subscription, "申购" => RequestType.Purchase, "赎回" or "金额赎回" => RequestType.Redemption, _ => RequestType.UNK },
             RequestDate = DateOnly.ParseExact(VC_SQRQ, "yyyyMMdd"),
-            RequestShare = decimal.Parse(EN_SQFE),
+            RequestShare = EN_SQFE switch { "-" or "" or null => 0, _ => decimal.Parse(EN_SQFE) },
             RequestAmount = decimal.Parse(EN_SQJE),
             Source = pid,
             Agency = VC_XSJGMC,
-            Fee = decimal.Parse(EN_SXFY),
+            Fee = EN_SXFY switch { "-" or "" or null => 0, _ => decimal.Parse(EN_SXFY) },
             ExternalId = VC_SQDH, 
         };
 
-        Log.Error($"未知的类型 {VC_YWLX}");
+        if(obj.RequestType == RequestType.UNK)
+            Log.Error($"未知的类型 {VC_YWLX}");
         return obj;
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.Playwright;
 using Serilog;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace FMO.IO;
 
@@ -109,13 +110,13 @@ public static class Automation
             //if (info.Pages.Count > 1)
             //    await page.GotoAsync(info.Pages[0].Page.Url);
 
-            return new IPageWraper(identifier, page);
+            return new IPageWraper(identifier, page, true);
         }
         finally { info.Semaphore.Release(); }
     }
 
 
-    public static bool ReleasePage(IPage page, string? identifier = null)
+    public static async Task<bool> ReleasePage(IPage page, string? identifier = null)
     {
         PlatformUsingInfo? info = null;
 
@@ -133,7 +134,10 @@ public static class Automation
             return false;
 
         if (!bi.IsMajor && info.Pages.Count > 1)
+        {
             info.Pages.Remove(bi);
+            await bi.Page.CloseAsync();
+        }
         else bi.IsUsing = false;
 
         return true;

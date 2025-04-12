@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace FMO.IO;
 
-public class IPageWraper : IDisposable, IPage
+public class IPageWraper : IPage, IAsyncDisposable
 {
     public required string Identifier { get; init; }
 
@@ -42,7 +42,7 @@ public class IPageWraper : IDisposable, IPage
     public IReadOnlyList<IWorker> Workers => Page.Workers;
 
     [SetsRequiredMembers]
-    public IPageWraper(string identifier, IPage page, bool isNew= false)
+    public IPageWraper(string identifier, IPage page, bool isNew = false)
     {
         Identifier = identifier;
         Page = page;
@@ -114,9 +114,42 @@ public class IPageWraper : IDisposable, IPage
 
     // IDisposable实现
     private bool _disposed;
-    public void Dispose()
+    //public void Dispose()
+    //{
+    //    Automation.ReleasePage(Page, Identifier);
+
+    //    if (!_disposed)
+    //    {
+    //        // 取消订阅所有事件
+    //        Page.Close -= OnPageClose;
+    //        Page.Console -= OnPageConsole;
+    //        Page.Crash -= OnPageCrash;
+    //        Page.Dialog -= OnPageDialog;
+    //        Page.DOMContentLoaded -= OnPageDOMContentLoaded;
+    //        Page.Download -= OnPageDownload;
+    //        Page.FileChooser -= OnPageFileChooser;
+    //        Page.FrameAttached -= OnPageFrameAttached;
+    //        Page.FrameDetached -= OnPageFrameDetached;
+    //        Page.FrameNavigated -= OnPageFrameNavigated;
+    //        Page.Load -= OnPageLoad;
+    //        Page.PageError -= OnPagePageError;
+    //        Page.Popup -= OnPagePopup;
+    //        Page.Request -= OnPageRequest;
+    //        Page.RequestFailed -= OnPageRequestFailed;
+    //        Page.RequestFinished -= OnPageRequestFinished;
+    //        Page.Response -= OnPageResponse;
+    //        Page.WebSocket -= OnPageWebSocket;
+    //        Page.Worker -= OnPageWorker;
+
+    //        _disposed = true;
+    //    }
+    //    GC.SuppressFinalize(this);
+    //}
+
+
+    public async ValueTask DisposeAsync()
     {
-        Automation.ReleasePage(Page, Identifier);
+        await Automation.ReleasePage(Page, Identifier);
 
         if (!_disposed)
         {
@@ -270,7 +303,7 @@ public class IPageWraper : IDisposable, IPage
 
     public Task<IResponse?> GoForwardAsync(PageGoForwardOptions? options = null) => Page.GoForwardAsync(options);
 
-    public Task<IResponse?> GotoAsync(string url, PageGotoOptions? options = null) { IsNew = false; return Page.GotoAsync(url, options);}
+    public Task<IResponse?> GotoAsync(string url, PageGotoOptions? options = null) { IsNew = false; return Page.GotoAsync(url, options); }
 
     public Task HoverAsync(string selector, PageHoverOptions? options = null) => Page.HoverAsync(selector, options);
 
@@ -462,6 +495,7 @@ public class IPageWraper : IDisposable, IPage
     public Task<IWebSocket> WaitForWebSocketAsync(PageWaitForWebSocketOptions? options = null) => Page.WaitForWebSocketAsync(options);
 
     public Task<IWorker> WaitForWorkerAsync(PageWaitForWorkerOptions? options = null) => Page.WaitForWorkerAsync(options);
+
     #endregion
 
 }

@@ -234,7 +234,7 @@ public partial class PlatformPageViewModelDigital : ObservableRecipient//, IReci
                 try
                 {
 
-                    using var page = await Automation.AcquirePage(assist.Identifier);
+                    await using var page = await Automation.AcquirePage(assist.Identifier);
                     //var page = pw.Page;
 
                     await assist.PrepareLoginAsync(page);
@@ -306,7 +306,7 @@ public partial class PlatformPageViewModelDigital : ObservableRecipient//, IReci
             var assist = Assist;
             try
             {
-                using var page = await Automation.AcquirePage(assist.Identifier);
+                await using var page = await Automation.AcquirePage(assist.Identifier);
                 //var page = pw.Page;
 
                 await assist.PrepareLoginAsync(page);
@@ -366,29 +366,30 @@ public partial class PlatformPageViewModelTrustee : ObservableRecipient, IRecipi
         NeedLogin = !IsLogin;
         if (IsEnabled) Task.Run(async () => { await Task.Delay(2000); StartWork(); });
 
-        if (IsEnabled)
-            Task.Run(async () =>
-            {
-                try
-                {
+        IsInitialized = true;
+        //if (IsEnabled)
+        //    Task.Run(async () =>
+        //    {
+        //        try
+        //        {
 
-                    using var page = await Automation.AcquirePage(assist.Identifier);
-                    //var page = pw.Page;
+        //            await using var page = await Automation.AcquirePage(assist.Identifier);
+        //            //var page = pw.Page;
 
-                    await assist.PrepareLoginAsync(page);
+        //            await assist.PrepareLoginAsync(page);
 
-                    IsLogin = await assist.LoginValidationAsync(page);
+        //            IsLogin = await assist.LoginValidationAsync(page);
 
-                    if (IsLogin)
-                        await assist.EndLoginAsync(page);
+        //            if (IsLogin)
+        //                await assist.EndLoginAsync(page);
 
-                }
-                catch (Exception e)
-                {
-                    HandyControl.Controls.Growl.Error($"初始化登录{assist.Name}失败");
-                }
-                IsInitialized = true;
-            });
+        //        }
+        //        catch (Exception e)
+        //        {
+        //            HandyControl.Controls.Growl.Error($"初始化登录{assist.Name}失败");
+        //        }
+        //        IsInitialized = true;
+        //    });
     }
 
     /// <summary>
@@ -478,7 +479,7 @@ public partial class PlatformPageViewModelTrustee : ObservableRecipient, IRecipi
         var assist = Assist;
         try
         {
-            using var page = await Automation.AcquirePage(assist.Identifier);
+            await using var page = await Automation.AcquirePage(assist.Identifier);
             //var page = pw.Page;
 
             await assist.PrepareLoginAsync(page);
