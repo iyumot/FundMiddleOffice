@@ -109,6 +109,7 @@
                     hc:DataGridAttach.ShowRowNumber="True"
                     AutoGenerateColumns="False"
                     BorderThickness="0"
+                    EnableRowVirtualization="True"
                     IsReadOnly="True"
                     ItemsSource="{Binding Requests}"
                     Style="{StaticResource DataGrid.Small}">
@@ -132,6 +133,7 @@
                     hc:DataGridAttach.ShowRowNumber="True"
                     AutoGenerateColumns="False"
                     BorderThickness="0"
+                    EnableRowVirtualization="True"
                     IsReadOnly="True"
                     ItemsSource="{Binding Records}"
                     Style="{StaticResource DataGrid.Small}">
