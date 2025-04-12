@@ -186,19 +186,21 @@ namespace FMO.SourceGenerator
 
             source.AppendLine($"        public {targetTypeSymbol.ToDisplayString()} Build()");
             source.AppendLine("        {");
-            source.AppendLine($"            var result = new {targetTypeSymbol.ToDisplayString()}();");
+            source.AppendLine($"            var result = new {targetTypeSymbol.ToDisplayString()}()");
+            source.AppendLine("             {");
             foreach (var property in properties)
             {
                 var type = property.Type.ToDisplayString();
-                if(type != "bool")
-                    source.AppendLine($"            result.{property.Name} = _{property.Name.ToCamelCase()}??default;");
+                if (type != "bool")
+                    source.AppendLine($"                {property.Name} = _{property.Name.ToCamelCase()}??default,");
                 else
-                    source.AppendLine($"            result.{property.Name} = _{property.Name.ToCamelCase()};");
+                    source.AppendLine($"                {property.Name} = _{property.Name.ToCamelCase()},");
             }
+            source.AppendLine("             };");
             source.AppendLine("            return result;");
             source.AppendLine("        }");
 
-          
+
 
 
             source.AppendLine("    }");
