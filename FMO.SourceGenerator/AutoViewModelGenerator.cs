@@ -179,7 +179,7 @@ namespace FMO.SourceGenerator
             }
             source.AppendLine("        }");
 
-            source.AppendLine("        protected virtual void OnPropertyChanged(string propertyName)");
+            source.AppendLine("        public virtual void OnPropertyChanged(string propertyName)");
             source.AppendLine("        {");
             source.AppendLine("            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));");
             source.AppendLine("        }");
