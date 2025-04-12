@@ -70,7 +70,7 @@ public interface IExternPlatform //: IDisposable
     /// <returns></returns>
     async Task<bool> LoginAsync()
     {
-        using var page = await Automation.AcquirePage(Identifier);
+        await using var page = await Automation.AcquirePage(Identifier);
 
         if (page.IsNew) await page.GotoAsync(Domain);
 

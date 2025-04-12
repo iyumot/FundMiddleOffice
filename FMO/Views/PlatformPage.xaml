@@ -17,6 +17,7 @@
         <DataTemplate x:Key="DT.Platform">
             <StackPanel Width="260" Margin="5,0">
                 <Image
+                    Height="60"
                     Margin="0,5"
                     DockPanel.Dock="Top"
                     Source="{Binding Icon}" />

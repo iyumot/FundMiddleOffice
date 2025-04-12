@@ -117,6 +117,9 @@ public class Item
             case string s when s.Contains("转出"):
                 type = TARecordType.MoveOut;
                 break;
+            case string s when s.Contains("分红"):
+                type = TARecordType.Distribution;
+                break;
             default:
                 break;
         }
@@ -130,11 +133,11 @@ public class Item
             FundCode = MFUNDCODE,
             Agency = VC_XSJGMC,
             Type = type,
-            RequestDate = DateOnly.Parse(VC_SQRQ),
-            RequestShare = decimal.Parse(EN_SQJE),
-            RequestAmount = decimal.Parse(EN_SQFE),
-            CreateDate = DateOnly.Parse(VC_QRRQ),
-            ConfirmedDate = DateOnly.Parse(VC_QRRQ),
+            RequestDate = DateOnly.ParseExact(VC_SQRQ, "yyyyMMdd"),
+            RequestShare = decimal.Parse(EN_SQFE),
+            RequestAmount = decimal.Parse(EN_SQJE),
+            CreateDate = DateOnly.ParseExact(VC_QRRQ, "yyyyMMdd"),
+            ConfirmedDate = DateOnly.ParseExact(VC_QRRQ, "yyyyMMdd"),
             ConfirmedShare = decimal.Parse(EN_QRFE),
             ConfirmedAmount = decimal.Parse(EN_QRJE),
             ConfirmedNetAmount = decimal.Parse(EN_QRJJE),

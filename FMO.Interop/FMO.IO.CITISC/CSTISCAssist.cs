@@ -229,7 +229,7 @@ public class CSTISCAssist : TrusteeAssistBase
 
         string url = $"https://iservice.citics.com/iservice/mjzj/mjzhlscx?refresh={DateTime.Now.TimeStampBySeconds()}";
 
-        using var page = await Automation.AcquirePage(Identifier);
+        await using var page = await Automation.AcquirePage(Identifier);
 
 
         IResponse? response = null;
@@ -293,7 +293,7 @@ public class CSTISCAssist : TrusteeAssistBase
         if (!IsLogedIn && !await ((IExternPlatform)this).LoginAsync())
             return false;
 
-        using var page = await Automation.AcquirePage(Identifier);
+        await using var page = await Automation.AcquirePage(Identifier);
 
         IResponse? response = null;
         await page.RunAndWaitForResponseAsync(async () => await page.GotoAsync($"https://iservice.citics.com/ds/account/searchcustomer?refresh={DateTime.Now.TimeStampBySeconds()}"), x =>
@@ -524,7 +524,7 @@ public class CSTISCAssist : TrusteeAssistBase
             return false;
 
         int fid = 291;
-        using var page = await Automation.AcquirePage(Identifier);
+        await using var page = await Automation.AcquirePage(Identifier);
         if (page.IsNew) await page.GotoAsync(Domain);
          
 
@@ -659,7 +659,7 @@ public class CSTISCAssist : TrusteeAssistBase
             return false;
 
         int fid = 105;
-        using var page = await Automation.AcquirePage(Identifier);
+        await using var page = await Automation.AcquirePage(Identifier);
         if (page.IsNew) await page.GotoAsync(Domain);
 
  
@@ -797,7 +797,7 @@ public class CSTISCAssist : TrusteeAssistBase
             return false;
 
         int fid = 753;
-        using var page = await Automation.AcquirePage(Identifier);
+        await using var page = await Automation.AcquirePage(Identifier);
         if (page.IsNew) await page.GotoAsync(Domain);
 
         if (!await LoginValidationAsync(page, 5))
@@ -937,7 +937,7 @@ public class CSTISCAssist : TrusteeAssistBase
             return Array.Empty<(string Code, ManageFeeDetail[] Fee)>();
 
         var func = nameof(GetManageFeeDetails);
-        using var page = await Automation.AcquirePage(Identifier);
+        await using var page = await Automation.AcquirePage(Identifier);
         if (page.IsNew) await page.GotoAsync(Domain);
 
         try

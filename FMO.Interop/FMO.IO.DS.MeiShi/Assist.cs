@@ -98,7 +98,7 @@ public class Assist : AssistBase
         if (!IsLogedIn && !await ((IExternPlatform)this).LoginAsync())
             return false;
 
-        using var page = await Automation.AcquirePage(Identifier);
+        await using var page = await Automation.AcquirePage(Identifier);
         page.SetDefaultTimeout(5000);
         //var page = pw.Page;
         await page.Keyboard.PressAsync("Escape");
@@ -236,7 +236,7 @@ public class Assist : AssistBase
         }
 
 
-        using var page = await Automation.AcquirePage(Identifier);
+        await using var page = await Automation.AcquirePage(Identifier);
         await page.GotoAsync($"https://vipfunds.simu800.com/vipmanager/investorAppropriatenessManagement/investorsProcessList?ascription={token}&v={(int)(DateTime.Now - new DateTime(1970, 1, 1)).TotalMicroseconds}", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle});
         //var page = pw.Page; 
         await page.Keyboard.PressAsync("Escape");
@@ -484,7 +484,7 @@ public class Assist : AssistBase
         using var db2 = PlatformDatabase.Instance();
         var history = db2.GetCollection<QualificationSyncHistory>(Identifier).FindAll();
 
-        using var page = await Automation.AcquirePage(Identifier);
+        await using var page = await Automation.AcquirePage(Identifier);
 
         foreach (var item in list)
         {
