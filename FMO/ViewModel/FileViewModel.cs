@@ -2,7 +2,9 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using Serilog;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Reflection;
 using System.Windows.Controls;
 
 namespace FMO;
@@ -153,3 +155,12 @@ public partial class FileViewModel : ObservableObject
     }
 }
 
+
+
+public partial class MultipleFileViewModel<TEntity> : ObservableObject
+{
+    [ObservableProperty]
+    public partial ObservableCollection<FieldInfo> Files { get; set; } = new();
+
+
+}
