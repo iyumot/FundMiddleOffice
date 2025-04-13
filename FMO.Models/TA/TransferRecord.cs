@@ -114,6 +114,11 @@ public class TransferRecord : IEquatable<TransferRecord>
     /// </summary>
     public string? Source { get; set; }
 
+    /// <summary>
+    /// 确认函文件名
+    /// </summary>
+    public string? ConfirmFile { get; set; }
+
     public override int GetHashCode()
     {
         return FundId ^ CustomerName.GetHashCode() ^ RequestDate.GetHashCode() ^ Type.GetHashCode();
