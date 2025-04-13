@@ -148,7 +148,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                     var page = Pages.FirstOrDefault(x => x.Content is PlatformPage);
                     if (page is null)
                     {
-                        page = new TabItem { Header = GenerateHeader("外部平台"), Content = new PlatformPage() };
+                        page = new TabItem { Header = GenerateHeader("外部平台"), Background = Brushes.MediumSpringGreen, Content = new PlatformPage() };
                         Pages.Add(page);
                     }
 
@@ -169,12 +169,24 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                     break;
                 }
 
+            case "ManagerPage":
+                {
+                    var page = Pages.FirstOrDefault(x => x.Content is ManagerPage);
+                    if (page is null)
+                    {
+                        page = new TabItem { Header = GenerateHeader("管理人"), Background = Brushes.BlueViolet, Foreground = Brushes.White, Content = new ManagerPage() { Foreground = Brushes.Black } };
+                        Pages.Add(page);
+                    }
+
+                    page.IsSelected = true;
+                    break;
+                }
             case "Task":
                 {
                     var page = Pages.FirstOrDefault(x => x.Content is TaskPage);
                     if (page is null)
                     {
-                        page = new TabItem { Header = GenerateHeader("任务"), Content = new TaskPage() };
+                        page = new TabItem { Header = GenerateHeader("任务"), Background = Brushes.Khaki, Content = new TaskPage() };
                         Pages.Add(page);
                     }
 
@@ -187,7 +199,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                     var page = Pages.FirstOrDefault(x => x.Content is StatementPage);
                     if (page is null)
                     {
-                        page = new TabItem { Header = GenerateHeader("报表"), Content = new StatementPage() };
+                        page = new TabItem { Header = GenerateHeader("报表"), Background = new LinearGradientBrush([new GradientStop(Colors.RoyalBlue, 0), new GradientStop(Colors.White, 0.3), new GradientStop(Colors.RoyalBlue, 0.7)]), Content = new StatementPage() };
                         Pages.Add(page);
                     }
 

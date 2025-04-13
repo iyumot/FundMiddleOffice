@@ -27,7 +27,7 @@
                     Header="管理人">
                     <hc:SideMenuItem.Icon>
                         <Viewbox Width="16" Height="16">
-                            <Path Data="{StaticResource G.Home}" Fill="Black" />
+                            <Path Data="{StaticResource G.Home}" Fill="BlueViolet" />
                         </Viewbox>
                     </hc:SideMenuItem.Icon>
                 </hc:SideMenuItem>
@@ -57,7 +57,7 @@
                     Header="TA">
                     <hc:SideMenuItem.Icon>
                         <Viewbox Width="16" Height="16">
-                            <Path Data="{StaticResource f.table}" Fill="Black" />
+                            <Path Data="{StaticResource f.table}" Fill="Orange" />
                         </Viewbox>
                     </hc:SideMenuItem.Icon>
 
@@ -72,7 +72,7 @@
                     </hc:SideMenuItem.Header>
                     <hc:SideMenuItem.Icon>
                         <Viewbox Width="16" Height="16">
-                            <Path Data="{StaticResource f.tree}" Fill="Black" />
+                            <Path Data="{StaticResource f.tree}" Fill="MediumSpringGreen" />
                         </Viewbox>
                     </hc:SideMenuItem.Icon>
                 </hc:SideMenuItem>
@@ -87,7 +87,7 @@
                     </hc:SideMenuItem.Header>
                     <hc:SideMenuItem.Icon>
                         <Viewbox Width="16" Height="16">
-                            <Path Data="{StaticResource f.brain}" Fill="Black" />
+                            <Path Data="{StaticResource f.brain}" Fill="Khaki" />
                         </Viewbox>
                     </hc:SideMenuItem.Icon>
                 </hc:SideMenuItem>
@@ -102,7 +102,7 @@
                     </hc:SideMenuItem.Header>
                     <hc:SideMenuItem.Icon>
                         <Viewbox Width="16" Height="16">
-                            <Path Data="{StaticResource f.square-poll-vertical}" Fill="Black" />
+                            <Path Data="{StaticResource f.square-poll-vertical}" Fill="RoyalBlue" />
                         </Viewbox>
                     </hc:SideMenuItem.Icon>
                 </hc:SideMenuItem>
