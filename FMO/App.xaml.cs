@@ -47,6 +47,7 @@ public partial class App : Application
         Directory.CreateDirectory("config");
         Directory.CreateDirectory("files\\funds");
         Directory.CreateDirectory("plugins");
+        Directory.CreateDirectory("files\\tac");
 
         ///数据库自检等操作
         DatabaseAssist.SystemValidation();
@@ -73,4 +74,8 @@ public partial class App : Application
         base.OnExit(e);
     }
 
+    private void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+    {
+        Log.Error(e.Exception.Message);
+    }
 }
