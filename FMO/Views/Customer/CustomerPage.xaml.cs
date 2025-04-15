@@ -119,30 +119,49 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
                 // 检查有无仓位
                 bool has = false;
                 var cta = ta.Where(x => x.CustomerId == c.Id).GroupBy(x => x.FundCode);
-                foreach (var t in cta)
+                cta = cta.Where(x => x.Sum(y => y.ShareChange()) > 0);
+
+                if (cta.Any())
                 {
-                    var fundc = t.Key;
+                    sheet.Cell(row, 1).Value = $"xxsc{c.Identity.Id[^6..]}";
+                    sheet.Cell(row, 2).Value = c.Name;
+                    sheet.Cell(row, 3).Value = EnumDescriptionTypeConverter.GetEnumDescription(c.Type);
+                    sheet.Cell(row, 4).Value = c.Identity.Type == IDType.IdentityCard ? "身份证" : EnumDescriptionTypeConverter.GetEnumDescription(c.Identity.Type);
+                    if (c.Identity.Type == IDType.Other)
+                        sheet.Cell(row, 5).Value = c.Identity.Other;
 
-                    if (t.Sum(x => x.ShareChange()) > 0)
-                    {
-                        has = true;
+                    sheet.Cell(row, 6).Value = c.Identity.Id;
+                    sheet.Cell(row, 8).Value = c.Email;
+                    if (string.IsNullOrWhiteSpace(c.Email))
+                        sheet.Cell(row, 7).Value = c.Phone;
+                    sheet.Cell(row, 9).Value = "启用";
+                    sheet.Cell(row, 10).Value = string.Join(",", cta.Select(x => x.Key));
+                    ++row;
+                }
+                //foreach (var t in cta)
+                //{
+                //    var fundc = t.Key;
 
-                        sheet.Cell(row, 1).Value = $"xxsc{c.Identity.Id[^6..]}";
-                        sheet.Cell(row, 2).Value = c.Name;
-                        sheet.Cell(row, 3).Value = EnumDescriptionTypeConverter.GetEnumDescription(c.Type);
-                        sheet.Cell(row, 4).Value = c.Identity.Type == IDType.IdentityCard ? "身份证": EnumDescriptionTypeConverter.GetEnumDescription(c.Identity.Type);
-                        if (c.Identity.Type == IDType.Other)
-                            sheet.Cell(row, 5).Value = c.Identity.Other;
+                //    if (t.Sum(x => x.ShareChange()) > 0)
+                //    {
+                //        has = true;
 
-                        sheet.Cell(row, 6).Value = c.Identity.Id; 
-                        sheet.Cell(row, 8).Value = c.Email;
-                        if(string.IsNullOrWhiteSpace(c.Email))
-                            sheet.Cell(row, 7).Value = c.Phone;
-                        sheet.Cell(row, 9).Value = "启用";
-                        sheet.Cell(row, 10).Value = fundc;
-                        ++row;
-                    }
-                }  
+                //        sheet.Cell(row, 1).Value = $"xxsc{c.Identity.Id[^6..]}";
+                //        sheet.Cell(row, 2).Value = c.Name;
+                //        sheet.Cell(row, 3).Value = EnumDescriptionTypeConverter.GetEnumDescription(c.Type);
+                //        sheet.Cell(row, 4).Value = c.Identity.Type == IDType.IdentityCard ? "身份证": EnumDescriptionTypeConverter.GetEnumDescription(c.Identity.Type);
+                //        if (c.Identity.Type == IDType.Other)
+                //            sheet.Cell(row, 5).Value = c.Identity.Other;
+
+                //        sheet.Cell(row, 6).Value = c.Identity.Id; 
+                //        sheet.Cell(row, 8).Value = c.Email;
+                //        if(string.IsNullOrWhiteSpace(c.Email))
+                //            sheet.Cell(row, 7).Value = c.Phone;
+                //        sheet.Cell(row, 9).Value = "启用";
+                //        sheet.Cell(row, 10).Value = fundc;
+                //        ++row;
+                //    }
+                //}  
             }
 
             workbook.SaveAs(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "投资者账号.xlsx"));
