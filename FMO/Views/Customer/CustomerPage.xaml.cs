@@ -130,7 +130,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
                         sheet.Cell(row, 1).Value = $"xxsc{c.Identity.Id[^6..]}";
                         sheet.Cell(row, 2).Value = c.Name;
                         sheet.Cell(row, 3).Value = EnumDescriptionTypeConverter.GetEnumDescription(c.Type);
-                        sheet.Cell(row, 4).Value = EnumDescriptionTypeConverter.GetEnumDescription(c.Identity.Type);
+                        sheet.Cell(row, 4).Value = c.Identity.Type == IDType.IdentityCard ? "身份证": EnumDescriptionTypeConverter.GetEnumDescription(c.Identity.Type);
                         if (c.Identity.Type == IDType.Other)
                             sheet.Cell(row, 5).Value = c.Identity.Other;
 
