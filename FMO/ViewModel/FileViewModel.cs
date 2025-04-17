@@ -1,10 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FMO.Models;
+using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Reflection;
 using System.Windows.Controls;
 
 namespace FMO;
@@ -160,7 +161,57 @@ public partial class FileViewModel : ObservableObject
 public partial class MultipleFileViewModel<TEntity> : ObservableObject
 {
     [ObservableProperty]
-    public partial ObservableCollection<FieldInfo> Files { get; set; } = new();
+    public partial ObservableCollection<FileInfo> Files { get; private set; } = new();
 
 
+    public Func<TEntity>? GetEntity { get; set; }
+
+    public Func<TEntity, List<FileStorageInfo>>? GetProperty { get; set; }
+
+
+
+    public void Init(TEntity entity)
+    {
+        if (GetProperty is null) return;
+
+        var prop = GetProperty(entity);
+
+
+        if (Files is not null)
+            Files.CollectionChanged -= Files_CollectionChanged;
+
+        Files = new(prop.Select(x => new FileInfo(x.Path!)));
+
+    }
+
+    private void Files_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        TEntity entity = GetEntity();
+
+        var p = GetProperty(entity);
+
+        switch (e.Action)
+        {
+            case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                foreach (FileInfo fi in e.NewItems!)
+                {
+                    string hash = FileHelper.ComputeHash(fi);
+                    p.Add(new FileStorageInfo(fi.FullName, hash, fi.LastWriteTime));
+                } 
+                break;
+            case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                break;
+            case System.Collections.Specialized.NotifyCollectionChangedAction.Replace:
+                break;
+            case System.Collections.Specialized.NotifyCollectionChangedAction.Move:
+                break;
+            case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
+                break;
+            default:
+                break;
+        }
+         
+
+
+    }
 }
