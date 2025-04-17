@@ -261,57 +261,6 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
 
     }
 
-    private void ClearFile(FileViewModel v)
-    {
-        using var db = DbHelper.Base();
-        var obj = db.GetCollection<InvestorQualification>().FindById(Id);
-
-        if (obj!.GetType().GetProperty(v.Id) is PropertyInfo property && property.PropertyType == typeof(FileStorageInfo))
-            property.SetValue(obj, null);
-        db.GetCollection<InvestorQualification>().Update(obj);
-
-        v.File?.Delete();
-    }
-
-    private string? StoreFile(FileViewModel v)
-    {
-        var fi = v.File;
-        if (fi is null) return null;
-
-        string hash = fi.ComputeHash()!;
-
-        // 保存副本
-        var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "qualification", Id.ToString()));
-
-        var tar = FileHelper.CopyFile2(fi, dir.FullName);
-        if (tar is null)
-        {
-            Log.Error($"保存合投文件出错，{fi.Name}");
-            HandyControl.Controls.Growl.Error($"无法保存{fi.Name}，文件名异常或者存在过多重名文件");
-            return null;
-        }
-
-        var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
-        return path;
-    }
-
-    private void Save(FileViewModel v)
-    {
-        var fi = v.File;
-        if (fi is null) return;
-
-        string hash = fi.ComputeHash()!;
-
-        using var db = DbHelper.Base();
-        var obj = db.GetCollection<InvestorQualification>().FindById(Id);
-
-        if (obj!.GetType().GetProperty(v.Id) is PropertyInfo property && property.PropertyType == typeof(FileStorageInfo))
-            property.SetValue(obj, new FileStorageInfo(fi.FullName, hash, fi.LastWriteTime));
-        db.GetCollection<InvestorQualification>().Update(obj);
-
-    }
-
-
 
 
     public static QualificationViewModel From(InvestorQualification x, AmacInvestorType investor, EntityType entityType)
