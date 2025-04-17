@@ -187,11 +187,13 @@ public class InvestorQualification
     /// <summary>
     /// 证明材料：资产证明、收入证明、资产负债表
     /// </summary>
-    public FileStorageInfo? CertificationMaterials { get; set; }
+    //public FileStorageInfo? CertificationMaterials { get; set; }
 
     public List<FileStorageInfo>? CertificationFiles { get; set; }
 
-
+    /// <summary>
+    /// 投资经历
+    /// </summary>
     public FileStorageInfo? ProofOfExperience { get; set; }
 
     /// <summary>
@@ -233,10 +235,32 @@ public class InvestorQualification
             info.Add("无日期");
         }
 
-        if (!IsFileExists(InfomationSheet) || !IsFileExists(CommitmentLetter) || !IsFileExists(Notice) || !IsFileExists(CertificationMaterials) || (Result == QualifiedInvestorType.Professional && !IsFileExists(ProofOfExperience)))
+        if (!IsFileExists(InfomationSheet))
         {
             er = true;
-            info.Add("缺少必要文件");
+            info.Add("基本信息表");
+        }
+
+        if (!IsFileExists(CommitmentLetter))
+        {
+            er = true;
+            info.Add("承诺函");
+        }
+
+        if (!IsFileExists(Notice))
+        {
+            er = true;
+            info.Add("普通/专业投资者告知书");
+        }
+        if (CertificationFiles?.Count == 0)
+        {
+            er = true;
+            info.Add("证明文件");
+        }
+        if ((Result == QualifiedInvestorType.Professional  && ProofType != QualificationFileType.Product && ProofType != QualificationFileType.FinancialInstitution && !IsFileExists(ProofOfExperience)))
+        {
+            er = true;
+            info.Add("投资经历");
         }
 
         string s = "";
