@@ -368,7 +368,10 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     public partial DailyValueCurveViewModel CurveViewDataContext { get; set; }
 
     [ObservableProperty]
-    public partial FundStrategyViewModel StrategyDataContext { get; set; } 
+    public partial FundStrategyViewModel StrategyDataContext { get; set; }
+
+    [ObservableProperty]
+    public partial FundAccountsViewModel AccountsDataContext { get; set; }
     #endregion
 
     /// <summary>

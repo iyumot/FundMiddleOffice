@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DataContext="{d:DesignData Type=local:FundInfoPageViewModel}"
     d:DesignHeight="450"
-    d:DesignWidth="800"
+    d:DesignWidth="1500"
     mc:Ignorable="d">
     <UserControl.Resources>
         <DataTemplate x:Key="SingleFile">
@@ -69,6 +69,12 @@
             <Setter Property="ContentTemplate" Value="{StaticResource SingleFile}" />
         </Style>
 
+        <Style
+            x:Key="FundTab"
+            BasedOn="{StaticResource TabItemInLine}"
+            TargetType="TabItem">
+            <Setter Property="Width" Value="80" />
+        </Style>
     </UserControl.Resources>
     <Grid Margin="8">
 
@@ -80,17 +86,18 @@
         <TabControl
             Grid.Column="1"
             MaxWidth="1200"
-            BorderThickness="0">
-            <TabItem Width="80" Header="总览">
+            BorderThickness="0"
+            ItemContainerStyle="{StaticResource FundTab}">
+            <TabItem Header="总览">
                 <local:FundLifeTimeView />
             </TabItem>
-            <TabItem Width="80" Header="净值">
+            <TabItem Header="净值">
                 <local:NetValueListView />
             </TabItem>
-            <TabItem Width="80" Header="曲线">
+            <TabItem Header="曲线">
                 <local:NetValueCurveView DataContext="{Binding CurveViewDataContext}" />
             </TabItem>
-            <TabItem Width="80" Header="要素">
+            <TabItem Header="要素">
                 <DockPanel>
                     <DockPanel DockPanel.Dock="Top">
                         <ListBox
@@ -119,23 +126,12 @@
                     <local:ElementsView DataContext="{Binding ElementsViewDataContext}" />
                 </DockPanel>
             </TabItem>
-            <TabItem Width="80" Header="合同" />
-            <TabItem Width="80" Header="策略">
-                <!--<TabItem.Header>
-                    <DockPanel DataContext="{Binding StrategyDataContext}">
-                        <Button
-                            Margin="0,0,-8,0"
-                            hc:IconElement.Geometry="{StaticResource f.circle-plus}"
-                            hc:IconElement.Height="14"
-                            hc:IconElement.Width="14"
-                            Command="{Binding AddStrategyCommand}"
-                            DockPanel.Dock="Right"
-                            Style="{StaticResource ButtonIcon.Small}"
-                            Visibility="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=IsSelected, Converter={StaticResource Boolean2VisibilityConverter}}" />
-                        <TextBlock VerticalAlignment="Center" Text="策略" />
-                    </DockPanel>
-                </TabItem.Header>-->
+            <TabItem Header="合同" />
+            <TabItem Header="策略">
                 <local:FundStrategyView DataContext="{Binding StrategyDataContext}" />
+            </TabItem>
+            <TabItem Header="账户">
+                <local:FundAccountsView DataContext="{Binding AccountsDataContext}" />
             </TabItem>
         </TabControl>
 
