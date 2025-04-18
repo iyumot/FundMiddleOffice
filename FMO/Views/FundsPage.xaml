@@ -74,6 +74,20 @@
 
                 <ToggleButton Content="成立日期" IsChecked="{Binding UiConfig.ShowSetupDate}" />
                 <ToggleButton Content="备案日期" IsChecked="{Binding UiConfig.ShowAuditDate}" />
+
+                <!--  搜索  -->
+                <hc:SimplePanel Margin="10,0">
+                    <TextBox
+                        MinWidth="180"
+                        Padding="4"
+                        HorizontalContentAlignment="Center"
+                        Style="{StaticResource TextBox.Small}"
+                        Text="{Binding FundKeyword, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                    <Viewbox Margin="5,0" HorizontalAlignment="Right">
+                        <Path Data="{StaticResource f.magnifying-glass}" Fill="Black" />
+                    </Viewbox>
+                </hc:SimplePanel>
+
             </DockPanel>
 
         </DockPanel>
@@ -83,7 +97,7 @@
 
 
 
-
+        <!--  列表  -->
         <ListBox ItemsSource="{Binding DataViewSource.View}">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
