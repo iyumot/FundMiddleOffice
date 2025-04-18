@@ -61,6 +61,8 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
 
     public FundPageUiConfig UiConfig { get; set; }
 
+    [ObservableProperty]
+    public partial string? FundKeyword { get; set; }
 
     /// <summary>
     [SetsRequiredMembers]
@@ -89,8 +91,8 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
     {
         if (e.Item is FundViewModel v && v.IsCleared && !UiConfig.ShowCleared)
             e.Accepted = false;
-
-
+        else if (!string.IsNullOrWhiteSpace(FundKeyword) && e.Item is FundViewModel v2 && !(v2.Name?.Contains(FundKeyword)??false))
+            e.Accepted = false;
         else
             e.Accepted = true;
     }
@@ -214,6 +216,10 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
     }
 
 
+    partial void OnFundKeywordChanged(string? value)
+    {
+        DataViewSource.View.Refresh();
+    }
 
 
 
