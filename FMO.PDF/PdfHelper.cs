@@ -1,5 +1,6 @@
 ﻿using PDFiumSharp;
 using PDFiumSharp.Enums;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Windows;
@@ -28,10 +29,10 @@ public static class PdfHelper
             var d = PDFium.FPDF_LoadDocument(buf);
             var cnt = PDFium.FPDF_GetPageCount(d);
 
-            StringBuilder sb = new();
 
             for (int i = 0; i < cnt; i++)
             {
+                StringBuilder sb = new();
                 var page = PDFium.FPDF_LoadPage(d, i);
                 var textpage = PDFium.FPDFText_LoadPage(page);
                 var charcnt = PDFium.FPDFText_CountChars(textpage);
@@ -54,7 +55,9 @@ public static class PdfHelper
                     if (j > 5 && str[j - 2] == '\r' && str[j - 1] == '\n' && Math.Abs(b - lb) < Math.Abs(t - b) / 2)
                         sb.Remove(sb.Length - 2, 2);
 
-                    if (lr > 0 && lb > 0 && l - lr > width / chcnt * 8 && Math.Abs(t - lb) > Math.Abs(t - b) / 2)
+                    //Debug.WriteLine($"{str[j]}       {l:n2},{t:n2},{r:n2},{b:n2}        {l - lr:n2} {t - lb:n2}");
+
+                    if (str[j]!=' ' && lr > 0 && lb > 0 && ((l - lr < 0 && t - lb > 3) || (l - lr > width / chcnt * 8)))
                     {
                         sb.Append('\n');
                         rect = [0, 0, 0, 0];
@@ -62,7 +65,8 @@ public static class PdfHelper
                         chcnt = 0;
                     }
 
-                    lr = r; lb = b;
+                    if (str[j] != ' ')
+                    { lr = r; lb = b; }
 
                     var value = str[j];
                     sb.Append(value);
@@ -90,6 +94,15 @@ public static class PdfHelper
 
         return result.ToArray();//doc.GetPages().Select(p => Regex.Replace( string.Join('\n', p.GetWords().Select(x => x.Text)),"\n([^:：]+\n|$)","$1" )).ToArray();
     }
+
+
+
+
+
+
+
+
+
 
     private static void Rotate(PageOrientations o, ref double l, ref double t, ref double r, ref double b)
     {
