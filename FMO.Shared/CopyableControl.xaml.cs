@@ -66,9 +66,10 @@ public partial class CopyableControl : UserControl
                 break;
 
             case TextBox tb:
-                d = DependencyPropertyDescriptor.FromProperty(TextBlock.TextProperty, typeof(TextBox));
-                d.AddValueChanged(tb, (s, e) => SetCanCopy(tb.Text));
-                SetCanCopy(tb.Text);
+                tb.TextChanged += (s, e) => SetCanCopy(tb.Text);
+                //d = DependencyPropertyDescriptor.FromProperty(TextBlock.TextProperty, typeof(TextBox));
+                //d.AddValueChanged(tb, (s, e) => SetCanCopy(tb.Text));
+                //SetCanCopy(tb.Text);
                 break;
 
             case Label lb:
