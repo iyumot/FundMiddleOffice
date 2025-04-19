@@ -302,4 +302,5 @@ public partial class HomePageViewModel : ObservableObject
     public void OpenDataFolder()
     {
         try { System.Diagnostics.Process.Start("explorer.exe", Path.Combine(Directory.GetCurrentDirectory(), "files")); } catch { }
+    }
 }

@@ -48,6 +48,12 @@ public partial class App : Application
         Directory.CreateDirectory("files\\funds");
         Directory.CreateDirectory("plugins");
         Directory.CreateDirectory("files\\tac");
+        Directory.CreateDirectory("files\\accounts");
+        Directory.CreateDirectory("files\\accounts\\security");
+        Directory.CreateDirectory("files\\accounts\\stock");
+        Directory.CreateDirectory("files\\accounts\\future");
+        Directory.CreateDirectory("files\\accounts\\fund");
+        Directory.CreateDirectory("files\\accounts\\other");
 
         ///数据库自检等操作
         DatabaseAssist.SystemValidation();

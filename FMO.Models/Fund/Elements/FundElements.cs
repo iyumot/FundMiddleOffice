@@ -277,6 +277,15 @@ public class FundElements
         return changed;
     }
 
+    /// <summary>
+    /// 获取所有使用过的基金名
+    /// </summary>
+    /// <returns></returns>
+    public string[] GetAllNames()
+    {
+        return FullName.Changes.Values.ToArray();
+    }
+
 
     /// <summary>
     /// 删除份额相关的要素 

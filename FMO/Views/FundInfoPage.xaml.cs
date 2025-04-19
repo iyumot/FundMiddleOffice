@@ -77,6 +77,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         var db = DbHelper.Base();
         DailyValues = new ObservableCollection<DailyValue>(db.GetDailyCollection(Fund.Id).FindAll().OrderByDescending(x => x.Date).IntersectBy(TradingDay.Days, x => x.Date));
         var strategies = db.GetCollection<FundStrategy>().Find(x => x.FundId == fund.Id).ToList();
+        var names = db.GetCollection<FundElements>().FindById(FundId).FullName.Changes.Values.ToArray() ?? [];
         db.Dispose();
         App.Current.Dispatcher.BeginInvoke(() =>
         {
@@ -99,6 +100,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
 
         StrategyDataContext = new(FundId, fund.SetupDate);
+        AccountsDataContext = new(FundId, FundCode!, names);
 
         IsActive = true;
         _initialized = true;
