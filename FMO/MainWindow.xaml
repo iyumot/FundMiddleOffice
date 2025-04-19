@@ -112,9 +112,24 @@
                 Margin="5,0"
                 BorderThickness="0"
                 ItemsSource="{Binding Pages}">
-                <TabControl.ItemContainerStyle>
-                    <Style BasedOn="{StaticResource TabItemSliding}" TargetType="TabItem" />
-                </TabControl.ItemContainerStyle>
+                <!--<TabControl.ItemContainerStyle>
+                    <Style BasedOn="{StaticResource TabItemSliding}" TargetType="TabItem">
+                        <Setter Property="HeaderTemplate">
+                            <Setter.Value>
+                                <DataTemplate>
+                                    <DockPanel>
+                                        <TextBlock Text="{Binding Header}" />
+                                    </DockPanel>
+                                </DataTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="BorderBrush" Value="Orange" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </TabControl.ItemContainerStyle>-->
             </TabControl>
 
         </DockPanel>
