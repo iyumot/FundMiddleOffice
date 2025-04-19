@@ -12,6 +12,19 @@ public static class DateTimeHelper
         return (long)(dateTime - start).TotalSeconds;
     }
 
+
+    public static bool TryParse(string s, out DateOnly d)
+    {
+        if (DateOnly.TryParse(s, out d))
+            return true;
+        else if (DateOnly.TryParseExact(s, "yyyyMMdd", out d))
+            return true;
+        else if (DateOnly.TryParseExact(s, "yyyy-MM-dd", out d))
+            return true;
+        return false;
+    }
+
+
 }
 
 
