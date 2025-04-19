@@ -59,6 +59,32 @@ public class SecurityCard
 
 public class FundAccounts
 {
-    public int FundId { get; set; }
+    public int Id { get; set; }
+
+    /// <summary>
+    /// 一码通
+    /// </summary>
+    public string? UniversalNo { get; set; }
+
+    /// <summary>
+    /// 统一开户编码
+    /// </summary>
+    public string? FutureNo { get; set; }
+
+    /// <summary>
+    /// 中债登债券账户
+    /// </summary>
+    public string? CCDCBondAccount { get; set; }
+
+    /// <summary>
+    /// 上清所债券账户
+    /// </summary>
+    public string? SHCBondAccount { get; set; }
+
+
+
+
+
+
 
 }

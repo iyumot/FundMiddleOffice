@@ -36,6 +36,25 @@ public partial class FundAccountsViewModel : ObservableObject
         using var db = DbHelper.Base();
         var sas = db.GetCollection<SecurityCard>().Find(x => x.FundId == fundId);
         if (sas is not null) SecurityCards = new(sas.Select(x => new SecurityCardViewModel(x)));
+
+
+        var fa = db.GetCollection<FundAccounts>().FindById(FundId);
+        UniversalNo = fa?.UniversalNo;
+        FutureNo = fa?.FutureNo;
+        CCDCBondAccount = fa?.CCDCBondAccount;
+        SHCBondAccount = fa?.SHCBondAccount;
+
+        if (UniversalNo is null && sas?.Select(x => x.UniversalNo).Distinct().Where(x => !string.IsNullOrWhiteSpace(x)) is IEnumerable<string> s)
+        {
+            UniversalNo = s.FirstOrDefault();
+
+            if (UniversalNo is not null)
+            {
+                if (fa is null) fa = new();
+                fa.UniversalNo = UniversalNo;
+                db.GetCollection<FundAccounts>().Update(fa);
+            }
+        }
     }
 
     public int FundId { get; }
@@ -45,6 +64,27 @@ public partial class FundAccountsViewModel : ObservableObject
     [ObservableProperty]
     public partial ObservableCollection<SecurityCardViewModel>? SecurityCards { get; set; }
 
+
+    [ObservableProperty]
+    public partial string? UniversalNo { get; set; }
+
+    /// <summary>
+    /// 统一开户编码
+    /// </summary>
+    [ObservableProperty]
+    public partial string? FutureNo { get; set; }
+
+    /// <summary>
+    /// 中债登债券账户
+    /// </summary>
+    [ObservableProperty]
+    public partial string? CCDCBondAccount { get; set; }
+
+    /// <summary>
+    /// 上清所债券账户
+    /// </summary>
+    [ObservableProperty]
+    public partial string? SHCBondAccount { get; set; }
 
 
 

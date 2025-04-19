@@ -83,19 +83,62 @@
     </UserControl.Resources>
     <StackPanel Margin="10">
 
-        <!--<UniformGrid>
-            <DockPanel>
-                <shared:FileControl DockPanel.Dock="Bottom" />
-                <TextBlock Text="托管账户" />
-            </DockPanel>
+        <UniformGrid Rows="2">
+            <UniformGrid.Resources>
+                <Style BasedOn="{StaticResource TextBoxExtend}" TargetType="TextBox">
+                    <Setter Property="Margin" Value="5,0,0,0" />
+                </Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Width" Value="85" />
+                </Style>
+            </UniformGrid.Resources>
+            <BulletDecorator>
+                <BulletDecorator.Bullet>
+                    <TextBlock Text="证券一码通" />
+                </BulletDecorator.Bullet>
+                <shared:CopyableControl HorizontalContentAlignment="Stretch">
+                    <TextBox Text="{Binding UniversalNo}" />
+                </shared:CopyableControl>
+            </BulletDecorator>
 
-            <TextBlock Text="托管账户" />
-        </UniformGrid>-->
+            <BulletDecorator>
+                <BulletDecorator.Bullet>
+                    <TextBlock Text="中债登债券账户" />
+                </BulletDecorator.Bullet>
+                <shared:CopyableControl HorizontalContentAlignment="Stretch">
+                    <TextBox Text="{Binding UniversalNo}" />
+                </shared:CopyableControl>
+            </BulletDecorator>
+
+            <BulletDecorator>
+                <BulletDecorator.Bullet>
+                    <TextBlock Text="统一开户编码" />
+                </BulletDecorator.Bullet>
+                <shared:CopyableControl HorizontalContentAlignment="Stretch">
+                    <TextBox Text="{Binding UniversalNo}" />
+                </shared:CopyableControl>
+            </BulletDecorator>
+
+            <BulletDecorator>
+                <BulletDecorator.Bullet>
+                    <TextBlock Text="上清所债券账户" />
+                </BulletDecorator.Bullet>
+                <shared:CopyableControl HorizontalContentAlignment="Stretch">
+                    <TextBox Text="{Binding UniversalNo}" />
+                </shared:CopyableControl>
+            </BulletDecorator>
+        </UniformGrid>
 
         <!--  证券账户  -->
 
+        <Separator Margin="8" />
+
+
         <DockPanel>
-            <Border Background="Green" CornerRadius="5">
+            <Border
+                Width="60"
+                Background="Green"
+                CornerRadius="5">
                 <StackPanel>
                     <TextBlock
                         Margin="5,10"
@@ -122,6 +165,42 @@
         </DockPanel>
 
 
+        <Separator Margin="8" />
+
+        <!--  股票户  -->
+        <DockPanel>
+            <Border
+                Width="60"
+                Background="Green"
+                CornerRadius="5">
+                <StackPanel>
+                    <TextBlock
+                        Width="40"
+                        Margin="5,10"
+                        HorizontalAlignment="Center"
+                        FontSize="16"
+                        Foreground="White"
+                        Text="股票账户"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
+
+                    <Button
+                        hc:IconElement.Geometry="{StaticResource f.circle-plus}"
+                        Command="{Binding AddSecurityCardCommand}"
+                        Foreground="White"
+                        Style="{StaticResource ButtonIcon}" />
+                </StackPanel>
+
+            </Border>
+
+            <ListBox
+                d:ItemsSource="{d:SampleData}"
+                BorderThickness="0"
+                ItemTemplate="{StaticResource SecurityCardItem}"
+                ItemsPanel="{StaticResource SecurityCardPanel}"
+                ItemsSource="{Binding SecurityCards}"
+                Style="{StaticResource ListBoxCustom}" />
+        </DockPanel>
 
 
 
