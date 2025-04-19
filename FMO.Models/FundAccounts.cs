@@ -6,6 +6,14 @@ using System.Threading.Tasks;
 
 namespace FMO.Models;
 
+public enum SecurityCardType
+{
+    Unk,
+
+    ShangHai,
+
+    ShenZhen
+}
 
 /// <summary>
 /// 股东卡
@@ -34,6 +42,11 @@ public class SecurityCard
     public required string Name { get; set; }
 
     public string? FundCode { get; set; }
+
+    /// <summary>
+    /// 沪、深
+    /// </summary>
+    public SecurityCardType Type { get; set; }
 
     /// <summary>
     /// 申请日期
