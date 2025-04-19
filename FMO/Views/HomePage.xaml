@@ -28,6 +28,12 @@
             Style="{StaticResource GroupBoxTab}">
             <DockPanel>
                 <Button
+                    hc:IconElement.Geometry="{StaticResource f.folder}"
+                    Command="{Binding OpenDataFolderCommand}"
+                    Content="数据文件夹"
+                    Style="{StaticResource ButtonIcon}" />
+
+                <Button
                     hc:IconElement.Geometry="{StaticResource f.sack-dollar}"
                     Command="{Binding CalcFeeCommand}"
                     Content="费用计算"
