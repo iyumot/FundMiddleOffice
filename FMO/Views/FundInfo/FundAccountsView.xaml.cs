@@ -8,6 +8,7 @@ using Serilog;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace FMO;
@@ -34,7 +35,7 @@ public partial class FundAccountsViewModel : ObservableObject
 
         using var db = DbHelper.Base();
         var sas = db.GetCollection<SecurityCard>().Find(x => x.FundId == fundId);
-        if (sas is not null) SecurityCards = new (sas);
+        if (sas is not null) SecurityCards = new(sas.Select(x => new SecurityCardViewModel(x)));
     }
 
     public int FundId { get; }
@@ -42,7 +43,7 @@ public partial class FundAccountsViewModel : ObservableObject
     public string[] Names { get; }
 
     [ObservableProperty]
-    public partial ObservableCollection<SecurityCard>? SecurityCards { get; set; }
+    public partial ObservableCollection<SecurityCardViewModel>? SecurityCards { get; set; }
 
 
 
@@ -61,7 +62,7 @@ public partial class FundAccountsViewModel : ObservableObject
         if (dr is null || !dr.Value) return;
 
         List<SecurityCard> list = new();
-
+        int cnt = 0;
         foreach (var f in fd.FileNames)
         {
             try
@@ -90,7 +91,7 @@ public partial class FundAccountsViewModel : ObservableObject
                     }
                     var b = m.Groups[1].Value;
 
-                    m = Regex.Match(c.text, @"客户名称\s*[:：]\s*(\w+)");
+                    m = Regex.Match(c.text, @"客户名称\s*[:：]\s*([\w（）\(\)]+\s*[-－]\w+)");
                     if (!m.Success)
                     {
                         Log.Error($"解析股卡失败:\n {c.text}");
@@ -106,13 +107,13 @@ public partial class FundAccountsViewModel : ObservableObject
                     }
                     var e = m.Groups[1].Value;
 
-                    m = Regex.Match(c.text, @"(?:开立|申请|受理)日期\s*[:：]\s*([\w\s]+)");
+                    m = Regex.Match(c.text, @"(?:开立|受理)日期\s*[:：]\s*([\d年月日\s]+)");
                     if (!m.Success)
                     {
                         Log.Error($"解析股卡失败:\n {c.text}");
                         continue;
                     }
-                    var g = m.Groups[1].Value;
+                    var g = m.Groups[1].Value.Trim();
                     if (!DateTimeHelper.TryParse(g, out var date))
                     {
                         Log.Error($"解析股卡失败:\n {c.text}");
@@ -131,6 +132,12 @@ public partial class FundAccountsViewModel : ObservableObject
                     if (m.Success)
                         sa.FundCode = m.Groups[1].Value;
 
+
+                    if (c.text.Contains("沪市A"))
+                        sa.Type = SecurityCardType.ShangHai;
+                    else if (c.text.Contains("深市A"))
+                        sa.Type = SecurityCardType.ShenZhen;
+
                     // 保存文件
                     using var outf = new FileStream(@$"files\accounts\security\{a}-{e}.pdf", FileMode.Create);
                     outf.Write(c.page);
@@ -139,22 +146,30 @@ public partial class FundAccountsViewModel : ObservableObject
                     if (FindFund(sa))
                     {
                         using var db = DbHelper.Base();
-                        db.GetCollection<SecurityCard>().Insert(sa);
+                        db.GetCollection<SecurityCard>().EnsureIndex(x => x.SerialNo, true);
+                        var old = db.GetCollection<SecurityCard>().FindOne(x => x.SerialNo == sa.SerialNo);
+                        if (old is not null) sa.Id = old.Id;
+                        db.GetCollection<SecurityCard>().Upsert(sa);
+
+                        ++cnt;
                     }
 
-                    if (sa.FundId == FundId)                    
+                    if (sa.FundId == FundId)
                         list.Add(sa);
-                    
+
                 }
 
-                if(list.Count > 0)
+                if (list.Count > 0)
                 {
                     if (SecurityCards is null)
-                        SecurityCards = new(list);
+                        SecurityCards = new(list.Select(x => new SecurityCardViewModel(x)));
                     else
                         foreach (var l in list)
-                            SecurityCards.Add(l);
+                            SecurityCards.Add(new(l));
                 }
+
+
+                HandyControl.Controls.Growl.Info($"已解析{cnt}个股卡{(list.Count < cnt ? $"，{cnt-list.Count}个不属于本产品":"")}"); 
             }
             catch (Exception e)
             {
@@ -193,9 +208,126 @@ public partial class FundAccountsViewModel : ObservableObject
                 sa.FundId = FundId;
                 return true;
             }
+            else
+            {
+                using var db = DbHelper.Base();
+                var fund = db.GetCollection<Fund>().FindOne(x => sa.Name.Contains(x.Name));
+                if (fund is not null)
+                {
+                    sa.FundId = fund.Id;
+                    return true;
+                }
+            }
         }
 
         Log.Error($"股卡{sa.SerialNo}-{sa.CardNo}未找到对应的基金");
         return false;
+    }
+}
+
+
+public partial class SecurityCardViewModel : ObservableObject
+{
+    public SecurityCardViewModel(SecurityCard x)
+    {
+        Id = x.Id;
+        FundId = x.FundId;
+        Name = x.Name;
+        SerialNo = x.SerialNo;
+        CardNo = x.CardNo;
+        UniversalNo = x.UniversalNo;
+        FundCode = x.FundCode;
+        Date = x.Date;
+        Tag = x.Type switch { SecurityCardType.ShangHai => "沪", SecurityCardType.ShenZhen => "深", _ => x.CardNo.StartsWith('B') ? "沪" : "深" };
+        File = new FileInfo(@$"files\accounts\security\{SerialNo}-{CardNo}.pdf");
+    }
+
+    public int Id { get; set; }
+
+    public int FundId { get; set; }
+
+    /// <summary>
+    /// 流水号
+    /// </summary>
+    [ObservableProperty] public partial string? SerialNo { get; set; }
+
+    /// <summary>
+    /// 子账户号
+    /// </summary>
+    [ObservableProperty] public partial string? CardNo { get; set; }
+
+    /// <summary>
+    /// 一码通
+    /// </summary>
+    [ObservableProperty] public partial string? UniversalNo { get; set; }
+
+    [ObservableProperty] public partial string? Name { get; set; }
+
+    [ObservableProperty] public partial string? FundCode { get; set; }
+
+    /// <summary>
+    /// 申请日期
+    /// </summary>
+    public DateOnly Date { get; set; }
+
+    public string Tag { get; set; }
+
+    public FileInfo File { get; set; }
+
+    [RelayCommand]
+    public void View()
+    {
+        if (File?.Exists ?? false)
+            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(File.FullName) { UseShellExecute = true }); } catch { }
+    }
+
+    [RelayCommand]
+    public void Print()
+    {
+        if (File is null || !File.Exists) return;
+
+
+        PrintDialog printDialog = new PrintDialog();
+        if (printDialog.ShowDialog() == true)
+        {
+            // 获取默认打印机名称
+            string printerName = printDialog.PrintQueue.Name;
+
+            // 使用系统默认的PDF阅读器打印PDF文档
+            System.Diagnostics.Process process = new System.Diagnostics.Process();
+            process.StartInfo.FileName = File.FullName;
+            process.StartInfo.Verb = "print";
+            process.Start();
+
+            // 等待打印任务完成
+            process.WaitForExit();
+        }
+    }
+
+
+    [RelayCommand]
+    public void SaveAs()
+    {
+        if (File is null || !File.Exists) return;
+
+        try
+        {
+            var d = new SaveFileDialog();
+            d.FileName = File.Name;
+            d.DefaultExt = ".pdf";
+            d.Filter = "Pdf文件|*.pdf";
+            if (d.ShowDialog() == true)
+                System.IO.File.Copy(File.FullName, d.FileName);
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"文件另存为失败: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    public void Copy()
+    {
+        Clipboard.SetDataObject(new DataObject(CardNo));
     }
 }

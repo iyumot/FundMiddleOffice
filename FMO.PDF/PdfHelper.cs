@@ -1,6 +1,5 @@
 ﻿using PDFiumSharp;
 using PDFiumSharp.Enums;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Windows;
@@ -42,34 +41,70 @@ public static class PdfHelper
 
                 double lb = 0, lr = 0, width = 0; int chcnt = 0;
                 double[] rect = [0, 0, 0, 0];
+                Rect rc = new();
 
                 for (int j = 0; j < charcnt; j++)
                 {
+                    var value = str[j];
+                    if (value == '\r' || value == '\n') continue;
+                    if (value == ' ' && rc == default) continue;
+
                     var ok = PDFium.FPDFText_GetCharBox(textpage, j, out double l, out double r, out double b, out double t);
                     if (!ok) break;
 
+
                     Rotate(rotate, ref l, ref t, ref r, ref b);
+
+                    //是否同行
+                    if (rc == default)
+                    {
+                        rc = new Rect(l, t, r - l, b - t);
+                        sb.Append(value);
+                    }
+                    else
+                    {
+                        bool sameLine = rc == default ? true : IntersectionRatio(rc.Top, rc.Bottom, t, b) > 0.7;
+
+                        // 间隔>5个字宽
+                        if (l - rc.Right > rc.Width / chcnt * 5)
+                        {
+                            rc = new Rect(l, t, r - l, b - t);
+                            sb.Append('\n');
+                            chcnt = 0;
+                        } 
+                        else if (t - rc.Bottom > 3) // 换行
+                        {
+                            // 第一个空白符，不要
+                            if (value == ' ') continue;
+
+                            rc = new Rect(l, t, r - l, b - t);
+                            sb.Append('\n');
+                            chcnt = 0;
+                        }
+                        else rc.Union(new Point(r, b));
+
+                        sb.Append(value);
+                    }
                     width += r - l;
                     ++chcnt;
 
-                    if (j > 5 && str[j - 2] == '\r' && str[j - 1] == '\n' && Math.Abs(b - lb) < Math.Abs(t - b) / 2)
-                        sb.Remove(sb.Length - 2, 2);
+                    //if (j > 5 && str[j - 2] == '\r' && str[j - 1] == '\n' && Math.Abs(b - lb) < Math.Abs(t - b) / 2)
+                    //    sb.Remove(sb.Length - 2, 2);
 
-                    //Debug.WriteLine($"{str[j]}       {l:n2},{t:n2},{r:n2},{b:n2}        {l - lr:n2} {t - lb:n2}");
+                    ////Debug.WriteLine($"{str[j]}       {l:n2},{t:n2},{r:n2},{b:n2}        {l - lr:n2} {t - lb:n2}");
 
-                    if (str[j]!=' ' && lr > 0 && lb > 0 && ((l - lr < 0 && t - lb > 3) || (l - lr > width / chcnt * 8)))
-                    {
-                        sb.Append('\n');
-                        rect = [0, 0, 0, 0];
-                        width = 0;
-                        chcnt = 0;
-                    }
+                    //if (str[j] != ' ' && lr > 0 && lb > 0 && ((l - lr < 0 && t - lb > 3) || (l - lr > width / chcnt * 8)))
+                    //{
+                    //    sb.Append('\n');
+                    //    rect = [0, 0, 0, 0];
+                    //    width = 0;
+                    //    chcnt = 0;
+                    //}
 
-                    if (str[j] != ' ')
-                    { lr = r; lb = b; }
+                    //if (str[j] != ' ')
+                    //{ lr = r; lb = b; }
 
-                    var value = str[j];
-                    sb.Append(value);
+                    //sb.Append(value);
 
                 }
 
@@ -98,7 +133,18 @@ public static class PdfHelper
 
 
 
+    static double IntersectionRatio(double a, double b, double c, double d)
+    {
+        // 找出两个区间左端点的最大值
+        double leftMax = Math.Max(a, c);
+        // 找出两个区间右端点的最小值
+        double rightMin = Math.Min(b, d);
 
+        // 判断是否存在交集
+        if (leftMax < rightMin)
+            return (rightMin - leftMax) / (Math.Max(b, d) - Math.Min(a, c));
+        return 0;
+    }
 
 
 
