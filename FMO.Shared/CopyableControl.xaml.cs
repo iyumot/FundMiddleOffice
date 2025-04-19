@@ -22,7 +22,7 @@ public partial class CopyableControl : UserControl
 
     // Using a DependencyProperty as the backing store for CanCopy.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty CanCopyProperty =
-        DependencyProperty.Register("CanCopy", typeof(bool), typeof(CopyableControl), new PropertyMetadata(true));
+        DependencyProperty.Register("CanCopy", typeof(bool), typeof(CopyableControl), new PropertyMetadata(false));
 
 
 
