@@ -19,6 +19,7 @@ public partial class StockAccountViewModel : ObservableObject
         Company = v.Company;
 
         Common = new(v.Id, v.Common);
+        Credit = new(v.Id, v.Credit);
     }
 
     public string? Company { get; set; }
@@ -27,6 +28,7 @@ public partial class StockAccountViewModel : ObservableObject
     public BasicAccountViewModel Common { get; set; }
 
 
+    public BasicAccountViewModel Credit { get; set; }
 
 
 
@@ -109,7 +111,7 @@ public partial class StockAccountViewModel : ObservableObject
 
         private void SetFile(FileViewModel<BasicAccountEvent> v, FileInfo fi)
         {
-            if(Id == 0)
+            if (Id == 0)
             {
                 return;
             }
@@ -129,6 +131,21 @@ public partial class StockAccountViewModel : ObservableObject
 
             var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
 
+            using var db = DbHelper.Base();
+            var obj = db.GetCollection<StockAccount>().FindById(Id);
+
+            if (Name == obj.Common?.Name)
+            {
+                obj.Common.BankLetter = new FileStorageInfo { Name = "银证", Hash = hash, Path = path, Time = fi.LastWriteTime };
+                db.GetCollection<StockAccount>().Update(obj);
+            }
+            else if (Name == obj.Credit?.Name)
+            {
+                obj.Credit.BankLetter = new FileStorageInfo { Name = "银信", Hash = hash, Path = path, Time = fi.LastWriteTime };
+                db.GetCollection<StockAccount>().Update(obj);
+            }
+
+            v.File = fi;
 
         }
 
@@ -148,6 +165,68 @@ public partial class StockAccountViewModel : ObservableObject
             var folder = Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "stock", Id.ToString(), Name, "用印文件");
             if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
             try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = folder, UseShellExecute = true }); } catch { }
+        }
+
+
+
+
+
+        [RelayCommand]
+        public void Save()
+        {
+            using var db = DbHelper.Base();
+            var obj = db.GetCollection<StockAccount>().FindById(Id);
+
+            if (Name == obj.Common?.Name)
+            {
+                obj.Common!.Account = Account;
+                obj.Common!.TradePassword = TradePassword;
+                obj.Common!.CapitalPassword = CapitalPassword;
+
+                db.GetCollection<StockAccount>().Update(obj);
+            }
+            else if (Name == obj.Credit?.Name)
+            {
+                obj.Credit!.Account = Account;
+                obj.Credit!.TradePassword = TradePassword;
+                obj.Credit!.CapitalPassword = CapitalPassword;
+
+                db.GetCollection<StockAccount>().Update(obj);
+            }
+
+            IsReadOnly = true;
+        }
+
+        [RelayCommand]
+        public void DeleteFile(IFileSelector file)
+        {
+            if (file is FileViewModel<BasicAccountEvent> v)
+            {
+                if (v.File is null) return;
+                try
+                {
+
+                    using var db = DbHelper.Base();
+                    var obj = db.GetCollection<StockAccount>().FindById(Id);
+
+                    if (Name == obj.Common?.Name)
+                    {
+                        obj.Common!.BankLetter = null;
+                        db.GetCollection<StockAccount>().Update(obj);
+                    }
+                    else if (Name == obj.Credit?.Name)
+                    {
+                        obj.Credit!.BankLetter = null;
+                        db.GetCollection<StockAccount>().Update(obj);
+                    }
+                    File.Delete(v.File.FullName);
+                    v.File = null;
+                }
+                catch (Exception e)
+                {
+                    Log.Error($"删除股票账户银行关联文件失败 {e.Message}");
+                }
+            }
         }
     }
 

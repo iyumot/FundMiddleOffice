@@ -112,6 +112,7 @@ public class StockAccount
     public BasicAccountEvent? Credit { get; set; }
 
 
+    public List<AccountEvent>? Events { get; set; }
 
 }
 

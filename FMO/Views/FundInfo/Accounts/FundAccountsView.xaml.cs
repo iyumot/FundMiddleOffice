@@ -358,7 +358,13 @@ public partial class FundAccountsViewModel : ObservableObject
     {
         App.Current.Dispatcher.BeginInvoke(() =>
         {
-            var obj = new StockAccount { FundId = FundId, Company = selectedSecurityCompany, Common = new BasicAccountEvent { Name = "基本账户" } };
+            var obj = new StockAccount
+            {
+                FundId = FundId,
+                Company = selectedSecurityCompany,
+                Common = new BasicAccountEvent { Name = "基本账户" }, 
+                Credit = new BasicAccountEvent { Name = "信用账户" }
+            };
 
             using var db = DbHelper.Base();
             db.GetCollection<StockAccount>().Insert(obj);

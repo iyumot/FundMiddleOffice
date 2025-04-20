@@ -10,9 +10,12 @@
     xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     d:DataContext="{d:DesignInstance Type=local:FundAccountsViewModel}"
     d:DesignHeight="450"
-    d:DesignWidth="800"
+    d:DesignWidth="1200"
     mc:Ignorable="d">
     <UserControl.Resources>
+        
+ 
+
         <DataTemplate x:Key="SecurityCardItem" DataType="model:SecurityCard">
             <hc:SimplePanel>
                 <Border Margin="2" Background="WhiteSmoke">
@@ -78,11 +81,9 @@
             </hc:SimplePanel>
         </DataTemplate>
 
-
-
         <DataTemplate x:Key="StockItem" DataType="local:StockAccountViewModel">
-            <Border Background="WhiteSmoke">
-                <StackPanel Width="300" Margin="1,0">
+            <Border Margin="2,0" Background="WhiteSmoke">
+                <StackPanel MinWidth="300">
                     <TextBlock
                         Margin="4"
                         HorizontalAlignment="Center"
@@ -107,12 +108,12 @@
                                     TextWrapping="Wrap" />
                                 <StackPanel HorizontalAlignment="Center">
                                     <ToggleButton
-                                        hc:IconElement.Geometry="{StaticResource f.pen}"
                                         DockPanel.Dock="Bottom"
-                                        IsChecked="{Binding IsReadOnly}"
-                                        Style="{StaticResource EditSwitch.Small}" />
+                                        IsChecked="{Binding IsReadOnly, Converter={StaticResource Boolean2BooleanReConverter}}"
+                                        Style="{StaticResource ToggleEditable}" />
                                     <Button
                                         hc:IconElement.Geometry="{StaticResource f.floppy-disk}"
+                                        Command="{Binding SaveCommand}"
                                         Style="{StaticResource ButtonIcon.Small}"
                                         Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
                                 </StackPanel>
@@ -150,7 +151,8 @@
                                     <TextBox
                                         Margin="4,0"
                                         IsReadOnly="{Binding IsReadOnly}"
-                                        Style="{StaticResource TextBox.Small}" />
+                                        Style="{StaticResource TextBox.Small}"
+                                        Text="{Binding Account, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
                                 </shared:CopyableControl>
                             </BulletDecorator>
 
@@ -163,7 +165,8 @@
                                     <TextBox
                                         Margin="4,0"
                                         IsReadOnly="{Binding IsReadOnly}"
-                                        Style="{StaticResource TextBox.Small}" />
+                                        Style="{StaticResource TextBox.Small}"
+                                        Text="{Binding TradePassword, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
                                 </shared:CopyableControl>
                             </BulletDecorator>
 
@@ -176,24 +179,43 @@
                                     <TextBox
                                         Margin="4,0"
                                         IsReadOnly="{Binding IsReadOnly}"
-                                        Style="{StaticResource TextBox.Small}" />
+                                        Style="{StaticResource TextBox.Small}"
+                                        Text="{Binding CapitalPassword, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
                                 </shared:CopyableControl>
                             </BulletDecorator>
                         </StackPanel>
                     </DockPanel>
 
                     <!--  信用户  -->
-                    <DockPanel Margin="0,4">
+
+                    <!--<DockPanel Margin="0,4" DataContext="{Binding Credit}">
                         <Border Background="Orange">
-                            <TextBlock
-                                Width="22"
-                                Margin="3,0"
-                                Padding="4"
-                                VerticalAlignment="Center"
-                                FontSize="14"
-                                Text="信用账户"
-                                TextWrapping="Wrap" />
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                                <TextBlock
+                                    Width="40"
+                                    Margin="3,0"
+                                    Padding="4"
+                                    VerticalAlignment="Center"
+                                    FontSize="14"
+                                    Text="{Binding Name}"
+                                    TextWrapping="Wrap" />
+                                <StackPanel HorizontalAlignment="Center">
+                                    <ToggleButton
+                                        hc:IconElement.Geometry="{StaticResource f.pen}"
+                                        DockPanel.Dock="Bottom"
+                                        IsChecked="{Binding IsReadOnly}"
+                                        Style="{StaticResource EditSwitch.Small}" />
+                                    <Button
+                                        hc:IconElement.Geometry="{StaticResource f.floppy-disk}"
+                                        Command="{Binding SaveCommand}"
+                                        Style="{StaticResource ButtonIcon.Small}"
+                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                                </StackPanel>
+
+                            </StackPanel>
                         </Border>
+
 
                         <StackPanel Margin="2,0">
                             <UniformGrid Rows="1">
@@ -245,7 +267,7 @@
                                 </shared:CopyableControl>
                             </BulletDecorator>
                         </StackPanel>
-                    </DockPanel>
+                    </DockPanel>-->
 
                 </StackPanel>
             </Border>
@@ -254,6 +276,12 @@
         <ItemsPanelTemplate x:Key="SecurityCardPanel">
             <WrapPanel IsItemsHost="True" />
         </ItemsPanelTemplate>
+
+
+        <ItemsPanelTemplate x:Key="StockAccountPanel">
+            <UniformGrid Columns="3" IsItemsHost="True" />
+        </ItemsPanelTemplate>
+
     </UserControl.Resources>
     <StackPanel Margin="10">
 
@@ -372,7 +400,7 @@
                 d:ItemsSource="{d:SampleData}"
                 BorderThickness="0"
                 ItemTemplate="{StaticResource StockItem}"
-                ItemsPanel="{StaticResource SecurityCardPanel}"
+                ItemsPanel="{StaticResource StockAccountPanel}"
                 ItemsSource="{Binding StockAccounts}"
                 Style="{StaticResource ListBoxCustom}" />
 
