@@ -13,8 +13,8 @@
     d:DesignWidth="1200"
     mc:Ignorable="d">
     <UserControl.Resources>
-        
- 
+
+
 
         <DataTemplate x:Key="SecurityCardItem" DataType="model:SecurityCard">
             <hc:SimplePanel>
@@ -84,15 +84,26 @@
         <DataTemplate x:Key="StockItem" DataType="local:StockAccountViewModel">
             <Border Margin="2,0" Background="WhiteSmoke">
                 <StackPanel MinWidth="300">
-                    <TextBlock
-                        Margin="4"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        FontSize="16"
-                        FontWeight="Bold"
-                        Style="{StaticResource TextBlockDefaultBold}"
-                        Text="{Binding Company}" />
+                    <DockPanel>
+                        <Button
+                            x:Name="del"
+                            hc:IconElement.Geometry="{StaticResource f.trash}"
+                            Command="{Binding RelativeSource={RelativeSource AncestorType=local:FundAccountsView}, Path=DataContext.DeleteStockCommand}"
+                            CommandParameter="{Binding .}"
+                            DockPanel.Dock="Right"
+                            Foreground="Red"
+                            Style="{StaticResource ButtonIcon.Small}"
+                            Visibility="Collapsed" />
 
+                        <TextBlock
+                            Margin="4"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontSize="16"
+                            FontWeight="Bold"
+                            Style="{StaticResource TextBlockDefaultBold}"
+                            Text="{Binding Company}" />
+                    </DockPanel>
                     <!--  基本户  -->
                     <DockPanel DataContext="{Binding Common}">
                         <Border Background="Orange">
@@ -271,6 +282,11 @@
 
                 </StackPanel>
             </Border>
+            <DataTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="del" Property="Visibility" Value="Visible" />
+                </Trigger>
+            </DataTemplate.Triggers>
         </DataTemplate>
 
         <ItemsPanelTemplate x:Key="SecurityCardPanel">
