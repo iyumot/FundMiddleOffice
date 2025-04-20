@@ -460,4 +460,37 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <Style x:Key="ToggleEditable" TargetType="ToggleButton">
+        <Setter Property="Width" Value="22" />
+        <Setter Property="Height" Value="22" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="hc:IconElement.Geometry" Value="{StaticResource f.pen}" />
+        <Setter Property="Content" Value="{StaticResource f.pen}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <hc:SimplePanel Margin="3" Background="Transparent">
+                        <Viewbox Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=hc:SimplePanel}}" Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=hc:SimplePanel}}">
+                            <Path
+                                x:Name="path"
+                                Data="{TemplateBinding Content}"
+                                Fill="Green" />
+                        </Viewbox>
+                    </hc:SimplePanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter Property="Content" Value="{StaticResource f.eye}" />
+                            <Setter TargetName="path" Property="Fill" Value="Black" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
+    </Style>
+
+
+
 </ResourceDictionary>
