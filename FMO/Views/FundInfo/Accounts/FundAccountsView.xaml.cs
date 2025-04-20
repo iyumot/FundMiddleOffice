@@ -351,6 +351,14 @@ public partial class FundAccountsViewModel : ObservableObject
         });
     }
 
+    [RelayCommand]
+    public void DeleteStock(StockAccountViewModel v)
+    {
+        using var db = DbHelper.Base();
+        db.GetCollection<StockAccount>().Delete(v.Id);
+        StockAccounts?.Remove(v);
+    }
+
 
     #region Stock
 
@@ -362,7 +370,7 @@ public partial class FundAccountsViewModel : ObservableObject
             {
                 FundId = FundId,
                 Company = selectedSecurityCompany,
-                Common = new BasicAccountEvent { Name = "基本账户" }, 
+                Common = new BasicAccountEvent { Name = "基本账户" },
                 Credit = new BasicAccountEvent { Name = "信用账户" }
             };
 

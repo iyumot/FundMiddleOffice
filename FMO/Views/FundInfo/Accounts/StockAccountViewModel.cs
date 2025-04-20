@@ -17,10 +17,13 @@ public partial class StockAccountViewModel : ObservableObject
     public StockAccountViewModel(StockAccount v)
     {
         Company = v.Company;
+        Id = v.Id;
 
         Common = new(v.Id, v.Common);
         Credit = new(v.Id, v.Credit);
     }
+
+    public int Id { get; set; }
 
     public string? Company { get; set; }
 
