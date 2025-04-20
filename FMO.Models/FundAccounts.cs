@@ -57,6 +57,70 @@ public class SecurityCard
 }
 
 
+
+public class AccountEvent
+{
+    public required string Name { get; set; }
+
+    
+}
+
+
+public class BasicAccountEvent:AccountEvent
+{
+    /// <summary>
+    /// 资金账号
+    /// </summary>
+    public string? Account { get; set; }
+
+    /// <summary>
+    /// 交易密码
+    /// </summary>
+    public string? TradePassword { get; set; }
+
+    /// <summary>
+    /// 资金密码
+    /// </summary>
+    public string? CapitalPassword { get; set; }
+
+    /// <summary>
+    /// 银证、银期等
+    /// </summary>
+    public FileStorageInfo? BankLetter { get; set; }
+}
+
+
+/// <summary>
+/// 股票账户
+/// </summary>
+public class StockAccount
+{
+    public int Id { get; set; }
+
+    public int FundId { get; set; }
+
+    public string? Company { get; set; }
+
+    /// <summary>
+    /// 基本户
+    /// </summary>
+    public BasicAccountEvent? Common { get; set; }
+
+    /// <summary>
+    /// 信用户
+    /// </summary>
+    public BasicAccountEvent? Credit { get; set; }
+
+
+
+}
+
+
+
+
+/// <summary>
+/// 
+/// </summary>
 public class FundAccounts
 {
     public int Id { get; set; }
