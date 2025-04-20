@@ -10,6 +10,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace FMO;
 
@@ -35,7 +36,12 @@ public partial class FundAccountsViewModel : ObservableObject
 
         using var db = DbHelper.Base();
         var sas = db.GetCollection<SecurityCard>().Find(x => x.FundId == fundId);
-        if (sas is not null) SecurityCards = new(sas.Select(x => new SecurityCardViewModel(x)));
+        if (sas is not null)
+            SecurityCards = new(sas.Select(x => new SecurityCardViewModel(x)));
+
+        var sa = db.GetCollection<StockAccount>().Find(x => x.FundId == fundId);
+        if (sa is not null)
+            StockAccounts = new(sa.Select(x => new StockAccountViewModel(x)));
 
 
         var fa = db.GetCollection<FundAccounts>().FindById(FundId);
@@ -55,6 +61,40 @@ public partial class FundAccountsViewModel : ObservableObject
                 db.GetCollection<FundAccounts>().Update(fa);
             }
         }
+
+
+        SecurityCompanies = new CollectionViewSource();
+        try
+        {
+            if (File.Exists("config\\securitycompany.txt"))
+            {
+                using var sr = new StreamReader("config\\securitycompany.txt");
+                var arr = sr.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+                var regex = new Regex("(?:股份)*有限(?:责任)*公司");
+                SecurityCompanies.Source = arr.Select(x => regex.Replace(x, "")).ToArray();
+            }
+            else
+            {
+                var fs = Application.GetResourceStream(new Uri("res/securitycompany.txt", UriKind.Relative));
+                using var sr = new StreamReader(fs.Stream);
+                var arr = sr.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+                var regex = new Regex("(?:股份)*有限(?:责任)*公司");
+                SecurityCompanies.Source = arr.Select(x => regex.Replace(x, "")).ToArray();
+            }
+
+            SecurityCompanies.Filter += (s, e) => e.Accepted = string.IsNullOrWhiteSpace(SecurityCompanyKeyword) ? true : e.Item switch { string ss => ss.Contains(SecurityCompanyKeyword), _ => true };
+
+
+        }
+        catch (Exception e)
+        {
+            Log.Error($"加载证券公司列表失败{e.Message}");
+        }
+
+
+
     }
 
     public int FundId { get; }
@@ -63,6 +103,31 @@ public partial class FundAccountsViewModel : ObservableObject
 
     [ObservableProperty]
     public partial ObservableCollection<SecurityCardViewModel>? SecurityCards { get; set; }
+
+
+    #region Stock
+
+    [ObservableProperty]
+    public partial bool ShowChooseStockCompany { get; set; }
+
+    public CollectionViewSource SecurityCompanies { get; set; }
+
+
+
+    [ObservableProperty]
+    public partial string? SecurityCompanyKeyword { get; set; }
+
+    private AutoResetEvent ChooseStockCompanyEvent { get; } = new(false);
+
+    [ObservableProperty]
+    public partial string? SelectedSecurityCompany { get; set; }
+
+
+    [ObservableProperty]
+    public partial ObservableCollection<StockAccountViewModel>? StockAccounts { get; set; }
+
+    #endregion
+
 
 
     [ObservableProperty]
@@ -209,7 +274,7 @@ public partial class FundAccountsViewModel : ObservableObject
                 }
 
 
-                HandyControl.Controls.Growl.Info($"已解析{cnt}个股卡{(list.Count < cnt ? $"，{cnt-list.Count}个不属于本产品":"")}"); 
+                HandyControl.Controls.Growl.Info($"已解析{cnt}个股卡{(list.Count < cnt ? $"，{cnt - list.Count}个不属于本产品" : "")}");
             }
             catch (Exception e)
             {
@@ -263,111 +328,69 @@ public partial class FundAccountsViewModel : ObservableObject
         Log.Error($"股卡{sa.SerialNo}-{sa.CardNo}未找到对应的基金");
         return false;
     }
+
+
+    [RelayCommand]
+    public void AddStock()
+    {
+        ShowChooseStockCompany = true;
+
+        ChooseStockCompanyEvent.Reset();
+        SelectedSecurityCompany = null;
+
+
+        Task.Run(() =>
+        {
+            ChooseStockCompanyEvent.WaitOne();
+
+            ShowChooseStockCompany = false;
+
+            if (!string.IsNullOrWhiteSpace(SelectedSecurityCompany))
+                CreateStockAccount(SelectedSecurityCompany.Trim());
+
+        });
+    }
+
+
+    #region Stock
+
+    private void CreateStockAccount(string selectedSecurityCompany)
+    {
+        App.Current.Dispatcher.BeginInvoke(() =>
+        {
+            var obj = new StockAccount { FundId = FundId, Company = selectedSecurityCompany, Common = new BasicAccountEvent { Name = "基本账户" } };
+
+            using var db = DbHelper.Base();
+            db.GetCollection<StockAccount>().Insert(obj);
+
+
+            if (StockAccounts is null)
+                StockAccounts = [new StockAccountViewModel(obj)];
+            else
+                StockAccounts.Add(new StockAccountViewModel(obj));
+        });
+    }
+
+    partial void OnShowChooseStockCompanyChanged(bool value)
+    {
+        if (!value)
+        {
+            ChooseStockCompanyEvent.Set();
+        }
+    }
+
+    partial void OnSelectedSecurityCompanyChanged(string? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+            ChooseStockCompanyEvent.Set();
+    }
+
+
+    partial void OnSecurityCompanyKeywordChanged(string? value)
+    {
+        SecurityCompanies.View.Refresh();
+    }
+    #endregion
 }
 
 
-public partial class SecurityCardViewModel : ObservableObject
-{
-    public SecurityCardViewModel(SecurityCard x)
-    {
-        Id = x.Id;
-        FundId = x.FundId;
-        Name = x.Name;
-        SerialNo = x.SerialNo;
-        CardNo = x.CardNo;
-        UniversalNo = x.UniversalNo;
-        FundCode = x.FundCode;
-        Date = x.Date;
-        Tag = x.Type switch { SecurityCardType.ShangHai => "沪", SecurityCardType.ShenZhen => "深", _ => x.CardNo.StartsWith('B') ? "沪" : "深" };
-        File = new FileInfo(@$"files\accounts\security\{SerialNo}-{CardNo}.pdf");
-    }
-
-    public int Id { get; set; }
-
-    public int FundId { get; set; }
-
-    /// <summary>
-    /// 流水号
-    /// </summary>
-    [ObservableProperty] public partial string? SerialNo { get; set; }
-
-    /// <summary>
-    /// 子账户号
-    /// </summary>
-    [ObservableProperty] public partial string? CardNo { get; set; }
-
-    /// <summary>
-    /// 一码通
-    /// </summary>
-    [ObservableProperty] public partial string? UniversalNo { get; set; }
-
-    [ObservableProperty] public partial string? Name { get; set; }
-
-    [ObservableProperty] public partial string? FundCode { get; set; }
-
-    /// <summary>
-    /// 申请日期
-    /// </summary>
-    public DateOnly Date { get; set; }
-
-    public string Tag { get; set; }
-
-    public FileInfo File { get; set; }
-
-    [RelayCommand]
-    public void View()
-    {
-        if (File?.Exists ?? false)
-            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(File.FullName) { UseShellExecute = true }); } catch { }
-    }
-
-    [RelayCommand]
-    public void Print()
-    {
-        if (File is null || !File.Exists) return;
-
-
-        PrintDialog printDialog = new PrintDialog();
-        if (printDialog.ShowDialog() == true)
-        {
-            // 获取默认打印机名称
-            string printerName = printDialog.PrintQueue.Name;
-
-            // 使用系统默认的PDF阅读器打印PDF文档
-            System.Diagnostics.Process process = new System.Diagnostics.Process();
-            process.StartInfo.FileName = File.FullName;
-            process.StartInfo.Verb = "print";
-            process.Start();
-
-            // 等待打印任务完成
-            process.WaitForExit();
-        }
-    }
-
-
-    [RelayCommand]
-    public void SaveAs()
-    {
-        if (File is null || !File.Exists) return;
-
-        try
-        {
-            var d = new SaveFileDialog();
-            d.FileName = File.Name;
-            d.DefaultExt = ".pdf";
-            d.Filter = "Pdf文件|*.pdf";
-            if (d.ShowDialog() == true)
-                System.IO.File.Copy(File.FullName, d.FileName);
-        }
-        catch (Exception ex)
-        {
-            Log.Error($"文件另存为失败: {ex.Message}");
-        }
-    }
-
-    [RelayCommand]
-    public void Copy()
-    {
-        Clipboard.SetDataObject(new DataObject(CardNo));
-    }
-}
