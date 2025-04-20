@@ -183,15 +183,6 @@
             HorizontalAlignment="Right"
             VerticalAlignment="Top"
             IsChecked="{Binding IsReadOnly}"
-            Style="{StaticResource ToggleButtonFlip}">
-            <hc:StatusSwitchElement.CheckedElement>
-                <Viewbox Width="16" Height="16">
-                    <Path Data="{StaticResource f.pen}" Fill="Green" />
-                </Viewbox>
-            </hc:StatusSwitchElement.CheckedElement>
-            <Viewbox Width="18" Height="18">
-                <Path Data="{StaticResource f.eye}" Fill="Black" />
-            </Viewbox>
-        </ToggleButton>
+            Style="{StaticResource EditSwitch}" />
     </Grid>
 </UserControl>
