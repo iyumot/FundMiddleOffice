@@ -1462,7 +1462,8 @@
             <Button
                 hc:IconElement.Geometry="{StaticResource f.floppy-disk}"
                 Command="{Binding SaveCommand}"
-                Style="{StaticResource ButtonIcon}" />
+                Style="{StaticResource ButtonIcon}"
+                Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
             <ToggleButton IsChecked="{Binding IsReadOnly}" Style="{StaticResource ToggleButtonFlip}">
                 <hc:StatusSwitchElement.CheckedElement>
                     <Viewbox Width="16" Height="16">
