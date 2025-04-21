@@ -58,6 +58,14 @@
                     Content="更新"
                     Style="{StaticResource ButtonInfo.Small}" />
 
+
+                <Button
+                    Margin="4,0"
+                    Command="{Binding IssueCommand}"
+                    Content="发行新产品"
+                    Style="{StaticResource ButtonPrimary.Small}" />
+
+
                 <Rectangle Width="100" />
 
                 <TextBlock Margin="5,0" Text="筛选" />

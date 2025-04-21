@@ -91,7 +91,7 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
     {
         if (e.Item is FundViewModel v && v.IsCleared && !UiConfig.ShowCleared)
             e.Accepted = false;
-        else if (!string.IsNullOrWhiteSpace(FundKeyword) && e.Item is FundViewModel v2 && !(v2.Name?.Contains(FundKeyword)??false))
+        else if (!string.IsNullOrWhiteSpace(FundKeyword) && e.Item is FundViewModel v2 && !(v2.Name?.Contains(FundKeyword) ?? false))
             e.Accepted = false;
         else
             e.Accepted = true;
@@ -189,7 +189,7 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
                 }
                 await Task.Delay(200);
             }
-             
+
             HandyControl.Controls.Growl.Error($"更新基金信息完成");
         }
         catch (Exception e)
@@ -200,6 +200,26 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
 
     }
 
+
+    [RelayCommand]
+    public void Issue()
+    {
+        var wnd = new IssueNewFundWindow();
+        var dc = new IssueNewFundWindowViewModel();
+        wnd.DataContext = dc;
+        wnd.Owner = App.Current.MainWindow;
+        var r = wnd.ShowDialog();
+        if (r is null || !r.Value) return;
+
+        if (dc.Name is not null)
+        {
+            var f = new Fund { Name = dc.Name, ShortName = dc.ShortName, Code = dc.Code };
+            FundHelper.InitNew(f);
+
+
+            WeakReferenceMessenger.Default.Send(f);
+        }
+    }
 
     private void UiConfig_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -325,7 +345,7 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
             {
                 Id = x.Id,
                 Name = x.Name,
-                IsEnable = x.PublicDisclosureSynchronizeTime != default,
+                IsEnable = x.Status < FundStatus.Normal || x.PublicDisclosureSynchronizeTime != default,
                 IsCleared = x.Status switch { FundStatus.Liquidation or FundStatus.EarlyLiquidation or FundStatus.LateLiquidation or FundStatus.AdvisoryTerminated => true, _ => false },
                 SetupDate = x.SetupDate,
                 AuditDate = x.AuditDate,

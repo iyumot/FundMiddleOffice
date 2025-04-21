@@ -29,6 +29,19 @@ public static class FundHelper
         FundStorageMap[fund.Id] = folder;
     }
 
+    public static void InitNew(Fund f)
+    {
+        var name = $"{f.Code}.{f.Name}";
+        string folder = $"files\\funds\\{name}";
+        Directory.CreateDirectory(folder);
+        Map(f, folder);
+
+
+        using var db = DbHelper.Base();
+        db.GetCollection<Fund>().Insert(f);
+
+        db.GetCollection<FundElements>().Insert(new FundElements { Id = f.Id});
+    }
 
     /// <summary>
     /// 生成每日份额表
@@ -82,7 +95,7 @@ public static class FundHelper
                 array[i, cid] += d.ShareChange();
             }
         }
-         
+
 
         return (dates, ids, names, array);
     }

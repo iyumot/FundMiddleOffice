@@ -15,7 +15,7 @@ public static class DatabaseAssist
         using (var db = DbHelper.Base())
         {
             //db.GetCollection<IInvestor>().EnsureIndex(x => x.Identity);
-            db.GetCollection<FundElements>().EnsureIndex(x => x.FundId);
+            //db.GetCollection<FundElements>().EnsureIndex(x => x.FundId);
 
             //var m = db.GetCollection(nameof(Manager)).FindOne(x => x[nameof(Manager.IsMaster)] == true);
             //var dict = m.ToDictionary();

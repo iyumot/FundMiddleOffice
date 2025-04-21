@@ -101,7 +101,7 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
             {
                 shareClass!.SetValue([new ShareClass { Id = IdGenerator.GetNextId(nameof(ShareClass)), Name = FundElements.SingleShareKey }], flow.Id);
                 using var db = DbHelper.Base();
-                var el = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId);
+                var el = db.GetCollection<FundElements>().FindById(FundId);
                 el.ShareClasses = shareClass;
                 db.GetCollection<FundElements>().Update(el);
             }
@@ -115,7 +115,7 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
         if (shareClass is null)
         {
             using var db = DbHelper.Base();
-            shareClass = db.GetCollection<FundElements>().FindOne(x => x.FundId == FundId)?.ShareClasses;
+            shareClass = db.GetCollection<FundElements>().FindById(FundId)?.ShareClasses;
         }
 
         if (shareClass is not null && shareClass.GetValue(FlowId).Value is ShareClass[] shares)
