@@ -458,6 +458,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
             if (!di.Exists)
             {
                 HandyControl.Controls.Growl.Info("未发现本基金的估值表");
+                App.Current.Dispatcher.BeginInvoke(() => CanRefreshNetValues = true);
                 return;
             }
 
