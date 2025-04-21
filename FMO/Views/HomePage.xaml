@@ -5,8 +5,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO"
+    xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:oxy="http://oxyplot.org/wpf"
     xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     d:DesignHeight="450"
     d:DesignWidth="800"
@@ -16,7 +16,7 @@
     <DockPanel>
 
         <StackPanel Width="888" Panel.ZIndex="111">
-            <DockPanel Height="200">
+            <!--<DockPanel Height="200">
                 <oxy:PlotView
                     Width="160"
                     IsHitTestVisible="False"
@@ -47,7 +47,21 @@
                         </oxy:TrackerDefinition>
                     </oxy:PlotView.TrackerDefinitions>
                 </oxy:PlotView>
-            </DockPanel>
+            </DockPanel>-->
+
+            <Grid DataContext="{Binding FlotContext}">
+                <lvc:CartesianChart
+                    Height="300"
+                    LegendLocation="None"
+                    Series="{Binding Series}">
+                    <lvc:CartesianChart.AxisY>
+                        <lvc:Axis LabelFormatter="{Binding YFormatter}" MinValue="0" />
+                    </lvc:CartesianChart.AxisY>
+                    <lvc:CartesianChart.AxisX>
+                        <lvc:Axis Labels="{Binding Labels}" />
+                    </lvc:CartesianChart.AxisX>
+                </lvc:CartesianChart>
+            </Grid>
         </StackPanel>
 
 
@@ -57,6 +71,13 @@
             Header="常用工具"
             Style="{StaticResource GroupBoxTab}">
             <DockPanel>
+
+                <Button
+                    hc:IconElement.Geometry="{StaticResource f.arrows-split-up-and-left}"
+                    Command="{Binding RefreshPlotCommand}"
+                    Content="数据文件夹"
+                    Style="{StaticResource ButtonIcon}" />
+
                 <Button
                     hc:IconElement.Geometry="{StaticResource f.folder}"
                     Command="{Binding OpenDataFolderCommand}"

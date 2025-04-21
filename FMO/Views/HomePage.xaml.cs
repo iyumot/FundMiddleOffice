@@ -5,10 +5,7 @@ using FMO.IO.AMAC;
 using FMO.Models;
 using FMO.Schedule;
 using FMO.Utilities;
-using OxyPlot;
-using OxyPlot.Annotations;
-using OxyPlot.Axes;
-using OxyPlot.Series;
+using LiveCharts;
 using Serilog;
 using System.IO;
 using System.Net.Http;
@@ -50,11 +47,7 @@ public partial class HomePageViewModel : ObservableObject
     [ObservableProperty]
     public partial bool IsSelfTesting { get; set; }
 
-    [ObservableProperty]
-    public partial PlotModel? FundCountPlot { get; set; }
-
-    [ObservableProperty]
-    public partial PlotModel? FundScalePlot { get; set; }
+    public HomePlotViewModel FlotContext { get; } = new();
 
     public HomePageViewModel()
     {
@@ -62,8 +55,6 @@ public partial class HomePageViewModel : ObservableObject
         Task.Run(async () =>
         {
             MissionSchedule.Init();
-
-            await Task.Delay(2000);
 
             await DataSelfTest();
 
@@ -166,42 +157,14 @@ public partial class HomePageViewModel : ObservableObject
         using var db = DbHelper.Base();
         var status = db.GetCollection<Fund>().FindAll().Select(x => x.Status).ToList();
 
-        FundCountPlot = new PlotModel();
-
-        // 创建 PieSeries
-        var pieSeries = new PieSeries
-        {
-            Stroke = OxyColors.Transparent,
-            StrokeThickness = 2.0,
-            InsideLabelPosition = 0.8,
-            AngleSpan = 360,
-            StartAngle = 0
-        };
-
-        // 添加数据点
-        var cnt = status.Count(x => x < FundStatus.Setup);
-        if (cnt > 0)
-            pieSeries.Slices.Add(new PieSlice("发行中", cnt));
-
-        cnt = status.Count(x => x >= FundStatus.Setup && x <= FundStatus.Registration);
-        if (cnt > 0)
-            pieSeries.Slices.Add(new PieSlice("成立备案", cnt));
-
-        cnt = status.Count(x => x == FundStatus.Normal);
-        pieSeries.Slices.Add(new PieSlice($"运行中 {cnt}只", cnt) { Fill = OxyColors.Pink, IsExploded = true });
-        cnt = status.Count(x => x >= FundStatus.StartLiquidation);
-        pieSeries.Slices.Add(new PieSlice($"已清算 {cnt}只", cnt) { Fill = OxyColors.Orange, IsExploded = true });
-
-        // 将 PieSeries 添加到 PlotModel
-        FundCountPlot.Series.Add(pieSeries);
-
+       
 
         // 计算管理规模
         var fids = db.GetCollection<Fund>().FindAll().Select(x => x.Id).ToList();
         if (fids.Count > 0)
         {
             var sd = fids.Select(x => db.GetDailyCollection(x).FindAll().Where(x => x is not null).OrderBy(x => x.Date).ToList()).Where(x => x.Count > 0);
-            var mindate = sd.Select(x => x[0].Date).Min(); var maxdate = sd.Select(x => x[0].Date).Max();
+            var mindate = sd.Select(x => x[0].Date).Min(); var maxdate = sd.Select(x => x[^1].Date).Max();
             var tmpdate = mindate;
             var dates = new List<DateOnly>();
             dates.Add(mindate);
@@ -210,9 +173,10 @@ public partial class HomePageViewModel : ObservableObject
                 tmpdate = tmpdate.AddDays(1);
                 dates.Add(tmpdate);
             }
+
             var scale = new double[dates.Count];
 
-            foreach (var f in sd)
+            Parallel.ForEach(sd, f =>
             {
                 // 对齐第一个
                 var first = dates.IndexOf(f[0].Date);
@@ -228,19 +192,10 @@ public partial class HomePageViewModel : ObservableObject
                     }
 
                 }
-            }
-
-            var lineSeries = new LineSeries
-            {
-                Title = "数据系列",
-                StrokeThickness = 2,
-                Color = OxyColors.Blue,
-                TrackerKey = "Default"
-            };
+            });
 
             // 计算月内最大规模
-            var lastmon = dates[0];
-            var max = 0;
+            var lastmon = dates[0]; 
             List<DateOnly> mons = [dates[0]];
             List<double> sc = [scale[0]];
             for (int i = 1; i < dates.Count; i++)
@@ -259,44 +214,29 @@ public partial class HomePageViewModel : ObservableObject
                 }
 
             }
-
-            for (int i = 0; i < mons.Count; i++)
+            if (sc.Count > 1 && sc[^1] < sc[^2] / 2)
             {
-                lineSeries.Points.Add(new DataPoint(DateTimeAxis.ToDouble(new DateTime(mons[i], default)), sc[i] / 10000));
-            }
-            // 创建日期坐标轴
-            var dateAxis = new DateTimeAxis
-            {
-                Position = AxisPosition.Bottom,
-                StringFormat = "yyyy-MM-dd",
-            };
-
-
-            DataPoint maxPoint = new DataPoint(0, double.MinValue);
-            foreach (var point in lineSeries.Points)
-            {
-                if (point.Y > maxPoint.Y)
-                    maxPoint = point;
+                mons.RemoveAt(mons.Count - 1);
+                sc.RemoveAt(sc.Count - 1);
             }
 
-            // 添加标签
-            var annotation = new TextAnnotation
+            App.Current.Dispatcher.BeginInvoke(() =>
             {
-                Text = $"{maxPoint.Y:N0}",               
-                TextPosition = new DataPoint(maxPoint.X - 5, maxPoint.Y + 0.1),
-                TextColor = OxyColors.Black,
-                Stroke = OxyColors.Transparent,
-            };
+                FlotContext.Series =
+            [
+                new LiveCharts.Wpf.LineSeries
+                {
+                    Title = "管理规模",
+                    PointGeometry = null,
+                    Values = new ChartValues<double>(sc.Select(x=>x/10000).ToArray())
+                },
+            ];
+
+                FlotContext.YFormatter = value => value.ToString("N0");
+                FlotContext.Labels = mons.Select(x => x.ToString("yyyy-MM-dd")).ToArray();
+            });
 
 
-            FundScalePlot = new PlotModel();
-            FundScalePlot.Title = "管理规模";
-            FundScalePlot.PlotAreaBorderThickness = new OxyThickness(1, 0, 0, 1);
-
-            FundScalePlot.Annotations.Add(annotation);
-            FundScalePlot.Series.Add(lineSeries);
-            // 将日期坐标轴添加到 PlotModel
-            FundScalePlot.Axes.Add(dateAxis);
         }
 
 
@@ -325,4 +265,30 @@ public partial class HomePageViewModel : ObservableObject
     {
         try { System.Diagnostics.Process.Start("explorer.exe", Path.Combine(Directory.GetCurrentDirectory(), "files")); } catch { }
     }
+
+
+    [RelayCommand]
+    public void RefreshPlot() => InitPlot();
+
+
+
+
+
+
+
+
+
+
+
+    public partial class HomePlotViewModel : ObservableObject
+    {
+        [ObservableProperty]
+        public partial SeriesCollection? Series { get; set; }
+        [ObservableProperty]
+        public partial string[]? Labels { get; set; }
+        [ObservableProperty]
+        public partial Func<double, string>? YFormatter { get; set; }
+    }
+
+
 }
