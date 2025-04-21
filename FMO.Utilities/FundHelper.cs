@@ -34,13 +34,13 @@ public static class FundHelper
         var name = $"{f.Code}.{f.Name}";
         string folder = $"files\\funds\\{name}";
         Directory.CreateDirectory(folder);
-        Map(f, folder);
-
 
         using var db = DbHelper.Base();
         db.GetCollection<Fund>().Insert(f);
-
         db.GetCollection<FundElements>().Insert(new FundElements { Id = f.Id});
+
+
+        Map(f, folder);
     }
 
     /// <summary>
