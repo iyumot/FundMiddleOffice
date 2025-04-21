@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using OxyPlot.Axes;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Windows;
@@ -221,5 +222,27 @@ public class TACExistConveter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
         throw new NotImplementedException();
+    }
+}
+
+
+public class OxyDateTimeConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is double doubleValue)
+        {
+            return DateTimeAxis.ToDateTime(doubleValue, new TimeSpan(24,0,0));
+        }
+        return value;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is DateTime dateTime)
+        {
+            return DateTimeAxis.ToDouble(dateTime);
+        }
+        return value;
     }
 }

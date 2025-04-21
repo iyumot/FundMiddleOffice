@@ -13,4 +13,5 @@
     <local:ZeroToBlankConverter x:Key="ZeroToBlankConverter" />
     <local:LongTextToShortConverter x:Key="LongTextToShortConverter" />
     <local:TACExistConveter x:Key="TACExistConveter" />
+    <local:OxyDateTimeConverter x:Key="OxyDateTimeConverter" />
 </ResourceDictionary>

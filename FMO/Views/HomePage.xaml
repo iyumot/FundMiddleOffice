@@ -15,13 +15,43 @@
     mc:Ignorable="d">
     <DockPanel>
 
-        <DockPanel Width="888">
-            <oxy:PlotView
-                Width="160"
-                IsHitTestVisible="False"
-                Model="{Binding FundCountPlot}" />
-            <oxy:PlotView IsHitTestVisible="False" Model="{Binding FundScalePlot}" />
-        </DockPanel>
+        <StackPanel Width="888" Panel.ZIndex="111">
+            <DockPanel Height="200">
+                <oxy:PlotView
+                    Width="160"
+                    IsHitTestVisible="False"
+                    Model="{Binding FundCountPlot}" />
+                <oxy:PlotView Panel.ZIndex="999" Model="{Binding FundScalePlot}">
+                    <oxy:PlotView.TrackerDefinitions>
+                        <oxy:TrackerDefinition TrackerKey="Default">
+                            <oxy:TrackerDefinition.TrackerTemplate>
+                                <ControlTemplate>
+
+                                    <Canvas>
+                                        <TextBlock
+                                            Canvas.Left="{Binding Position.X}"
+                                            Canvas.Top="{Binding Position.Y}"
+                                            Padding="10"
+                                            Background="WhiteSmoke">
+                                            <TextBlock.Text>
+                                                <MultiBinding StringFormat="{}{0:yyyy-MM-dd}        {1:N0}万">
+                                                    <Binding Converter="{StaticResource OxyDateTimeConverter}" Path="DataPoint.X" />
+                                                    <Binding Path="DataPoint.Y" />
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                    </Canvas>
+
+                                </ControlTemplate>
+                            </oxy:TrackerDefinition.TrackerTemplate>
+                        </oxy:TrackerDefinition>
+                    </oxy:PlotView.TrackerDefinitions>
+                </oxy:PlotView>
+            </DockPanel>
+        </StackPanel>
+
+
+
         <GroupBox
             DockPanel.Dock="Top"
             Header="常用工具"

@@ -6,6 +6,7 @@ using FMO.Models;
 using FMO.Schedule;
 using FMO.Utilities;
 using OxyPlot;
+using OxyPlot.Annotations;
 using OxyPlot.Axes;
 using OxyPlot.Series;
 using Serilog;
@@ -229,12 +230,12 @@ public partial class HomePageViewModel : ObservableObject
                 }
             }
 
-
             var lineSeries = new LineSeries
             {
                 Title = "数据系列",
                 StrokeThickness = 2,
-                Color = OxyColors.Blue
+                Color = OxyColors.Blue,
+                TrackerKey = "Default"
             };
 
             // 计算月内最大规模
@@ -253,6 +254,7 @@ public partial class HomePageViewModel : ObservableObject
                 }
                 else if (scale[i] > sc[^1])
                 {
+                    mons[^1] = dates[i];
                     sc[^1] = scale[i];
                 }
 
@@ -260,18 +262,38 @@ public partial class HomePageViewModel : ObservableObject
 
             for (int i = 0; i < mons.Count; i++)
             {
-                lineSeries.Points.Add(new DataPoint(DateTimeAxis.ToDouble(new DateTime(mons[i],default)), sc[i] / 10000));
+                lineSeries.Points.Add(new DataPoint(DateTimeAxis.ToDouble(new DateTime(mons[i], default)), sc[i] / 10000));
             }
             // 创建日期坐标轴
             var dateAxis = new DateTimeAxis
             {
                 Position = AxisPosition.Bottom,
-                Title = "日期",
-                StringFormat = "yyyy-MM-dd", 
+                StringFormat = "yyyy-MM-dd",
+            };
+
+
+            DataPoint maxPoint = new DataPoint(0, double.MinValue);
+            foreach (var point in lineSeries.Points)
+            {
+                if (point.Y > maxPoint.Y)
+                    maxPoint = point;
+            }
+
+            // 添加标签
+            var annotation = new TextAnnotation
+            {
+                Text = $"{maxPoint.Y:N0}",               
+                TextPosition = new DataPoint(maxPoint.X - 5, maxPoint.Y + 0.1),
+                TextColor = OxyColors.Black,
+                Stroke = OxyColors.Transparent,
             };
 
 
             FundScalePlot = new PlotModel();
+            FundScalePlot.Title = "管理规模";
+            FundScalePlot.PlotAreaBorderThickness = new OxyThickness(1, 0, 0, 1);
+
+            FundScalePlot.Annotations.Add(annotation);
             FundScalePlot.Series.Add(lineSeries);
             // 将日期坐标轴添加到 PlotModel
             FundScalePlot.Axes.Add(dateAxis);
