@@ -146,7 +146,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
             db.GetCollection<FundFlow>().Insert(f);
         }
 
-        if (fund.Status >= FundStatus.ContractFinalized && !flows.Any(x => x is ContractFinalizeFlow))
+        if (!flows.Any(x => x is ContractFinalizeFlow))
         {
             var f = new ContractFinalizeFlow { FundId = fund.Id, ContractFile = new FileStorageInfo("基金合同"), CustomFiles = new() };
             flows.Insert(1, f);
