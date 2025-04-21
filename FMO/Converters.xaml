@@ -12,6 +12,5 @@
     <local:EnumIsOtherToVisibilityConverter x:Key="EnumIsOtherToVisibilityConverter" />
     <local:ZeroToBlankConverter x:Key="ZeroToBlankConverter" />
     <local:LongTextToShortConverter x:Key="LongTextToShortConverter" />
-    <local:TACExistConveter x:Key="TACExistConveter" />
-    <local:OxyDateTimeConverter x:Key="OxyDateTimeConverter" />
+    <local:TACExistConveter x:Key="TACExistConveter" /> 
 </ResourceDictionary>
