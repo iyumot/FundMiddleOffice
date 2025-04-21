@@ -233,7 +233,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         var elements = db.GetCollection<FundElements>().FindById(FundId);
 
         if (elements is null)
-            elements = new FundElements { FundId = FundId };
+            elements = new FundElements { Id = FundId };
 
         var type = GetType();
         SetupDate = fund.SetupDate;

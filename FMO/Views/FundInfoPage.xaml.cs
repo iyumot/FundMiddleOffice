@@ -7,7 +7,6 @@ using Microsoft.Win32;
 using Serilog;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Windows.Controls;
@@ -394,7 +393,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         var flow = new ContractModifyFlow { FundId = Fund.Id };
         var db = DbHelper.Base();
         db.GetCollection<FundFlow>().Insert(flow);
-        var ele = db.GetCollection<FundElements>().FindOne(ele => ele.FundId == Fund.Id);
+        var ele = db.GetCollection<FundElements>().FindById(Fund.Id);
         db.Dispose();
         Flows.Add(new ContractModifyFlowViewModel(flow, ele.ShareClasses));
     }

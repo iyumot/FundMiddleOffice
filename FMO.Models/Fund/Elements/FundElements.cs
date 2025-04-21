@@ -7,7 +7,7 @@ public class FundElements
 
     public int Id { get; set; }
 
-    public required int FundId { get; set; }
+    //public required int FundId { get; set; }
 
 
     /// <summary>
@@ -184,7 +184,7 @@ public class FundElements
 
     public static FundElements Create(int fundid)
     {
-        var e = new FundElements { FundId = fundid, Id = fundid, };
+        var e = new FundElements { Id = fundid, };
         e.ShareClasses.SetValue([new ShareClass { Id = -1, Name = FundElements.SingleShareKey }], 0);
         return e;
     }
