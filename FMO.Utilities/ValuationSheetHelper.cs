@@ -168,7 +168,7 @@ public static class ValuationSheetHelper
             if (!Regex.IsMatch(tmp, "^\\d") && Rowid_AccountStart > 0 && Rowid_AccountEnd == 0)
                 Rowid_AccountEnd = i;
 
-            if (Rowid_AccountStart == 0 && tmp.StartsWith("1"))
+            if (Rowid_AccountStart == 0 && Regex.IsMatch(tmp, "^\\d"))
             {
                 Rowid_AccountStart = i;
             }
