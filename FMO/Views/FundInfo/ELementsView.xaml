@@ -396,7 +396,10 @@
         </DataTemplate>
 
         <DataTemplate x:Key="DT.LongText">
-            <TextBox AcceptsReturn="True" Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+            <TextBox
+                AcceptsReturn="True"
+                Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                TextWrapping="Wrap" />
         </DataTemplate>
 
 
@@ -1140,7 +1143,7 @@
                                 Header="赎回费" />
 
                             <!--  费用  -->
-                            <DockPanel Margin="{StaticResource LineSpacing}" LastChildFill="False">
+                            <WrapPanel Margin="{StaticResource LineSpacing}">
 
                                 <shared:ChangeableContainer Binding="{Binding TrusteeInfo}" EditTemplate="{StaticResource CT.Agency}" />
 
@@ -1148,12 +1151,13 @@
                                     Margin="20,0"
                                     Binding="{Binding TrusteeFee}"
                                     ContentTemplate="{StaticResource DT.Fee}"
+                                    EditTemplate="{StaticResource CT.Fee}"
                                     Visibility="{Binding TrusteeInfo.NewValue.HasAgency, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
 
-                            </DockPanel>
+                            </WrapPanel>
 
-                            <DockPanel>
+                            <WrapPanel>
 
                                 <shared:ChangeableContainer Binding="{Binding OutsourcingInfo}" EditTemplate="{StaticResource CT.Agency}" />
 
@@ -1161,8 +1165,9 @@
                                     Margin="20,0"
                                     Binding="{Binding OutsourcingFee}"
                                     ContentTemplate="{StaticResource DT.Fee}"
+                                    EditTemplate="{StaticResource CT.Fee}"
                                     Visibility="{Binding OutsourcingInfo.NewValue.HasAgency, Converter={StaticResource Boolean2VisibilityConverter}}" />
-                            </DockPanel>
+                            </WrapPanel>
 
 
 
@@ -1329,9 +1334,7 @@
                                             <Setter Property="VerticalAlignment" Value="Center" />
                                             <Setter Property="Margin" Value="0,0,4,0" />
                                         </Style>
-                                        <Style BasedOn="{StaticResource TextBoxBaseStyle}" TargetType="TextBox">
-                                            <Setter Property="HorizontalAlignment" Value="Stretch" />
-                                        </Style>
+
                                     </StackPanel.Resources>
                                     <DockPanel>
                                         <TextBlock Text="户名" />
