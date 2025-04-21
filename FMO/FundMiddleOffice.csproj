@@ -14,9 +14,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ViewModel\Customer\**" />
     <Compile Remove="ViewModel\Elements\**" />
+    <EmbeddedResource Remove="ViewModel\Customer\**" />
     <EmbeddedResource Remove="ViewModel\Elements\**" />
+    <None Remove="ViewModel\Customer\**" />
     <None Remove="ViewModel\Elements\**" />
+    <Page Remove="ViewModel\Customer\**" />
     <Page Remove="ViewModel\Elements\**" />
   </ItemGroup>
 
@@ -80,10 +84,6 @@
       <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Config.Designer.cs</LastGenOutput>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="ViewModel\Customer\" />
   </ItemGroup>
 
 </Project>
