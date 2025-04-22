@@ -3,7 +3,16 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace FMO.Shared;
 
-public abstract partial class ChangeableEntityViewModel : ObservableObject
+
+public interface IChangeableEntityViewModel
+{
+    void Delete(IPropertyModifier unit);
+    void Modify(IPropertyModifier unit);
+    void Reset(IPropertyModifier unit);
+    void Save();
+}
+
+public abstract partial class ChangeableEntityViewModel : ObservableObject, IChangeableEntityViewModel
 {
     public int Id { get; protected set; }
 
