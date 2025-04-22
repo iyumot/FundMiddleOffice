@@ -106,9 +106,17 @@
         </DataGrid>
 
 
-        <DockPanel HorizontalAlignment="Right" VerticalAlignment="Top">
+        <DockPanel
+            Margin="0,0,30,0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top">
+            <DockPanel.Resources>
+                <Style BasedOn="{StaticResource ButtonIconCircular}" TargetType="Button">
+                    <Setter Property="Margin" Value="4,0" />
+                </Style>
+            </DockPanel.Resources>
             <Button hc:IconElement.Geometry="{StaticResource f.arrows-rotate}" Command="{Binding RefreshNetValuesCommand}" />
-            <!--<Button hc:IconElement.Geometry="{StaticResource f.file-export}" Command="{Binding ExportNetValuesCommand}" />-->
+            <Button hc:IconElement.Geometry="{StaticResource f.file-export}" Command="{Binding ExportNetValuesCommand}" />
         </DockPanel>
     </Grid>
 </UserControl>

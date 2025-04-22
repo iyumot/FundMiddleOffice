@@ -472,6 +472,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     [NotifyCanExecuteChangedFor(nameof(RefreshNetValuesCommand))]
     public partial bool CanRefreshNetValues { get; set; } = true;
 
+    #region Nv List
 
     [RelayCommand(CanExecute = nameof(CanRefreshNetValues))]
     public void RefreshNetValues()
@@ -544,6 +545,23 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
             App.Current.Dispatcher.BeginInvoke(() => CanRefreshNetValues = true);
         });
     }
+
+
+    [RelayCommand]
+    public void ExportNetValues()
+    {
+        var last = DailyValues.FirstOrDefault(x => x.NetValue > 0);
+        if (last is null) return;
+
+        var fd = new SaveFileDialog();
+        fd.FileName = $"{FundName} 每日净值 {last.Date:yyyy-MM-dd}.xlsx";
+        fd.Filter = "Excel|*.xlsx";
+        var r = fd.ShowDialog();
+        if (r is null || !r.Value) return;
+
+        ExcelTpl.GenerateFromTemplate(fd.FileName, "sigle_fund_nvlist.xlsx", new { nvs = DailyValues.Where(x => x.NetValue > 0) });
+    }
+    #endregion
 
 
     [RelayCommand]

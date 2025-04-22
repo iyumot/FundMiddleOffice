@@ -60,7 +60,7 @@ public static class WordTpl
         }
         catch (Exception e)
         {
-            Log.Error($"生成备案承诺函失败：{e.Message}");
+            Log.Error($"生成失败：{e.Message}");
             return false;
         }
     }
