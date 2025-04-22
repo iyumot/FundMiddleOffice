@@ -9,18 +9,15 @@ using System.IO;
 
 namespace FMO;
 
-/// <summary>
-/// 股票户
-/// </summary>
-public partial class StockAccountViewModel : ObservableObject
+
+public partial class FutureAccountViewModel : ObservableObject
 {
-    public StockAccountViewModel(StockAccount v)
+    public FutureAccountViewModel(FutureAccount v)
     {
         Company = v.Company;
         Id = v.Id;
 
-        Common = new(v.Id, v.Common);
-        Credit = new(v.Id, v.Credit);
+        Common = new(v.Id, v.Common); 
     }
 
     public int Id { get; set; }
@@ -30,8 +27,7 @@ public partial class StockAccountViewModel : ObservableObject
 
     public BasicAccountViewModel Common { get; set; }
 
-
-    public BasicAccountViewModel Credit { get; set; }
+     
 
 
 
@@ -122,7 +118,7 @@ public partial class StockAccountViewModel : ObservableObject
             string hash = fi.ComputeHash()!;
 
             // 保存副本
-            var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "stock", Id.ToString(), Name));
+            var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "Future", Id.ToString(), Name));
 
             var tar = FileHelper.CopyFile2(fi, dir.FullName);
             if (tar is null)
@@ -135,19 +131,14 @@ public partial class StockAccountViewModel : ObservableObject
             var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
 
             using var db = DbHelper.Base();
-            var obj = db.GetCollection<StockAccount>().FindById(Id);
+            var obj = db.GetCollection<FutureAccount>().FindById(Id);
 
             if (Name == obj.Common?.Name)
             {
                 obj.Common.BankLetter = new FileStorageInfo { Name = "银证", Hash = hash, Path = path, Time = fi.LastWriteTime };
-                db.GetCollection<StockAccount>().Update(obj);
+                db.GetCollection<FutureAccount>().Update(obj);
             }
-            else if (Name == obj.Credit?.Name)
-            {
-                obj.Credit.BankLetter = new FileStorageInfo { Name = "银信", Hash = hash, Path = path, Time = fi.LastWriteTime };
-                db.GetCollection<StockAccount>().Update(obj);
-            }
-
+           
             v.File = fi;
 
         }
@@ -156,7 +147,7 @@ public partial class StockAccountViewModel : ObservableObject
         [RelayCommand]
         public void OpenRawFolder()
         {
-            var folder = Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "stock", Id.ToString(), Name, "原始文件");
+            var folder = Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "Future", Id.ToString(), Name, "原始文件");
             if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
             try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = folder, UseShellExecute = true }); } catch { }
         }
@@ -165,7 +156,7 @@ public partial class StockAccountViewModel : ObservableObject
         [RelayCommand]
         public void OpenSealFolder()
         {
-            var folder = Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "stock", Id.ToString(), Name, "用印文件");
+            var folder = Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "Future", Id.ToString(), Name, "用印文件");
             if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
             try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = folder, UseShellExecute = true }); } catch { }
         }
@@ -178,7 +169,7 @@ public partial class StockAccountViewModel : ObservableObject
         public void Save()
         {
             using var db = DbHelper.Base();
-            var obj = db.GetCollection<StockAccount>().FindById(Id);
+            var obj = db.GetCollection<FutureAccount>().FindById(Id);
 
             if (Name == obj.Common?.Name)
             {
@@ -186,16 +177,9 @@ public partial class StockAccountViewModel : ObservableObject
                 obj.Common!.TradePassword = TradePassword;
                 obj.Common!.CapitalPassword = CapitalPassword;
 
-                db.GetCollection<StockAccount>().Update(obj);
+                db.GetCollection<FutureAccount>().Update(obj);
             }
-            else if (Name == obj.Credit?.Name)
-            {
-                obj.Credit!.Account = Account;
-                obj.Credit!.TradePassword = TradePassword;
-                obj.Credit!.CapitalPassword = CapitalPassword;
-
-                db.GetCollection<StockAccount>().Update(obj);
-            }
+           
 
             IsReadOnly = true;
         }
@@ -210,18 +194,13 @@ public partial class StockAccountViewModel : ObservableObject
                 {
 
                     using var db = DbHelper.Base();
-                    var obj = db.GetCollection<StockAccount>().FindById(Id);
+                    var obj = db.GetCollection<FutureAccount>().FindById(Id);
 
                     if (Name == obj.Common?.Name)
                     {
                         obj.Common!.BankLetter = null;
-                        db.GetCollection<StockAccount>().Update(obj);
-                    }
-                    else if (Name == obj.Credit?.Name)
-                    {
-                        obj.Credit!.BankLetter = null;
-                        db.GetCollection<StockAccount>().Update(obj);
-                    }
+                        db.GetCollection<FutureAccount>().Update(obj);
+                    } 
                     File.Delete(v.File.FullName);
                     v.File = null;
                 }

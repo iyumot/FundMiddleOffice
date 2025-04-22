@@ -116,6 +116,27 @@ public class StockAccount
 
 }
 
+public class FutureAccount
+{
+    public int Id { get; set; }
+
+    public int FundId { get; set; }
+
+    public string? Company { get; set; }
+
+    /// <summary>
+    /// 基本户
+    /// </summary>
+    public BasicAccountEvent? Common { get; set; }
+     
+
+
+    public List<AccountEvent>? Events { get; set; }
+
+}
+
+
+
 
 
 

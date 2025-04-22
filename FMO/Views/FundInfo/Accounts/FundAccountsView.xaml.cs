@@ -43,6 +43,9 @@ public partial class FundAccountsViewModel : ObservableObject
         if (sa is not null)
             StockAccounts = new(sa.Select(x => new StockAccountViewModel(x)));
 
+        var fas = db.GetCollection<FutureAccount>().Find(x => x.FundId == fundId);
+        if (fas is not null)
+            FutureAccounts = new(fas.Select(x => new FutureAccountViewModel(x)));
 
         var fa = db.GetCollection<FundAccounts>().FindById(FundId);
         UniversalNo = fa?.UniversalNo;
@@ -95,6 +98,37 @@ public partial class FundAccountsViewModel : ObservableObject
 
 
 
+        FutureCompanies = new CollectionViewSource();
+        try
+        {
+            if (File.Exists("config\\Futurecompany.txt"))
+            {
+                using var sr = new StreamReader("config\\Futurecompany.txt");
+                var arr = sr.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+                var regex = new Regex("(?:股份)*有限(?:责任)*公司");
+                FutureCompanies.Source = arr.Select(x => regex.Replace(x, "")).ToArray();
+            }
+            else
+            {
+                var fs = Application.GetResourceStream(new Uri("res/Futurecompany.txt", UriKind.Relative));
+                using var sr = new StreamReader(fs.Stream);
+                var arr = sr.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+                var regex = new Regex("(?:股份)*有限(?:责任)*公司");
+                FutureCompanies.Source = arr.Select(x => regex.Replace(x, "")).ToArray();
+            }
+
+            FutureCompanies.Filter += (s, e) => e.Accepted = string.IsNullOrWhiteSpace(FutureCompanyKeyword) ? true : e.Item switch { string ss => ss.Contains(FutureCompanyKeyword), _ => true };
+
+
+        }
+        catch (Exception e)
+        {
+            Log.Error($"加载期货公司列表失败{e.Message}");
+        }
+
+
     }
 
     public int FundId { get; }
@@ -127,6 +161,29 @@ public partial class FundAccountsViewModel : ObservableObject
     public partial ObservableCollection<StockAccountViewModel>? StockAccounts { get; set; }
 
     #endregion
+
+    #region Future
+
+    public CollectionViewSource FutureCompanies { get; set; }
+
+    [ObservableProperty]
+    public partial bool ShowChooseFutureCompany { get; set; }
+     
+
+    [ObservableProperty]
+    public partial string? FutureCompanyKeyword { get; set; }
+
+    private AutoResetEvent ChooseFutureCompanyEvent { get; } = new(false);
+
+    [ObservableProperty]
+    public partial string? SelectedFutureCompany { get; set; }
+
+
+    [ObservableProperty]
+    public partial ObservableCollection<FutureAccountViewModel>? FutureAccounts { get; set; }
+
+    #endregion
+
 
 
 
@@ -405,6 +462,86 @@ public partial class FundAccountsViewModel : ObservableObject
         SecurityCompanies.View.Refresh();
     }
     #endregion
+
+
+    [RelayCommand]
+    public void AddFuture()
+    {
+        ShowChooseFutureCompany = true;
+
+        ChooseFutureCompanyEvent.Reset();
+        SelectedFutureCompany = null;
+
+
+        Task.Run(() =>
+        {
+            ChooseFutureCompanyEvent.WaitOne();
+
+            ShowChooseFutureCompany = false;
+
+            if (!string.IsNullOrWhiteSpace(SelectedFutureCompany))
+                CreateFutureAccount(SelectedFutureCompany.Trim());
+
+        });
+    }
+
+    [RelayCommand]
+    public void DeleteFuture(FutureAccountViewModel v)
+    {
+        using var db = DbHelper.Base();
+        db.GetCollection<FutureAccount>().Delete(v.Id);
+        FutureAccounts?.Remove(v);
+    }
+
+
+    #region Future
+
+    private void CreateFutureAccount(string selectedFutureCompany)
+    {
+        App.Current.Dispatcher.BeginInvoke(() =>
+        {
+            var obj = new FutureAccount
+            {
+                FundId = FundId,
+                Company = selectedFutureCompany,
+                Common = new BasicAccountEvent { Name = "基本账户" }
+            };
+
+            using var db = DbHelper.Base();
+            db.GetCollection<FutureAccount>().Insert(obj);
+
+
+            if (FutureAccounts is null)
+                FutureAccounts = [new FutureAccountViewModel(obj)];
+            else
+                FutureAccounts.Add(new FutureAccountViewModel(obj));
+        });
+    }
+
+    partial void OnShowChooseFutureCompanyChanged(bool value)
+    {
+        if (!value)
+        {
+            ChooseFutureCompanyEvent.Set();
+        }
+    }
+
+    partial void OnSelectedFutureCompanyChanged(string? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+            ChooseFutureCompanyEvent.Set();
+    }
+
+
+    partial void OnFutureCompanyKeywordChanged(string? value)
+    {
+        FutureCompanies.View.Refresh();
+    }
+    #endregion
+
+
+
+
 }
 
 
