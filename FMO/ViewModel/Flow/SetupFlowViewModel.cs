@@ -84,7 +84,7 @@ namespace FMO
                 Label = "募集期",
                 InitFunc = x => x.RasingPeriod == default(DateRange) ? new() : new(x.RasingPeriod),
                 UpdateFunc = (x, y) => x.RasingPeriod = y!.Build(),
-                ClearFunc = x => x.RasingPeriod = default
+                ClearFunc = x => x.RasingPeriod = default, 
             };
             RaisingPeriod.Init(flow);
 

@@ -418,7 +418,7 @@
                                             Style="{StaticResource TextBox.Small}"
                                             Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}"
                                             TextAlignment="Center" />
-                                        <TextBlock Text=" 元" />
+                                        <TextBlock VerticalAlignment="Center" Text=" 元" />
                                     </DockPanel>
                                 </DataTemplate>
                             </shared:ChangeableContainer.ContentTemplate>
