@@ -1,10 +1,8 @@
 ﻿using ExcelDataReader;
-
-using System.IO;
+using FMO.Models;
 using System.IO.Compression;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using FMO.Models;
 
 namespace FMO.Utilities;
 
@@ -81,7 +79,7 @@ public static class ValuationSheetHelper
                 if (cell is DBNull || cell == null)
                     continue;
 
-                var tmp = cell.ToString()??"";
+                var tmp = cell.ToString() ?? "";
 
                 if (fundname is null)
                 {
@@ -127,7 +125,7 @@ public static class ValuationSheetHelper
         for (int j = ColId_AccountId + 1; j < table.Columns.Count; j++)
         {
             var cell = table.Rows[Rowid_AccountField][j];
-            var tmp = cell.ToString()??"";
+            var tmp = cell.ToString() ?? "";
             //if (tmp.Trim() == "科目名称")
             // ColId_AccountName = j;
             if (tmp.Trim() == "数量")
@@ -164,7 +162,7 @@ public static class ValuationSheetHelper
             }
 
 
-            var tmp = cell.ToString()??"";
+            var tmp = cell.ToString() ?? "";
             if (!Regex.IsMatch(tmp, "^\\d") && Rowid_AccountStart > 0 && Rowid_AccountEnd == 0)
                 Rowid_AccountEnd = i;
 
@@ -184,7 +182,7 @@ public static class ValuationSheetHelper
                 Rowid_Equity = i;
                 continue;
             }
-            if (tmp.Contains("资产合计"))
+            if (Regex.IsMatch(tmp, @"资产\w*合计"))
             {
                 Rowid_Assets = i;
                 continue;
@@ -219,7 +217,7 @@ public static class ValuationSheetHelper
                     continue;
                 }
 
-                var tmp = cell.ToString()??"";
+                var tmp = cell.ToString() ?? "";
 
                 if (tmp == "单位净值" || Regex.IsMatch(tmp, "^(?:今日|基金)*单位净值"))
                 {
@@ -264,30 +262,30 @@ public static class ValuationSheetHelper
         //ParseInvestments(daily);
         return (fundname, code, daily);
     }
-    
+
 
 
     public class AccountItem
     {
-        
+
         public string? Id { get; set; }
 
-        
+
         public string? Name { get; set; }
 
-        
+
         public int Amount { get; set; }
 
-        
+
         public double UnitCost { get; set; }
 
-        
+
         public double TotalCost { get; set; }
 
-        
+
         public double MarketPrice { get; set; }
 
-        
+
         public double MarketValue { get; set; }
 
         [JsonIgnore]
@@ -349,39 +347,39 @@ public enum InvestmentType { Unknown, Cash, Stock, Future }
 
 public class Investment
 {
-    
+
     public string? ProductId { get; set; }
 
-    
+
     public int Serial { get; set; }
 
     [JsonIgnore]
     public string? Contract => Serial == 0 ? ProductId : ProductId + Serial;
 
-    
+
     public int Amount { get; set; }
 
-    
+
     public double UnitCost { get; set; }
 
-    
+
     public double TotalCost { get; set; }
 
-    
+
     public double MarketPrice { get; set; }
 
-    
+
     public double MarketValue { get; set; }
 
     [JsonIgnore]
     public double AppraisementChange => MarketValue - TotalCost;
 
-    
+
     public bool LongOrShort { get; set; } = true;
 
-    
+
     public string? Name { get; set; }
 
-    
+
     public InvestmentType InvestmentType { get; set; }
 }
