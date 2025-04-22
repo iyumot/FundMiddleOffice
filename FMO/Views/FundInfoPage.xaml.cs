@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
+using FMO.TPL;
 using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
@@ -463,6 +464,8 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         }
         Flows.Remove(flow);
     }
+
+
 
 
     [ObservableProperty]
