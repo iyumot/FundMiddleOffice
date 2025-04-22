@@ -469,7 +469,16 @@
             <UserControl Template="{StaticResource FlowShell}">
                 <StackPanel VerticalAlignment="Center">
 
-                    <ContentControl Content="{Binding CommitmentLetter}" Style="{StaticResource SingleFileStyle}" />
+                    <DockPanel>
+                        <Button
+                            hc:IconElement.Geometry="{StaticResource f.hammer}"
+                            Command="{Binding GenerateFileCommand}"
+                            CommandParameter="{Binding CommitmentLetter}"
+                            Foreground="Salmon"
+                            Style="{StaticResource ButtonIconCircular.Small}"
+                            ToolTip="生成" />
+                        <ContentControl Content="{Binding CommitmentLetter}" Style="{StaticResource SingleFileStyle}" />
+                    </DockPanel>
                     <ContentControl Content="{Binding SealedCommitmentLetter}" Style="{StaticResource SealedFileStyle}" />
 
 

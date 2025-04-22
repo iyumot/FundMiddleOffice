@@ -1,6 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
+using FMO.TPL;
+using FMO.Utilities;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 
 namespace FMO;
 
@@ -74,7 +78,7 @@ public partial class RegistrationFlowViewModel : FlowViewModel
 
     [ObservableProperty]
     public partial FlowFileViewModel SealedNestedCommitmentLetter { get; set; }
-     
+
 
     [ObservableProperty]
     public partial FlowFileViewModel RegistrationLetter { get; set; }
@@ -87,7 +91,7 @@ public partial class RegistrationFlowViewModel : FlowViewModel
     [SetsRequiredMembers]
     public RegistrationFlowViewModel(RegistrationFlow flow) : base(flow)
     {
-        CommitmentLetter = new FlowFileViewModel(FundId, FlowId, "备案承诺函", flow.CommitmentLetter?.Path, "Registration", nameof(RegistrationFlow.CommitmentLetter)) { Filter = "文本文档|*.doc;*.docx;*.wps;*.pdf;"};
+        CommitmentLetter = new FlowFileViewModel(FundId, FlowId, "备案承诺函", flow.CommitmentLetter?.Path, "Registration", nameof(RegistrationFlow.CommitmentLetter)) { Filter = "文本文档|*.doc;*.docx;*.wps;*.pdf;" };
         SealedCommitmentLetter = new FlowFileViewModel(FundId, FlowId, "备案承诺函", flow.SealedCommitmentLetter?.Path, "Registration", nameof(RegistrationFlow.SealedCommitmentLetter));
         SealedCommitmentLetter.Filter = "PDF (*.pdf)|*.pdf;";
 
@@ -120,7 +124,36 @@ public partial class RegistrationFlowViewModel : FlowViewModel
 
 
         RegistrationLetter = new FlowFileViewModel(FundId, FlowId, "备案函", flow.RegistrationLetter?.Path, "Registration", nameof(RegistrationFlow.RegistrationLetter)) { Filter = "PDF (*.pdf)|*.pdf;" };
-   
+
 
     }
+
+
+    [RelayCommand]
+    public void GenerateFile(FlowFileViewModel v)
+    {
+        switch (v.Name)
+        {
+            case "备案承诺函":
+                try
+                {
+                    using var db = DbHelper.Base();
+                    var fund = db.GetCollection<Fund>().FindById(FundId);
+                    string path = @$"{FundHelper.GetFolder(FundId)}\Registration\{fund.Name}_备案承诺函.docx";
+                    var fi = new FileInfo(path);
+                    if (!fi.Directory!.Exists) fi.Directory.Create();
+
+                    WordTpl.GenerateRegisterAnounce(fund, path);
+
+                    if (CommitmentLetter.File?.Exists ?? false)
+                        CommitmentLetter.File.Delete();
+                    CommitmentLetter.SetFile(new System.IO.FileInfo(path));
+                }
+                catch { }
+                break;
+            default:
+                break;
+        }
+    }
+
 }
