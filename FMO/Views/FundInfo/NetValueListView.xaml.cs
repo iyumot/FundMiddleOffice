@@ -13,16 +13,15 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace FMO
+namespace FMO;
+
+/// <summary>
+/// NetValueListView.xaml 的交互逻辑
+/// </summary>
+public partial class NetValueListView : UserControl
 {
-    /// <summary>
-    /// NetValueListView.xaml 的交互逻辑
-    /// </summary>
-    public partial class NetValueListView : UserControl
+    public NetValueListView()
     {
-        public NetValueListView()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }
