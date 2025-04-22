@@ -64,15 +64,15 @@ namespace FMO.Shared
 
 
 
-        public ChangeableEntityViewModel Entity
+        public IChangeableEntityViewModel Entity
         {
-            get { return (ChangeableEntityViewModel)GetValue(EntityProperty); }
+            get { return (IChangeableEntityViewModel)GetValue(EntityProperty); }
             set { SetValue(EntityProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for Entity.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty EntityProperty =
-            DependencyProperty.Register("Entity", typeof(ChangeableEntityViewModel), typeof(ChangeableContainer), new PropertyMetadata(null));
+            DependencyProperty.Register("Entity", typeof(IChangeableEntityViewModel), typeof(ChangeableContainer), new PropertyMetadata(null));
 
  
 
