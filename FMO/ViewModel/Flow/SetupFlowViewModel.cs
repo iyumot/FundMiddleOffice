@@ -8,10 +8,29 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace FMO
 {
+
+    [AutoChangeableViewModel(typeof(DateRange))]
+    public partial class DateRangeViewModel;
+
+
     public partial class SetupFlowViewModel : FlowViewModel, IChangeableEntityViewModel
     {
-        //[ObservableProperty]
-        //public partial decimal InitialAsset { get; set; }
+
+        /// <summary>
+        /// 募集开始日期
+        /// </summary>
+        public ChangeableViewModel<SetupFlow, DateOnly?> RaisingStartDate { get; set; }
+
+        /// <summary>
+        /// 募集结束日期
+        /// </summary>
+        public ChangeableViewModel<SetupFlow, DateOnly?> RaisingEndDate { get; set; }
+
+
+        public ChangeableViewModel<SetupFlow, DateRangeViewModel?> RaisingPeriod { get; set; }
+
+
+
 
         public ChangeableViewModel<SetupFlow, decimal?> InitialAsset { get; }
 
@@ -42,13 +61,41 @@ namespace FMO
         [SetsRequiredMembers]
         public SetupFlowViewModel(SetupFlow flow) : base(flow)
         {
+            RaisingStartDate = new ChangeableViewModel<SetupFlow, DateOnly?>
+            {
+                InitFunc = x => x.RaisingStartDate == default ? null : x.RaisingStartDate,
+                UpdateFunc = (x, y) => x.RaisingStartDate = y ?? default,
+                ClearFunc = x => x.RaisingStartDate = default
+            };
+            RaisingStartDate.Init(flow);
+
+            RaisingEndDate = new ChangeableViewModel<SetupFlow, DateOnly?>
+            {
+                InitFunc = x => x.RaisingEndDate == default ? null : x.RaisingEndDate,
+                UpdateFunc = (x, y) => x.RaisingEndDate = y ?? default,
+                ClearFunc = x => x.RaisingEndDate = default
+            };
+            RaisingEndDate.Init(flow);
+
+
+            RaisingPeriod = new ChangeableViewModel<SetupFlow, DateRangeViewModel?>
+            {
+                Label = "募集期",
+                InitFunc = x => x.RasingPeriod == default(DateRange) ? new() : new(x.RasingPeriod),
+                UpdateFunc = (x, y) => x.RasingPeriod = y!.Build(),
+                ClearFunc = x => x.RasingPeriod = default
+            };
+            RaisingPeriod.Init(flow);
+
+
+
             InitialAsset = new ChangeableViewModel<SetupFlow, decimal?>
             {
-                Label = "首次募集规模",
+                Label = "募集规模",
                 InitFunc = x => x.InitialAsset <= 0 ? null : x.InitialAsset,
                 UpdateFunc = (x, y) => x.InitialAsset = y ?? 0,
                 ClearFunc = x => x.InitialAsset = 0,
-
+                DisplayFunc = x => $"{x / 10000:N2}元"
             };
             InitialAsset.Init(flow);
             InitialAsset.PropertyChanged += (s, e) => { if (e.PropertyName == "NewValue") OnPropertyChanged(nameof(Capital)); };
