@@ -6,6 +6,7 @@
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     Margin="0,5"
     d:DesignHeight="450"
     d:DesignWidth="800"
@@ -351,94 +352,6 @@
                             Style="{StaticResource ListBoxCustom}" />
                     </StackPanel>
 
-                    <!--<DockPanel DockPanel.Dock="Top" LastChildFill="False">
-                        <TextBlock
-                            Margin="0,0,10,0"
-                            VerticalAlignment="Center"
-                            Text="基金份额" />
-
-                        <ToggleButton
-                            hc:IconElement.Geometry="{StaticResource f.pencil}"
-                            IsChecked="{Binding IsDividingShare}"
-                            Style="{StaticResource ToggleButtonDefault.Small}"
-                            ToolTip="修改"
-                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-
-
-                        <UniformGrid Rows="1" Visibility="{Binding IsDividingShare, Converter={StaticResource Boolean2VisibilityConverter}}">
-                            <Button
-                                hc:IconElement.Geometry="{StaticResource f.knife}"
-                                Command="{Binding DivideSharesCommand}"
-                                Style="{StaticResource ButtonDefault.Small}"
-                                ToolTip="拆分"
-                                Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-
-                            <Button
-                                hc:IconElement.Geometry="{StaticResource f.circle-check}"
-                                Command="{Binding ConfirmSharesCommand}"
-                                Style="{StaticResource ButtonDefault.Small}"
-                                ToolTip="确认"
-                                Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-                        </UniformGrid>
-
-
-                        <ListBox
-                            VerticalAlignment="Center"
-                            BorderThickness="0"
-                            ItemsSource="{Binding Shares}"
-                            Style="{StaticResource ListBoxCustom}">
-                            <ListBox.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel IsItemsHost="True" />
-                                </ItemsPanelTemplate>
-                            </ListBox.ItemsPanel>
-                            <ListBox.ItemContainerStyle>
-                                <Style BasedOn="{StaticResource ListBoxItemCustom}" TargetType="ListBoxItem">
-                                    <Setter Property="Height" Value="24" />
-                                </Style>
-                            </ListBox.ItemContainerStyle>
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <Border
-                                        x:Name="border"
-                                        Margin="1,0"
-                                        BorderBrush="Gray"
-                                        BorderThickness="0,0,0,1">
-                                        <DockPanel>
-                                            <Button
-                                                x:Name="btn"
-                                                hc:IconElement.Geometry="{StaticResource f.xmark}"
-                                                Command="{Binding DataContext.DeleteShareCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                CommandParameter="{Binding .}"
-                                                DockPanel.Dock="Right"
-                                                Style="{StaticResource ButtonIcon.Small}" />
-                                            <TextBox
-                                                x:Name="tb"
-                                                MinWidth="50"
-                                                HorizontalContentAlignment="Center"
-                                                BorderThickness="0"
-                                                Style="{StaticResource TextBox.Small}"
-                                                Text="{Binding Name}" />
-                                        </DockPanel>
-                                    </Border>
-                                    <DataTemplate.Triggers>
-                                        <DataTrigger Binding="{Binding Name}" Value="单一份额">
-                                            <Setter TargetName="tb" Property="IsReadOnly" Value="True" />
-                                            <Setter TargetName="btn" Property="Visibility" Value="Collapsed" />
-                                        </DataTrigger>
-
-                                        <DataTrigger Binding="{Binding DataContext.IsDividingShare, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False">
-                                            <Setter TargetName="tb" Property="IsReadOnly" Value="True" />
-                                            <Setter TargetName="btn" Property="Visibility" Value="Collapsed" />
-                                            <Setter TargetName="border" Property="BorderThickness" Value="1" />
-                                            <Setter TargetName="border" Property="CornerRadius" Value="4" />
-                                        </DataTrigger>
-                                    </DataTemplate.Triggers>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                    </DockPanel>-->
-
                     <TextBlock />
                 </DockPanel>
             </UserControl>
@@ -449,6 +362,34 @@
         <DataTemplate x:Key="DT.SetupFlow">
             <UserControl Template="{StaticResource FlowShell}">
                 <StackPanel VerticalAlignment="Center">
+
+                    <DockPanel>
+                        <shared:ChangeableContainer
+                            Binding="{Binding InitialAsset}"
+                            Entity="{Binding .}"
+                            IsReadOnly="{Binding IsReadOnly}">
+                            <shared:ChangeableContainer.ContentTemplate>
+                                <DataTemplate>
+                                    <DockPanel>
+                                        <TextBox
+                                            MinWidth="100"
+                                            Style="{StaticResource TextBox.Small}"
+                                            Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                                            TextAlignment="Center" />
+                                        <TextBlock Text=" 元" />
+                                    </DockPanel>
+                                </DataTemplate>
+                            </shared:ChangeableContainer.ContentTemplate>
+                        </shared:ChangeableContainer>
+
+
+                        <TextBlock
+                            Margin="10,0"
+                            VerticalAlignment="Center"
+                            Foreground="Gray"
+                            Text="{Binding Capital}"
+                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                    </DockPanel>
 
                     <ContentControl Content="{Binding EstablishmentAnnouncement}" Style="{StaticResource SingleFileStyle}" />
 
@@ -571,97 +512,6 @@
                         <ContentControl Content="{Binding RegistrationLetter}" Style="{StaticResource SingleFileStyle}" />
                     </StackPanel>
 
-
-                    <!--<DockPanel
-                        DockPanel.Dock="Top"
-                        LastChildFill="False"
-                        Visibility="{Binding ModifyShareClass, Converter={StaticResource Boolean2VisibilityConverter}}">
-                        <TextBlock
-                            Margin="0,0,10,0"
-                            VerticalAlignment="Center"
-                            Text="基金份额" />
-
-                        <ToggleButton
-                            hc:IconElement.Geometry="{StaticResource f.pencil}"
-                            IsChecked="{Binding IsDividingShare}"
-                            Style="{StaticResource ToggleButtonDefault.Small}"
-                            ToolTip="修改"
-                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-
-
-                        <UniformGrid Rows="1" Visibility="{Binding IsDividingShare, Converter={StaticResource Boolean2VisibilityConverter}}">
-                            <Button
-                                hc:IconElement.Geometry="{StaticResource f.knife}"
-                                Command="{Binding DivideSharesCommand}"
-                                Style="{StaticResource ButtonDefault.Small}"
-                                ToolTip="拆分"
-                                Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-
-                            <Button
-                                hc:IconElement.Geometry="{StaticResource f.circle-check}"
-                                Command="{Binding ConfirmSharesCommand}"
-                                Style="{StaticResource ButtonDefault.Small}"
-                                ToolTip="确认"
-                                Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-                        </UniformGrid>
-
-
-                        <ListBox
-                            VerticalAlignment="Center"
-                            BorderThickness="0"
-                            ItemsSource="{Binding Shares}"
-                            Style="{StaticResource ListBoxCustom}">
-                            <ListBox.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel IsItemsHost="True" />
-                                </ItemsPanelTemplate>
-                            </ListBox.ItemsPanel>
-                            <ListBox.ItemContainerStyle>
-                                <Style BasedOn="{StaticResource ListBoxItemCustom}" TargetType="ListBoxItem">
-                                    <Setter Property="Height" Value="24" />
-                                </Style>
-                            </ListBox.ItemContainerStyle>
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <Border
-                                        x:Name="border"
-                                        Margin="1,0"
-                                        BorderBrush="Gray"
-                                        BorderThickness="0,0,0,1">
-                                        <DockPanel>
-                                            <Button
-                                                x:Name="btn"
-                                                hc:IconElement.Geometry="{StaticResource f.xmark}"
-                                                Command="{Binding DataContext.DeleteShareCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                CommandParameter="{Binding .}"
-                                                DockPanel.Dock="Right"
-                                                Style="{StaticResource ButtonIcon.Small}" />
-                                            <TextBox
-                                                x:Name="tb"
-                                                MinWidth="50"
-                                                HorizontalContentAlignment="Center"
-                                                BorderThickness="0"
-                                                Style="{StaticResource TextBox.Small}"
-                                                Text="{Binding Name}" />
-                                        </DockPanel>
-                                    </Border>
-                                    <DataTemplate.Triggers>
-                                        <DataTrigger Binding="{Binding Name}" Value="单一份额">
-                                            <Setter TargetName="tb" Property="IsReadOnly" Value="True" />
-                                            <Setter TargetName="btn" Property="Visibility" Value="Collapsed" />
-                                        </DataTrigger>
-
-                                        <DataTrigger Binding="{Binding DataContext.IsDividingShare, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False">
-                                            <Setter TargetName="tb" Property="IsReadOnly" Value="True" />
-                                            <Setter TargetName="btn" Property="Visibility" Value="Collapsed" />
-                                            <Setter TargetName="border" Property="BorderThickness" Value="1" />
-                                            <Setter TargetName="border" Property="CornerRadius" Value="4" />
-                                        </DataTrigger>
-                                    </DataTemplate.Triggers>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                    </DockPanel>-->
 
                     <TextBlock />
                 </DockPanel>

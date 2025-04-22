@@ -124,6 +124,10 @@ public class SetupFlow : FundFlow
     /// </summary>
     public DateOnly RaisingEndDate { get; set; }
 
+
+    public decimal InitialAsset { get; set; }
+
+
     /// <summary>
     /// 实缴出资证明
     /// </summary>
