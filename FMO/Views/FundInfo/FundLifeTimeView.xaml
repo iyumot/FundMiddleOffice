@@ -591,20 +591,16 @@
     <DockPanel>
 
         <DockPanel DockPanel.Dock="Top" LastChildFill="False">
-            <Button
-                Command="{Binding SetupFundCommand}"
-                Content="成立备案"
-                Style="{StaticResource ButtonDashed}" />
+            <DockPanel.Resources>
+                <Style BasedOn="{StaticResource ButtonDashedPrimary}" TargetType="Button">
+                    <Setter Property="Margin" Value="5,0" />
+                </Style>
+            </DockPanel.Resources>
+            <Button Command="{Binding SetupFundCommand}" Content="成立备案" />
 
-            <Button
-                Command="{Binding CreateContractModifyCommand}"
-                Content="发起合同变更"
-                Style="{StaticResource ButtonDashed}" />
+            <Button Command="{Binding CreateContractModifyCommand}" Content="发起合同变更" />
 
-            <Button
-                Command="{Binding CreateClearFlowCommand}"
-                Content="发起清盘"
-                Style="{StaticResource ButtonDashed}" />
+            <Button Command="{Binding CreateClearFlowCommand}" Content="发起清盘" />
         </DockPanel>
 
         <ListBox
