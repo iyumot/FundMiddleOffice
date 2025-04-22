@@ -1,10 +1,11 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
+using FMO.TPL;
 using FMO.Utilities;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 
 namespace FMO
 {
@@ -41,14 +42,14 @@ namespace FMO
         /// <summary>
         /// 实缴出资
         /// </summary>
-        [ObservableProperty]
-        public partial FlowFileViewModel? PaidInCapitalProof { get; set; }
+        //[ObservableProperty]
+        public FlowFileViewModel PaidInCapitalProof { get; }
 
         /// <summary>
         /// 成立公告
         /// </summary>
-        [ObservableProperty]
-        public partial FlowFileViewModel? EstablishmentAnnouncement { get; set; }
+        //[ObservableProperty]
+        public FlowFileViewModel EstablishmentAnnouncement { get; }
 
 
 
@@ -102,7 +103,7 @@ namespace FMO
 
 
             PaidInCapitalProof = new(FundId, FlowId, "实缴出资证明", flow.PaidInCapitalProof?.Path, "Establish", nameof(SetupFlow.PaidInCapitalProof));
-            EstablishmentAnnouncement = new(FundId, FlowId, "成立公告", flow.PaidInCapitalProof?.Path, "Announcement", nameof(SetupFlow.PaidInCapitalProof));
+            EstablishmentAnnouncement = new(FundId, FlowId, "成立公告", flow.PaidInCapitalProof?.Path, "Announcement", nameof(SetupFlow.EstablishmentAnnouncement));
 
             Initialized = true;
         }
@@ -151,6 +152,7 @@ namespace FMO
                 var v = db.GetCollection<FundFlow>().FindById(FlowId) as SetupFlow;
 
                 property.UpdateEntity(v!);
+                db.GetCollection<FundFlow>().Update(v!);
             }
             unit.Apply();
         }
@@ -169,5 +171,46 @@ namespace FMO
         }
 
 
+
+        [RelayCommand]
+        public void GenerateFile(FlowFileViewModel v)
+        {
+            switch (v.Property)
+            {
+                case nameof(EstablishmentAnnouncement):
+                    try
+                    {
+                        var p = EstablishmentAnnouncement;//GetType().GetProperty(v.Property)!.GetValue(this) as FlowFileViewModel;
+
+                        using var db = DbHelper.Base();
+                        var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
+                        var fund = db.GetCollection<Fund>().FindById(FundId);
+                        string path = @$"{FundHelper.GetFolder(FundId)}\{v.Folder}\{fund.Name}_产品成立公告.docx";
+                        var fi = new FileInfo(path);
+                        if (!fi.Directory!.Exists) fi.Directory.Create();
+
+                        var data = new Dictionary<string, object?>
+                        {
+                            {"Manager", manager.Name },
+                            {"Name", fund.Name },
+                            {"Date", $"{Date?? DateTime.Today:yyyy年MM月dd日}" },
+                            {"Amount", InitialAsset.OldValue },
+                            {"Capital", Capital },
+                            { "Share", InitialAsset.OldValue }
+                        };
+                        if (WordTpl.GenerateFromTemplate(path, "产品成立公告.docx", data))
+                        {
+                            if (p.File?.Exists ?? false)
+                                p.File.Delete();
+                            p.SetFile(new System.IO.FileInfo(path));
+                        }
+                        else HandyControl.Controls.Growl.Error($"生成{v.Name}失败，请查看Log，检查模板是否存在");
+                    }
+                    catch { }
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 }
