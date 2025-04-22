@@ -167,6 +167,7 @@
                 <Button
                     hc:IconElement.Geometry="{StaticResource f.plus}"
                     Command="{Binding AddInvestorCommand}"
+                    CommandParameter="{Binding ElementName=datagrid}"
                     Content="新增投资人"
                     Style="{StaticResource ButtonDefault.Small}" />
                 <Button
@@ -192,6 +193,7 @@
 
 
         <DataGrid
+            Name="datagrid"
             hc:DataGridAttach.ShowRowNumber="True"
             AutoGenerateColumns="False"
             IsReadOnly="True"

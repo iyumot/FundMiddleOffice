@@ -66,9 +66,11 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
 
     [RelayCommand]
-    public void AddInvestor()
+    public void AddInvestor(DataGrid grid)
     {
-        Customers.Add(new InvestorReadOnlyViewModel(new Investor { Name = "" }));
+        InvestorReadOnlyViewModel item = new(new Investor { Name = "" });
+        Customers.Add(item);
+        grid.ScrollIntoView(item);
     }
 
     [RelayCommand]
