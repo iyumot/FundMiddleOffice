@@ -143,11 +143,13 @@ public partial class RegistrationFlowViewModel : FlowViewModel
                     var fi = new FileInfo(path);
                     if (!fi.Directory!.Exists) fi.Directory.Create();
 
-                    WordTpl.GenerateRegisterAnounce(fund, path);
-
-                    if (CommitmentLetter.File?.Exists ?? false)
-                        CommitmentLetter.File.Delete();
-                    CommitmentLetter.SetFile(new System.IO.FileInfo(path));
+                    if (WordTpl.GenerateRegisterAnounce(fund, path))
+                    {
+                        if (CommitmentLetter.File?.Exists ?? false)
+                            CommitmentLetter.File.Delete();
+                        CommitmentLetter.SetFile(new System.IO.FileInfo(path));
+                    }
+                    else HandyControl.Controls.Growl.Error("生成备案承诺函失败，请查看Log，检查模板是否存在");
                 }
                 catch { }
                 break;
