@@ -12,12 +12,12 @@ namespace FMO;
 
 
 
-public partial class ShareElementsViewModel2<TProperty, TViewModel> : ObservableObject where TProperty : notnull
+public partial class ShareElementsViewModel<TProperty, TViewModel> : ObservableObject where TProperty : notnull
 {
 
 
     [SetsRequiredMembers]
-    public ShareElementsViewModel2(int fundid, int flowId, FundElements elements, ShareClass[] sc, Func<FundElements, PortionMutable<TProperty>> property, Func<TProperty?, TViewModel> o2v, Func<TViewModel?, TProperty> v2o)
+    public ShareElementsViewModel(int fundid, int flowId, FundElements elements, ShareClass[] sc, Func<FundElements, PortionMutable<TProperty>> property, Func<TProperty?, TViewModel> o2v, Func<TViewModel?, TProperty> v2o)
     {
         FundId = fundid;
         FlowId = flowId;

@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
@@ -31,7 +30,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
     public static FundMode[] FundModes { get; } = [Models.FundMode.Open, Models.FundMode.Close, Models.FundMode.Other];
 
     public static FundFeeType[] FundFeeTypes { get; } = [FundFeeType.Ratio, FundFeeType.Fix, FundFeeType.Other];
-    public static FundFeePayType[] FundFeePayTypes { get; } = [ FundFeePayType.Extra, FundFeePayType.Out,  FundFeePayType.Other];
+    public static FundFeePayType[] FundFeePayTypes { get; } = [FundFeePayType.Extra, FundFeePayType.Out, FundFeePayType.Other];
 
     public static FeePayFrequency[] FeePayFrequencies { get; } = [FeePayFrequency.Month, FeePayFrequency.Quarter, FeePayFrequency.Other];
 
@@ -184,32 +183,27 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
 
     [ObservableProperty]
-    public partial ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel> ManageFee { get; set; }
+    public partial ShareElementsViewModel<FundFeeInfo, FundFeeInfoViewModel> ManageFee { get; set; }
 
 
     [ObservableProperty]
     public partial ChangeableViewModel<FundElements, FeePayInfoViewModel> ManageFeePay { get; set; }
 
 
-    [ObservableProperty]
-    public partial ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel> SubscriptionFee { get; set; }
-
 
     [ObservableProperty]
-    public partial ShareElementsViewModel2<FundPurchaseRule, FundPurchaseRuleViewModel> SubscriptionRule { get; set; }
+    public partial ShareElementsViewModel<FundPurchaseRule, FundPurchaseRuleViewModel> SubscriptionRule { get; set; }
 
-
-    [ObservableProperty]
-    public partial ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel> PurchaseFee { get; set; }
-
-
-    [ObservableProperty]
-    public partial ShareElementsViewModel2<FundPurchaseRule, FundPurchaseRuleViewModel> PurchasRule { get; set; }
 
 
 
     [ObservableProperty]
-    public partial ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel> RedemptionFee { get; set; }
+    public partial ShareElementsViewModel<FundPurchaseRule, FundPurchaseRuleViewModel> PurchasRule { get; set; }
+
+
+
+    [ObservableProperty]
+    public partial ShareElementsViewModel<FundFeeInfo, FundFeeInfoViewModel> RedemptionFee { get; set; }
 
 
 
@@ -391,7 +385,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
             InheritedFunc = x => x.HugeRedemptionRatio.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
             UpdateFunc = (x, y) => { if (y is not null) x.HugeRedemptionRatio!.SetValue(y.Value, newValue); },
             ClearFunc = x => x.HugeRedemptionRatio.RemoveValue(newValue),
-            DisplayFunc = x=> x?.ToString("P")
+            DisplayFunc = x => x?.ToString("P")
         };
         HugeRedemptionRatio.Init(elements);
         //FundModeInfo = new ElementItemFundModeViewModel(elements, nameof(FundElements.FundModeInfo), FlowId, "运作方式");
@@ -514,14 +508,14 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         #endregion
 
         //SubscriptionFee = new ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel>(FundId, FlowId, elements, sc, x => x.SubscriptionFee, x => new(x), x => x!.Build());
-        SubscriptionRule = new ShareElementsViewModel2<FundPurchaseRule, FundPurchaseRuleViewModel>(FundId, FlowId, elements, sc, x => x.SubscriptionRule, x => new(x), x => x!.Build());
+        SubscriptionRule = new ShareElementsViewModel<FundPurchaseRule, FundPurchaseRuleViewModel>(FundId, FlowId, elements, sc, x => x.SubscriptionRule, x => new(x) { FeeName = "认购费" }, x => x!.Build());
 
         //PurchaseFee = new ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel>(FundId, FlowId, elements, sc, x => x.PurchaseFee, x => new(x), x => x!.Build());
-        PurchasRule = new ShareElementsViewModel2<FundPurchaseRule, FundPurchaseRuleViewModel>(FundId, FlowId, elements, sc, x => x.PurchasRule, x => new(x), x => x!.Build());
+        PurchasRule = new ShareElementsViewModel<FundPurchaseRule, FundPurchaseRuleViewModel>(FundId, FlowId, elements, sc, x => x.PurchasRule, x => new(x) { FeeName = "申购费" }, x => x!.Build());
 
-        RedemptionFee = new ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel>(FundId, FlowId, elements, sc, x => x.RedemptionFee, x => new(x), x => x!.Build());
+        RedemptionFee = new ShareElementsViewModel<FundFeeInfo, FundFeeInfoViewModel>(FundId, FlowId, elements, sc, x => x.RedemptionFee, x => new(x), x => x!.Build());
 
-        ManageFee = new ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel>(FundId, FlowId, elements, sc, x => x.ManageFee, x => new(x), x => x!.Build());
+        ManageFee = new ShareElementsViewModel<FundFeeInfo, FundFeeInfoViewModel>(FundId, FlowId, elements, sc, x => x.ManageFee, x => new(x), x => x!.Build());
         ManageFeePay = new ChangeableViewModel<FundElements, FeePayInfoViewModel>
         {
             Label = "支付频率",
@@ -599,8 +593,13 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
             var text = Clipboard.GetText();
 
             if (BankAccount.FromString(text) is BankAccount account)
+            {
                 v.NewValue = new(account);
-
+                if (!account.Name!.Contains("募集") && v.Label!.Contains("募集"))
+                    HandyControl.Controls.Growl.Warning("请确认此账户是募集账户");
+            }
+            else
+                HandyControl.Controls.Growl.Error("无法识别的银行信息格式");
         }
         catch { }
     }

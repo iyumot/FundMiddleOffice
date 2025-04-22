@@ -401,7 +401,14 @@
                 Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}"
                 TextWrapping="Wrap" />
         </DataTemplate>
-
+        <DataTemplate x:Key="DT.Strategy">
+            <TextBox
+                AcceptsReturn="True"
+                Background="WhiteSmoke"
+                FontSize="10"
+                Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                TextWrapping="Wrap" />
+        </DataTemplate>
 
         <DataTemplate x:Key="DT.InvestmentObjective">
             <TextBox MinWidth="400" Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
@@ -489,7 +496,7 @@
         </ControlTemplate>
 
         <DataTemplate x:Key="DT.Fee">
-            <DockPanel DataContext="{Binding NewValue}" LastChildFill="False">
+            <WrapPanel DataContext="{Binding NewValue}">
                 <ComboBox
                     Width="90"
                     Margin="4,0"
@@ -547,7 +554,7 @@
                     FontSize="14"
                     Text="元"
                     Visibility="{Binding HasGuaranteedFee, Converter={StaticResource Boolean2VisibilityConverter}}" />
-            </DockPanel>
+            </WrapPanel>
             <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding NewValue.Type}" Value="Other">
                     <Setter TargetName="other" Property="Visibility" Value="Visible" />
@@ -1173,63 +1180,11 @@
 
 
                         </StackPanel>
+
+
+
                     </DockPanel>
                     <!--#endregion-->
-
-                    <Separator />
-
-
-
-                </StackPanel>
-
-
-                <StackPanel Grid.Column="2">
-                    <StackPanel.Resources>
-                        <Style TargetType="Separator">
-                            <Setter Property="Margin" Value="0,10" />
-                        </Style>
-                    </StackPanel.Resources>
-
-
-                    <!--#region 投资相关-->
-                    <DockPanel>
-                        <Border Margin="0,0,10,0" Background="Orange">
-                            <TextBlock Style="{StaticResource CategoryTab}" Text="投资相关" />
-                        </Border>
-
-                        <StackPanel>
-
-                            <shared:ChangeableContainer Binding="{Binding InvestmentObjective}" ContentTemplate="{StaticResource DT.InvestmentObjective}" />
-
-                            <DockPanel>
-                                <shared:ChangeableContainer Binding="{Binding StopLine}" ContentTemplate="{StaticResource DT.StopLine}" />
-
-
-                                <shared:ChangeableContainer
-                                    Margin="20,0,0,0"
-                                    Binding="{Binding WarningLine}"
-                                    ContentTemplate="{StaticResource DT.StopLine}" />
-                            </DockPanel>
-
-                            <shared:ChangeableContainer
-                                HorizontalContentAlignment="Stretch"
-                                Binding="{Binding InvestmentScope}"
-                                ContentTemplate="{StaticResource DT.LongText}" />
-
-                            <shared:ChangeableContainer
-                                HorizontalContentAlignment="Stretch"
-                                Binding="{Binding InvestmentStrategy}"
-                                ContentTemplate="{StaticResource DT.LongText}" />
-
-
-                            <shared:ChangeableContainer
-                                HorizontalContentAlignment="Stretch"
-                                Binding="{Binding InvestmentManagers}"
-                                ContentTemplate="{StaticResource DT.LongText}" />
-                        </StackPanel>
-                    </DockPanel>
-                    <!--#endregion-->
-
 
                     <Separator />
 
@@ -1270,6 +1225,7 @@
                                 <shared:ChangeableContainer.ContentTemplate>
                                     <DataTemplate>
                                         <DockPanel Margin="10,0,0,0" LastChildFill="False">
+                                            <CheckBox Content="仅按新规开放" IsChecked="{Binding NewValue.IsLimited}" />
                                             <CheckBox
                                                 Content="申购"
                                                 IsChecked="{Binding NewValue.AllowPurchase}"
@@ -1368,12 +1324,11 @@
 
                                     <Grid DockPanel.Dock="Top">
 
-                                        <shared:ChangeableControlButtons
-                                            Margin="110,0"
-                                            HorizontalAlignment="Right"
-                                            DataContext="{Binding ., RelativeSource={RelativeSource AncestorType=shared:ChangeableContainer}}" />
-
                                         <DockPanel HorizontalAlignment="Center" LastChildFill="False">
+
+                                            <shared:ChangeableControlButtons DataContext="{Binding ., RelativeSource={RelativeSource AncestorType=shared:ChangeableContainer}}" DockPanel.Dock="Right" />
+
+
                                             <Button
                                                 hc:IconElement.Geometry="{StaticResource f.clipboard}"
                                                 Command="{Binding SetBankFromClipboardCommand}"
@@ -1381,6 +1336,7 @@
                                                 DockPanel.Dock="Right"
                                                 Foreground="Green"
                                                 Style="{StaticResource ButtonIcon}" />
+
                                             <Grid>
                                                 <TextBlock
                                                     VerticalAlignment="Center"
@@ -1450,6 +1406,82 @@
 
                         </StackPanel>
                     </DockPanel>
+
+                </StackPanel>
+
+
+                <StackPanel Grid.Column="2">
+                    <StackPanel.Resources>
+                        <Style TargetType="Separator">
+                            <Setter Property="Margin" Value="0,10" />
+                        </Style>
+                    </StackPanel.Resources>
+
+
+                    <!--#region 投资相关-->
+                    <DockPanel>
+                        <Border Margin="0,0,10,0" Background="Orange">
+                            <TextBlock Style="{StaticResource CategoryTab}" Text="投资相关" />
+                        </Border>
+
+                        <StackPanel>
+
+                            <shared:ChangeableContainer Binding="{Binding InvestmentObjective}" ContentTemplate="{StaticResource DT.InvestmentObjective}" />
+
+                            <DockPanel>
+                                <shared:ChangeableContainer Binding="{Binding StopLine}" ContentTemplate="{StaticResource DT.StopLine}" />
+
+
+                                <shared:ChangeableContainer
+                                    Margin="20,0,0,0"
+                                    Binding="{Binding WarningLine}"
+                                    ContentTemplate="{StaticResource DT.StopLine}" />
+                            </DockPanel>
+
+                            <shared:ChangeableContainer
+                                HorizontalContentAlignment="Stretch"
+                                Binding="{Binding InvestmentScope}"
+                                ContentTemplate="{StaticResource DT.LongText}" />
+
+                            <Border Margin="20,4">
+                                <Line
+                                    Stroke="Gray"
+                                    StrokeDashArray="4,2"
+                                    StrokeThickness="1"
+                                    X1="0"
+                                    X2="{Binding RelativeSource={RelativeSource AncestorType=Border}, Path=ActualWidth}"
+                                    Y1="0"
+                                    Y2="0" />
+                            </Border>
+
+                            <shared:ChangeableContainer
+                                HorizontalContentAlignment="Stretch"
+                                Binding="{Binding InvestmentStrategy}"
+                                ContentTemplate="{StaticResource DT.Strategy}" />
+
+                            <Border Margin="20,4">
+                                <Line
+                                    Stroke="Gray"
+                                    StrokeDashArray="4,2"
+                                    StrokeThickness="1"
+                                    X1="0"
+                                    X2="{Binding RelativeSource={RelativeSource AncestorType=Border}, Path=ActualWidth}"
+                                    Y1="0"
+                                    Y2="0" />
+                            </Border>
+
+                            <shared:ChangeableContainer
+                                HorizontalContentAlignment="Stretch"
+                                Binding="{Binding InvestmentManagers}"
+                                ContentTemplate="{StaticResource DT.LongText}" />
+                        </StackPanel>
+                    </DockPanel>
+                    <!--#endregion-->
+
+
+                    <Separator />
+
+
 
                 </StackPanel>
             </Grid>
