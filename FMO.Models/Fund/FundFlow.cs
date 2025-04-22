@@ -115,6 +115,11 @@ public struct DateRange
 
     public DateOnly End { get; set; }
 
+    public override string ToString()
+    {
+        return $"{Begin:yyyy-MM-dd} - {End:yyyy-MM-dd}";
+    }
+
     public static bool operator ==(DateRange left, DateRange right)
     {
         return left.Begin == right.Begin && left.End == right.End;
