@@ -694,6 +694,11 @@
 
         <DockPanel DockPanel.Dock="Top" LastChildFill="False">
             <Button
+                Command="{Binding SetupFundCommand}"
+                Content="成立备案"
+                Style="{StaticResource ButtonDashed}" />
+
+            <Button
                 Command="{Binding CreateContractModifyCommand}"
                 Content="发起合同变更"
                 Style="{StaticResource ButtonDashed}" />

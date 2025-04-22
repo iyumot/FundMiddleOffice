@@ -384,6 +384,30 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         try { if (Fund.Url is not null) System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(Fund.Url) { UseShellExecute = true }); } catch { }
     }
 
+
+    [RelayCommand]
+    public void SetupFund()
+    {
+        using var db = DbHelper.Base();
+        if (!Flows.Any(x => x is SetupFlowViewModel))
+        {
+            var flow = new SetupFlow { FundId = Fund.Id };
+            db.GetCollection<FundFlow>().Insert(flow);
+            var ele = db.GetCollection<FundElements>().FindById(Fund.Id);
+            db.Dispose();
+            Flows.Add(new SetupFlowViewModel(flow));
+        }
+        if (!Flows.Any(x => x is RegistrationFlowViewModel))
+        {
+            var flow = new RegistrationFlow { FundId = Fund.Id };
+            db.GetCollection<FundFlow>().Insert(flow);
+            var ele = db.GetCollection<FundElements>().FindById(Fund.Id);
+            db.Dispose();
+            Flows.Add(new RegistrationFlowViewModel(flow));
+        }
+
+    }
+
     /// <summary>
     /// 发起合同变更 
     /// </summary>
