@@ -178,6 +178,13 @@
                                 </DockPanel>
                             </Grid>
 
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                DockPanel.Dock="Right"
+                                FontSize="8"
+                                Foreground="Red"
+                                Text="文件已被删除"
+                                Visibility="{Binding Binding.Deleted, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
                             <TextBlock
                                 x:Name="PART_FileName"
@@ -213,6 +220,13 @@
                 VerticalAlignment="Center"
                 Text="{Binding DisplayName}" />
 
+            <TextBlock
+                VerticalAlignment="Center"
+                DockPanel.Dock="Right"
+                FontSize="8"
+                Foreground="Red"
+                Text="文件已被删除"
+                Visibility="{Binding Deleted, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
             <DockPanel x:Name="btns" Visibility="Collapsed">
                 <DockPanel LastChildFill="False">

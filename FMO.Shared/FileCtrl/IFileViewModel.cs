@@ -13,6 +13,8 @@ public interface IFileViewModel
 {
     bool Exists { get; }
 
+    bool Deleted { get; }
+
     FileInfo? File { get; set; }
 
 }
@@ -31,6 +33,7 @@ public partial class FileViewModelBase : ObservableObject, IFileViewModel
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(Exists))]
+    [NotifyPropertyChangedFor(nameof(Deleted))]
     [NotifyPropertyChangedFor(nameof(DisplayName))]
     public partial FileInfo? File { get; set; }
 
@@ -38,6 +41,7 @@ public partial class FileViewModelBase : ObservableObject, IFileViewModel
 
     public bool Exists => File?.Exists ?? false;
 
+    public bool Deleted => File is not null && !File.Exists;
 
     private string? GetShort(string? name, int cnt = 20)
     {
