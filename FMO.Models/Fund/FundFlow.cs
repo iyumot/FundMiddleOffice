@@ -109,6 +109,33 @@ public class ContractFinalizeFlow : ContractFlow
     public override string Name { get => "合同定稿"; set { } }
 }
 
+public struct DateRange
+{
+    public DateOnly Begin { get; set; }
+
+    public DateOnly End { get; set; }
+
+    public static bool operator ==(DateRange left, DateRange right)
+    {
+        return left.Begin == right.Begin && left.End == right.End;
+    }
+
+    public static bool operator !=(DateRange left, DateRange right)
+    {
+        return !(left == right);
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is DateRange other && this == other;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Begin, End);
+    }
+}
+
 /// <summary>
 /// 基金成立工作流
 /// </summary>
@@ -123,6 +150,11 @@ public class SetupFlow : FundFlow
     /// 募集结束日期
     /// </summary>
     public DateOnly RaisingEndDate { get; set; }
+
+    /// <summary>
+    /// 募集期
+    /// </summary>
+    public DateRange RasingPeriod { get; set; }
 
 
     public decimal InitialAsset { get; set; }

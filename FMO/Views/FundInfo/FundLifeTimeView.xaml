@@ -360,14 +360,45 @@
 
 
         <DataTemplate x:Key="DT.SetupFlow">
-            <UserControl Template="{StaticResource FlowShell}">
+            <UserControl d:DataContext="{d:DesignInstance Type=local:SetupFlowViewModel}" Template="{StaticResource FlowShell}">
                 <StackPanel VerticalAlignment="Center">
-
+                    <StackPanel.Resources>
+                        <Style BasedOn="{StaticResource {x:Type shared:ChangeableContainer}}" TargetType="shared:ChangeableContainer">
+                            <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}" />
+                            <Setter Property="Entity" Value="{Binding .}" />
+                        </Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                        </Style>
+                        <DataTemplate x:Key="Date">
+                            <DatePicker Width="100" SelectedDate="{Binding NewValue, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
+                        </DataTemplate>
+                    </StackPanel.Resources>
                     <DockPanel>
-                        <shared:ChangeableContainer
-                            Binding="{Binding InitialAsset}"
-                            Entity="{Binding .}"
-                            IsReadOnly="{Binding IsReadOnly}">
+
+                        <shared:ChangeableContainer Binding="{Binding RaisingPeriod}">
+                            <shared:ChangeableContainer.ContentTemplate>
+                                <DataTemplate>
+                                    <DockPanel>
+                                        <DatePicker
+                                            Width="100"
+                                            HorizontalContentAlignment="Center"
+                                            SelectedDate="{Binding NewValue.Begin, Converter={StaticResource DataTimeDateOnlySwitchConverter}}"
+                                            Style="{StaticResource DatePicker.Small}" />
+                                        <TextBlock VerticalAlignment="Center" Text=" - " />
+                                        <DatePicker
+                                            Width="100"
+                                            HorizontalContentAlignment="Center"
+                                            SelectedDate="{Binding NewValue.End, Converter={StaticResource DataTimeDateOnlySwitchConverter}}"
+                                            Style="{StaticResource DatePicker.Small}" />
+                                    </DockPanel>
+                                </DataTemplate>
+                            </shared:ChangeableContainer.ContentTemplate>
+                        </shared:ChangeableContainer>
+
+
+
+                        <shared:ChangeableContainer Binding="{Binding InitialAsset}">
                             <shared:ChangeableContainer.ContentTemplate>
                                 <DataTemplate>
                                     <DockPanel>
