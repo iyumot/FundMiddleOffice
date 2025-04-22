@@ -69,6 +69,7 @@
   
   <ItemGroup>
     <Resource Include="res\logo.ico" />
+    <Resource Include="res\futurecompany.txt" />
     <Resource Include="res\securitycompany.txt" />
   </ItemGroup>
 

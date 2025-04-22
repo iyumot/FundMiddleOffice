@@ -9,7 +9,7 @@
     xmlns:model="clr-namespace:FMO.Models;assembly=FMO.Models"
     xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     d:DataContext="{d:DesignInstance Type=local:FundAccountsViewModel}"
-    d:DesignHeight="450"
+    d:DesignHeight="1450"
     d:DesignWidth="1200"
     mc:Ignorable="d">
     <UserControl.Resources>
@@ -289,6 +289,132 @@
             </DataTemplate.Triggers>
         </DataTemplate>
 
+        <DataTemplate x:Key="FutureItem" DataType="local:FutureAccountViewModel">
+            <Border Margin="2,0" Background="WhiteSmoke">
+                <StackPanel MinWidth="300">
+                    <DockPanel>
+                        <Button
+                            x:Name="del"
+                            hc:IconElement.Geometry="{StaticResource f.trash}"
+                            Command="{Binding RelativeSource={RelativeSource AncestorType=local:FundAccountsView}, Path=DataContext.DeleteFutureCommand}"
+                            CommandParameter="{Binding .}"
+                            DockPanel.Dock="Right"
+                            Foreground="Red"
+                            Style="{StaticResource ButtonIcon.Small}"
+                            Visibility="Collapsed" />
+
+                        <TextBlock
+                            Margin="4"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontSize="16"
+                            FontWeight="Bold"
+                            Style="{StaticResource TextBlockDefaultBold}"
+                            Text="{Binding Company}" />
+                    </DockPanel>
+                    <!--  基本户  -->
+                    <DockPanel DataContext="{Binding Common}">
+                        <Border Background="Orange">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                                <TextBlock
+                                    Width="40"
+                                    Margin="3,0"
+                                    Padding="4"
+                                    VerticalAlignment="Center"
+                                    FontSize="14"
+                                    Text="{Binding Name}"
+                                    TextWrapping="Wrap" />
+                                <StackPanel HorizontalAlignment="Center">
+                                    <ToggleButton
+                                        DockPanel.Dock="Bottom"
+                                        IsChecked="{Binding IsReadOnly, Converter={StaticResource Boolean2BooleanReConverter}}"
+                                        Style="{StaticResource ToggleEditable}" />
+                                    <Button
+                                        hc:IconElement.Geometry="{StaticResource f.floppy-disk}"
+                                        Command="{Binding SaveCommand}"
+                                        Style="{StaticResource ButtonIcon.Small}"
+                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                                </StackPanel>
+
+                            </StackPanel>
+                        </Border>
+
+                        <StackPanel Margin="2,0">
+                            <UniformGrid Rows="1">
+                                <DockPanel>
+                                    <TextBlock FontSize="14" Text="原始材料" />
+                                    <Button
+                                        hc:IconElement.Geometry="{StaticResource f.folder}"
+                                        Command="{Binding OpenRawFolderCommand}"
+                                        Style="{StaticResource ButtonIcon.Small}" />
+                                </DockPanel>
+
+
+                                <DockPanel>
+                                    <TextBlock FontSize="14" Text="用印文件" />
+                                    <Button
+                                        hc:IconElement.Geometry="{StaticResource f.folder}"
+                                        Command="{Binding OpenSealFolderCommand}"
+                                        Style="{StaticResource ButtonIcon.Small}" />
+                                </DockPanel>
+                            </UniformGrid>
+
+                            <shared:FileControl Binding="{Binding BankLetter}" IsReadOnly="{Binding IsReadOnly}" />
+
+                            <BulletDecorator>
+                                <BulletDecorator.Bullet>
+                                    <TextBlock Text="资金账号" />
+                                </BulletDecorator.Bullet>
+                                <shared:CopyableControl>
+                                    <TextBox
+                                        Margin="4,0"
+                                        IsReadOnly="{Binding IsReadOnly}"
+                                        Style="{StaticResource TextBox.Small}"
+                                        Text="{Binding Account, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                                </shared:CopyableControl>
+                            </BulletDecorator>
+
+
+                            <BulletDecorator>
+                                <BulletDecorator.Bullet>
+                                    <TextBlock Text="交易密码" />
+                                </BulletDecorator.Bullet>
+                                <shared:CopyableControl>
+                                    <TextBox
+                                        Margin="4,0"
+                                        IsReadOnly="{Binding IsReadOnly}"
+                                        Style="{StaticResource TextBox.Small}"
+                                        Text="{Binding TradePassword, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                                </shared:CopyableControl>
+                            </BulletDecorator>
+
+
+                            <BulletDecorator>
+                                <BulletDecorator.Bullet>
+                                    <TextBlock Text="资金密码" />
+                                </BulletDecorator.Bullet>
+                                <shared:CopyableControl>
+                                    <TextBox
+                                        Margin="4,0"
+                                        IsReadOnly="{Binding IsReadOnly}"
+                                        Style="{StaticResource TextBox.Small}"
+                                        Text="{Binding CapitalPassword, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                                </shared:CopyableControl>
+                            </BulletDecorator>
+                        </StackPanel>
+                    </DockPanel>
+
+
+
+                </StackPanel>
+            </Border>
+            <DataTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="del" Property="Visibility" Value="Visible" />
+                </Trigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
         <ItemsPanelTemplate x:Key="SecurityCardPanel">
             <WrapPanel IsItemsHost="True" />
         </ItemsPanelTemplate>
@@ -426,7 +552,7 @@
                 PlacementTarget="{Binding ElementName=stocktag}"
                 StaysOpen="False">
                 <Border Background="WhiteSmoke">
-                    <StackPanel>
+                    <StackPanel Margin="0,10,0,0">
                         <!--  搜索  -->
                         <hc:SimplePanel Height="30" Margin="10,0">
                             <TextBox
@@ -462,6 +588,85 @@
             </Popup>
         </DockPanel>
 
+
+        <Separator Margin="8" />
+
+        <!--  期货户  -->
+        <DockPanel>
+            <Border
+                Name="futuretag"
+                Width="60"
+                Background="Green"
+                CornerRadius="5">
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock
+                        Width="40"
+                        Margin="5,10"
+                        HorizontalAlignment="Center"
+                        FontSize="16"
+                        Foreground="White"
+                        Text="期货账户"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
+
+                    <Button
+                        hc:IconElement.Geometry="{StaticResource f.circle-plus}"
+                        Command="{Binding AddFutureCommand}"
+                        Foreground="White"
+                        Style="{StaticResource ButtonIcon}" />
+                </StackPanel>
+
+            </Border>
+
+            <ListBox
+                d:ItemsSource="{d:SampleData}"
+                BorderThickness="0"
+                ItemTemplate="{StaticResource FutureItem}"
+                ItemsPanel="{StaticResource StockAccountPanel}"
+                ItemsSource="{Binding FutureAccounts}"
+                Style="{StaticResource ListBoxCustom}" />
+
+            <Popup
+                IsOpen="{Binding ShowChooseFutureCompany}"
+                Placement="Right"
+                PlacementTarget="{Binding ElementName=futuretag}"
+                StaysOpen="False">
+                <Border Background="WhiteSmoke">
+                    <StackPanel Margin="0,10,0,0">
+                        <!--  搜索  -->
+                        <hc:SimplePanel Height="30" Margin="10,0">
+                            <TextBox
+                                MinWidth="180"
+                                Padding="4"
+                                HorizontalContentAlignment="Center"
+                                Style="{StaticResource TextBox.Small}"
+                                Text="{Binding FutureCompanyKeyword, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                            <Viewbox
+                                Width="24"
+                                Margin="5,0"
+                                HorizontalAlignment="Right">
+                                <Path Data="{StaticResource f.magnifying-glass}" Fill="Black" />
+                            </Viewbox>
+                        </hc:SimplePanel>
+                        <ListBox
+                            Width="260"
+                            Height="300"
+                            Margin="8"
+                            ItemsSource="{Binding FutureCompanies.View}"
+                            SelectedItem="{Binding SelectedFutureCompany}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock
+                                        Height="15"
+                                        VerticalAlignment="Center"
+                                        Text="{Binding .}" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </Border>
+            </Popup>
+        </DockPanel>
 
 
     </StackPanel>
