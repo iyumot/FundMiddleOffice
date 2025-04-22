@@ -1,9 +1,4 @@
 ﻿using FMO.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MiniSoftware;
 using Serilog;
 
@@ -40,4 +35,33 @@ public static class WordTpl
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="path">目标路径</param>
+    /// <param name="tpl">模板文件名</param>
+    /// <param name="values"></param>
+    /// <returns></returns>
+    public static bool GenerateFromTemplate(string path, string tpl, object values)
+    {
+        // 获取模板
+        var fi = new FileInfo(@$"files\tpl\{tpl}");
+        if (!fi.Exists)
+        {
+            Log.Error("生成失败：未找到模板");
+            return false;
+        }
+
+        try
+        {
+            MiniWord.SaveAsByTemplate(path, fi.FullName, values);
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            Log.Error($"生成备案承诺函失败：{e.Message}");
+            return false;
+        }
+    }
 }

@@ -15,6 +15,17 @@
     <UserControl.Resources>
         <local:FlowTemplateSelector x:Key="FlowTemplateSelector" />
 
+        <Style
+            x:Key="GeneratorButton"
+            BasedOn="{StaticResource ButtonIconCircular.Small}"
+            TargetType="Button">
+            <Setter Property="hc:IconElement.Geometry" Value="{StaticResource f.hammer}" />
+            <Setter Property="Command" Value="{Binding GenerateFileCommand}" />
+            <Setter Property="Foreground" Value="Salmon" />
+            <Setter Property="ToolTip" Value="生成" />
+
+        </Style>
+
         <Style x:Key="Style.TextBlock.FlowName" TargetType="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="FontWeight" Value="Black" />
@@ -422,7 +433,10 @@
                             Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
                     </DockPanel>
 
-                    <ContentControl Content="{Binding EstablishmentAnnouncement}" Style="{StaticResource SingleFileStyle}" />
+                    <DockPanel>
+                        <Button CommandParameter="{Binding EstablishmentAnnouncement}" Style="{StaticResource GeneratorButton}" />
+                        <ContentControl Content="{Binding EstablishmentAnnouncement}" Style="{StaticResource SingleFileStyle}" />
+                    </DockPanel>
 
                     <ContentControl Content="{Binding PaidInCapitalProof}" Style="{StaticResource SingleFileStyle}" />
 
@@ -442,13 +456,7 @@
                 <StackPanel VerticalAlignment="Center">
 
                     <DockPanel>
-                        <Button
-                            hc:IconElement.Geometry="{StaticResource f.hammer}"
-                            Command="{Binding GenerateFileCommand}"
-                            CommandParameter="{Binding CommitmentLetter}"
-                            Foreground="Salmon"
-                            Style="{StaticResource ButtonIconCircular.Small}"
-                            ToolTip="生成" />
+                        <Button CommandParameter="{Binding CommitmentLetter}" Style="{StaticResource GeneratorButton}" />
                         <ContentControl Content="{Binding CommitmentLetter}" Style="{StaticResource SingleFileStyle}" />
                     </DockPanel>
                     <ContentControl Content="{Binding SealedCommitmentLetter}" Style="{StaticResource SealedFileStyle}" />
