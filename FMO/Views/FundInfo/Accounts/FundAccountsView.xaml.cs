@@ -427,8 +427,8 @@ public partial class FundAccountsViewModel : ObservableObject
             {
                 FundId = FundId,
                 Company = selectedSecurityCompany,
-                Common = new BasicAccountEvent { Name = "基本账户" },
-                Credit = new BasicAccountEvent { Name = "信用账户" }
+                Common = new OpenAccountEvent { Name = "基本账户" },
+                Credit = new OpenAccountEvent { Name = "信用账户" }
             };
 
             using var db = DbHelper.Base();
@@ -504,7 +504,7 @@ public partial class FundAccountsViewModel : ObservableObject
             {
                 FundId = FundId,
                 Company = selectedFutureCompany,
-                Common = new BasicAccountEvent { Name = "基本账户" }
+                Common = new OpenAccountEvent { Name = "基本账户" }
             };
 
             using var db = DbHelper.Base();

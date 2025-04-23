@@ -17,7 +17,7 @@ public partial class FutureAccountViewModel : ObservableObject
         Company = v.Company;
         Id = v.Id;
 
-        Common = new(v.Id, v.Common); 
+        Common = new(v.Id, v.Common);
     }
 
     public int Id { get; set; }
@@ -27,14 +27,14 @@ public partial class FutureAccountViewModel : ObservableObject
 
     public BasicAccountViewModel Common { get; set; }
 
-     
+
 
 
 
 
     public partial class BasicAccountViewModel : ObservableObject
     {
-        public BasicAccountViewModel(int id, BasicAccountEvent? common)
+        public BasicAccountViewModel(int id, OpenAccountEvent? common)
         {
             Id = id;
 
@@ -45,9 +45,9 @@ public partial class FutureAccountViewModel : ObservableObject
                 Account = common.Account;
                 TradePassword = common.TradePassword;
                 CapitalPassword = common.CapitalPassword;
-                BankLetter = new FileViewModel<BasicAccountEvent>
+                BankLetter = new FileViewModel<OpenAccountEvent>
                 {
-                    Label = "银证",
+                    Label = "银期",
                     GetProperty = x => x.BankLetter,
                     SetProperty = (x, y) => x.BankLetter = y,
                 };
@@ -85,14 +85,14 @@ public partial class FutureAccountViewModel : ObservableObject
         /// 银证、银期等
         /// </summary>
         [ObservableProperty]
-        public partial FileViewModel<BasicAccountEvent>? BankLetter { get; set; }
+        public partial FileViewModel<OpenAccountEvent>? BankLetter { get; set; }
         public int Id { get; }
 
 
         [RelayCommand]
         public void SetFile(IFileSelector obj)
         {
-            if (obj is not FileViewModel<BasicAccountEvent> v) return;
+            if (obj is not FileViewModel<OpenAccountEvent> v) return;
 
             var fd = new OpenFileDialog();
             fd.Filter = v.Filter;
@@ -108,9 +108,9 @@ public partial class FutureAccountViewModel : ObservableObject
             try { if (old is not null) File.Delete(old.FullName); } catch { }
         }
 
-        private void SetFile(FileViewModel<BasicAccountEvent> v, FileInfo fi)
+        private void SetFile(FileViewModel<OpenAccountEvent> v, FileInfo fi)
         {
-            if (Id == 0)
+            if (Id == 0 || string.IsNullOrWhiteSpace(Name))
             {
                 return;
             }
@@ -118,7 +118,7 @@ public partial class FutureAccountViewModel : ObservableObject
             string hash = fi.ComputeHash()!;
 
             // 保存副本
-            var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "Future", Id.ToString(), Name));
+            var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "future", Id.ToString(), Name));
 
             var tar = FileHelper.CopyFile2(fi, dir.FullName);
             if (tar is null)
@@ -135,10 +135,10 @@ public partial class FutureAccountViewModel : ObservableObject
 
             if (Name == obj.Common?.Name)
             {
-                obj.Common.BankLetter = new FileStorageInfo { Name = "银证", Hash = hash, Path = path, Time = fi.LastWriteTime };
+                obj.Common.BankLetter = new FileStorageInfo { Name = "银期", Hash = hash, Path = path, Time = fi.LastWriteTime };
                 db.GetCollection<FutureAccount>().Update(obj);
             }
-           
+
             v.File = fi;
 
         }
@@ -147,7 +147,9 @@ public partial class FutureAccountViewModel : ObservableObject
         [RelayCommand]
         public void OpenRawFolder()
         {
-            var folder = Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "Future", Id.ToString(), Name, "原始文件");
+            if (string.IsNullOrWhiteSpace(Name)) return;
+
+            var folder = Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "future", Id.ToString(), Name, "原始文件");
             if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
             try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = folder, UseShellExecute = true }); } catch { }
         }
@@ -156,7 +158,9 @@ public partial class FutureAccountViewModel : ObservableObject
         [RelayCommand]
         public void OpenSealFolder()
         {
-            var folder = Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "Future", Id.ToString(), Name, "用印文件");
+            if (string.IsNullOrWhiteSpace(Name)) return;
+
+            var folder = Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "future", Id.ToString(), Name, "用印文件");
             if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
             try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = folder, UseShellExecute = true }); } catch { }
         }
@@ -179,7 +183,7 @@ public partial class FutureAccountViewModel : ObservableObject
 
                 db.GetCollection<FutureAccount>().Update(obj);
             }
-           
+
 
             IsReadOnly = true;
         }
@@ -187,7 +191,7 @@ public partial class FutureAccountViewModel : ObservableObject
         [RelayCommand]
         public void DeleteFile(IFileSelector file)
         {
-            if (file is FileViewModel<BasicAccountEvent> v)
+            if (file is FileViewModel<OpenAccountEvent> v)
             {
                 if (v.File is null) return;
                 try
@@ -200,13 +204,13 @@ public partial class FutureAccountViewModel : ObservableObject
                     {
                         obj.Common!.BankLetter = null;
                         db.GetCollection<FutureAccount>().Update(obj);
-                    } 
+                    }
                     File.Delete(v.File.FullName);
                     v.File = null;
                 }
                 catch (Exception e)
                 {
-                    Log.Error($"删除股票账户银行关联文件失败 {e.Message}");
+                    Log.Error($"删除账户银行关联文件失败 {e.Message}");
                 }
             }
         }

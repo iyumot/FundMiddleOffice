@@ -38,7 +38,7 @@ public partial class StockAccountViewModel : ObservableObject
 
     public partial class BasicAccountViewModel : ObservableObject
     {
-        public BasicAccountViewModel(int id, BasicAccountEvent? common)
+        public BasicAccountViewModel(int id, OpenAccountEvent? common)
         {
             Id = id;
 
@@ -49,7 +49,7 @@ public partial class StockAccountViewModel : ObservableObject
                 Account = common.Account;
                 TradePassword = common.TradePassword;
                 CapitalPassword = common.CapitalPassword;
-                BankLetter = new FileViewModel<BasicAccountEvent>
+                BankLetter = new FileViewModel<OpenAccountEvent>
                 {
                     Label = "银证",
                     GetProperty = x => x.BankLetter,
@@ -89,14 +89,14 @@ public partial class StockAccountViewModel : ObservableObject
         /// 银证、银期等
         /// </summary>
         [ObservableProperty]
-        public partial FileViewModel<BasicAccountEvent>? BankLetter { get; set; }
+        public partial FileViewModel<OpenAccountEvent>? BankLetter { get; set; }
         public int Id { get; }
 
 
         [RelayCommand]
         public void SetFile(IFileSelector obj)
         {
-            if (obj is not FileViewModel<BasicAccountEvent> v) return;
+            if (obj is not FileViewModel<OpenAccountEvent> v) return;
 
             var fd = new OpenFileDialog();
             fd.Filter = v.Filter;
@@ -112,9 +112,9 @@ public partial class StockAccountViewModel : ObservableObject
             try { if (old is not null) File.Delete(old.FullName); } catch { }
         }
 
-        private void SetFile(FileViewModel<BasicAccountEvent> v, FileInfo fi)
+        private void SetFile(FileViewModel<OpenAccountEvent> v, FileInfo fi)
         {
-            if (Id == 0)
+            if (Id == 0 || string.IsNullOrWhiteSpace(Name))
             {
                 return;
             }
@@ -156,6 +156,8 @@ public partial class StockAccountViewModel : ObservableObject
         [RelayCommand]
         public void OpenRawFolder()
         {
+            if (string.IsNullOrWhiteSpace(Name)) return;
+
             var folder = Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "stock", Id.ToString(), Name, "原始文件");
             if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
             try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = folder, UseShellExecute = true }); } catch { }
@@ -165,6 +167,8 @@ public partial class StockAccountViewModel : ObservableObject
         [RelayCommand]
         public void OpenSealFolder()
         {
+            if (string.IsNullOrWhiteSpace(Name)) return;
+
             var folder = Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "stock", Id.ToString(), Name, "用印文件");
             if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
             try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = folder, UseShellExecute = true }); } catch { }
@@ -203,7 +207,7 @@ public partial class StockAccountViewModel : ObservableObject
         [RelayCommand]
         public void DeleteFile(IFileSelector file)
         {
-            if (file is FileViewModel<BasicAccountEvent> v)
+            if (file is FileViewModel<OpenAccountEvent> v)
             {
                 if (v.File is null) return;
                 try

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FMO.Models;
+﻿namespace FMO.Models;
 
 public enum SecurityCardType
 {
@@ -62,11 +56,14 @@ public class AccountEvent
 {
     public required string Name { get; set; }
 
-    
+
 }
 
 
-public class BasicAccountEvent:AccountEvent
+/// <summary>
+/// 开户事件
+/// </summary>
+public class OpenAccountEvent : AccountEvent
 {
     /// <summary>
     /// 资金账号
@@ -104,12 +101,12 @@ public class StockAccount
     /// <summary>
     /// 基本户
     /// </summary>
-    public BasicAccountEvent? Common { get; set; }
+    public OpenAccountEvent? Common { get; set; }
 
     /// <summary>
     /// 信用户
     /// </summary>
-    public BasicAccountEvent? Credit { get; set; }
+    public OpenAccountEvent? Credit { get; set; }
 
 
     public List<AccountEvent>? Events { get; set; }
@@ -127,8 +124,8 @@ public class FutureAccount
     /// <summary>
     /// 基本户
     /// </summary>
-    public BasicAccountEvent? Common { get; set; }
-     
+    public OpenAccountEvent? Common { get; set; }
+
 
 
     public List<AccountEvent>? Events { get; set; }

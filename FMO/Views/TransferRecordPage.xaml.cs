@@ -120,7 +120,7 @@ public partial class TransferRecordPageViewModel : ObservableObject
 [AutoChangeableViewModel(typeof(TransferRecord))]
 partial class TransferRecordViewModel
 {
-    public FileInfo File { get; set; }
+    public required FileInfo File { get; set; }
 
 
     public bool FileExists => System.IO.File.Exists(File.FullName);

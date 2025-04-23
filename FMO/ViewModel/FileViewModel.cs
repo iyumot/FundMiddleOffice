@@ -186,6 +186,9 @@ public partial class MultipleFileViewModel<TEntity> : ObservableObject
 
     private void Files_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
+        if (GetEntity is null) return;
+        if(GetProperty is null) return;
+
         TEntity entity = GetEntity();
 
         var p = GetProperty(entity);
@@ -195,7 +198,9 @@ public partial class MultipleFileViewModel<TEntity> : ObservableObject
             case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
                 foreach (FileInfo fi in e.NewItems!)
                 {
-                    string hash = FileHelper.ComputeHash(fi);
+                    if (fi is null || !fi.Exists) continue;
+
+                    string hash = FileHelper.ComputeHash(fi)!;
                     p.Add(new FileStorageInfo(fi.FullName, hash, fi.LastWriteTime));
                 } 
                 break;
