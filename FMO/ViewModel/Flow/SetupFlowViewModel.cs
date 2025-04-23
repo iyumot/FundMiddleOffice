@@ -102,7 +102,7 @@ namespace FMO
                 InitFunc = x => x.InitialAsset <= 0 ? null : x.InitialAsset,
                 UpdateFunc = (x, y) => x.InitialAsset = y ?? 0,
                 ClearFunc = x => x.InitialAsset = 0,
-                DisplayFunc = x => $"{x / 10000:N2}元"
+                DisplayFunc = x => $"{x / 10000:N0} 万元"
             };
             InitialAsset.Init(flow);
             InitialAsset.PropertyChanged += (s, e) => { if (e.PropertyName == "NewValue") OnPropertyChanged(nameof(Capital)); };
