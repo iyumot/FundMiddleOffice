@@ -53,7 +53,7 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
         SupplementaryFile.CollectionChanged += SupplementaryFile_CollectionChanged;
 
         RegistrationLetter = new FlowFileViewModel(FundId, FlowId, "备案函", flow.RegistrationLetter?.Path, "Registration", nameof(ContractModifyFlowViewModel.RegistrationLetter)) { Filter = "PDF (*.pdf)|*.pdf;" };
-        Announcement = new(FundId, FlowId, "变更公告", flow.Announcement?.Path, "Announcement", nameof(ContractModifyFlowViewModel.Announcement)) { Filter = "PDF (*.pdf)|*.pdf;" };
+        Announcement = new(FundId, FlowId, "变更公告", flow.Announcement?.Path, "Announcement", nameof(ContractModifyFlowViewModel.Announcement)) { Filter = "文档 (*.pdf,*.doc,*.docx)|*.pdf;*.doc;*.docx;" };
         SealedAnnouncement = new(FundId, FlowId, "变更公告", flow.SealedAnnouncement?.Path, "Announcement", nameof(ContractModifyFlowViewModel.SealedAnnouncement)) { Filter = "PDF (*.pdf)|*.pdf;" };
 
         Initialized = true;
