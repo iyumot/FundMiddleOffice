@@ -16,6 +16,100 @@
     <Window.DataContext>
         <local:MainWindowViewModel />
     </Window.DataContext>
+    <Window.Resources>
+
+
+        <DataTemplate x:Key="CloseableTabHeader" d:DataType="local:TabItemInfo">
+            <Border Margin="0,0,-6,0">
+                <DockPanel LastChildFill="False">
+                    <Button
+                        Width="12"
+                        Margin="2,0"
+                        Padding="0"
+                        hc:IconElement.Geometry="{StaticResource f.xmark}"
+                        Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.ClosePageCommand}"
+                        CommandParameter="{Binding .}"
+                        DockPanel.Dock="Right"
+                        Foreground="{Binding HeaderBrush}"
+                        Style="{StaticResource ButtonIcon.Small}" />
+                    <TextBlock
+                        Margin="6,0"
+                        VerticalAlignment="Center"
+                        Foreground="{Binding HeaderBrush}"
+                        Text="{Binding Header}" />
+
+                </DockPanel>
+            </Border>
+        </DataTemplate>
+        <Style x:Key="TabItem.Home" TargetType="TabItem">
+            <Setter Property="FrameworkElement.FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+            <Setter Property="MinHeight" Value="{StaticResource DefaultControlHeight}" />
+            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TabItem}">
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="UIElement.IsMouseOver" Value="True">
+                                <Setter Property="UIElement.Opacity" Value=".9" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="contentPresenter" Property="UIElement.Opacity" Value="0.4" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                        <Border
+                            Margin="2,0"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{Binding Path=(hc:BorderElement.CornerRadius), RelativeSource={RelativeSource TemplatedParent}}">
+                            <ContentPresenter
+                                Name="contentPresenter"
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                ContentSource="Header"
+                                Focusable="False"
+                                RecognizesAccessKey="True"
+                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Background" Value="{Binding Background, TargetNullValue=WhiteSmoke}" />
+            <Setter Property="IsSelected" Value="{Binding IsSelected}" />
+            <Setter Property="Content" Value="{Binding Content}" />
+            <Setter Property="HeaderTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <DockPanel>
+                            <TextBlock
+                                MinWidth="50"
+                                VerticalAlignment="Center"
+                                Foreground="Black"
+                                Text="{Binding Header}"
+                                TextAlignment="Center" />
+                        </DockPanel>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsCloseable}" Value="True">
+                    <Setter Property="HeaderTemplate" Value="{StaticResource CloseableTabHeader}" />
+                </DataTrigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="BorderBrush" Value="Orange" />
+                    <Setter Property="BorderThickness" Value="6,0" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+    </Window.Resources>
     <Grid Background="White">
 
         <DockPanel>
@@ -111,26 +205,8 @@
             <TabControl
                 Margin="5,0"
                 BorderThickness="0"
-                ItemsSource="{Binding Pages}">
-                <!--<TabControl.ItemContainerStyle>
-                    <Style BasedOn="{StaticResource TabItemSliding}" TargetType="TabItem">
-                        <Setter Property="HeaderTemplate">
-                            <Setter.Value>
-                                <DataTemplate>
-                                    <DockPanel>
-                                        <TextBlock Text="{Binding Header}" />
-                                    </DockPanel>
-                                </DataTemplate>
-                            </Setter.Value>
-                        </Setter>
-                        <Style.Triggers>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="BorderBrush" Value="Orange" />
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </TabControl.ItemContainerStyle>-->
-            </TabControl>
+                ItemContainerStyle="{StaticResource TabItem.Home}"
+                ItemsSource="{Binding Pages}" />
 
         </DockPanel>
 

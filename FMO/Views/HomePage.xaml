@@ -13,6 +13,9 @@
     Background="Transparent"
     KeyDown="UserControl_KeyDown"
     mc:Ignorable="d">
+    <UserControl.DataContext>
+        <local:HomePageViewModel />
+    </UserControl.DataContext>
     <DockPanel>
 
         <StackPanel Width="888" Panel.ZIndex="111">
