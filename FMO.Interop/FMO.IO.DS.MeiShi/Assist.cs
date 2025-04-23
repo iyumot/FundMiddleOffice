@@ -307,6 +307,7 @@ public class Assist : AssistBase
                 int idn = th.IndexOf("客户名称");
                 int idd = th.IndexOf("证件号码");
                 int idt = th.IndexOf("认定时间");
+                int idty = th.IndexOf("客户类型");
 
                 if (idn < 0 || idd < 0 || idt < 0)
                 {
@@ -328,6 +329,8 @@ public class Assist : AssistBase
 
                     string str = await cells[idt].InnerTextAsync();
                     DateOnly.TryParse(str, out DateOnly date);
+
+                    var cusType = idty != -1 ? await cells[idty].InnerTextAsync() : "";
 
                     try
                     {
@@ -393,47 +396,71 @@ public class Assist : AssistBase
                             using var stream = item.Open();
                             stream.CopyTo(fs);
                             fs.Flush();
-
-
-                            if (item.Name.Contains("合格投资者承诺函"))
-                            {
-                                q.CommitmentLetter = new FileStorageInfo { Name = item.Name, Time = item.LastWriteTime.LocalDateTime, Path = fs.Name, Hash = FileHelper.ComputeHash(fs) };
-                            }
-                            else if (item.Name.Contains("基本信息表"))
-                            {
-                                q.InfomationSheet = new FileStorageInfo { Name = item.Name, Time = item.LastWriteTime.LocalDateTime, Path = fs.Name, Hash = FileHelper.ComputeHash(fs) };
-                            }
-                            else if (item.Name.Contains("告知书"))
-                            {
-                                q.Notice = new FileStorageInfo { Name = item.Name, Time = item.LastWriteTime.LocalDateTime, Path = fs.Name, Hash = FileHelper.ComputeHash(fs) };
-                            }
-                            else if (item.Name.Contains("税收居民身份声明"))
-                            {
-
-                                q.TaxDeclaration = new FileStorageInfo { Name = item.Name, Time = item.LastWriteTime.LocalDateTime, Path = fs.Name, Hash = FileHelper.ComputeHash(fs) };
-                            }
-                            else if (item.Name.Contains("经办人身份证件"))
-                            {
-                                q.Agent = new FileStorageInfo { Name = item.Name, Time = item.LastWriteTime.LocalDateTime, Path = fs.Name, Hash = FileHelper.ComputeHash(fs) };
-                            }
-                            else if (item.Name.Contains("授权委托书"))
-                            {
-                                q.Authorization = new FileStorageInfo { Name = item.Name, Time = item.LastWriteTime.LocalDateTime, Path = fs.Name, Hash = FileHelper.ComputeHash(fs) };
-                            }
-                            else if (item.Name.Contains("投资经历"))
-                                q.ProofOfExperience = new FileStorageInfo { Name = item.Name, Time = item.LastWriteTime.LocalDateTime, Path = fs.Name, Hash = FileHelper.ComputeHash(fs) };
-                            else if (item.Name.Contains("证明材料"))
-                            {
-                                if (q.CertificationFiles is null) q.CertificationFiles = new();
-                                q.CertificationFiles.Add(new FileStorageInfo { Name = item.Name, Time = item.LastWriteTime.LocalDateTime, Path = fs.Name, Hash = FileHelper.ComputeHash(fs) });
-
-                            }
-
-
-                            q.IsSealed = true;
-                            q.Source = Identifier;
-                            data.Update(q);
                         }
+
+                        var qfiles = file.Directory!.GetFiles().Where(x => x.Extension.ToLower() != ".zip");
+
+                        var fi = qfiles.FirstOrDefault(x => x.Name.Contains("合格投资者承诺函"));
+                        if (fi is not null)
+                            q.CommitmentLetter = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+
+
+                        fi = qfiles.FirstOrDefault(x => x.Name.Contains("基本信息表"));
+                        if (fi is not null)
+                        {
+                            if (fi.Name.Contains("_专业投资者_"))
+                            {
+                                q.Result = QualifiedInvestorType.Professional;
+                            }
+                            q.InfomationSheet = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+                        }
+
+                        fi = qfiles.FirstOrDefault(x => x.Name.Contains("告知书"));
+                        if (fi is not null)
+                            q.Notice = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+
+                        fi = qfiles.FirstOrDefault(x => x.Name.Contains("税收居民身份声明"));
+                        if (fi is not null)
+                            q.TaxDeclaration = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+
+
+                        fi = qfiles.FirstOrDefault(x => x.Name.Contains("经办人身份证件"));
+                        if (fi is not null)
+                            q.Agent = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+
+                        fi = qfiles.FirstOrDefault(x => x.Name.Contains("授权委托书"));
+                        if (fi is not null)
+                            q.Authorization = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+
+                        fi = qfiles.FirstOrDefault(x => x.Name.Contains("投资经历"));
+                        if (fi is not null)
+                            q.ProofOfExperience = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+
+                        var prof = qfiles.Where(x => x.Name.Contains("证明材料") && !x.Name.Contains("投资经历"));
+                        if (prof.Any())
+                        {
+                            if (q.CertificationFiles is null) q.CertificationFiles = new();
+                            q.CertificationFiles.Add(new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) });
+                        }
+
+                        //prof = qfiles.Where(x => x.Name.Contains("身份证") && !x.Name.Contains("投资经历"));
+                        //if(prof.Any())
+                        //{
+                        //    // 个人
+                        //    if (investor?.EntityType == EntityType.Natural)
+                        //    {
+                        //        if (investor.Certifications is null)
+                        //            investor.Certifications = new() { Name = "证件" };
+
+                        //        investor.Certifications.Files.Add(new FileVersion { Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi)! });
+                        //    }
+                        //}
+
+
+                        q.IsSealed = true;
+                        q.Source = Identifier;
+                        data.Update(q);
+
                     }
                     catch (Exception e)
                     {
