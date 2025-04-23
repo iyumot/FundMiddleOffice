@@ -1,4 +1,10 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Windows.Controls;
+using System.Windows.Data;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
@@ -6,12 +12,6 @@ using FMO.TPL;
 using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
-using System.Collections.Concurrent;
-using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Windows.Controls;
-using System.Windows.Data;
 
 namespace FMO;
 
@@ -636,10 +636,11 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         if (message.FundId == Fund.Id)
         {
             var old = DailyValues.FirstOrDefault(x => x.Id == message.Daily.Id);
-            if (old is null)
-                DailyValues.Add(message.Daily);
-            //else throw new NotImplementedException();
+            if (old is not null)
+                DailyValues.Remove(old);
 
+            DailyValues.Add(message.Daily);
+             
             CurveViewDataContext.Data = DailyValues.OrderBy(x => x.Date).ToList();
         }
     }
