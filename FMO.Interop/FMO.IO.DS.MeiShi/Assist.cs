@@ -117,7 +117,7 @@ public class Assist : AssistBase
         locator = page.Locator("div.rc-virtual-list >> div").Filter(new() { HasTextRegex = new Regex("条\\/页$") });
         var cnt = await locator.CountAsync();
 
-        for (int i = 0; i < 999; i++)
+        for (int i = 0; i < 99; i++)
         {
             IResponse? response = null;
             await page.RunAndWaitForResponseAsync(async () => await locator.Last.ClickAsync()/* await page.GotoAsync($"https://vipfunds.simu800.com/vipmanager/investorManagement/customerInfo/:timestamp?v={DateTime.Now.TimeStampBySeconds()}")*/, x =>
@@ -170,6 +170,8 @@ public class Assist : AssistBase
             // 获取已存在的
             var exist_ids = db.GetCollection<Investor>().FindAll().ToList();//.Where(x => data.Any(y => y.Item1.Identity == x.Identity)).ToArray();
             var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
+
+            List<Investor> list = new();
             //
             foreach (var item in data)
             {
@@ -188,10 +190,11 @@ public class Assist : AssistBase
                         old.RiskLevel = item.RiskLevel;
 
                         if (old.Type == default) old.Type = item.Type;
-                        db.GetCollection<Investor>().Update(old);
+                        list.Add(old);
+                        // db.GetCollection<Investor>().Update(old);
                     }
                     else if (!item.Name.Contains("test"))
-                        db.GetCollection<Investor>().Insert(item);
+                        list.Add(item); db.GetCollection<Investor>().Insert(item);
                 }
                 else
                 {
@@ -206,11 +209,13 @@ public class Assist : AssistBase
 
                     if (old.Type == default) old.Type = item.Type;
                     if (item.Name == manager?.Name) old.Type = AmacInvestorType.Manager;
-                    
-                    
-                    db.GetCollection<Investor>().Update(old);
+
+                    list.Add(old);
+                   // db.GetCollection<Investor>().Update(old);
                 }
             }
+
+            db.GetCollection<Investor>().Upsert(list);
             return true;
         }
         catch (Exception e)
