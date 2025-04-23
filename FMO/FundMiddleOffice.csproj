@@ -88,4 +88,8 @@
     </None>
   </ItemGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="call plugins\copy.bat" />
+  </Target>
+
 </Project>
