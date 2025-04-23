@@ -11,7 +11,13 @@ namespace FMO
 {
 
     [AutoChangeableViewModel(typeof(DateRange))]
-    public partial class DateRangeViewModel;
+    public partial class DateRangeViewModel
+    {
+        public override string ToString()
+        {
+            return $"{Begin:yyyy-MM-dd} - {End:yyyy-MM-dd}";
+        }
+    }
 
 
     public partial class SetupFlowViewModel : FlowViewModel, IChangeableEntityViewModel
