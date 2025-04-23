@@ -49,7 +49,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
     public ChangeableViewModel<Investor, IDType> IDType { get; } = new() { InitFunc = x => x.Identity.Type, UpdateFunc = (x, y) => x.Identity = x.Identity with { Type = y }, ClearFunc = x => x.Identity = x.Identity with { Type = default }, Label = "证件类型" };
 
-    public ChangeableViewModel<Investor, string> Identity { get; } = new() { InitFunc = x => x.Identity.Id, UpdateFunc = (x, y) => x.Identity = x.Identity with { Id = y }, ClearFunc = x => x.Identity = x.Identity with { Id = string.Empty } };
+    public ChangeableViewModel<Investor, string> Identity { get; } = new() { InitFunc = x => x.Identity.Id, UpdateFunc = (x, y) => x.Identity = x.Identity with { Id = y! }, ClearFunc = x => x.Identity = x.Identity with { Id = string.Empty } };
 
 
     [ObservableProperty]
@@ -120,7 +120,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
         Qualifications = new(iq.Select(x => QualificationViewModel.From(x, investor.Type, investor.EntityType)));
     }
 
-    private void Type_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    private void Type_PropertyChanged(object? sender, PropertyChangedEventArgs? e)
     {
         switch (Type.NewValue)
         {
@@ -164,7 +164,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
         }
     }
 
-    private void EntityType_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    private void EntityType_PropertyChanged(object? sender, PropertyChangedEventArgs? e)
     {
         switch (EntityType.NewValue)
         {
