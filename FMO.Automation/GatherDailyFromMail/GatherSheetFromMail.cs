@@ -1,13 +1,12 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
-using FMO.Models;
-using FMO.Utilities;
-using LiteDB;
-using MailKit.Net.Imap;
-using MimeKit;
-using System.IO;
+﻿using System.IO;
 using System.IO.Compression;
 using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
+using CommunityToolkit.Mvvm.Messaging;
+using FMO.Models;
+using FMO.Utilities;
+using LiteDB;
+using MimeKit;
 
 namespace FMO.Schedule;
 
@@ -132,13 +131,13 @@ public class GatherDailyFromMailMission : Mission
                     mails = db.GetCollection<GzMailInfo>().Query().Select(x => x.Id).ToList();
             }
 
-            var needload = mailids.Index().ExceptBy(mails, x=>x.Item);//.Select(x => mailids.IndexOf(x));
+            var needload = mailids.Index().ExceptBy(mails, x => x.Item);//.Select(x => mailids.IndexOf(x));
 
             log += $"\n检查缓存，新邮件{needload.Count()} 封";
 
             double unit = 100.0 / needload.Count();
 
-            foreach (var (i,v) in needload)
+            foreach (var (i, v) in needload)
             {
                 try
                 {
@@ -220,7 +219,7 @@ public class GatherDailyFromMailMission : Mission
                             ds.Add((fn, funds.FirstOrDefault(x => x.Name == fn || x.Code == co), ent.Name, dy, mss));
                         }
                     }
-                    else if (Regex.IsMatch(filepath, @"估值表"))
+                    else if(filepath.Contains(".xls"))//if (Regex.IsMatch(filepath, @"估值表"))
                     {
                         var ms = new MemoryStream();
                         item.Content.DecodeTo(ms);
@@ -229,8 +228,8 @@ public class GatherDailyFromMailMission : Mission
                         log += $"\n         ↳{fn} {dy?.Date}";
                         ds.Add((fn, funds.FirstOrDefault(x => x.Name == fn || x.Code == co), filepath, dy, ms));
                     }
-                    else
-                        ds.Add((null, null, filepath, null, null));
+                    //else
+                    //    ds.Add((null, null, filepath, null, null));
                 }
                 catch (Exception er)
                 {
@@ -250,7 +249,23 @@ public class GatherDailyFromMailMission : Mission
 
                 days.Add(x.Daily);
                 var fund = x.Fund;
-                if (fund is null) { log += $"\n\n         没有对应产品\n"; gz.HasError = true; continue; }
+                if (fund is null)
+                {
+                    log += $"\n\n         没有对应产品\n"; 
+                    gz.HasError = true;
+
+                    // 文件保存到
+                    Directory.CreateDirectory("files\\unk_sheets");
+
+                    using var stream = new FileStream($"files\\unk_sheets\\{x.File}", FileMode.Create);
+                    x.Stream!.Seek(0, SeekOrigin.Begin);
+                    x.Stream!.CopyTo(stream);
+                    stream.Close();
+
+                    continue;
+                }
+
+
                 x.Daily.FundId = fund.Id;
                 info.DailyId = x.Daily.Id;
                 info.FundId = fund.Id;
@@ -264,7 +279,7 @@ public class GatherDailyFromMailMission : Mission
                 using var fs = di.OpenWrite();
                 x.Stream!.Seek(0, SeekOrigin.Begin);
                 x.Stream!.CopyTo(fs);
-                x.Daily.SheetPath  = Path.GetRelativePath(Directory.GetCurrentDirectory(), di.FullName);
+                x.Daily.SheetPath = Path.GetRelativePath(Directory.GetCurrentDirectory(), di.FullName);
                 fs.Flush();
             }
 
