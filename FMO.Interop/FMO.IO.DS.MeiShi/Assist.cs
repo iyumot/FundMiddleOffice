@@ -1,11 +1,11 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
+﻿using System.IO.Compression;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
 using Microsoft.Playwright;
 using Serilog;
-using System.IO.Compression;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace FMO.IO.DS.MeiShi;
 
@@ -211,7 +211,7 @@ public class Assist : AssistBase
                     if (item.Name == manager?.Name) old.Type = AmacInvestorType.Manager;
 
                     list.Add(old);
-                   // db.GetCollection<Investor>().Update(old);
+                    // db.GetCollection<Investor>().Update(old);
                 }
             }
 
@@ -243,7 +243,7 @@ public class Assist : AssistBase
 
 
         await using var page = await Automation.AcquirePage(Identifier);
-        await page.GotoAsync($"https://vipfunds.simu800.com/vipmanager/investorAppropriatenessManagement/investorsProcessList?ascription={token}&v={(int)(DateTime.Now - new DateTime(1970, 1, 1)).TotalMicroseconds}", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle});
+        await page.GotoAsync($"https://vipfunds.simu800.com/vipmanager/investorAppropriatenessManagement/investorsProcessList?ascription={token}&v={(int)(DateTime.Now - new DateTime(1970, 1, 1)).TotalMicroseconds}", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
         //var page = pw.Page; 
         await page.Keyboard.PressAsync("Escape");
         await page.Keyboard.PressAsync("Escape");
@@ -341,44 +341,47 @@ public class Assist : AssistBase
                             q = new InvestorQualification { InvestorName = name, IdentityCode = id, Date = date, };
                             data.Insert(q);
                         }
-                        locator = cells[^1].Locator("a").Filter(new LocatorFilterOptions { HasText = "查看" });
 
-                        int n = await locator.CountAsync();
-                        var sss = await cells[^3].InnerTextAsync();
-                        await locator.ScrollIntoViewIfNeededAsync();
-
-                        await locator.ClickAsync();
-
-                        var frame = page.Locator(" div.ant-card.ant-card-bordered > div.ant-card-body").First;
-
-                        n = await locator.CountAsync();
-                        sss = await locator.InnerTextAsync();
-                        n = await frame.CountAsync();
-                        sss = await frame.InnerTextAsync();
-                        var loc = frame.GetByText("适当性类型").Locator(".. >> span").Last;
-
-                        var type = await loc.InnerTextAsync();
-
-
-                        sss = await loc.InnerTextAsync();
-
-                        var s = await loc.InnerTextAsync();
-
-                        locator = frame.Locator("a").Filter(new LocatorFilterOptions { HasText = "下载" });
-
-                        // 监听下载事件
-                        var downloadTask = page.WaitForDownloadAsync();
-
-                        await locator.ClickAsync();
-                        var download = await downloadTask;
-
-                        // 保存下载的文件
+                        // 判断下载文件是否存在
                         FileInfo file = new(@$"files\qualification\{q.Id}\pack.zip");
-                        await download.SaveAsAsync(file.FullName);
+                        if (!file.Exists)
+                        {
+                            locator = cells[^1].Locator("a").Filter(new LocatorFilterOptions { HasText = "查看" });
+
+                            int n = await locator.CountAsync();
+                            var sss = await cells[^3].InnerTextAsync();
+                            await locator.ScrollIntoViewIfNeededAsync();
+
+                            await locator.ClickAsync();
+
+                            var frame = page.Locator(" div.ant-card.ant-card-bordered > div.ant-card-body").First;
+
+                            n = await locator.CountAsync();
+                            sss = await locator.InnerTextAsync();
+                            n = await frame.CountAsync();
+                            sss = await frame.InnerTextAsync();
+                            var loc = frame.GetByText("适当性类型").Locator(".. >> span").Last;
+
+                            var type = await loc.InnerTextAsync();
 
 
-                        await page.Keyboard.PressAsync("Escape");
+                            sss = await loc.InnerTextAsync();
 
+                            var s = await loc.InnerTextAsync();
+
+                            locator = frame.Locator("a").Filter(new LocatorFilterOptions { HasText = "下载" });
+
+                            // 监听下载事件
+                            var downloadTask = page.WaitForDownloadAsync();
+
+                            await locator.ClickAsync();
+                            var download = await downloadTask;
+
+                            // 保存下载的文件
+                            await download.SaveAsAsync(file.FullName);
+
+                            await page.Keyboard.PressAsync("Escape");
+                        }
 
                         // 解压文件
                         using var zip = ZipFile.OpenRead(file.FullName);
@@ -417,12 +420,20 @@ public class Assist : AssistBase
                             {
                                 q.Authorization = new FileStorageInfo { Name = item.Name, Time = item.LastWriteTime.LocalDateTime, Path = fs.Name, Hash = FileHelper.ComputeHash(fs) };
                             }
+                            else if (item.Name.Contains("投资经历"))
+                                q.ProofOfExperience = new FileStorageInfo { Name = item.Name, Time = item.LastWriteTime.LocalDateTime, Path = fs.Name, Hash = FileHelper.ComputeHash(fs) };
+                            else if (item.Name.Contains("证明材料"))
+                            {
+                                if (q.CertificationFiles is null) q.CertificationFiles = new();
+                                q.CertificationFiles.Add(new FileStorageInfo { Name = item.Name, Time = item.LastWriteTime.LocalDateTime, Path = fs.Name, Hash = FileHelper.ComputeHash(fs) });
+
+                            }
+
+
+                            q.IsSealed = true;
+                            q.Source = Identifier;
+                            data.Update(q);
                         }
-
-
-                        q.IsSealed = true;
-                        q.Source = Identifier;
-                        data.Update(q);
                     }
                     catch (Exception e)
                     {
