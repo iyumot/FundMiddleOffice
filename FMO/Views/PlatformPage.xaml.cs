@@ -49,7 +49,7 @@ public partial class PlatformPageViewModel : ObservableObject
         /// 读取所有托管插件
         /// 
 
-        //if (_firstLoad)
+        if (_firstLoad)
         {
 
             var files = new DirectoryInfo("plugins").GetFiles("*.dll");
