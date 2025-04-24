@@ -42,6 +42,9 @@ public partial class FlowFileViewModel : ObservableObject
     public int FlowId { get; init; }
 
 
+    public Func<string>? SpecificFileName { get; set; }
+
+
     [SetsRequiredMembers]
     public FlowFileViewModel(int fundId, int flowId, string name, string? path, string folder, string property)
     {
@@ -96,7 +99,7 @@ public partial class FlowFileViewModel : ObservableObject
             // 保存副本
             var dir = FundHelper.GetFolder(FundId);
             dir = dir.CreateSubdirectory(Folder);
-            var tar = FileHelper.CopyFile2(fi, dir.FullName);
+            var tar = FileHelper.CopyFile2(fi, dir.FullName, SpecificFileName is null ? null : SpecificFileName());
             if (tar is null)
             {
                 Log.Error($"保存Flow文件出错，{fi.FullName}");
@@ -140,15 +143,22 @@ public partial class FlowFileViewModel : ObservableObject
         {
             // 获取默认打印机名称
             string printerName = printDialog.PrintQueue.Name;
+            try
+            {
 
-            // 使用系统默认的PDF阅读器打印PDF文档
-            System.Diagnostics.Process process = new System.Diagnostics.Process();
-            process.StartInfo.FileName = File.FullName;
-            process.StartInfo.Verb = "print"; 
-            process.Start();
+                // 使用系统默认的PDF阅读器打印PDF文档
+                System.Diagnostics.Process process = new System.Diagnostics.Process();
+                process.StartInfo.FileName = File.FullName;
+                process.StartInfo.Verb = "print";
+                process.Start();
 
-            // 等待打印任务完成
-            process.WaitForExit();
+                // 等待打印任务完成
+                process.WaitForExit();
+            }
+            catch //(Exception e)
+            {
+                HandyControl.Controls.Growl.Warning("打印失败");
+            }
         }
     }
 

@@ -1,9 +1,11 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using FMO.Models;
-using FMO.Utilities;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using FMO.Models;
+using FMO.TPL;
+using FMO.Utilities;
 
 namespace FMO;
 
@@ -45,6 +47,11 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
     [ObservableProperty]
     public partial FlowFileViewModel? SealedAnnouncement { get; set; }
 
+    public FlowFileViewModel CommitmentLetter { get; }
+
+
+
+
     [SetsRequiredMembers]
     public ContractModifyFlowViewModel(ContractModifyFlow flow, Mutable<ShareClass[]>? shareClass) : base(flow, shareClass)
     {
@@ -54,7 +61,19 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
 
         RegistrationLetter = new FlowFileViewModel(FundId, FlowId, "备案函", flow.RegistrationLetter?.Path, "Registration", nameof(ContractModifyFlowViewModel.RegistrationLetter)) { Filter = "PDF (*.pdf)|*.pdf;" };
         Announcement = new(FundId, FlowId, "变更公告", flow.Announcement?.Path, "Announcement", nameof(ContractModifyFlowViewModel.Announcement)) { Filter = "文档 (*.pdf,*.doc,*.docx)|*.pdf;*.doc;*.docx;" };
-        SealedAnnouncement = new(FundId, FlowId, "变更公告", flow.SealedAnnouncement?.Path, "Announcement", nameof(ContractModifyFlowViewModel.SealedAnnouncement)) { Filter = "PDF (*.pdf)|*.pdf;" };
+        SealedAnnouncement = new(FundId, FlowId, "变更公告", flow.SealedAnnouncement?.Path, "Announcement", nameof(ContractModifyFlowViewModel.SealedAnnouncement))
+        {
+            Filter = "PDF (*.pdf)|*.pdf;",
+            SpecificFileName = () =>
+            {
+                using var db = DbHelper.Base();
+                var fund = db.GetCollection<Fund>().FindById(FundId);
+
+                return $"{fund.Name}_变更公告_{Date:yyyy年MM月dd日}.pdf";
+            }
+        };
+
+        CommitmentLetter = new(FundId, FlowId, "信息变更承诺函", flow.CommitmentLetter?.Path, "Registration", nameof(CommitmentLetter)) { Filter = "文档 (*.pdf,*.doc,*.docx)|*.pdf;*.doc;*.docx;" };
 
         Initialized = true;
     }
@@ -107,4 +126,39 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
 
 
 
+    [RelayCommand]
+    public void GenerateFile(FlowFileViewModel v)
+    {
+        switch (v.Property)
+        {
+            case nameof(CommitmentLetter):
+                try
+                {
+                    // 需要先设置日期
+                    if (Date is null)
+                    {
+                        HandyControl.Controls.Growl.Warning("请先设置变更日期");
+                        return;
+                    }
+
+                    using var db = DbHelper.Base();
+                    var fund = db.GetCollection<Fund>().FindById(FundId);
+                    string path = @$"{FundHelper.GetFolder(FundId)}\Registration\{fund.Name}_信息变更承诺函_{Date:yyyy年MM月dd日}.docx";
+                    var fi = new FileInfo(path);
+                    if (!fi.Directory!.Exists) fi.Directory.Create();
+
+                    if (WordTpl.GenerateFromTemplate(path, "信息变更承诺函.docx", new { Name = fund.Name, Code = fund.Code }))
+                    {
+                        if (CommitmentLetter.File?.Exists ?? false)
+                            CommitmentLetter.File.Delete();
+                        CommitmentLetter.SetFile(new System.IO.FileInfo(path));
+                    }
+                    else HandyControl.Controls.Growl.Error("生成文件失败，请查看Log，检查模板是否存在");
+                }
+                catch { }
+                break;
+            default:
+                break;
+        }
+    }
 }
