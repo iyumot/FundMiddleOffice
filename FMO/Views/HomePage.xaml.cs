@@ -1,4 +1,7 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.IO;
+using System.Net.Http;
+using System.Windows.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.IO.AMAC;
@@ -7,9 +10,6 @@ using FMO.Schedule;
 using FMO.Utilities;
 using LiveCharts;
 using Serilog;
-using System.IO;
-using System.Net.Http;
-using System.Windows.Controls;
 
 namespace FMO;
 
@@ -52,15 +52,13 @@ public partial class HomePageViewModel : ObservableObject
     public HomePageViewModel()
     {
 
-        Task.Run(async () =>
+        Task.Run(() =>
         {
             MissionSchedule.Init();
 
-            await DataSelfTest();
+            DataSelfTest();
 
             InitPlot();
-
-
         });
     }
 
@@ -69,7 +67,7 @@ public partial class HomePageViewModel : ObservableObject
     /// <summary>
     /// 数据自检
     /// </summary>
-    public async Task DataSelfTest()
+    public void DataSelfTest()
     {
         IsSelfTesting = true;
         var db = DbHelper.Base();
@@ -77,7 +75,16 @@ public partial class HomePageViewModel : ObservableObject
         db.Dispose();
 
 
+        Task[] t = [Task.Run(async() => db = await SyncFundsFromAmac(db, c) ),
+                    Task.Run(() => DataTracker.CheckFundFolder(c)),
+                    Task.Run(()=> DataTracker.CheckShareIsPair(c))];
 
+        Task.WaitAll(t);
+        IsSelfTesting = false;
+    }
+
+    private static async Task<BaseDatabase> SyncFundsFromAmac(BaseDatabase db, Fund[] c)
+    {
         var ned = c.Where(x => x.Status >= FundStatus.Normal && x.PublicDisclosureSynchronizeTime == default).ToArray();
         if (ned.Length > 0)
         {
@@ -115,49 +122,15 @@ public partial class HomePageViewModel : ObservableObject
             }
         }
 
-
-
-        // 基金文件夹
-        var dis = new DirectoryInfo(@"files\funds").GetDirectories();
-        foreach (var f in c)
-        {
-            if (f.Code?.Length > 4)
-            {
-                var di = dis.FirstOrDefault(x => x.Name.StartsWith(f.Code));
-
-                var name = $"{f.Code}.{f.Name}";
-
-                string folder = $"files\\funds\\{name}";
-
-                if (di is null)
-                {
-                    Directory.CreateDirectory(folder);
-                    continue;
-                }
-                if (di.Name != name)
-                {
-                    Directory.Move(di.FullName, folder);
-                    Log.Warning($"基金 {f.Code} 名称已更新 [{di.Name}] -> [{f.Name}]");
-                }
-
-                FundHelper.Map(f, folder);
-            }
-        }
-
-
-
-
-
-        IsSelfTesting = false;
+        return db;
     }
-
 
     public void InitPlot()
     {
         using var db = DbHelper.Base();
         var status = db.GetCollection<Fund>().FindAll().Select(x => x.Status).ToList();
 
-       
+
 
         // 计算管理规模
         var fids = db.GetCollection<Fund>().FindAll().Select(x => x.Id).ToList();
@@ -195,7 +168,7 @@ public partial class HomePageViewModel : ObservableObject
             });
 
             // 计算月内最大规模
-            var lastmon = dates[0]; 
+            var lastmon = dates[0];
             List<DateOnly> mons = [dates[0]];
             List<double> sc = [scale[0]];
             for (int i = 1; i < dates.Count; i++)
