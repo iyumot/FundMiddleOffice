@@ -439,7 +439,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         db.GetCollection<Fund>().Update(fund);
         db.Dispose();
         Flows.Add(new LiquidationFlowViewModel(flow));
-        WeakReferenceMessenger.Default.Send(new FundStatusChangedMessage { FundId = fund.Id, Status = fund.Status });
+        WeakReferenceMessenger.Default.Send(new FundStatusChangedMessage(default, default) { FundId = fund.Id, Status = fund.Status });
     }
 
 
@@ -460,7 +460,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
             fund.Status = FundStatus.Normal;
             db.GetCollection<Fund>().Update(fund);
 
-            WeakReferenceMessenger.Default.Send(new FundStatusChangedMessage { FundId = fund.Id, Status = fund.Status });
+            WeakReferenceMessenger.Default.Send(new FundStatusChangedMessage(default, default) { FundId = fund.Id, Status = fund.Status });
         }
         Flows.Remove(flow);
     }
@@ -534,7 +534,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
                     DailySource.View.Refresh();
 
 
-                    WeakReferenceMessenger.Default.Send(new FundDailyUpdateMessage { FundId = Fund.Id, Daily = avaliable.Select(x => x.daily).OrderBy(x => x.Date).FirstOrDefault()! });
+                    WeakReferenceMessenger.Default.Send(new FundDailyUpdateMessage(default, default) { FundId = Fund.Id, Daily = avaliable.Select(x => x.daily).OrderBy(x => x.Date).FirstOrDefault()! });
                 });
             }
             catch (Exception e)

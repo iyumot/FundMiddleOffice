@@ -6,17 +6,8 @@ using System.Threading.Tasks;
 
 namespace FMO.Models;
 
-public class FundDailyUpdateMessage
-{
+public record FundDailyUpdateMessage(int FundId, DailyValue Daily);
 
-    public int FundId { get; set; }
+public record FundStatusChangedMessage(int FundId, FundStatus Status);
 
-    public required DailyValue Daily { get; set; }
-}
-
-public class FundStatusChangedMessage
-{
-    public int FundId { get; set; }
-
-    public FundStatus Status { get; set; }
-}
+public record OpenFundMessage(int Id);

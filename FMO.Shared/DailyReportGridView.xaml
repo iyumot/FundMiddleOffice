@@ -30,9 +30,9 @@
 
         <Style
             x:Key="GridRow"
-            BasedOn="{StaticResource DataGridRowStyle}"
+            BasedOn="{StaticResource DataGridRowStyle.Small}"
             TargetType="DataGridRow">
-            <Setter Property="Background" Value="Red" />
+            <EventSetter Event="MouseDoubleClick" Handler="DataGridRow_MouseDoubleClick" />
         </Style>
 
         <Style
@@ -109,9 +109,9 @@
             AutoGenerateColumns="False"
             Background="White"
             BorderThickness="0"
-            IsHitTestVisible="False"
             IsReadOnly="True"
             ItemsSource="{Binding Data}"
+            RowStyle="{StaticResource GridRow}"
             Style="{StaticResource DataGrid.Small}">
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding FundCode}" Header="备案号" />

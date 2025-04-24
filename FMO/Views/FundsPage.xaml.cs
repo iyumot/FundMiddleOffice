@@ -30,7 +30,7 @@ public partial class FundsPage : UserControl
     private void OnOpenFund(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
         if (sender is FrameworkElement element && element.DataContext is FundsPageViewModel.FundViewModel vm)
-            WeakReferenceMessenger.Default.Send(new OpenFundMessage { Id = vm.Id });
+            WeakReferenceMessenger.Default.Send(new OpenFundMessage(vm.Id));
     }
 
 }
@@ -355,8 +355,3 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
     }
 }
 
-public class OpenFundMessage
-{
-    public int Id { get; init; }
-
-}
