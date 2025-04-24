@@ -4,6 +4,7 @@ namespace FMO.Models;
 
 /// <summary>
 /// TA 记录
+/// 更新后应该 调用更新  db.BuildFundShareRecord 
 /// </summary>
 [Description("TA记录")]
 public class TransferRecord : IEquatable<TransferRecord>

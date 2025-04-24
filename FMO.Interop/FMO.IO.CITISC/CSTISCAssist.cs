@@ -763,6 +763,7 @@ public class CSTISCAssist : TrusteeAssistBase
             // 排除同id数据
             db.GetCollection<TransferRecord>().EnsureIndex(x => new { x.Source, x.ExternalId }, true);
             db.GetCollection<TransferRecord>().Upsert(data);
+            db.BuildFundShareRecord(data.Select(x => x.FundId).Distinct().ToArray());
             db.Dispose();
 
             // 更新同步记录
@@ -908,6 +909,7 @@ public class CSTISCAssist : TrusteeAssistBase
             //db.GetCollection<TransferRecord>().DeleteMany(x => x.Source == Identifier && hasids.Contains(x.ExternalId));
             db.GetCollection<TransferRecord>().EnsureIndex(x => new { x.Source, x.ExternalId }, true);
             db.GetCollection<TransferRecord>().Upsert(data);
+            db.BuildFundShareRecord(data.Select(x => x.FundId).Distinct().ToArray());
             db.Dispose();
 
             db = DbHelper.Platform();

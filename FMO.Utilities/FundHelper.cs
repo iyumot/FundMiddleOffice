@@ -1,5 +1,5 @@
-﻿using FMO.Models;
-using System.Data;
+﻿using System.Data;
+using FMO.Models;
 
 namespace FMO.Utilities;
 
@@ -37,7 +37,7 @@ public static class FundHelper
 
         using var db = DbHelper.Base();
         db.GetCollection<Fund>().Insert(f);
-        db.GetCollection<FundElements>().Insert(new FundElements { Id = f.Id});
+        db.GetCollection<FundElements>().Insert(new FundElements { Id = f.Id });
 
 
         Map(f, folder);
@@ -53,15 +53,15 @@ public static class FundHelper
     {
         using var db = DbHelper.Base();
 
-        if (db.GetCollection<TransferRecord>().Find(x => x.FundId == 0).Count() > 0)
+        IEnumerable<TransferRecord> uncheck = db.GetCollection<TransferRecord>().Find(x => x.FundId == 0);
+        if (uncheck.Count() > 0)
         {
-            var all = db.GetCollection<TransferRecord>().FindAll().ToArray();
             var funds = db.GetCollection<Fund>().FindAll().Select(x => new { x.Id, x.Code, x.Name }).ToArray();
-            foreach (var item in all)
+            foreach (var item in uncheck)
             {
                 item.FundId = (funds.FirstOrDefault(x => x.Code == item.FundCode) ?? funds.FirstOrDefault(x => x.Name == item.FundName))!.Id;
             }
-            db.GetCollection<TransferRecord>().Update(all);
+            db.GetCollection<TransferRecord>().Update(uncheck);
         }
 
         var data = db.GetCollection<TransferRecord>().Find(x => x.FundId == fundId).OrderBy(x => x.ConfirmedDate).ToList();

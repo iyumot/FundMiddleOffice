@@ -216,6 +216,7 @@ namespace FMO.IO.Trustee.CMSChina
 
                 db.GetCollection<TransferRecord>().EnsureIndex(x => new { x.Source, x.ExternalId }, true);
                 db.GetCollection<TransferRecord>().Upsert(data);
+                db.BuildFundShareRecord(data.Select(x => x.FundId).Distinct().ToArray());
                 db.Dispose();
 
 

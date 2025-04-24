@@ -1,5 +1,6 @@
 ﻿using FMO.Models;
 using LiteDB;
+using Serilog;
 using System.Configuration;
 using System.Security.Cryptography;
 using System.Text;
@@ -86,41 +87,37 @@ public static class DbHelper
     public static LiteDatabase Platform() => new LiteDatabase(@$"FileName=data\platform.db;Password={_password};Connection=Shared");
 
 
-    public static void initpassword()
+    
+
+    public static bool BuildFundShareRecord(this ILiteDatabase db, int fundid)
     {
-        var di = new DirectoryInfo("data");
-        foreach (var f in di.GetFiles("*.db"))
+        try
         {
-            if (f.Name.Contains("backup")) continue;
+            if (fundid == 0) return false;
 
-            string p1 = "891uiu89f41uf9dij432u89";
-            string p2 = "f34902ufdisuf8s1";
 
-            var db = new LiteDatabase(@$"FileName=data\base.db;Password={p1};Connection=Shared");
+            var data = db.GetCollection<TransferRecord>().Find(x => x.FundId == fundid).GroupBy(x => x.ConfirmedDate).Select(x => new FundShareRecord(0, fundid, x.Key, x.Sum(y => y.ShareChange())));
 
-            try
-            {
-                var n = db.Collation;
+            db.GetCollection<FundShareRecord>().DeleteMany(x => x.FundId == fundid);
+            db.GetCollection<FundShareRecord>().Insert(data);
 
-                db.Rebuild(new LiteDB.Engine.RebuildOptions { Password = _password , IncludeErrorReport = true});
-            }
-            catch
-            {
-                db = new LiteDatabase(@$"FileName=data\base.db;Password={p2};Connection=Shared");
-
-                try
-                {
-                    var n = db.Collation;
-
-                    db.Rebuild(new LiteDB.Engine.RebuildOptions { Password = _password });
-                }
-                catch
-                {
-                    
-                }
-            }
+            return true;
+        }
+        catch (Exception e)
+        {
+            Log.Error($"BuildFundShareRecord {e.Message}");
+            return false;
         }
     }
+
+    public static void BuildFundShareRecord(this ILiteDatabase db, params int[] fundids)
+    {
+        foreach (var fundid in fundids)
+            BuildFundShareRecord(db, fundid);
+    }
+
+
+
 
 }
 
