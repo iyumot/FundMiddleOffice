@@ -288,7 +288,7 @@ public class GatherDailyFromMailMission : Mission
                 foreach (var x in ds.Where(x => x.Fund is not null && x.Daily is not null))
                 {
                     db.GetDailyCollection(x.Fund!.Id).Upsert(x.Daily!);
-                    WeakReferenceMessenger.Default.Send(new FundDailyUpdateMessage { FundId = x.Fund.Id, Daily = x.Daily! });
+                    WeakReferenceMessenger.Default.Send(new FundDailyUpdateMessage(default, default) { FundId = x.Fund.Id, Daily = x.Daily! });
                 }
             }
 

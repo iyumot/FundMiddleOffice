@@ -10,6 +10,8 @@ using System.Windows.Media;
 
 namespace FMO.Shared;
 
+
+
 /// <summary>
 /// DailyReportGridView.xaml 的交互逻辑
 /// </summary>
@@ -20,6 +22,12 @@ public partial class DailyReportGridView : UserControl
         InitializeComponent();
 
         DataContext = new DailyReportGridViewModel();
+    }
+
+    private void DataGridRow_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (e.Source is DataGridRow row && row.DataContext is DailyReportGridViewModel.DailyReportItem di)
+            WeakReferenceMessenger.Default.Send(new OpenFundMessage(di.FundId));
     }
 }
 
