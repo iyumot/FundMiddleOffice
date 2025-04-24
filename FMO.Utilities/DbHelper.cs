@@ -1,9 +1,9 @@
-﻿using FMO.Models;
-using LiteDB;
-using Serilog;
-using System.Configuration;
+﻿using System.Configuration;
 using System.Security.Cryptography;
 using System.Text;
+using FMO.Models;
+using LiteDB;
+using Serilog;
 namespace FMO.Utilities;
 
 public static class DatabaseAssist
@@ -34,7 +34,7 @@ public static class DatabaseAssist
         }
     }
 
-    
+
 }
 
 
@@ -75,19 +75,19 @@ public static class DbHelper
 
     public static BaseDatabase Base()
     {
-        return new BaseDatabase(@$"FileName=data\base.db;Password={_password};Connection=Shared"); 
+        return new BaseDatabase(@$"FileName=data\base.db;Password={_password};Connection=Shared");
     }
 
     public static BaseDatabase ShareClass()
     {
         return new BaseDatabase(@$"FileName=data\sc.db;Password={_password};Connection=Shared");
     }
-     
+
 
     public static LiteDatabase Platform() => new LiteDatabase(@$"FileName=data\platform.db;Password={_password};Connection=Shared");
 
 
-    
+
 
     public static bool BuildFundShareRecord(this ILiteDatabase db, int fundid)
     {
@@ -96,10 +96,13 @@ public static class DbHelper
             if (fundid == 0) return false;
 
 
-            var data = db.GetCollection<TransferRecord>().Find(x => x.FundId == fundid).GroupBy(x => x.ConfirmedDate).Select(x => new FundShareRecord(0, fundid, x.Key, x.Sum(y => y.ShareChange())));
+            var data = db.GetCollection<TransferRecord>().Find(x => x.FundId == fundid).GroupBy(x => x.ConfirmedDate).OrderBy(x => x.Key);
+            var list = new List<FundShareRecord>();
+            foreach (var item in data) 
+                list.Add(new FundShareRecord(0, fundid, item.Key, item.Sum(x => x.ShareChange()) + (list.Count > 0 ? list[^1].Share : 0)));            
 
             db.GetCollection<FundShareRecord>().DeleteMany(x => x.FundId == fundid);
-            db.GetCollection<FundShareRecord>().Insert(data);
+            db.GetCollection<FundShareRecord>().Insert(list);
 
             return true;
         }
