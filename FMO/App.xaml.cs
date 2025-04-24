@@ -12,11 +12,13 @@ namespace FMO;
 /// </summary>
 public partial class App : Application
 {
+#if RELEASE
     Mutex mutex;
-
+#endif
 
     public App()
     {
+#if RELEASE
         // 单例模式
         string mutexName = "FundMiddleOfficeSingleton";
 
@@ -27,7 +29,7 @@ public partial class App : Application
         // 如果Mutex已经存在，说明程序已经在运行
         if (!createdNew)
             this.Shutdown();
-
+#endif
 
         System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
