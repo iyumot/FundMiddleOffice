@@ -154,7 +154,7 @@
                     BorderThickness="0"
                     DockPanel.Dock="Right"
                     IsChecked="{Binding IsReadOnly}"
-                    Style="{StaticResource ToggleButtonDefault.Small}" />
+                    Style="{StaticResource EditSwitch}" />
 
                 <Button
                     Height="50"
