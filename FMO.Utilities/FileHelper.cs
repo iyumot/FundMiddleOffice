@@ -121,9 +121,11 @@ public static class FileHelper
 
 
 
-    public static string? CopyFile2(FileInfo ori, string tarFolder)
+    public static string? CopyFile2(FileInfo ori, string tarFolder, string? name = null)
     {
-        var tar = Path.Combine(tarFolder, ori.Name);
+        var fileName = string.IsNullOrWhiteSpace(name) ? ori.Name : name; 
+
+        var tar = Path.Combine(tarFolder, fileName);
 
         // 不存在重名文件，直接复制
         if (!File.Exists(tar))
@@ -132,7 +134,6 @@ public static class FileHelper
             return tar;
         }
 
-        var fileName = ori.Name;
         string fileBaseName = Path.GetFileNameWithoutExtension(fileName);
         string fileExtension = Path.GetExtension(fileName);
 

@@ -275,6 +275,9 @@ public class ContractModifyFlow : ContractFlow
 
     public FileStorageInfo? SealedAnnouncement { get; set; }
 
+
+    public FileStorageInfo? CommitmentLetter { get; set; }
+
     //份额、要素
 
     public override string Name { get => "合同变更"; set { } }

@@ -548,6 +548,10 @@
                         <ContentControl Content="{Binding Announcement}" Style="{StaticResource SingleFileStyle}" />
                         <ContentControl Content="{Binding SealedAnnouncement}" Style="{StaticResource SealedFileStyle}" />
 
+                        <DockPanel>
+                            <Button CommandParameter="{Binding CommitmentLetter}" Style="{StaticResource GeneratorButton}" />
+                            <ContentControl Content="{Binding CommitmentLetter}" Style="{StaticResource SingleFileStyle}" />
+                        </DockPanel>
                         <ContentControl Content="{Binding RegistrationLetter}" Style="{StaticResource SingleFileStyle}" />
                     </StackPanel>
 
