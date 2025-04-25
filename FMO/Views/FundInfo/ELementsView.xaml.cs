@@ -1,12 +1,13 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using FMO.Models;
-using FMO.Shared;
-using FMO.Utilities;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using FMO.Models;
+using FMO.Shared;
+using FMO.Utilities;
 
 namespace FMO;
 
@@ -658,6 +659,24 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
     //{
     //    return d == default ? null : d;
     //}
+
+
+
+    protected override void ModifyOverride(IPropertyModifier unit)
+    {
+        base.ModifyOverride(unit);
+        if (unit == CollectionAccount)
+            WeakReferenceMessenger.Default.Send(new FundAccountChangedMessage(FundId, FundAccountType.Collection));
+        else if (unit == CustodyAccount)
+            WeakReferenceMessenger.Default.Send(new FundAccountChangedMessage(FundId, FundAccountType.Custody));
+    }
+
+    protected override void SaveOverride()
+    {
+        base.SaveOverride();
+        WeakReferenceMessenger.Default.Send(new FundAccountChangedMessage(FundId, FundAccountType.Collection));
+        WeakReferenceMessenger.Default.Send(new FundAccountChangedMessage(FundId, FundAccountType.Custody));
+    }
 }
 
 

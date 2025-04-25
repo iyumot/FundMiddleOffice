@@ -27,3 +27,12 @@ public enum ManageType
 
 
 }
+
+public enum FundAccountType
+{
+    None,
+     
+    Collection,
+
+    Custody
+}

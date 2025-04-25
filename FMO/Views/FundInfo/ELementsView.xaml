@@ -1332,7 +1332,7 @@
                                             <Button
                                                 hc:IconElement.Geometry="{StaticResource f.clipboard}"
                                                 Command="{Binding SetBankFromClipboardCommand}"
-                                                CommandParameter="{Binding CollectionAccount}"
+                                                CommandParameter="{Binding Binding, RelativeSource={RelativeSource TemplatedParent}}"
                                                 DockPanel.Dock="Right"
                                                 Foreground="Green"
                                                 Style="{StaticResource ButtonIcon}" />

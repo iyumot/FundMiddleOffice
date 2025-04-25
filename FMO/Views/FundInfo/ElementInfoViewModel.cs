@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using FMO.Models;
 using FMO.Shared;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace FMO;
@@ -129,6 +130,27 @@ public partial class BankAccountInfoViewModel : IDataValidation
     }
 
     public bool IsValid() => Bank?.Length > 3 && Name?.Length > 1 && Number?.Length > 5;
+
+    public override string ToString()
+    {
+        StringBuilder builder = new StringBuilder();
+        if (!string.IsNullOrWhiteSpace(Name))
+            builder.Append($"户名：{Name}\n");
+
+        if (!string.IsNullOrWhiteSpace(Number))
+            builder.Append($"账号：{Number}\n");
+
+        if (!string.IsNullOrWhiteSpace(BankOfDeposit))
+            builder.Append($"开户行：{BankOfDeposit}\n");
+
+        if (!string.IsNullOrWhiteSpace(LargePayNo))
+            builder.Append($"大额支付号：{LargePayNo}\n");
+
+        if (!string.IsNullOrWhiteSpace(SwiftCode))
+            builder.Append($"SWIFT：{SwiftCode}\n");
+
+        return builder.ToString();
+    }
 }
 
 public partial class BankChangeableViewModel<T> : ChangeableViewModel<T, BankAccountInfoViewModel>

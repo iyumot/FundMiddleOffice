@@ -208,16 +208,16 @@
                 </BulletDecorator>
             </UniformGrid>
 
-            <BulletDecorator>
+            <!--<BulletDecorator>
                 <BulletDecorator.Bullet>
                     <TextBlock Text="投资范围" />
                 </BulletDecorator.Bullet>
                 <local:CopyableControl>
                     <TextBlock Text="{Binding InvestmentScope, StringFormat=yyyy-MM-dd}" TextWrapping="Wrap" />
                 </local:CopyableControl>
-            </BulletDecorator>
+            </BulletDecorator>-->
 
-            <BulletDecorator>
+            <BulletDecorator Margin="0,5">
                 <BulletDecorator.Bullet>
                     <TextBlock Text="募集账户" />
                 </BulletDecorator.Bullet>
