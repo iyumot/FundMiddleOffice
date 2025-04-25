@@ -6,7 +6,7 @@
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DataContext="{d:DesignData Type=local:FundInfoPageViewModel}"
+    d:DataContext="{d:DesignInstance Type=local:FundInfoPageViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="1500"
     mc:Ignorable="d">
@@ -91,6 +91,12 @@
             <TabItem Header="总览">
                 <local:FundLifeTimeView />
             </TabItem>
+
+            <TabItem Header="TA">
+                <local:FundTAView DataContext="{Binding TADataContext}" />
+            </TabItem>
+
+
             <TabItem Header="净值">
                 <local:NetValueListView />
             </TabItem>
@@ -126,7 +132,7 @@
                     <local:ElementsView DataContext="{Binding ElementsViewDataContext}" />
                 </DockPanel>
             </TabItem>
-            <TabItem Header="合同" />
+
             <TabItem Header="策略">
                 <local:FundStrategyView DataContext="{Binding StrategyDataContext}" />
             </TabItem>
