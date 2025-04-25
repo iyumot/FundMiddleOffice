@@ -21,6 +21,22 @@
             VerticalAlignment="Top"
             Panel.ZIndex="99">
             <Button Command="{Binding CalcFeeCommand}" Content="费用计算" />
+
+            <!--  搜索  -->
+            <hc:SimplePanel Margin="10,0">
+                <TextBox
+                    MinWidth="220"
+                    Padding="4"
+                    HorizontalContentAlignment="Center"
+                    Style="{StaticResource TextBox.Small}"
+                    Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                <Viewbox
+                    Height="16"
+                    Margin="5,0"
+                    HorizontalAlignment="Right">
+                    <Path Data="{StaticResource f.magnifying-glass}" Fill="Black" />
+                </Viewbox>
+            </hc:SimplePanel>
         </DockPanel>
 
         <TabControl Margin="0,8" Style="{StaticResource TabControlCapsule}">
@@ -111,7 +127,7 @@
                     BorderThickness="0"
                     EnableRowVirtualization="True"
                     IsReadOnly="True"
-                    ItemsSource="{Binding Requests}"
+                    ItemsSource="{Binding RequestsSource.View}"
                     Style="{StaticResource DataGrid.Small}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding RequestDate, StringFormat=yyyy-MM-dd}" Header="日期" />
@@ -135,7 +151,7 @@
                     BorderThickness="0"
                     EnableRowVirtualization="True"
                     IsReadOnly="True"
-                    ItemsSource="{Binding Records}"
+                    ItemsSource="{Binding RecordsSource.View}"
                     Style="{StaticResource DataGrid.Small}">
                     <DataGrid.Columns>
                         <DataGridTemplateColumn>

@@ -97,7 +97,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="call plugins\copy.bat" />
+    <Exec Command="if EXIST plugins\copy.bat call plugins\copy.bat" />
   </Target>
 
 </Project>

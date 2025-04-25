@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DocumentFormat.OpenXml.Office2010.Excel;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
@@ -8,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace FMO;
 
@@ -29,14 +29,26 @@ public partial class TransferRecordPageViewModel : ObservableObject
     public partial ObservableCollection<TransferRecordViewModel>? Records { get; set; }
 
 
+    public CollectionViewSource RecordsSource { get; } = new();
+
+    [ObservableProperty]
+    public partial string? SearchKeyword { get; set; }
+
 
     [ObservableProperty]
     public partial ObservableCollection<TransferRequest>? Requests { get; set; }
+
+    public CollectionViewSource RequestsSource { get; set; } = new();
 
     FileSystemWatcher watcher;
 
     public TransferRecordPageViewModel()
     {
+        RequestsSource.Filter += (s, e) => e.Accepted = string.IsNullOrWhiteSpace(SearchKeyword) ? true :
+        e.Item switch { TransferRequest r => r.CustomerName.Contains(SearchKeyword) || r.FundName.Contains(SearchKeyword) || r.CustomerIdentity.Contains(SearchKeyword), _ => true };
+        RecordsSource.Filter += (s, e) => e.Accepted = string.IsNullOrWhiteSpace(SearchKeyword) ? true :
+        e.Item switch { TransferRecordViewModel r => (r.CustomerName?.Contains(SearchKeyword) ?? false) || (r.FundName?.Contains(SearchKeyword) ?? false) || (r.CustomerIdentity?.Contains(SearchKeyword) ?? false), _ => true };
+
         Task.Run(() =>
         {
             using var db = DbHelper.Base();
@@ -46,8 +58,11 @@ public partial class TransferRecordPageViewModel : ObservableObject
 
             App.Current.Dispatcher.BeginInvoke(() =>
             {
-                Records = new ObservableCollection<TransferRecordViewModel>(tr.Select(x=> new TransferRecordViewModel(x) { File = new FileInfo(@$"files\tac\{x.Id}.pdf") }));
+                Records = new ObservableCollection<TransferRecordViewModel>(tr.Select(x => new TransferRecordViewModel(x) { File = new FileInfo(@$"files\tac\{x.Id}.pdf") }));
                 Requests = new ObservableCollection<TransferRequest>(tr2);
+
+                RecordsSource.Source = Records;
+                RequestsSource.Source = Requests;
             });
         });
 
@@ -60,11 +75,11 @@ public partial class TransferRecordPageViewModel : ObservableObject
             if (e?.Name is null || Records is null) return;
 
             var m = Regex.Match(e.Name, @"\d+");
-            if(m.Success && int.Parse(m.Value) is int id)
+            if (m.Success && int.Parse(m.Value) is int id)
             {
                 Records.FirstOrDefault(x => x.Id == id)?.OnPropertyChanged(nameof(TransferRecordViewModel.FileExists));
             }
-        }; 
+        };
         watcher.Renamed += (s, e) =>
         {
             if (e?.Name is null || Records is null) return;
@@ -89,8 +104,14 @@ public partial class TransferRecordPageViewModel : ObservableObject
 
 
 
-
-
+    partial void OnSearchKeywordChanged(string? value)
+    {
+         
+        {
+            RequestsSource.View.Refresh();
+            RecordsSource.View.Refresh();
+        }
+    }
 
 
     [RelayCommand]
@@ -112,7 +133,7 @@ public partial class TransferRecordPageViewModel : ObservableObject
 
     [RelayCommand]
     public void OpenConfirmFile(FileInfo fi)
-    {  
+    {
         try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(fi.FullName) { UseShellExecute = true }); } catch { }
     }
 }
