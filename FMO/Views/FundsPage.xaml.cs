@@ -1,18 +1,19 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-using FMO.IO.AMAC;
-using FMO.Models;
-using FMO.Utilities;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using FMO.IO.AMAC;
+using FMO.Models;
+using FMO.Utilities;
 
 namespace FMO;
 
@@ -308,7 +309,17 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
         [ObservableProperty]
         public partial string? Name { get; set; }
 
+        /// <summary>
+        /// 主体名称
+        /// </summary>
+        [ObservableProperty]
+        public partial string? MajorName { get; set; }
 
+        /// <summary>
+        /// 次要名称
+        /// </summary>
+        [ObservableProperty]
+        public partial string? SeniorName { get; set; }
 
         [ObservableProperty]
         public partial bool IsEnable { get; set; }
@@ -339,17 +350,39 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
         public partial string? Code { get; set; }
 
 
-        public static FundViewModel FromFund(Fund x)
+        [ObservableProperty]
+        public partial ObservableCollection<FundTip> Tips { get; set; }
+
+        [ObservableProperty]
+        public partial bool ShowTips { get; set; } = false; 
+
+        public bool HasTip => Tips?.Count > 0;
+
+
+        partial void OnTipsChanged(ObservableCollection<FundTip> value)
         {
+            if (value is not null)
+                value.CollectionChanged += (s, e) => OnPropertyChanged(nameof(HasTip));
+
+            OnPropertyChanged(nameof(HasTip));
+        }
+
+        public static FundViewModel FromFund(Fund fund)
+        {
+            var m = Regex.Match(fund.Name, @"(\w+?)((?:私募|证券|期货|集合)\w+(?:基金|计划))");
+             
             return new FundViewModel
             {
-                Id = x.Id,
-                Name = x.Name,
-                IsEnable = x.Status < FundStatus.Normal || x.PublicDisclosureSynchronizeTime != default,
-                IsCleared = x.Status switch { FundStatus.Liquidation or FundStatus.EarlyLiquidation or FundStatus.LateLiquidation or FundStatus.AdvisoryTerminated => true, _ => false },
-                SetupDate = x.SetupDate,
-                AuditDate = x.AuditDate,
-                Code = x.Code
+                Id = fund.Id,
+                Name = fund.Name,
+                MajorName = m.Success ? m.Groups[1].Value : fund.Name,
+                SeniorName = m.Success ? m.Groups[2].Value : "",
+                IsEnable = fund.Status < FundStatus.Normal || fund.PublicDisclosureSynchronizeTime != default,
+                IsCleared = fund.Status switch { FundStatus.Liquidation or FundStatus.EarlyLiquidation or FundStatus.LateLiquidation or FundStatus.AdvisoryTerminated => true, _ => false },
+                SetupDate = fund.SetupDate,
+                AuditDate = fund.AuditDate,
+                Code = fund.Code,
+                Tips = new(DataTracker.FundTips.Where(x => x.FundId == fund.Id))
             };
         }
     }

@@ -4,8 +4,22 @@ using Serilog;
 
 namespace FMO.Utilities;
 
+public enum TipType
+{
+    None,
 
-public record class FundTip(int FundId, string? Tip);
+    /// <summary>
+    /// 基金份额与估值表不致
+    /// </summary>
+    FundShareNotPair,
+
+    /// <summary>
+    /// 没有TA数据
+    /// </summary>
+    FundNoTARecord,
+}
+
+public record class FundTip(int FundId, TipType Type, string? Tip);
 
 /// <summary>
 /// 数据校验
@@ -72,7 +86,7 @@ public static class DataTracker
 
             if (c is null || !c.Any())
             {
-                FundTips.Add(new FundTip(fund.Id, "基金份额与估值表不一致"));
+                FundTips.Add(new FundTip(fund.Id, TipType.FundNoTARecord, "没有TA数据"));
                 continue;
             }
 
@@ -80,7 +94,7 @@ public static class DataTracker
 
             if(sh?.Share != last.Share)
             {
-                FundTips.Add(new FundTip(fund.Id, "基金份额与估值表不一致"));
+                FundTips.Add(new FundTip(fund.Id, TipType.FundShareNotPair, "基金份额与估值表不一致"));
                 continue;
             }
         }

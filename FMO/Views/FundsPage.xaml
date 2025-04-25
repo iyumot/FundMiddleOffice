@@ -106,7 +106,7 @@
 
 
         <!--  列表  -->
-        <ListBox ItemsSource="{Binding DataViewSource.View}">
+        <ListBox d:ItemsSource="{d:SampleData}" ItemsSource="{Binding DataViewSource.View}">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <WrapPanel IsItemsHost="True" />
@@ -122,9 +122,9 @@
                 </Style>
             </ListBox.ItemContainerStyle>
             <ListBox.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate DataType="local:FundInfoPageViewModel.FundViewModel">
                     <DockPanel Background="Transparent">
-                        <DockPanel DockPanel.Dock="Top">
+                        <DockPanel DockPanel.Dock="Top" LastChildFill="False">
                             <Viewbox
                                 Width="12"
                                 Height="12"
@@ -135,7 +135,77 @@
                             <TextBlock
                                 HorizontalAlignment="Center"
                                 FontWeight="Bold"
-                                Text="{Binding Name}" />
+                                Text="{Binding MajorName}" />
+                            <TextBlock
+                                Margin="2,0,0,0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Bottom"
+                                FontSize="10"
+                                Foreground="Gray"
+                                Text="{Binding SeniorName}" />
+
+                            <!--<hc:Badge
+                                FontSize="9"
+                                Foreground="White"
+                                ShowBadge="{Binding HasTip}"
+                                Style="{StaticResource BadgeWarning}"
+                                ToolTipService.InitialShowDelay="1000"
+                                ToolTipService.ShowDuration="5000"
+                                Value="{Binding Tips.Count}">
+                                <hc:Badge.ToolTip>
+                                    <ToolTip>
+                                        <StackPanel>
+                                            <ListBox
+                                                BorderThickness="0"
+                                                ItemsSource="{Binding Tips}"
+                                                Style="{StaticResource ListBoxCustom}">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Tip}" />
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+                                        </StackPanel>
+                                    </ToolTip>
+                                </hc:Badge.ToolTip>
+                            </hc:Badge>-->
+
+                            <ToggleButton
+                                Name="badge"
+                                IsChecked="{Binding ShowTips}"
+                                Style="{StaticResource ToggleButtonCustom}">
+                                <hc:Badge
+                                    FontSize="9"
+                                    Foreground="White"
+                                    ShowBadge="{Binding HasTip}"
+                                    Style="{StaticResource BadgeWarning}"
+                                    ToolTipService.InitialShowDelay="1000"
+                                    ToolTipService.ShowDuration="5000"
+                                    Value="{Binding Tips.Count}" />
+                            </ToggleButton>
+
+                            <Popup
+                                AllowsTransparency="True"
+                                HorizontalOffset="10"
+                                IsOpen="{Binding ShowTips}"
+                                Placement="Right"
+                                PlacementTarget="{Binding ElementName=badge}"
+                                StaysOpen="False">
+                                <Border Background="WhiteSmoke" CornerRadius="5">
+                                    <ListBox
+                                        Margin="10"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        ItemsSource="{Binding Tips}"
+                                        Style="{StaticResource ListBoxCustom}">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Foreground="Red" Text="{Binding Tip}" />
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Border>
+                            </Popup>
                         </DockPanel>
 
                         <DockPanel Margin="8,2" TextElement.FontSize="9">
