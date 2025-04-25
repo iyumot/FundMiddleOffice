@@ -28,7 +28,7 @@ public partial class FundInfoPage : UserControl
 }
 
 
-public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<FundShareChangedMessage>, IRecipient<FundDailyUpdateMessage>, IRecipient<FundStrategyChangedMessage>
+public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<FundShareChangedMessage>, IRecipient<FundDailyUpdateMessage>, IRecipient<FundStrategyChangedMessage>,IRecipient<FundAccountChangedMessage>
 {
     public Fund Fund { get; init; }
 
@@ -56,6 +56,8 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         FundCode = fund.Code;
         FundStatus = fund.Status;
 
+        CollectionAccount = ele.CollectionAccount.Value?.ToString();
+        CustodyAccount = ele.CustodyAccount.Value?.ToString();
 
         InitFlows(fund, ele);
 
@@ -99,6 +101,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         AccountsDataContext = new(FundId, FundCode!, names);
         TADataContext = new(FundId);
 
+         
         IsActive = true;
         _initialized = true;
     }
@@ -655,6 +658,23 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
             using var db = DbHelper.Base();
             var strategies = db.GetCollection<FundStrategy>().Find(x => x.FundId == FundId).ToList();
             CurveViewDataContext.Strategies = strategies.ToList();
+        }
+    }
+
+    public void Receive(FundAccountChangedMessage message)
+    {
+        switch (message.Type)
+        {
+            case FundAccountType.None:
+                break;
+            case FundAccountType.Collection:
+                CollectionAccount = ElementsViewDataContext.CollectionAccount?.OldValue?.ToString();
+                break;
+            case FundAccountType.Custody:
+                CustodyAccount = ElementsViewDataContext.CustodyAccount?.OldValue?.ToString();
+                break;
+            default:
+                break;
         }
     }
 }

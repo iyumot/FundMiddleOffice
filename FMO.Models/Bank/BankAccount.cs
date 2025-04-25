@@ -113,7 +113,7 @@ public class BankAccount
         account.BankOfDeposit = m.Value;
 
 
-        m = Regex.Match(str, @"大\s*额\s*支\s*付\s*号?\s*[:：]*(\w+)");
+        m = Regex.Match(str, @"大\s*额\s*支\s*付\s*(?:系统)?号\s*[:：]*(\w+)");
         if (m.Success) account.LargePayNo = m.Groups[1].Value;
 
         return account;
@@ -159,6 +159,6 @@ public class BankAccount
         if (!string.IsNullOrWhiteSpace(SwiftCode))
             builder.Append($"SWIFT：{SwiftCode}\n");
 
-        return builder.ToString();
+        return builder.ToString().Trim();
     }
 }
