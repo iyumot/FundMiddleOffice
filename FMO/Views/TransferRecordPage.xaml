@@ -6,6 +6,7 @@
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
@@ -20,7 +21,10 @@
             HorizontalAlignment="Left"
             VerticalAlignment="Top"
             Panel.ZIndex="99">
-            <Button Command="{Binding CalcFeeCommand}" Content="费用计算" />
+            <Button
+                Background="PaleGoldenrod"
+                Command="{Binding CalcFeeCommand}"
+                Content="费用计算器" />
 
             <!--  搜索  -->
             <hc:SimplePanel Margin="10,0">
@@ -128,13 +132,19 @@
                     EnableRowVirtualization="True"
                     IsReadOnly="True"
                     ItemsSource="{Binding RequestsSource.View}"
-                    Style="{StaticResource DataGrid.Small}">
+                    Style="{StaticResource DataGrid.NoSelect}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding RequestDate, StringFormat=yyyy-MM-dd}" Header="日期" />
                         <DataGridTextColumn Binding="{Binding FundCode}" Header="代码" />
                         <DataGridTextColumn Binding="{Binding FundName}" Header="产品" />
                         <DataGridTextColumn Binding="{Binding CustomerName}" Header="投资人" />
-                        <DataGridTextColumn Binding="{Binding CustomerIdentity}" Header="证件" />
+                        <DataGridTemplateColumn Header="证件">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <shared:CopyableTextBlock IsMasked="True" Text="{Binding CustomerIdentity}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                         <DataGridTextColumn Binding="{Binding RequestType}" Header="类型" />
                         <DataGridTextColumn Binding="{Binding RequestShare, Converter={StaticResource ZeroToBlankConverter}}" Header="份额" />
                         <DataGridTextColumn Binding="{Binding RequestAmount, Converter={StaticResource ZeroToBlankConverter}}" Header="金额" />
@@ -152,7 +162,7 @@
                     EnableRowVirtualization="True"
                     IsReadOnly="True"
                     ItemsSource="{Binding RecordsSource.View}"
-                    Style="{StaticResource DataGrid.Small}">
+                    Style="{StaticResource DataGrid.NoSelect}">
                     <DataGrid.Columns>
                         <DataGridTemplateColumn>
                             <DataGridTemplateColumn.CellTemplate>
@@ -171,7 +181,13 @@
                         <DataGridTextColumn Binding="{Binding FundCode}" Header="代码" />
                         <DataGridTextColumn Binding="{Binding FundName}" Header="产品" />
                         <DataGridTextColumn Binding="{Binding CustomerName}" Header="投资人" />
-                        <DataGridTextColumn Binding="{Binding CustomerIdentity}" Header="证件" />
+                        <DataGridTemplateColumn Header="证件">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <shared:CopyableTextBlock IsMasked="True" Text="{Binding CustomerIdentity}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                         <DataGridTextColumn Binding="{Binding Type}" Header="类型" />
                         <DataGridTextColumn Binding="{Binding RequestShare, Converter={StaticResource ZeroToBlankConverter}}" Header="申请份额" />
                         <DataGridTextColumn Binding="{Binding RequestAmount, Converter={StaticResource ZeroToBlankConverter}}" Header="申请金额" />

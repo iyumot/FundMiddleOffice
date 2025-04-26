@@ -244,9 +244,7 @@
                 <DataGridTemplateColumn Header="证件号码">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <local:CopyableControl>
-                                <TextBlock VerticalAlignment="Center" Text="{Binding Identity.Id}" />
-                            </local:CopyableControl>
+                            <shared:CopyableTextBlock IsMasked="True" Text="{Binding Identity.Id}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
