@@ -36,3 +36,30 @@ public enum FundAccountType
 
     Custody
 }
+
+/// <summary>
+/// 开放日类型
+/// </summary>
+[TypeConverter(nameof(EnumDescriptionTypeConverter))]
+public enum FundOpenType
+{
+    [Description("不开放")]Closed,
+
+    [Description("每年")]
+    Yearly,
+
+    [Description("每半年")]
+    SemiAnnually,
+
+    [Description("每季度")]
+    Quarterly,
+
+    [Description("每月")]
+    Monthly,
+
+    [Description("每周")]
+    Weekly,
+
+    [Description("每天")]
+    Daily
+}

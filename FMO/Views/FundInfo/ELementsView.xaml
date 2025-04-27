@@ -1195,7 +1195,15 @@
                             <TextBlock Style="{StaticResource CategoryTab}" Text="申赎相关" />
                         </Border>
                         <StackPanel>
-                            <shared:ChangeableContainer HorizontalContentAlignment="Stretch" Binding="{Binding OpenDayInfo}" />
+                            <DockPanel LastChildFill="False">
+                                <shared:ChangeableContainer HorizontalContentAlignment="Stretch" Binding="{Binding OpenDayInfo}" />
+
+                                <Button
+                                    Command="{Binding SetOpenRuleCommand}"
+                                    Content="开放日规则"
+                                    Style="{StaticResource ButtonPrimary.Small}" />
+
+                            </DockPanel>
 
                             <shared:ChangeableContainer Binding="{Binding TemporarilyOpenInfo}">
                                 <shared:ChangeableContainer.EditTemplate>
