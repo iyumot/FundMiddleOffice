@@ -1,13 +1,13 @@
-﻿using System.Collections.ObjectModel;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
+using System.Collections.ObjectModel;
+using System.Text;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace FMO;
 
@@ -620,6 +620,22 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         var r = wnd.ShowDialog();
 
         if (r ?? false) OnFlowIdChanged(FlowId, FlowId);
+    }
+
+
+    [RelayCommand]
+    public void SetOpenRule()
+    {
+        Window wnd = new Window
+        {
+            Content = new OpenRuleEditor(),
+            DataContext = new OpenRuleViewModel(),
+            WindowStartupLocation =  WindowStartupLocation.CenterOwner,
+            Owner = App.Current.MainWindow
+        };
+        wnd.ShowDialog();
+        
+
     }
 
     public void InitShare(Mutable<ShareClass[]>? shareClass = null)

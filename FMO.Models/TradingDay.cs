@@ -43,7 +43,7 @@ public static class TradingDay
         return idx < Days.Count ? Days[idx] : Days.Last().AddDays(1);
     }
 
-    internal static List<DateOnly> Gather(DateOnly start, DateOnly end)
+    public static List<DateOnly> Gather(DateOnly start, DateOnly end)
     {
         int s = Days.BinarySearch(start);
         int e = Days.BinarySearch(end);
@@ -52,6 +52,18 @@ public static class TradingDay
         e = e < 0 ? ~e : e + 1;
 
         return Days[s..e].ToList();
+    }
+
+
+    public static DateOnly[] DaysByYear(int year)
+    {
+        int s = Days.BinarySearch(new DateOnly(year, 1, 1));
+        int e = Days.BinarySearch(new DateOnly(year,12,31));
+
+        s = s < 0 ? ~s : s;
+        e = e < 0 ? ~e : e + 1;
+
+        return Days[s..e].ToArray();
     }
 
     static TradingDay()
