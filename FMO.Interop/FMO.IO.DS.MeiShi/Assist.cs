@@ -386,62 +386,7 @@ public class Assist : AssistBase
                             await page.Keyboard.PressAsync("Escape");
                         }
 
-                        // 解压文件
-                        using var zip = ZipFile.OpenRead(file.FullName);
-                        foreach (var item in zip.Entries)
-                        {
-                            if (string.IsNullOrWhiteSpace(item.Name) || item.Name.EndsWith("/")) continue;
-
-                            using var fs = new FileStream(@$"files\qualification\{q.Id}\{item.Name}", FileMode.Create);
-                            using var stream = item.Open();
-                            stream.CopyTo(fs);
-                            fs.Flush();
-                        }
-
-                        var qfiles = file.Directory!.GetFiles().Where(x => x.Extension.ToLower() != ".zip");
-
-                        var fi = qfiles.FirstOrDefault(x => x.Name.Contains("合格投资者承诺函"));
-                        if (fi is not null)
-                            q.CommitmentLetter = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
-
-
-                        fi = qfiles.FirstOrDefault(x => x.Name.Contains("基本信息表"));
-                        if (fi is not null)
-                        {
-                            if (fi.Name.Contains("_专业投资者_"))
-                            {
-                                q.Result = QualifiedInvestorType.Professional;
-                            }
-                            q.InfomationSheet = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
-                        }
-
-                        fi = qfiles.FirstOrDefault(x => x.Name.Contains("告知书"));
-                        if (fi is not null)
-                            q.Notice = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
-
-                        fi = qfiles.FirstOrDefault(x => x.Name.Contains("税收居民身份声明"));
-                        if (fi is not null)
-                            q.TaxDeclaration = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
-
-
-                        fi = qfiles.FirstOrDefault(x => x.Name.Contains("经办人身份证件"));
-                        if (fi is not null)
-                            q.Agent = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
-
-                        fi = qfiles.FirstOrDefault(x => x.Name.Contains("授权委托书"));
-                        if (fi is not null)
-                            q.Authorization = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
-
-                        fi = qfiles.FirstOrDefault(x => x.Name.Contains("投资经历"));
-                        if (fi is not null)
-                            q.ProofOfExperience = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
-
-                        var prof = qfiles.Where(x => x.Name.Contains("证明材料") && !x.Name.Contains("投资经历"));
-                        if (prof.Any())
-                        {
-                            if (q.CertificationFiles is null) q.CertificationFiles = new();
-                            q.CertificationFiles.Add(new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) });
-                        }
+                        using ZipArchive zip = ParseQualificationZip(q, file);
 
                         //prof = qfiles.Where(x => x.Name.Contains("身份证") && !x.Name.Contains("投资经历"));
                         //if(prof.Any())
@@ -489,6 +434,7 @@ public class Assist : AssistBase
         }
 
         return true;
+
     }
 
     private async Task<bool> HandleQualificationJson(string json)
@@ -572,6 +518,69 @@ public class Assist : AssistBase
         }
 
         return true;
+    }
+
+
+    static ZipArchive ParseQualificationZip(InvestorQualification q, FileInfo file)
+    {
+        // 解压文件
+        var zip = ZipFile.OpenRead(file.FullName);
+        foreach (var item in zip.Entries)
+        {
+            if (string.IsNullOrWhiteSpace(item.Name) || item.Name.EndsWith("/")) continue;
+
+            using var fs = new FileStream(@$"files\qualification\{q.Id}\{item.Name}", FileMode.Create);
+            using var stream = item.Open();
+            stream.CopyTo(fs);
+            fs.Flush();
+        }
+
+        var qfiles = file.Directory!.GetFiles().Where(x => x.Extension.ToLower() != ".zip");
+
+        var fi = qfiles.FirstOrDefault(x => x.Name.Contains("合格投资者承诺函"));
+        if (fi is not null)
+            q.CommitmentLetter = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+
+
+        fi = qfiles.FirstOrDefault(x => x.Name.Contains("基本信息表"));
+        if (fi is not null)
+        {
+            if (fi.Name.Contains("_专业投资者_"))
+            {
+                q.Result = QualifiedInvestorType.Professional;
+            }
+            q.InfomationSheet = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+        }
+
+        fi = qfiles.FirstOrDefault(x => x.Name.Contains("告知书"));
+        if (fi is not null)
+            q.Notice = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+
+        fi = qfiles.FirstOrDefault(x => x.Name.Contains("税收居民身份声明"));
+        if (fi is not null)
+            q.TaxDeclaration = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+
+
+        fi = qfiles.FirstOrDefault(x => x.Name.Contains("经办人身份证件"));
+        if (fi is not null)
+            q.Agent = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+
+        fi = qfiles.FirstOrDefault(x => x.Name.Contains("授权委托书"));
+        if (fi is not null)
+            q.Authorization = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+
+        fi = qfiles.FirstOrDefault(x => x.Name.Contains("投资经历"));
+        if (fi is not null)
+            q.ProofOfExperience = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+
+        var prof = qfiles.Where(x => x.Name.Contains("证明材料") && !x.Name.Contains("投资经历"));
+        if (prof.Any())
+        {
+            if (q.CertificationFiles is null) q.CertificationFiles = new();
+            q.CertificationFiles.Add(new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) });
+        }
+
+        return zip;
     }
 }
 
