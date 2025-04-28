@@ -66,6 +66,9 @@ public partial class TabItemInfo:ObservableObject
 public partial class MainWindowViewModel : ObservableRecipient, IRecipient<string>, IRecipient<OpenFundMessage>
 {
 
+    private PlatformPageViewModel? PlatformDataContext { get; set; }
+
+
     [ObservableProperty]
     public partial string? Title { get; set; }
 
@@ -137,7 +140,8 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                     var page = Pages.FirstOrDefault(x => x.Content is PlatformPage);
                     if (page is null)
                     {
-                        page = new TabItemInfo { Header = "外部平台", Background = Brushes.MediumSpringGreen, Content = new PlatformPage() };
+                        PlatformDataContext = PlatformDataContext ?? new PlatformPageViewModel();
+                        page = new TabItemInfo { Header = "外部平台", Background = Brushes.MediumSpringGreen, Content = new PlatformPage { DataContext = PlatformDataContext } };
                         Pages.Add(page);
                     }
 
