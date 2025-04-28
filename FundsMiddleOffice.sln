@@ -66,6 +66,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.TPL", "FMO.TPL\FMO.TPL.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.TPLTests", "FMO.TPLTests\FMO.TPLTests.csproj", "{8430EB8C-F648-470F-B45F-399F428205AB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.OCR", "FMO.OCR\FMO.OCR.csproj", "{1DBBA4E4-2E4C-4088-A8C5-915722A69E0B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -176,6 +178,10 @@ Global
 		{8430EB8C-F648-470F-B45F-399F428205AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8430EB8C-F648-470F-B45F-399F428205AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8430EB8C-F648-470F-B45F-399F428205AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DBBA4E4-2E4C-4088-A8C5-915722A69E0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DBBA4E4-2E4C-4088-A8C5-915722A69E0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DBBA4E4-2E4C-4088-A8C5-915722A69E0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DBBA4E4-2E4C-4088-A8C5-915722A69E0B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
