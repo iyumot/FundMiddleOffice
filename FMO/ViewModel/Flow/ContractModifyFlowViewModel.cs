@@ -9,7 +9,6 @@ using FMO.Utilities;
 
 namespace FMO;
 
-
 public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel, IElementChangable
 {
 

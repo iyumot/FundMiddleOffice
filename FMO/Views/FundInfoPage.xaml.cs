@@ -429,6 +429,14 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         Flows.Add(new ContractModifyFlowViewModel(flow, ele.ShareClasses));
     }
 
+    [RelayCommand]
+    public void CreateModifyByAnnounce()
+    {
+        var flow = new ModifyByAnnounceFlow { FundId = Fund.Id };
+        using var db = DbHelper.Base();
+        db.GetCollection<FundFlow>().Insert(flow);  
+        Flows.Add(new ModifyByAnnounceFlowViewModel(flow));
+    }
 
     [RelayCommand]
     public void CreateClearFlow()

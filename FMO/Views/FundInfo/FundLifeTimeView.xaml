@@ -660,6 +660,37 @@
 
         </DataTemplate>
 
+        <DataTemplate x:Key="DT.ModifyByAnnounceFlow" DataType="local:ModifyByAnnounceFlowViewModel">
+            <UserControl Template="{StaticResource FlowShell}">
+                <DockPanel>
+                    <Button
+                        Command="{Binding DataContext.DeleteFlowCommand, RelativeSource={RelativeSource AncestorType=local:FundLifeTimeView}}"
+                        CommandParameter="{Binding .}"
+                        Content="废除"
+                        DockPanel.Dock="Right" />
+
+
+                    <StackPanel MinWidth="500" VerticalAlignment="Center">
+
+                        <WrapPanel>
+                            <ContentControl Content="{Binding Announcement}" Style="{StaticResource SingleFileStyle}" />
+                            <ContentControl Content="{Binding SealedAnnouncement}" Style="{StaticResource SealedFileStyle}" />
+                        </WrapPanel>
+
+
+                        <ListBox
+                            BorderThickness="0"
+                            ItemTemplate="{StaticResource DT.CustomFile}"
+                            ItemsSource="{Binding CustomFiles}"
+                            Style="{StaticResource ListBoxCustom}" />
+
+                    </StackPanel>
+
+                </DockPanel>
+            </UserControl>
+
+        </DataTemplate>
+
 
 
         <DataTemplate x:Key="DT.Liquidation">
@@ -700,7 +731,9 @@
             </DockPanel.Resources>
             <Button Command="{Binding SetupFundCommand}" Content="成立备案" />
 
-            <Button Command="{Binding CreateContractModifyCommand}" Content="发起合同变更" />
+            <Button Command="{Binding CreateContractModifyCommand}" Content="协议变更" />
+
+            <Button Command="{Binding CreateModifyByAnnounceCommand}" Content="公告变更" />
 
             <Button Command="{Binding CreateClearFlowCommand}" Content="发起清盘" />
         </DockPanel>
