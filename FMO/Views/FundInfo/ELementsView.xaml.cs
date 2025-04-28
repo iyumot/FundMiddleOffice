@@ -1,13 +1,13 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.Text;
+using System.Windows;
+using System.Windows.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
-using System.Collections.ObjectModel;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
 
 namespace FMO;
 
@@ -319,6 +319,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
                 }
             },
             ClearFunc = x => x.DurationInMonths!.RemoveValue(newValue),
+            DisplayFunc = x => x switch { var m when m % 12 == 0 => $"{x / 12}年" , > 0 => $"{x}个月", _=> "" }
         };
         DurationInMonths.Init(elements);
 
@@ -630,11 +631,11 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         {
             Content = new OpenRuleEditor(),
             DataContext = new OpenRuleViewModel(),
-            WindowStartupLocation =  WindowStartupLocation.CenterOwner,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
             Owner = App.Current.MainWindow
         };
         wnd.ShowDialog();
-        
+
 
     }
 

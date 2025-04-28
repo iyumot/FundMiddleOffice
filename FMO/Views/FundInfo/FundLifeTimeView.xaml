@@ -612,6 +612,12 @@
                         <CheckBox Content="份额分类" IsChecked="{Binding ModifyShareClass}" />
                         <CheckBox Content="募集账户" IsChecked="{Binding ModifyCollectionAccount}" />
                         <CheckBox Content="托管账户" IsChecked="{Binding ModifyCustodyAccount}" />
+
+                        <Button
+                            hc:IconElement.Geometry="{StaticResource f.floppy-disk}"
+                            Command="{Binding SaveModifySectionCommand}"
+                            Style="{StaticResource ButtonIcon.Small}"
+                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
                     </DockPanel>
 
                     <StackPanel MinWidth="500" VerticalAlignment="Center">
@@ -650,7 +656,11 @@
                             <Button CommandParameter="{Binding CommitmentLetter}" Style="{StaticResource GeneratorButton}" />
                             <ContentControl Content="{Binding CommitmentLetter}" Style="{StaticResource SingleFileStyle}" />
                         </DockPanel>
-                        <ContentControl Content="{Binding RegistrationLetter}" Style="{StaticResource SingleFileStyle}" />
+
+                        <ContentControl
+                            Content="{Binding RegistrationLetter}"
+                            Style="{StaticResource SingleFileStyle}"
+                            Visibility="{Binding ModifyName, Converter={StaticResource Boolean2VisibilityConverter}}" />
                     </StackPanel>
 
 
@@ -742,7 +752,13 @@
             BorderThickness="0"
             ItemTemplateSelector="{StaticResource FlowTemplateSelector}"
             ItemsSource="{Binding Flows}"
-            Style="{StaticResource ListBoxCustom}" />
+            Style="{StaticResource ListBoxCustom}">
+            <ListBox.ItemContainerStyle>
+                <Style BasedOn="{StaticResource ListBoxItemCustom}" TargetType="ListBoxItem">
+                    <Setter Property="Margin" Value="0,0,10,0" />
+                </Style>
+            </ListBox.ItemContainerStyle>
+        </ListBox>
 
     </DockPanel>
 </UserControl>

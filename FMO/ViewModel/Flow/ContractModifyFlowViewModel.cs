@@ -54,6 +54,18 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
     [SetsRequiredMembers]
     public ContractModifyFlowViewModel(ContractModifyFlow flow, Mutable<ShareClass[]>? shareClass) : base(flow, shareClass)
     {
+        if (flow.Section.HasFlag(ContractModifySection.Name))
+            ModifyName = true;
+        if(flow.Section.HasFlag(ContractModifySection.InvestManager))
+            ModifyInvestmentManager = true;
+        if(flow.Section.HasFlag(ContractModifySection.ShareClass))
+            ModifyShareClass = true;
+        if(flow.Section.HasFlag(ContractModifySection.CollectionAccount))
+            ModifyCollectionAccount = true;
+        if(flow.Section.HasFlag(ContractModifySection.CustodyAccount))
+            ModifyCustodyAccount = true;
+
+
         ///补充协议
         SupplementaryFile = new(flow.SupplementaryFile?.Files.Select(x => new FileInfo(x.Path)) ?? Array.Empty<FileInfo>());
         SupplementaryFile.CollectionChanged += SupplementaryFile_CollectionChanged;
@@ -158,6 +170,26 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
                 break;
             default:
                 break;
+        }
+    }
+
+
+    [RelayCommand]
+    public void SaveModifySection()
+    {
+        ContractModifySection section = default;
+        if (ModifyName) section |= ContractModifySection.Name;
+        if (ModifyInvestmentManager) section |= ContractModifySection.InvestManager;
+        if (ModifyShareClass) section |= ContractModifySection.ShareClass;
+        if (ModifyCollectionAccount) section |= ContractModifySection.CollectionAccount;
+        if (ModifyCustodyAccount) section |= ContractModifySection.CustodyAccount;
+
+        using var db = DbHelper.Base();
+        var flow = db.GetCollection<FundFlow>().FindById(FlowId) as ContractModifyFlow;
+        if (flow is not null)
+        {
+            flow.Section = section;
+            db.GetCollection<FundFlow>().Update(flow); 
         }
     }
 }
