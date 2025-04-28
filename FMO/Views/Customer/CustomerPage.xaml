@@ -208,7 +208,10 @@
                         <DataTemplate>
                             <DockPanel LastChildFill="False">
                                 <local:CopyableControl>
-                                    <TextBlock VerticalAlignment="Center" Text="{Binding Name}" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Text="{Binding Name}"
+                                        TextWrapping="Wrap" />
                                 </local:CopyableControl>
                                 <Viewbox
                                     Width="10"
@@ -282,7 +285,7 @@
                     Header="风险等级" />
 
 
-                <DataGridTemplateColumn Header="合格投资者认定">
+                <!--<DataGridTemplateColumn Header="合格投资者认定">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <DockPanel>
@@ -298,7 +301,7 @@
                             </DockPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                </DataGridTemplateColumn>-->
 
             </DataGrid.Columns>
         </DataGrid>
