@@ -230,6 +230,14 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
     [ObservableProperty]
     public partial RiskLevel RiskLevel { get; set; }
 
+
+    [ObservableProperty]
+    public partial bool LackEmail { get; set; }
+
+    [ObservableProperty]
+    public partial bool LackPhone { get; set; }
+
+
     public Investor Investor { get; set; }
 
     public InvestorReadOnlyViewModel(Investor investor)
@@ -242,6 +250,9 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
         Efficient = investor.Efficient;
 
         RiskLevel = investor.RiskLevel;
+
+        LackPhone = string.IsNullOrWhiteSpace(investor.Phone);
+        LackEmail = string.IsNullOrWhiteSpace(investor.Email);
         Investor = investor;
     }
 
@@ -254,6 +265,8 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
         Efficient = investor.Efficient;
 
         RiskLevel = investor.RiskLevel;
+        LackPhone = string.IsNullOrWhiteSpace(investor.Phone);
+        LackEmail = string.IsNullOrWhiteSpace(investor.Email);
         Investor = investor;
     }
 

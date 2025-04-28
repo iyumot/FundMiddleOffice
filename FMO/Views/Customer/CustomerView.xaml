@@ -136,7 +136,11 @@
                         </shared:ChangeableContainer.ContentTemplate>
                     </shared:ChangeableContainer>
 
+                    <UniformGrid Margin="0,5" Rows="1">
+                        <shared:ChangeableContainer HorizontalContentAlignment="Stretch" Binding="{Binding Email}" />
 
+                        <shared:ChangeableContainer HorizontalContentAlignment="Stretch" Binding="{Binding Phone}" />
+                    </UniformGrid>
 
                     <local:MultiFileDisplay
                         Margin="0,5"
