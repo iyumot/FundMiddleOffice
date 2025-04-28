@@ -1,11 +1,12 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Windows.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Windows.Controls;
 
 namespace FMO;
 
@@ -50,6 +51,13 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
     public ChangeableViewModel<Investor, IDType> IDType { get; } = new() { InitFunc = x => x.Identity.Type, UpdateFunc = (x, y) => x.Identity = x.Identity with { Type = y }, ClearFunc = x => x.Identity = x.Identity with { Type = default }, Label = "证件类型" };
 
     public ChangeableViewModel<Investor, string> Identity { get; } = new() { InitFunc = x => x.Identity.Id, UpdateFunc = (x, y) => x.Identity = x.Identity with { Id = y! }, ClearFunc = x => x.Identity = x.Identity with { Id = string.Empty } };
+
+    public ChangeableViewModel<Investor, string> Email { get; } = new() { InitFunc = x => x.Email, UpdateFunc = (x, y) => x.Email = y, ClearFunc = x => x.Email = null, Label = "Email" };
+
+    public ChangeableViewModel<Investor, string> Phone { get; } = new() { InitFunc = x => x.Phone, UpdateFunc = (x, y) => x.Phone = y, ClearFunc = x => x.Phone = null, Label = "联系方式" };
+
+
+
 
 
     [ObservableProperty]
@@ -112,6 +120,10 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
         Identity.Init(investor);
         IDType.Init(investor);
+
+        Email.Init(investor);
+        Phone.Init(investor);
+
 
         Efficient.Init(investor);
 
@@ -236,6 +248,31 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
     //    }
     //    unit.Apply();
     //}
+
+
+    protected override void ModifyOverride(IPropertyModifier unit)
+    {
+        base.ModifyOverride(unit);
+
+        var db = DbHelper.Base();
+        var customer = db.GetCollection<Investor>().FindById(Id);
+        db.Dispose();
+        if (customer is not null)
+            WeakReferenceMessenger.Default.Send(customer);
+    }
+
+
+    protected override void SaveOverride()
+    {
+        base.SaveOverride();
+
+
+        var db = DbHelper.Base();
+        var customer = db.GetCollection<Investor>().FindById(Id);
+        db.Dispose();
+        if (customer is not null)
+            WeakReferenceMessenger.Default.Send(customer);
+    }
 
 
     [RelayCommand]

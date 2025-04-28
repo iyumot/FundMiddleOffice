@@ -194,6 +194,7 @@
 
         <DataGrid
             Name="datagrid"
+            d:ItemsSource="{d:SampleData}"
             hc:DataGridAttach.ShowRowNumber="True"
             AutoGenerateColumns="False"
             IsReadOnly="True"
@@ -205,9 +206,25 @@
                 <DataGridTemplateColumn Header="名称">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <local:CopyableControl>
-                                <TextBlock VerticalAlignment="Center" Text="{Binding Name}" />
-                            </local:CopyableControl>
+                            <DockPanel LastChildFill="False">
+                                <local:CopyableControl>
+                                    <TextBlock VerticalAlignment="Center" Text="{Binding Name}" />
+                                </local:CopyableControl>
+                                <Viewbox
+                                    Width="10"
+                                    Height="10"
+                                    VerticalAlignment="Top"
+                                    Visibility="{Binding LackEmail, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                    <Path Data="{StaticResource f.envelope}" Fill="Red" />
+                                </Viewbox>
+                                <Viewbox
+                                    Width="12"
+                                    Height="12"
+                                    VerticalAlignment="Top"
+                                    Visibility="{Binding LackPhone, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                    <Path Data="{StaticResource f.mobile-retro}" Fill="Red" />
+                                </Viewbox>
+                            </DockPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
