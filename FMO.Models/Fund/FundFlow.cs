@@ -284,6 +284,28 @@ public class ContractModifyFlow : ContractFlow
 }
 
 
+public class ModifyByAnnounceFlow : FundFlow
+{
+
+    /// <summary>
+    /// 公告
+    /// </summary>
+    public FileStorageInfo? Announcement { get; set; }
+
+    public FileStorageInfo? SealedAnnouncement { get; set; }
+
+
+    public override string Name { get => "合同变更"; set { } }
+}
+
+
+
+
+
+
+
+
+
 public class LiquidationFlow : FundFlow
 {
     /// <summary>
