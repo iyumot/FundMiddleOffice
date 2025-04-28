@@ -490,8 +490,8 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
             Label = "投资经理",
             InitFunc = x => x.InvestmentManager.GetValue(newValue).Value,
             InheritedFunc = x => x.InvestmentManager.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
-            UpdateFunc = (x, y) => { if (y is not null) x.InvestmentStrategy!.SetValue(y, newValue); },
-            ClearFunc = x => x.InvestmentStrategy.RemoveValue(newValue),
+            UpdateFunc = (x, y) => { if (y is not null) x.InvestmentManager!.SetValue(y, newValue); },
+            ClearFunc = x => x.InvestmentManager.RemoveValue(newValue),
         };
         InvestmentManagers.Init(elements);
 
