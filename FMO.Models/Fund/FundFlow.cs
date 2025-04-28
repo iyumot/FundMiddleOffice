@@ -250,12 +250,30 @@ public class RegistrationFlow : FundFlow
 
 }
 
+
+
+[Flags]
+public enum ContractModifySection
+{
+    None = 0,
+
+    Name,
+
+    InvestManager = 0x2,
+
+    ShareClass = 0x4,
+
+    CollectionAccount = 0x8,
+
+    CustodyAccount = 0x10,
+}
+
 /// <summary>
 /// 合同变更工作流
 /// </summary>
 public class ContractModifyFlow : ContractFlow
 {
-
+    public ContractModifySection Section { get; set; }
 
     /// <summary>
     /// 补充协议
