@@ -535,7 +535,7 @@ public class Assist : AssistBase
             fs.Flush();
         }
 
-        var qfiles = file.Directory!.GetFiles().Where(x => x.Extension.ToLower() != ".zip");
+        var qfiles = file.Directory!.GetFiles().Where(x => x.Extension.ToLower() != ".zip").ToList();
 
         var fi = qfiles.FirstOrDefault(x => x.Name.Contains("合格投资者承诺函"));
         if (fi is not null)
@@ -550,35 +550,65 @@ public class Assist : AssistBase
                 q.Result = QualifiedInvestorType.Professional;
             }
             q.InfomationSheet = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+            qfiles.Remove(fi);
         }
 
         fi = qfiles.FirstOrDefault(x => x.Name.Contains("告知书"));
         if (fi is not null)
+        {
             q.Notice = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+            qfiles.Remove(fi);
+        }
 
         fi = qfiles.FirstOrDefault(x => x.Name.Contains("税收居民身份声明"));
         if (fi is not null)
+        {
             q.TaxDeclaration = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+            qfiles.Remove(fi);
+        }
 
-
-        fi = qfiles.FirstOrDefault(x => x.Name.Contains("经办人身份证件"));
+        fi = qfiles.FirstOrDefault(x => x.Name.Contains("经办人身份证件") || x.Name.Contains("法人"));
         if (fi is not null)
+        {
             q.Agent = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+            qfiles.Remove(fi);
+        }
+
+
+
 
         fi = qfiles.FirstOrDefault(x => x.Name.Contains("授权委托书"));
         if (fi is not null)
+        {
             q.Authorization = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+            qfiles.Remove(fi);
+        }
 
         fi = qfiles.FirstOrDefault(x => x.Name.Contains("投资经历"));
         if (fi is not null)
+        {
             q.ProofOfExperience = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+            qfiles.Remove(fi);
+        }
 
-        var prof = qfiles.Where(x => x.Name.Contains("证明材料") && !x.Name.Contains("投资经历"));
+        var prof = qfiles.Where(x => x.Name.Contains("证明材料") && !x.Name.Contains("投资经历")).ToArray();
         if (prof.Any())
         {
             if (q.CertificationFiles is null) q.CertificationFiles = new();
-            q.CertificationFiles.Add(new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) });
+
+            foreach (var item in prof)
+            {
+                q.CertificationFiles.Add(new FileStorageInfo { Name = item.Name, Time = item.LastWriteTime, Path = item.Name, Hash = FileHelper.ComputeHash(item) });
+                qfiles.Remove(item);
+            }
         }
+
+        // 记录未处理的文件
+        if(qfiles.Any())
+        {
+            Log.Warning($"{q.Id} {q.InvestorName}的合投文件存在未处理项目：{string.Join(',', qfiles.Select(x=>x.Name))}");
+        }
+
 
         return zip;
     }
