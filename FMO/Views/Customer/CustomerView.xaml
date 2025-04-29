@@ -30,7 +30,25 @@
         </DataTemplate>
 
         <DataTemplate x:Key="DT.QualificationItem" DataType="local:QualificationViewModel">
-            <TextBlock VerticalAlignment="Center" Text="{Binding Date.OldValue, StringFormat=yyyy-MM-dd, TargetNullValue=未设置日期}" />
+            <Grid>
+                <TextBlock VerticalAlignment="Center" Text="{Binding Date.OldValue, StringFormat=yyyy-MM-dd, TargetNullValue=未设置日期}" />
+                <Border
+                    Width="12"
+                    Height="12"
+                    Margin="-14,-5"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Background="RoyalBlue"
+                    CornerRadius="10"
+                    Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="8"
+                        Foreground="White"
+                        Text="专" />
+                </Border>
+            </Grid>
         </DataTemplate>
 
         <ItemsPanelTemplate x:Key="IPT.QualificationItem">
