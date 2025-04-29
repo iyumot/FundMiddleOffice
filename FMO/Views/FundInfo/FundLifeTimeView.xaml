@@ -600,7 +600,10 @@
                         DockPanel.Dock="Right" />
 
 
-                    <DockPanel DockPanel.Dock="Top" LastChildFill="False">
+                    <DockPanel
+                        DockPanel.Dock="Top"
+                        IsEnabled="{Binding IsReadOnly, Converter={StaticResource Boolean2BooleanReConverter}}"
+                        LastChildFill="False">
                         <DockPanel.Resources>
                             <Style BasedOn="{StaticResource CheckBoxBaseStyle}" TargetType="CheckBox">
                                 <Setter Property="Margin" Value="2,0" />

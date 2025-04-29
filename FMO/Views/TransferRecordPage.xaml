@@ -17,7 +17,7 @@
 
         <!--  首部  -->
         <DockPanel
-            Margin="150,8,0,0"
+            Margin="250,8,0,0"
             HorizontalAlignment="Left"
             VerticalAlignment="Top"
             Panel.ZIndex="99">
@@ -124,6 +124,11 @@
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </TabControl.Template>
+
+            <TabItem Header="订单">
+                <DataGrid />
+            </TabItem>
+
             <TabItem Header="交易申请">
                 <DataGrid
                     hc:DataGridAttach.ShowRowNumber="True"
