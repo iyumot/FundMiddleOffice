@@ -9,10 +9,17 @@ namespace FMO.Models;
 public class Institution : LegalEntity
 {
 
+    public string? EnglishName { get; set; }
+
     /// <summary>
     /// 实控人
     /// </summary>
     public string? ArtificialPerson { get; set; }
+
+    /// <summary>
+    /// 法人代表、委派代表
+    /// </summary>
+    public string? LegalPerson { get; set; }
 
     /// <summary>
     /// 成立日期
