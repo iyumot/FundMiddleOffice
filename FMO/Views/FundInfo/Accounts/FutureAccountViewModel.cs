@@ -18,7 +18,7 @@ public partial class FutureAccountViewModel : ObservableObject
         Company = v.Company;
         Id = v.Id;
 
-        Common = new(v.Id, v.Common);
+        Common = new(v.Id, v.Company, v.Common);
     }
 
     public int Id { get; set; }
@@ -35,10 +35,10 @@ public partial class FutureAccountViewModel : ObservableObject
 
     public partial class BasicAccountViewModel : ObservableObject
     {
-        public BasicAccountViewModel(int id, OpenAccountEvent? common)
+        public BasicAccountViewModel(int id, string? company, OpenAccountEvent? common)
         {
             Id = id;
-
+            Company = company;
             if (common is not null)
             {
                 IsReadOnly = true;
@@ -88,7 +88,7 @@ public partial class FutureAccountViewModel : ObservableObject
         [ObservableProperty]
         public partial FileViewModel<OpenAccountEvent>? BankLetter { get; set; }
         public int Id { get; }
-
+        public string? Company { get; }
 
         [RelayCommand]
         public void SetFile(IFileSelector obj)
@@ -173,7 +173,7 @@ public partial class FutureAccountViewModel : ObservableObject
             try
             {
                 // 模板文件
-                var tplPath = @$"files\tpl\{Name}.docx";
+                var tplPath = @$"{Company}.docx";
                 var folder = Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "future", Id.ToString(), Name, "原始文件");
 
                 using var db = DbHelper.Base();
@@ -197,6 +197,15 @@ public partial class FutureAccountViewModel : ObservableObject
                         BusinessScope = m.BusinessScope,
                         Telephone = m.Telephone,
                     },
+                    LegalPerson = new
+                    {
+                        Name = m.LegalAgent?.Name,
+                        IDType = m.LegalAgent?.IDType switch { IDType.IdentityCard or null => "身份证", var x => EnumDescriptionTypeConverter.GetEnumDescription(x)},
+                        Id = m.LegalAgent?.Id,
+                        Phone = m.LegalAgent?.Phone,
+                        Address = m.LegalAgent?.Address,
+                    },
+
                 };
 
 

@@ -264,7 +264,7 @@
         </Grid>
 
         <StackPanel>
-            <UniformGrid Rows="1">
+            <UniformGrid Margin="5,0" Rows="1">
                 <shared:ChangeableControl
                     Width="240"
                     HorizontalContentAlignment="Stretch"
@@ -284,7 +284,16 @@
                     IsReadOnly="{Binding IsReadOnly}"
                     Template="{StaticResource Tpl.ChangeableControl.Complex}" />
             </UniformGrid>
+
+            <DataGrid d:ItemsSource="{d:SampleData}" ItemsSource="{Binding Members}" />
+
         </StackPanel>
+
+
+
+
+
+
 
         <TextBlock />
     </DockPanel>

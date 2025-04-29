@@ -367,6 +367,7 @@
 
                             <shared:FileControl Binding="{Binding BankLetter}" IsReadOnly="{Binding IsReadOnly}" />
 
+
                             <BulletDecorator>
                                 <BulletDecorator.Bullet>
                                     <TextBlock Text="资金账号" />
