@@ -96,6 +96,119 @@
 
     </Style>
 
+
+
+
+    <ControlTemplate x:Key="Tpl.ChangeableControl" TargetType="local:ChangeableControl">
+        <DockPanel
+            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+            Background="Transparent"
+            LastChildFill="True">
+
+            <Grid>
+                <TextBlock
+                    VerticalAlignment="Center"
+                    DockPanel.Dock="Left"
+                    Foreground="{DynamicResource LabelBrush}"
+                    Text="{Binding Binding.Label, RelativeSource={RelativeSource TemplatedParent}}" />
+
+                <TextBlock
+                    Margin="0,-4,0,0"
+                    HorizontalAlignment="Right"
+                    FontSize="6"
+                    Foreground="Purple"
+                    Text="▼"
+                    Visibility="{Binding Binding.IsInherited, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityConverter}}" />
+            </Grid>
+
+            <DockPanel HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}">
+                <DockPanel>
+                    <local:ChangeableControlButtons DataContext="{Binding ., RelativeSource={RelativeSource TemplatedParent}}" DockPanel.Dock="Right" />
+
+                    <ContentPresenter
+                        x:Name="PART_Content"
+                        Margin="4,0"
+                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                        Content="{Binding Binding, RelativeSource={RelativeSource TemplatedParent}}"
+                        ContentTemplate="{TemplateBinding EditTemplate}" />
+                </DockPanel>
+            </DockPanel>
+        </DockPanel>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsReadOnly" Value="True">
+                <Setter TargetName="PART_Content" Property="ContentTemplate" Value="{Binding ContentTemplate, RelativeSource={RelativeSource Self}, Mode=OneTime}" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="Tpl.ChangeableControl.Complex" TargetType="local:ChangeableControl">
+        <StackPanel VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Background="Transparent">
+            <DockPanel LastChildFill="False">
+                <Grid>
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        DockPanel.Dock="Left"
+                        Foreground="{DynamicResource LabelBrush}"
+                        Text="{Binding Binding.Label, RelativeSource={RelativeSource TemplatedParent}}" />
+
+                    <TextBlock
+                        Margin="0,-4,0,0"
+                        HorizontalAlignment="Right"
+                        FontSize="6"
+                        Foreground="Purple"
+                        Text="▼"
+                        Visibility="{Binding Binding.IsInherited, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                </Grid>
+
+                <local:ChangeableControlButtons DataContext="{Binding ., RelativeSource={RelativeSource TemplatedParent}}" DockPanel.Dock="Right" />
+
+            </DockPanel>
+
+
+            <ContentPresenter
+                x:Name="PART_Content"
+                Margin="4,0"
+                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                Content="{Binding Binding, RelativeSource={RelativeSource TemplatedParent}}"
+                ContentTemplate="{TemplateBinding EditTemplate}" />
+
+        </StackPanel>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsReadOnly" Value="True">
+                <Setter TargetName="PART_Content" Property="ContentTemplate" Value="{TemplateBinding ContentTemplate}" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+
+    <Style TargetType="local:ChangeableControl">
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="ContentTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <TextBlock Text="{Binding OldValue}" />
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="EditTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <TextBox Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template" Value="{StaticResource Tpl.ChangeableControl}" />
+    </Style>
+
+
+
+
+
+
+
+
     <Style TargetType="{x:Type local:FileControl}">
         <Setter Property="HorizontalContentAlignment" Value="Left" />
         <Setter Property="Template">
