@@ -1,15 +1,15 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using FMO.Models;
-using FMO.Shared;
-using FMO.Utilities;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using FMO.Models;
+using FMO.Shared;
+using FMO.Utilities;
 
 namespace FMO;
 
@@ -114,6 +114,15 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     public partial ImageSource? MainLogo { get; set; }
 
 
+    /// <summary>
+    /// 法人
+    /// </summary> 
+    public ChangeableViewModel<Manager, PersonViewModel> LegalPerson { get; }
+
+    /// <summary>
+    /// 实控人
+    /// </summary>
+    public ChangeableViewModel<Manager, PersonViewModel> ActualController { get; }
 
     /// <summary>
     /// 营业执照正本
@@ -197,6 +206,23 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         };
         ArtificialPerson.Init(manager);
 
+        LegalPerson = new()
+        {
+            Label = "法人代表/委派代表",
+            InitFunc = x => new(x.LegalAgent),
+            UpdateFunc = (x, y) => x.LegalAgent = y!.Build(),
+            ClearFunc = x => x.LegalAgent = null, 
+        };
+        LegalPerson.Init(manager);
+
+        ActualController = new()
+        {
+            Label = "实控人",
+            InitFunc = x => new(x.ActualController),
+            UpdateFunc = (x, y) => x.ActualController = y!.Build(),
+            ClearFunc = x => x.ActualController = null,
+        };
+        ActualController.Init(manager);
 
         RegisterNo = new ChangeableViewModel<Manager, string>
         {
@@ -330,6 +356,8 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
             ClearFunc = x => x.WebSite = null,
         };
         WebSite.Init(manager);
+
+
 
 
 
@@ -606,4 +634,91 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         return manager;
     }
     #endregion
+}
+
+
+//[AutoChangeableViewModel(typeof(Person))]
+public partial class PersonViewModel : ObservableObject, IEquatable<PersonViewModel>
+{
+    public PersonViewModel(FMO.Models.Person? instance)
+    {
+        if (instance is FMO.Models.Person obj)
+        {
+            Id = obj.Id;
+            Name = obj.Name;
+            IDType = obj.IDType;
+            Title = obj.Title;
+            Cellphone = obj.Cellphone;
+            Phone = obj.Phone;
+            Address = obj.Address;
+            Email = obj.Email;
+            Profile = obj.Profile;
+        }
+    }
+    public PersonViewModel()
+    {
+    }
+
+
+    [ObservableProperty]
+    public partial string? Name { get; set; }
+
+
+    [ObservableProperty]
+    public partial string? Id { get; set; }
+
+    [ObservableProperty]
+    public partial IDType IDType { get; set; } = IDType.IdentityCard;
+
+    [ObservableProperty]
+    public partial string? Title { get; set; }
+
+    [ObservableProperty]
+    public partial string? Cellphone { get; set; }
+
+    [ObservableProperty]
+    public partial string? Phone { get; set; }
+
+    [ObservableProperty]
+    public partial string? Address { get; set; }
+
+    [ObservableProperty]
+    public partial string? Email { get; set; }
+
+    [ObservableProperty]
+    public partial string? Profile { get; set; }
+
+    public bool Equals(PersonViewModel? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return EqualityComparer<string?>.Default.Equals(Id, other.Id) &&
+            EqualityComparer<string?>.Default.Equals(Name, other.Name)&&
+            EqualityComparer<string?>.Default.Equals(Title, other.Title)
+            && EqualityComparer<string?>.Default.Equals(Cellphone, other.Cellphone)
+            && EqualityComparer<string?>.Default.Equals(Phone, other.Phone)
+            && EqualityComparer<string?>.Default.Equals(Address, other.Address)
+            && EqualityComparer<string?>.Default.Equals(Email, other.Email)
+            && EqualityComparer<string?>.Default.Equals(Profile, other.Profile);
+    }
+
+
+    public FMO.Models.Person? Build()
+    {
+        if (string.IsNullOrWhiteSpace(Id) || string.IsNullOrWhiteSpace(Name))
+            return null;
+
+        var result = new FMO.Models.Person()
+        {
+            Title = Title,
+            Id = Id,
+            Address = Address,
+            Email = Email,
+            Profile = Profile,
+            Name = Name,
+            Cellphone = Cellphone,
+            Phone = Phone
+        };
+        return result;
+    }
 }

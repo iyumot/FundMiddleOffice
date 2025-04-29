@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using FMO.Shared;
+using FMO.TPL;
 using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
@@ -166,6 +167,47 @@ public partial class FutureAccountViewModel : ObservableObject
         }
 
 
+        [RelayCommand]
+        public void GenerateOpenAccountFiles()
+        {
+            try
+            {
+                // 模板文件
+                var tplPath = @$"files\tpl\{Name}.docx";
+                var folder = Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "future", Id.ToString(), Name, "原始文件");
+
+                using var db = DbHelper.Base();
+                var m = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
+
+                // 数据
+                var obj = new
+                {
+                    Manager = new
+                    {
+                        Name = m.Name,
+                        EnglishName = m.EnglishName,
+                        LegalPerson = m.LegalAgent?.Name ?? m.ArtificialPerson,
+                        ArtificialPerson = m.ArtificialPerson,
+                        SetupDate = m.SetupDate,
+                        ExpireDate = m.ExpireDate,
+                        RegisterAddress = m.RegisterAddress,
+                        OfficeAddress = m.OfficeAddress,
+                        RegisterCapital = m.RegisterCapital,
+                        RealCapital = m.RealCapital,
+                        BusinessScope = m.BusinessScope,
+                        Telephone = m.Telephone,
+                    },
+                };
+
+
+
+                WordTpl.GenerateFromTemplate(Path.Combine(folder, "开户材料.docx"), tplPath, obj);
+            }
+            catch (Exception e)
+            {
+                Log.Error($"生成开户材料失败，{e}");
+            }
+        }
 
 
 

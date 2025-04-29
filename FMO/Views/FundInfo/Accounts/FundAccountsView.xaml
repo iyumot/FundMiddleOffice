@@ -345,6 +345,11 @@
                                 <DockPanel>
                                     <TextBlock FontSize="14" Text="原始材料" />
                                     <Button
+                                        hc:IconElement.Geometry="{StaticResource f.wand-magic}"
+                                        Command="{Binding GenerateOpenAccountFilesCommand}"
+                                        Content="生成"
+                                        Style="{StaticResource ButtonIcon.Small}" />
+                                    <Button
                                         hc:IconElement.Geometry="{StaticResource f.folder}"
                                         Command="{Binding OpenRawFolderCommand}"
                                         Style="{StaticResource ButtonIcon.Small}" />
