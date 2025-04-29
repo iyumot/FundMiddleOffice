@@ -5,6 +5,9 @@
 /// </summary>
 public class Person : LegalEntity
 {
+
+    public IDType IDType { get; set; }
+
     /// <summary>
     /// 称谓
     /// </summary>
@@ -30,5 +33,12 @@ public class Person : LegalEntity
     /// </summary>
     public string? Email { get; set; }
 
+    /// <summary>
+    /// 简介
+    /// </summary>
+    public string? Profile { get; set; }
+
     public override EntityType Type => EntityType.Natural;
 }
+
+ 

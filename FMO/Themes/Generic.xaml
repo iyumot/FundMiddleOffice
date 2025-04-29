@@ -598,4 +598,53 @@
         <Setter Property="DataGrid.CellStyle" Value="{StaticResource NoSelectDataGridCellStyle}" />
         <Setter Property="DataGrid.RowStyle" Value="{StaticResource NoSelectDataGridRowStyle}" />
     </Style>
+
+
+
+    <ControlTemplate x:Key="Tpl.ChangeableControl.Complex" TargetType="shared:ChangeableControl">
+        <StackPanel VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Background="Transparent">
+            <DockPanel
+                Margin="4"
+                HorizontalAlignment="Center"
+                LastChildFill="False">
+                <Grid>
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        DockPanel.Dock="Left"
+                        Foreground="{DynamicResource LabelBrush}"
+                        Text="{Binding Binding.Label, RelativeSource={RelativeSource TemplatedParent}}" />
+
+                    <TextBlock
+                        Margin="0,-4,0,0"
+                        HorizontalAlignment="Right"
+                        FontSize="6"
+                        Foreground="Purple"
+                        Text="▼"
+                        Visibility="{Binding Binding.IsInherited, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                </Grid>
+
+                <shared:ChangeableControlButtons DataContext="{Binding ., RelativeSource={RelativeSource TemplatedParent}}" DockPanel.Dock="Right" />
+
+            </DockPanel>
+
+
+            <ContentPresenter
+                x:Name="PART_Content"
+                Margin="4,0"
+                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                Content="{Binding Binding, RelativeSource={RelativeSource TemplatedParent}}" />
+
+        </StackPanel>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsReadOnly" Value="True">
+                <Setter TargetName="PART_Content" Property="ContentTemplate" Value="{Binding ContentTemplate, RelativeSource={RelativeSource TemplatedParent}, Mode=OneTime}" />
+            </Trigger>
+            <Trigger Property="IsReadOnly" Value="False">
+                <Setter TargetName="PART_Content" Property="ContentTemplate" Value="{Binding EditTemplate, RelativeSource={RelativeSource TemplatedParent}, Mode=OneTime}" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+
 </ResourceDictionary>

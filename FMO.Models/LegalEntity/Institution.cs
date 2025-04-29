@@ -19,7 +19,14 @@ public class Institution : LegalEntity
     /// <summary>
     /// 法人代表、委派代表
     /// </summary>
-    public string? LegalPerson { get; set; }
+    public Person? LegalAgent { get; set; }
+
+    /// <summary>
+    /// 实控人
+    /// </summary>
+    public Person? ActualController { get; set; }
+
+
 
     /// <summary>
     /// 成立日期

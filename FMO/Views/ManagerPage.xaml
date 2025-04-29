@@ -22,6 +22,99 @@
         <DataTemplate x:Key="DT.Text.Cap">
             <TextBox MinWidth="80" Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
         </DataTemplate>
+
+        <DataTemplate x:Key="DT.Person" DataType="local:PersonViewModel">
+            <StackPanel DataContext="{Binding OldValue}">
+                <StackPanel.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Width" Value="60" />
+                    </Style>
+                </StackPanel.Resources>
+                <BulletDecorator>
+                    <BulletDecorator.Bullet>
+                        <TextBlock Text="姓名" />
+                    </BulletDecorator.Bullet>
+                    <shared:CopyableTextBlock Text="{Binding Name}" />
+                </BulletDecorator>
+                <BulletDecorator>
+                    <BulletDecorator.Bullet>
+                        <TextBlock Text="证件类型" />
+                    </BulletDecorator.Bullet>
+                    <shared:CopyableTextBlock Text="{Binding IDType}" />
+                </BulletDecorator>
+                <BulletDecorator>
+                    <BulletDecorator.Bullet>
+                        <TextBlock Text="证件号" />
+                    </BulletDecorator.Bullet>
+                    <shared:CopyableTextBlock IsMasked="True" Text="{Binding Id}" />
+                </BulletDecorator>
+                <BulletDecorator>
+                    <BulletDecorator.Bullet>
+                        <TextBlock Text="电话" />
+                    </BulletDecorator.Bullet>
+                    <shared:CopyableTextBlock Text="{Binding Phone}" />
+                </BulletDecorator>
+                <BulletDecorator>
+                    <BulletDecorator.Bullet>
+                        <TextBlock Text="Email" />
+                    </BulletDecorator.Bullet>
+                    <shared:CopyableTextBlock Text="{Binding Email}" />
+                </BulletDecorator>
+                <BulletDecorator>
+                    <BulletDecorator.Bullet>
+                        <TextBlock Text="地址" />
+                    </BulletDecorator.Bullet>
+                    <shared:CopyableTextBlock Text="{Binding Address}" />
+                </BulletDecorator>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DT.Person.Edit" DataType="local:PersonViewModel">
+            <StackPanel DataContext="{Binding NewValue}">
+                <StackPanel.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Width" Value="50" />
+                    </Style>
+                </StackPanel.Resources>
+                <BulletDecorator>
+                    <BulletDecorator.Bullet>
+                        <TextBlock Text="姓名" />
+                    </BulletDecorator.Bullet>
+                    <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                </BulletDecorator>
+                <BulletDecorator>
+                    <BulletDecorator.Bullet>
+                        <TextBlock Text="证件类型" />
+                    </BulletDecorator.Bullet>
+                    <TextBox Text="{Binding IDType, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                </BulletDecorator>
+                <BulletDecorator>
+                    <BulletDecorator.Bullet>
+                        <TextBlock Text="证件号" />
+                    </BulletDecorator.Bullet>
+                    <TextBox Text="{Binding Id, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                </BulletDecorator>
+                <BulletDecorator>
+                    <BulletDecorator.Bullet>
+                        <TextBlock Text="电话" />
+                    </BulletDecorator.Bullet>
+                    <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                </BulletDecorator>
+
+                <BulletDecorator>
+                    <BulletDecorator.Bullet>
+                        <TextBlock Text="Email" />
+                    </BulletDecorator.Bullet>
+                    <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                </BulletDecorator>
+                <BulletDecorator>
+                    <BulletDecorator.Bullet>
+                        <TextBlock Text="地址" />
+                    </BulletDecorator.Bullet>
+                    <TextBox Text="{Binding Address, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                </BulletDecorator>
+            </StackPanel>
+        </DataTemplate>
     </UserControl.Resources>
     <UserControl.DataContext>
         <local:ManagerPageViewModel />
@@ -170,6 +263,28 @@
             </StackPanel>
         </Grid>
 
+        <StackPanel>
+            <UniformGrid Rows="1">
+                <shared:ChangeableControl
+                    Width="240"
+                    HorizontalContentAlignment="Stretch"
+                    Binding="{Binding LegalPerson}"
+                    ContentTemplate="{StaticResource DT.Person}"
+                    EditTemplate="{StaticResource DT.Person.Edit}"
+                    Entity="{Binding .}"
+                    IsReadOnly="{Binding IsReadOnly}"
+                    Template="{StaticResource Tpl.ChangeableControl.Complex}" />
+                <shared:ChangeableControl
+                    Width="240"
+                    HorizontalContentAlignment="Stretch"
+                    Binding="{Binding ActualController}"
+                    ContentTemplate="{StaticResource DT.Person}"
+                    EditTemplate="{StaticResource DT.Person.Edit}"
+                    Entity="{Binding .}"
+                    IsReadOnly="{Binding IsReadOnly}"
+                    Template="{StaticResource Tpl.ChangeableControl.Complex}" />
+            </UniformGrid>
+        </StackPanel>
 
         <TextBlock />
     </DockPanel>
