@@ -106,11 +106,7 @@
             LastChildFill="True">
 
             <Grid>
-                <TextBlock
-                    VerticalAlignment="Center"
-                    DockPanel.Dock="Left"
-                    Foreground="{DynamicResource LabelBrush}"
-                    Text="{Binding Binding.Label, RelativeSource={RelativeSource TemplatedParent}}" />
+                <ContentPresenter Content="{TemplateBinding Header}" ContentTemplate="{Binding HeaderTemplate, RelativeSource={RelativeSource TemplatedParent}}" />
 
                 <TextBlock
                     Margin="0,-4,0,0"
@@ -123,21 +119,28 @@
 
             <DockPanel HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}">
                 <DockPanel>
-                    <local:ChangeableControlButtons DataContext="{Binding ., RelativeSource={RelativeSource TemplatedParent}}" DockPanel.Dock="Right" />
+                    <local:ChangeableControlButtons
+                        DataContext="{Binding ., RelativeSource={RelativeSource TemplatedParent}}"
+                        DockPanel.Dock="Right"
+                        Visibility="{TemplateBinding IsReadOnly,
+                                                     Converter={StaticResource BooleanToVisibilityReverseConverter}}" />
 
                     <ContentPresenter
                         x:Name="PART_Content"
                         Margin="4,0"
                         HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                         VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                        Content="{Binding Binding, RelativeSource={RelativeSource TemplatedParent}}"
+                        Content="{TemplateBinding Binding}"
                         ContentTemplate="{TemplateBinding EditTemplate}" />
                 </DockPanel>
             </DockPanel>
         </DockPanel>
         <ControlTemplate.Triggers>
             <Trigger Property="IsReadOnly" Value="True">
-                <Setter TargetName="PART_Content" Property="ContentTemplate" Value="{Binding ContentTemplate, RelativeSource={RelativeSource Self}, Mode=OneTime}" />
+                <Setter TargetName="PART_Content" Property="ContentTemplate" Value="{Binding ContentTemplate, RelativeSource={RelativeSource TemplatedParent}, Mode=OneTime}" />
+            </Trigger>
+            <Trigger Property="IsReadOnly" Value="False">
+                <Setter TargetName="PART_Content" Property="ContentTemplate" Value="{Binding EditTemplate, RelativeSource={RelativeSource TemplatedParent}, Mode=OneTime}" />
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
@@ -177,18 +180,33 @@
         </StackPanel>
         <ControlTemplate.Triggers>
             <Trigger Property="IsReadOnly" Value="True">
-                <Setter TargetName="PART_Content" Property="ContentTemplate" Value="{TemplateBinding ContentTemplate}" />
+                <Setter TargetName="PART_Content" Property="ContentTemplate" Value="{Binding ContentTemplate, RelativeSource={RelativeSource TemplatedParent}, Mode=OneTime}" />
+            </Trigger>
+            <Trigger Property="IsReadOnly" Value="False">
+                <Setter TargetName="PART_Content" Property="ContentTemplate" Value="{Binding EditTemplate, RelativeSource={RelativeSource TemplatedParent}, Mode=OneTime}" />
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
 
     <Style TargetType="local:ChangeableControl">
+        <Setter Property="HeaderTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        DockPanel.Dock="Left"
+                        Foreground="{DynamicResource LabelBrush}"
+                        Text="{Binding .}" />
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Header" Value="{Binding Binding.Label, RelativeSource={RelativeSource Self}}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="ContentTemplate">
             <Setter.Value>
                 <DataTemplate>
-                    <TextBlock Text="{Binding OldValue}" />
+                    <local:CopyableTextBlock Text="{Binding OldValue}" />
                 </DataTemplate>
             </Setter.Value>
         </Setter>
