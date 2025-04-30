@@ -26,6 +26,8 @@ public partial class FundStrategyViewModel : ObservableObject
 
     public ObservableCollection<StrategyInfoViewModel> Strategies { get; }
 
+    public ObservableCollection<InvestManagerViewModel> Managers { get; }
+
     public int FundId { get; }
 
     public DateOnly FundSetupDate { get; }
@@ -33,11 +35,12 @@ public partial class FundStrategyViewModel : ObservableObject
     public FundStrategyViewModel(int fundId, DateOnly setupDate)
     {
         using var db = DbHelper.Base();
-        var data = db.GetCollection<FundStrategy>().Find(x => x.FundId == fundId).ToArray();
-
-
+        var data = db.GetCollection<FundStrategy>().Find(x => x.FundId == fundId).ToArray(); 
 
         Strategies = new(data.Select(x => new StrategyInfoViewModel(x)));
+
+        Managers = new(db.GetCollection<FundInvestmentManager>().Find(x => x.FundId == fundId).ToArray().Select(x => new InvestManagerViewModel(x)));
+
 
         FundId = fundId;
         FundSetupDate = setupDate;
@@ -70,6 +73,36 @@ public partial class FundStrategyViewModel : ObservableObject
                 db.GetCollection<FundStrategy>().Delete(v.Id);
             }
             Strategies.Remove(v);
+        }
+    }
+
+    [RelayCommand]
+    public void AddManager()
+    {
+        var s = Managers.LastOrDefault();
+
+        if (s is not null && (s.Person.OldValue is null || s.Start.OldValue == default || s.End.OldValue == default))
+        {
+            HandyControl.Controls.Growl.Warning("请先设置已有的投资经理");
+            return;
+        }
+        InvestManagerViewModel st = new(new FundInvestmentManager { FundId = FundId });
+        st.IsReadOnly = false;
+        st.Start.NewValue = Managers.Count == 0 ? new DateTime(FundSetupDate, default) : Managers.LastOrDefault()?.End?.OldValue?.Date switch { DateTime t => t < DateTime.MaxValue.Date ? t.AddDays(1) : t, _ => null }; 
+        Managers.Add(st);
+    }
+
+    [RelayCommand]
+    public void DeleteManager(InvestManagerViewModel v)
+    {
+        if (HandyControl.Controls.MessageBox.Show("是否确认删除", button: System.Windows.MessageBoxButton.YesNo) == System.Windows.MessageBoxResult.Yes)
+        {
+            if (v.Id > 0)
+            {
+                using var db = DbHelper.Base();
+                db.GetCollection<FundInvestmentManager>().Delete(v.Id);
+            }
+            Managers.Remove(v);
         }
     }
 }
@@ -182,4 +215,91 @@ public partial class StrategyInfoViewModel : EditableControlViewModelBase<FundSt
     //    }
     //    unit.Apply();
     //}
+}
+
+
+public partial class InvestManagerViewModel : EditableControlViewModelBase<FundInvestmentManager>
+{
+    public InvestManagerViewModel(FundInvestmentManager value)
+    {
+        Id = value.Id;
+        FundId = value.FundId;
+
+        using var db = DbHelper.Base();
+        var managers = db.GetCollection<Participant>().FindAll().ToArray().Where(x => x.Role.HasFlag(PersonRole.InvestmentManager));
+        Managers = new(managers.Select(x=>new PersonInfo(x.Id, x.Name!)));
+
+
+        Person = new ChangeableViewModel<FundInvestmentManager, PersonInfo>
+        {
+            Label = "投资经理",
+            InitFunc = x => new PersonInfo(x.PersonId, x.Name!),
+            UpdateFunc = (a, b) => { a.Name = b!.Name; a.PersonId = b.Id; },
+            ClearFunc = x => x.Name = null,
+            DisplayFunc = x=>x.Name
+        };
+        Person.Init(value);
+
+
+
+
+        Start = new ChangeableViewModel<FundInvestmentManager, DateTime?>
+        {
+            Label = "起始日期",
+            InitFunc = x => x.Start == default ? null : new DateTime(x.Start, default),
+            UpdateFunc = (a, b) => a.Start = b.HasValue ? DateOnly.FromDateTime(b.Value) : default,
+            ClearFunc = x => x.Start = default,
+            DisplayFunc = x => x?.ToString("yyyy-MM-dd")
+        };
+        Start.Init(value);
+
+        End = new ChangeableViewModel<FundInvestmentManager, BooleanDate>
+        {
+            Label = "终止日期",
+            InitFunc = x => x.End == default ? new BooleanDate() : new BooleanDate { Date = new DateTime(x.End, default), IsLongTerm = x.End == DateOnly.MaxValue },
+            UpdateFunc = (a, b) => a.End = b is null ? default : b.IsLongTerm ? DateOnly.MaxValue : DateOnly.FromDateTime(b.Date ?? default),
+            ClearFunc = x => x.End = default,
+            DisplayFunc = x => x?.IsLongTerm ?? false ? "至今" : x?.Date?.ToString("yyyy-MM-dd")
+        };
+        End.Init(value);
+
+        Profile = new ChangeableViewModel<FundInvestmentManager, string>
+        {
+            Label = "简介",
+            InitFunc = x => x.Profile,
+            UpdateFunc = (a, b) => a.Profile = b,
+            ClearFunc = x => x.Profile = null
+        };
+        Profile.Init(value);
+    }
+
+
+    [ObservableProperty]
+    public partial PersonInfo? InvestManager { get; set; }
+
+    public ObservableCollection<PersonInfo> Managers { get; set; }
+
+    public ChangeableViewModel<FundInvestmentManager, PersonInfo> Person { get; }
+
+    public ChangeableViewModel<FundInvestmentManager, DateTime?> Start { get; }
+
+    public ChangeableViewModel<FundInvestmentManager, BooleanDate> End { get; }
+
+    public ChangeableViewModel<FundInvestmentManager, string> Profile { get; }
+
+
+    public int FundId { get; }
+
+    protected override FundInvestmentManager InitNewEntity()
+    {
+        return new FundInvestmentManager { FundId = FundId };
+    }
+
+    protected override void NotifyChanged()
+    {
+        WeakReferenceMessenger.Default.Send(new FundStrategyChangedMessage(FundId));
+    }
+     
+
+    public record PersonInfo(int Id, string Name);
 }

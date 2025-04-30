@@ -61,7 +61,12 @@
                     <DataTemplate>
 
                         <Grid Margin="8" Background="Transparent">
-
+                            <Grid.Resources>
+                                <Style BasedOn="{StaticResource {x:Type shared:ChangeableControl}}" TargetType="shared:ChangeableControl">
+                                    <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}" />
+                                    <Setter Property="Entity" Value="{Binding .}" />
+                                </Style>
+                            </Grid.Resources>
                             <DockPanel
                                 x:Name="buttons"
                                 HorizontalAlignment="Right"
@@ -71,7 +76,7 @@
                                     hc:IconElement.Geometry="{StaticResource f.floppy-disk}"
                                     Command="{Binding SaveCommand}"
                                     Style="{StaticResource ButtonIcon.Small}"
-                                    Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                                    Visibility="{Binding IsReadOnly, Mode=OneWay, Converter={StaticResource Boolean2VisibilityReConverter}}" />
                                 <ToggleButton
                                     hc:IconElement.Geometry="{StaticResource f.pen}"
                                     BorderThickness="0"
@@ -98,36 +103,36 @@
                                     CommandParameter="{Binding .}"
                                     Foreground="Red"
                                     Style="{StaticResource ButtonIcon}"
-                                    Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                                    Visibility="{Binding IsReadOnly, Mode=OneWay, Converter={StaticResource Boolean2VisibilityReConverter}}" />
                             </DockPanel>
 
                             <StackPanel>
 
                                 <DockPanel LastChildFill="False">
-                                    <shared:ChangeableContainer Binding="{Binding Name}" ContentTemplate="{StaticResource DT.Default}" />
+                                    <shared:ChangeableControl Binding="{Binding Name}" EditTemplate="{StaticResource DT.Default}" />
 
-                                    <shared:ChangeableContainer Binding="{Binding Start}" ContentTemplate="{StaticResource DT.Date}" />
+                                    <shared:ChangeableControl Binding="{Binding Start}" EditTemplate="{StaticResource DT.Date}" />
 
-                                    <shared:ChangeableContainer Binding="{Binding End}">
-                                        <shared:ChangeableContainer.ContentTemplate>
+                                    <shared:ChangeableControl Binding="{Binding End}">
+                                        <shared:ChangeableControl.EditTemplate>
                                             <DataTemplate>
                                                 <DockPanel>
                                                     <DatePicker
                                                         Width="110"
                                                         SelectedDate="{Binding NewValue.Date}"
-                                                        Visibility="{Binding NewValue.IsLongTerm, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                                                        Visibility="{Binding NewValue.IsLongTerm, Mode=OneWay, Converter={StaticResource Boolean2VisibilityReConverter}}" />
                                                     <CheckBox
                                                         Margin="8,0"
                                                         Content="至今"
                                                         IsChecked="{Binding NewValue.IsLongTerm}" />
                                                 </DockPanel>
                                             </DataTemplate>
-                                        </shared:ChangeableContainer.ContentTemplate>
-                                    </shared:ChangeableContainer>
+                                        </shared:ChangeableControl.EditTemplate>
+                                    </shared:ChangeableControl>
                                 </DockPanel>
 
 
-                                <shared:ChangeableContainer
+                                <shared:ChangeableControl
                                     Margin="0,4"
                                     HorizontalContentAlignment="Stretch"
                                     Binding="{Binding Description}" />
@@ -163,7 +168,7 @@
 
                     <Button
                         hc:IconElement.Geometry="{StaticResource f.circle-plus}"
-                        Command="{Binding AddStrategyCommand}"
+                        Command="{Binding AddManagerCommand}"
                         Foreground="White"
                         Style="{StaticResource ButtonIcon}" />
                 </StackPanel>
@@ -172,7 +177,115 @@
             <ListBox
                 d:ItemsSource="{d:SampleData}"
                 BorderThickness="0"
-                Style="{StaticResource ListBoxCustom}" />
+                ItemsSource="{Binding Managers}"
+                Style="{StaticResource ListBoxCustom}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+
+                        <Grid Margin="8" Background="Transparent">
+                            <Grid.Resources>
+                                <Style BasedOn="{StaticResource {x:Type shared:ChangeableControl}}" TargetType="shared:ChangeableControl">
+                                    <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}" />
+                                    <Setter Property="Entity" Value="{Binding .}" />
+                                </Style>
+                            </Grid.Resources>
+                            <DockPanel
+                                x:Name="buttons"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Visibility="Collapsed">
+                                <Button
+                                    hc:IconElement.Geometry="{StaticResource f.floppy-disk}"
+                                    Command="{Binding SaveCommand}"
+                                    Style="{StaticResource ButtonIcon.Small}"
+                                    Visibility="{Binding IsReadOnly, Mode=OneWay, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                                <ToggleButton
+                                    hc:IconElement.Geometry="{StaticResource f.pen}"
+                                    BorderThickness="0"
+                                    IsChecked="{Binding IsReadOnly}"
+                                    Style="{StaticResource ToggleButtonFlip.Small}">
+                                    <hc:StatusSwitchElement.CheckedElement>
+                                        <Viewbox
+                                            Width="20"
+                                            Height="20"
+                                            VerticalAlignment="Center">
+                                            <Path Data="{StaticResource f.pen}" Fill="Green" />
+                                        </Viewbox>
+                                    </hc:StatusSwitchElement.CheckedElement>
+                                    <Viewbox
+                                        Width="20"
+                                        Height="20"
+                                        VerticalAlignment="Center">
+                                        <Path Data="{StaticResource f.eye}" Fill="Black" />
+                                    </Viewbox>
+                                </ToggleButton>
+                                <Button
+                                    hc:IconElement.Geometry="{StaticResource DeleteFillCircleGeometry}"
+                                    Command="{Binding DataContext.DeleteManagerCommand, RelativeSource={RelativeSource AncestorType=local:FundStrategyView}}"
+                                    CommandParameter="{Binding .}"
+                                    Foreground="Red"
+                                    Style="{StaticResource ButtonIcon}"
+                                    Visibility="{Binding IsReadOnly, Mode=OneWay, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                            </DockPanel>
+
+                            <StackPanel>
+
+
+                                <DockPanel LastChildFill="False">
+                                    <shared:ChangeableControl Binding="{Binding Person}">
+                                        <shared:ChangeableControl.EditTemplate>
+                                            <DataTemplate>
+                                                <ComboBox
+                                                    Width="120"
+                                                    ItemsSource="{Binding DataContext.Managers, RelativeSource={RelativeSource AncestorType=shared:ChangeableControl}}"
+                                                    SelectedItem="{Binding NewValue}">
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding Name}" />
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
+                                            </DataTemplate>
+                                        </shared:ChangeableControl.EditTemplate>
+                                    </shared:ChangeableControl>
+
+                                    <shared:ChangeableControl Binding="{Binding Start}" EditTemplate="{StaticResource DT.Date}" />
+
+                                    <shared:ChangeableControl Binding="{Binding End}">
+                                        <shared:ChangeableControl.EditTemplate>
+                                            <DataTemplate>
+                                                <DockPanel>
+                                                    <DatePicker
+                                                        Width="110"
+                                                        SelectedDate="{Binding NewValue.Date}"
+                                                        Visibility="{Binding NewValue.IsLongTerm, Mode=OneWay, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                                                    <CheckBox
+                                                        Margin="8,0"
+                                                        Content="至今"
+                                                        IsChecked="{Binding NewValue.IsLongTerm}" />
+                                                </DockPanel>
+                                            </DataTemplate>
+                                        </shared:ChangeableControl.EditTemplate>
+                                    </shared:ChangeableControl>
+                                </DockPanel>
+
+
+                                <shared:ChangeableControl
+                                    Margin="0,4"
+                                    HorizontalContentAlignment="Stretch"
+                                    Binding="{Binding Profile}" />
+
+                            </StackPanel>
+
+                        </Grid>
+                        <DataTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="buttons" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
         </DockPanel>
 
     </StackPanel>

@@ -35,15 +35,15 @@ public partial class FundAccountsViewModel : ObservableObject
         Names = names;
 
         using var db = DbHelper.Base();
-        var sas = db.GetCollection<SecurityCard>().Find(x => x.FundId == fundId);
+        var sas = db.GetCollection<SecurityCard>().Find(x => x.FundId == fundId).ToArray();
         if (sas is not null)
             SecurityCards = new(sas.Select(x => new SecurityCardViewModel(x)));
 
-        var sa = db.GetCollection<StockAccount>().Find(x => x.FundId == fundId);
+        var sa = db.GetCollection<StockAccount>().Find(x => x.FundId == fundId).ToArray();
         if (sa is not null)
             StockAccounts = new(sa.Select(x => new StockAccountViewModel(x)));
 
-        var fas = db.GetCollection<FutureAccount>().Find(x => x.FundId == fundId);
+        var fas = db.GetCollection<FutureAccount>().Find(x => x.FundId == fundId).ToArray();
         if (fas is not null)
             FutureAccounts = new(fas.Select(x => new FutureAccountViewModel(x)));
 
