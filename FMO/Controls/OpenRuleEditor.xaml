@@ -9,24 +9,7 @@
     d:DesignWidth="400"
     mc:Ignorable="d">
     <UserControl.Resources>
-        <Style
-            x:Key="AsAllayFocus"
-            BasedOn="{StaticResource ListBoxItemBaseStyle}"
-            TargetType="ListBoxItem">
-            <Setter Property="Margin" Value="2,0" />
-            <Style.Triggers>
-                <Trigger Property="UIElement.IsMouseOver" Value="true">
-                    <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
-                </Trigger>
-                <Trigger Property="ListBoxItem.IsSelected" Value="true">
-                    <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
-                    <Setter Property="Foreground" Value="{DynamicResource TextIconBrush}" />
-                </Trigger>
-                <Trigger Property="IsEnabled" Value="false">
-                    <Setter Property="UIElement.Opacity" Value=".4" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
+
         <ItemsPanelTemplate x:Key="WrapItemPanel">
             <WrapPanel IsItemsHost="True" />
         </ItemsPanelTemplate>
@@ -36,14 +19,14 @@
     </UserControl.Resources>
     <StackPanel>
         <ListBox
-            ItemContainerStyle="{StaticResource AsAllayFocus}"
+            ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus}"
             ItemTemplate="{StaticResource EnumItem}"
             ItemsPanel="{StaticResource WrapItemPanel}"
             ItemsSource="{x:Static local:OpenRuleViewModel.Types}" />
 
         <DockPanel LastChildFill="False">
             <ListBox
-                ItemContainerStyle="{StaticResource AsAllayFocus}"
+                ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus}"
                 ItemTemplate="{StaticResource EnumItem}"
                 ItemsPanel="{StaticResource WrapItemPanel}"
                 ItemsSource="{x:Static local:OpenRuleViewModel.Months}"
