@@ -173,7 +173,41 @@ public partial class FutureAccountViewModel : ObservableObject
 
         [RelayCommand]
         public void GenerateOpenAccountFiles()
-        { 
+        {
+            // 验证数据 
+            //1 有托管
+            {
+                using var db = DbHelper.Base();
+                var ele = db.GetCollection<FundElements>().FindById(FundId);
+                if (ele is null || ele.TrusteeInfo.Value is null)
+                {
+                    HandyControl.Controls.Growl.Warning("请先【要素】中设置 托管信息");
+                    return;
+                }
+                var im = db.GetCollection<FundInvestmentManager>().Find(x => x.FundId == FundId).ToArray();
+                if (im.Length == 0)
+                {
+                    HandyControl.Controls.Growl.Warning("请先在【策略】中设置 投资经理");
+                    return;
+                }
+
+                var per = db.GetCollection<Participant>().FindAll().ToArray();
+                if (!per.Any(x => x.Role.HasFlag(PersonRole.Agent)) ||
+                    !per.Any(x=>x.Role.HasFlag(PersonRole.OrderPlacer)) ||
+                    !per.Any(x => x.Role.HasFlag(PersonRole.FundTransferor)) ||
+                    !per.Any(x => x.Role.HasFlag(PersonRole.ConfirmationPerson)))
+                {
+                    HandyControl.Controls.Growl.Warning("请先在【管理人】 【成员】中设置 开户代理人、指定下单人、资金划转人、结算单确认人等");
+                    return;
+                }
+
+
+
+
+            }
+
+
+
             var wnd = new FutureOpenFilesGeneratorWindow();
             wnd.Owner = App.Current.MainWindow;
             wnd.DataContext = new FutureOpenFilesGeneratorWindowViewModel

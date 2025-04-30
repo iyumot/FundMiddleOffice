@@ -1,25 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging; 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DocumentFormat.OpenXml.Office2010.Excel;
-using DocumentFormat.OpenXml.Wordprocessing;
 using FMO.Models;
-using FMO.TPL;
 using FMO.Utilities;
+using Microsoft.Win32;
 using MiniSoftware;
+using Serilog;
 
 namespace FMO;
 
@@ -34,21 +22,26 @@ public partial class FutureOpenFilesGeneratorWindow : Window
     }
 }
 
-public partial class FutureOpenFilesGeneratorWindowViewModel:ObservableObject
+public partial class FutureOpenFilesGeneratorWindowViewModel : ObservableObject
 {
     public FutureOpenFilesGeneratorWindowViewModel()
     {
         using var db = DbHelper.Base();
         var members = db.GetCollection<Participant>().FindAll().ToArray();
 
+        InvestmentManagers = new(members.Where(x => x.Role.HasFlag(PersonRole.InvestmentManager)));
+        ResponsePersons = new(members);
         OpenAgents = new(members.Where(x => x.Role.HasFlag(PersonRole.Agent)));
         OrderPlacers = new(members.Where(x => x.Role.HasFlag(PersonRole.OrderPlacer)));
         FundTransferors = new(members.Where(x => x.Role.HasFlag(PersonRole.FundTransferor)));
         ConfirmationPersons = new(members.Where(x => x.Role.HasFlag(PersonRole.ConfirmationPerson)));
     }
 
-    public ObservableCollection<Participant> OpenAgents { get; set; }
 
+    public ObservableCollection<Participant> InvestmentManagers { get; set; }
+    public ObservableCollection<Participant> ResponsePersons { get; set; }
+
+    public ObservableCollection<Participant> OpenAgents { get; set; }
 
     public ObservableCollection<Participant> OrderPlacers { get; set; }
 
@@ -62,40 +55,49 @@ public partial class FutureOpenFilesGeneratorWindowViewModel:ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsParticipantValid))]
-    [NotifyPropertyChangedFor(nameof(CanGenerate))]
+    [NotifyCanExecuteChangedFor(nameof(GenerateCommand))]
     public partial Participant? OpenAgent { get; set; }
-
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsParticipantValid))]
-    [NotifyPropertyChangedFor(nameof(CanGenerate))]
+    [NotifyCanExecuteChangedFor(nameof(GenerateCommand))]
+    public partial Participant? InvestmentManager { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsParticipantValid))]
+    [NotifyCanExecuteChangedFor(nameof(GenerateCommand))]
+    public partial Participant? ResponsePerson { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsParticipantValid))]
+    [NotifyCanExecuteChangedFor(nameof(GenerateCommand))]
     public partial Participant? OrderPlacer { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsParticipantValid))]
-    [NotifyPropertyChangedFor(nameof(CanGenerate))]
+    [NotifyCanExecuteChangedFor(nameof(GenerateCommand))]
     public partial Participant? FundTransferor { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsParticipantValid))]
-    [NotifyPropertyChangedFor(nameof(CanGenerate))]
+    [NotifyCanExecuteChangedFor(nameof(GenerateCommand))]
     public partial Participant? ConfirmationPerson { get; set; }
 
 
-    public bool IsParticipantValid => OpenAgent is not null && OrderPlacer is not null && FundTransferor is not null && ConfirmationPerson is not null;
+    public bool IsParticipantValid => OpenAgent is not null && OrderPlacer is not null && FundTransferor is not null && ConfirmationPerson is not null && InvestmentManager is not null && ResponsePerson is not null;
 
     /// <summary>
     /// 模板文件
     /// </summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanGenerate))]
+    [NotifyCanExecuteChangedFor(nameof(GenerateCommand))]
     public partial string? TemplatePath { get; set; }
 
     /// <summary>
     /// 目标目录
     /// </summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanGenerate))]
+    [NotifyCanExecuteChangedFor(nameof(GenerateCommand))]
     public partial string? TargetFolder { get; set; }
 
 
@@ -103,18 +105,19 @@ public partial class FutureOpenFilesGeneratorWindowViewModel:ObservableObject
 
     public int FundId { get; init; }
 
-    [RelayCommand(CanExecute =nameof(CanGenerate))]
+    [RelayCommand(CanExecute = nameof(CanGenerate))]
     public void Generate()
     {
         try
         {
             // 模板文件
-            using var db = DbHelper.Base();
+            var db = DbHelper.Base();
             var m = db.GetCollection<Models.Manager>().FindOne(x => x.IsMaster);
             var fund = db.GetCollection<Fund>().FindById(FundId);
             var daily = db.GetDailyCollection(fund.Id).Find(x => x.NetAsset > 0).MaxBy(x => x.Date)!;
             var ele = db.GetCollection<FundElements>().FindById(fund.Id);
-
+            var legal = db.GetCollection<Participant>().FindAll().FirstOrDefault(x => x.Role.HasFlag(PersonRole.Legal));
+            db.Dispose();
             // 数据
             var obj = new
             {
@@ -141,34 +144,17 @@ public partial class FutureOpenFilesGeneratorWindowViewModel:ObservableObject
                     Duration = $"{ele.DurationInMonths}个月"
                 }
                 ,
-                LegalPerson = new
+                LegalPerson = FromParitcipant(legal),
+                InvestmentManager = FromParitcipant(InvestmentManager),
+                ResponsiblePerson = FromParitcipant(ResponsePerson),
+                Trustee = new
                 {
-                    Name = m.LegalAgent?.Name,
-                    IdType = m.LegalAgent?.IDType switch { IDType.IdentityCard or IDType.Unknown or null => "身份证", var x => EnumDescriptionTypeConverter.GetEnumDescription(x) },
-                    Id = m.LegalAgent?.Id,
-                    Phone = m.LegalAgent?.Phone,
-                    Address = m.LegalAgent?.Address,
+                    Name = ele.TrusteeInfo.Value?.Name
                 },
-                InvestmentManager = new
-                {
-                    Name = "杨博涵",
-                    IdType = "身份证",
-                    Id = "342623",
-                    Phone = "18550110512",
-                    Address = m.OfficeAddress
-                },
-                ResponsiblePerson = new
-                {
-                    Name = OpenAgent?.Name,
-                    IdType = OpenAgent?.Identity.Type switch { IDType.IdentityCard or IDType.Unknown or null => "身份证", var x => EnumDescriptionTypeConverter.GetEnumDescription(x) },
-                    Id = OpenAgent?.Identity.Id,
-                    Phone = OpenAgent?.Phone,
-                    Address = OpenAgent?.Address,
-                },
-                //OpenAgent = pe,
-                //OrderPlacer = pe,
-                //FundTransferor = pe,
-                //ConfirmationPerson = pe
+                OpenAgent = FromParitcipant(OpenAgent),
+                OrderPlacer = FromParitcipant(OrderPlacer),
+                FundTransferor = FromParitcipant(FundTransferor),
+                ConfirmationPerson = FromParitcipant(ConfirmationPerson),
             };
 
             MiniWord.SaveAsByTemplate(Path.Combine(TargetFolder!, "开户材料2.docx"), TemplatePath, obj);
@@ -176,7 +162,52 @@ public partial class FutureOpenFilesGeneratorWindowViewModel:ObservableObject
         }
         catch (Exception e)
         {
-             
+            Log.Error($"按模板生成开户材料出错 {e}");
+            HandyControl.Controls.Growl.Error("生成文件失败");
         }
+    }
+
+
+    private object FromParitcipant(Participant? participant)
+    {
+        return new
+        {
+            Name = participant?.Name,
+            IdType = participant?.Identity.Type switch { IDType.IdentityCard or IDType.Unknown or null => "身份证", var x => EnumDescriptionTypeConverter.GetEnumDescription(x) },
+            Id = participant?.Identity.Id,
+            Phone = participant?.Phone,
+            Address = participant?.Address,
+        };
+    }
+
+    [RelayCommand]
+    public void ChooseTemplate()
+    {
+        var wnd = new OpenFileDialog();
+        wnd.InitialDirectory = new DirectoryInfo($"files\\tpl").FullName;
+        var r = wnd.ShowDialog();
+        if (r is null || !r.Value) return;
+
+        TemplatePath = wnd.FileName;
+    }
+
+    [RelayCommand]
+    public void ChooseTarget()
+    {
+        var wnd = new OpenFolderDialog();
+        wnd.InitialDirectory = TargetFolder;
+        var r = wnd.ShowDialog();
+        if (r is null || !r.Value) return;
+
+        TargetFolder = wnd.FolderName;
+    }
+
+    [RelayCommand]
+    public void SetAsSame()
+    {
+        OpenAgent = ResponsePerson;
+        OrderPlacer = ResponsePerson;
+        FundTransferor = ResponsePerson;
+        ConfirmationPerson = ResponsePerson;
     }
 }
