@@ -39,7 +39,7 @@ public partial class FutureOpenFilesGeneratorWindowViewModel:ObservableObject
     public FutureOpenFilesGeneratorWindowViewModel()
     {
         using var db = DbHelper.Base();
-        var members = db.GetCollection<Participant>().FindAll();
+        var members = db.GetCollection<Participant>().FindAll().ToArray();
 
         OpenAgents = new(members.Where(x => x.Role.HasFlag(PersonRole.Agent)));
         OrderPlacers = new(members.Where(x => x.Role.HasFlag(PersonRole.OrderPlacer)));

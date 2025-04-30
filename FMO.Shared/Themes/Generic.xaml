@@ -206,7 +206,7 @@
         <Setter Property="ContentTemplate">
             <Setter.Value>
                 <DataTemplate>
-                    <local:CopyableTextBlock Text="{Binding OldValue}" />
+                    <local:CopyableTextBlock Text="{Binding Display}" />
                 </DataTemplate>
             </Setter.Value>
         </Setter>
