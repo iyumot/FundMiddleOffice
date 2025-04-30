@@ -1,24 +1,27 @@
-﻿namespace FMO.Models;
+﻿using System.ComponentModel;
+
+namespace FMO.Models;
 
 [Flags]
+[TypeConverter(typeof(EnumDescriptionTypeConverter))]
 public enum PersonRole
 {
     // 无角色
     None = 0x0,
     // 法定代表人
-    Legal = 0x1,
+    [Description("法定代表人")]Legal = 0x1,
     // 实际控制人
-    ActualController = 0x2,
+    [Description("实际控制人")] ActualController = 0x2,
     // 投资经理
-    InvestmentManager = 0x4,
+    [Description("投资经理")] InvestmentManager = 0x4,
     // 代理人
-    Agent = 0x8,
+    [Description("开户代理人")] Agent = 0x8,
     // 下单人
-    OrderPlacer = 0x10,
+    [Description("指定下单人")] OrderPlacer = 0x10,
     // 资金划转人
-    FundTransferor = 0x20,
+    [Description("资金划转人")] FundTransferor = 0x20,
     // 确认人
-    ConfirmationPerson = 0x40
+    [Description("结算单确认人")] ConfirmationPerson = 0x40
 }
 
 /// <summary>
@@ -26,6 +29,7 @@ public enum PersonRole
 /// </summary>
 public class Person : LegalEntity
 {
+    public PersonRole Role { get; set; }
 
     public IDType IDType { get; set; }
 
@@ -61,5 +65,3 @@ public class Person : LegalEntity
 
     public override EntityType Type => EntityType.Natural;
 }
-
- 
