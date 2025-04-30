@@ -3,10 +3,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
@@ -33,7 +35,7 @@ public partial class ManagerPage : UserControl
 }
 
 
-public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager>
+public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager>, IRecipient<ParticipantChangedMessage>
 {
     private int FilesId;
 
@@ -156,11 +158,27 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     public partial ObservableCollection<FileInfo>? LegalPersonIdCard { get; set; }
 
 
+    [ObservableProperty]
+    public partial ObservableCollection<Participant> Members { get; set; }
 
+    public CollectionViewSource MemberSource { get; } = new();
 
+    [ObservableProperty]
+    public partial Participant? SelectedMember { get; set; }
+
+    [ObservableProperty]
+    public partial ManagerMemberViewModel? MemberContext { get; set; }
+
+    /// <summary>
+    /// 修改成员信息
+    /// </summary>
+    [ObservableProperty]
+    public partial bool ShowMemberPopup { get; set; }
 
     public ManagerPageViewModel()
     {
+        WeakReferenceMessenger.Default.Register<ParticipantChangedMessage>(this);
+
         var db = DbHelper.Base();
         var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
         var mfile = db.GetCollection<InstitutionFiles>().FindOne(x => x.InstitutionId == manager.Id);
@@ -184,6 +202,12 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
             bitmapSource.EndInit();
             MainLogo = bitmapSource;
         }
+
+        Members = new(db.GetCollection<Participant>().FindAll()/*.Select(x => new PersonViewModel(x)*/);
+        MemberSource.Source = Members;
+        //if (manager.LegalAgent is not null)
+        //    Members.Add( (manager.LegalAgent));
+
         db.Dispose();
 
         AmacPageUrl = $"https://gs.amac.org.cn/amac-infodisc/res/pof/manager/{manager.AmacId}.html";
@@ -211,7 +235,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
             Label = "法人代表/委派代表",
             InitFunc = x => new(x.LegalAgent),
             UpdateFunc = (x, y) => x.LegalAgent = y!.Build(),
-            ClearFunc = x => x.LegalAgent = null, 
+            ClearFunc = x => x.LegalAgent = null,
         };
         LegalPerson.Init(manager);
 
@@ -399,6 +423,40 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         try { Process.Start(new ProcessStartInfo(AmacPageUrl) { UseShellExecute = true }); } catch { }
     }
 
+
+    [RelayCommand]
+    public void AddMember()
+    {
+        Participant obj = new();
+        Members.Add(obj);
+        MemberContext = new ManagerMemberViewModel(obj);
+        ShowMemberPopup = true;
+    }
+
+
+    [RelayCommand]
+    public void RemoveMember(Participant participant)
+    {
+        if (HandyControl.Controls.MessageBox.Show($"是否确认删除 {participant.Name}？", button: MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+        {
+            using var db = DbHelper.Base();
+            db.GetCollection<Participant>().Delete(participant.Id);
+
+            Members.Remove(participant);
+        }
+    }
+
+    [RelayCommand]
+    public void EditMember(Participant participant)
+    {
+        MemberContext = new ManagerMemberViewModel(participant);
+        ShowMemberPopup = true;
+    }
+
+    partial void OnSelectedMemberChanged(Participant? value)
+    {
+        MemberContext = value is null ? null : new ManagerMemberViewModel(value);
+    }
 
     #region MyRegion
 
@@ -633,6 +691,19 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
         return manager;
     }
+
+    public void Receive(ParticipantChangedMessage message)
+    {
+        using var db = DbHelper.Base();
+        var obj = db.GetCollection<Participant>().FindById(message.Id);
+
+
+        if (obj is not null && (Members.FirstOrDefault(x => x.Id == message.Id) ?? Members.LastOrDefault(x => x.Id == 0)) is Participant old)
+        {
+            old.UpdateFrom(obj);
+            MemberSource.View.Refresh();
+        }
+    }
     #endregion
 }
 
@@ -646,6 +717,7 @@ public partial class PersonViewModel : ObservableObject, IEquatable<PersonViewMo
         {
             Id = obj.Id;
             Name = obj.Name;
+            Role = obj.Role;
             IDType = obj.IDType;
             Title = obj.Title;
             Cellphone = obj.Cellphone;
@@ -671,6 +743,9 @@ public partial class PersonViewModel : ObservableObject, IEquatable<PersonViewMo
     public partial IDType IDType { get; set; } = IDType.IdentityCard;
 
     [ObservableProperty]
+    public partial PersonRole Role { get; set; }
+
+    [ObservableProperty]
     public partial string? Title { get; set; }
 
     [ObservableProperty]
@@ -693,7 +768,8 @@ public partial class PersonViewModel : ObservableObject, IEquatable<PersonViewMo
         if (other is null) return false;
         if (ReferenceEquals(this, other)) return true;
         return EqualityComparer<string?>.Default.Equals(Id, other.Id) &&
-            EqualityComparer<string?>.Default.Equals(Name, other.Name)&&
+            EqualityComparer<PersonRole>.Default.Equals(Role, other.Role) &&
+            EqualityComparer<string?>.Default.Equals(Name, other.Name) &&
             EqualityComparer<string?>.Default.Equals(Title, other.Title)
             && EqualityComparer<string?>.Default.Equals(Cellphone, other.Cellphone)
             && EqualityComparer<string?>.Default.Equals(Phone, other.Phone)
@@ -712,6 +788,7 @@ public partial class PersonViewModel : ObservableObject, IEquatable<PersonViewMo
         {
             Title = Title,
             Id = Id,
+            Role = Role,
             Address = Address,
             Email = Email,
             Profile = Profile,
