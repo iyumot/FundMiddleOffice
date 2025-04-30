@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.IO;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using FMO.Shared;
@@ -6,7 +7,6 @@ using FMO.TPL;
 using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
-using System.IO;
 
 namespace FMO;
 
@@ -17,12 +17,14 @@ public partial class FutureAccountViewModel : ObservableObject
     {
         Company = v.Company;
         Id = v.Id;
+        FundId = v.FundId;
 
-        Common = new(v.Id, v.Company, v.Common);
+        Common = new(v.Id, FundId, v.Company, v.Common);
     }
 
     public int Id { get; set; }
 
+    public int FundId { get; }
     public string? Company { get; set; }
 
 
@@ -35,9 +37,10 @@ public partial class FutureAccountViewModel : ObservableObject
 
     public partial class BasicAccountViewModel : ObservableObject
     {
-        public BasicAccountViewModel(int id, string? company, OpenAccountEvent? common)
+        public BasicAccountViewModel(int id, int fundId, string? company, OpenAccountEvent? common)
         {
             Id = id;
+            FundId = fundId;
             Company = company;
             if (common is not null)
             {
@@ -88,6 +91,7 @@ public partial class FutureAccountViewModel : ObservableObject
         [ObservableProperty]
         public partial FileViewModel<OpenAccountEvent>? BankLetter { get; set; }
         public int Id { get; }
+        public int FundId { get; }
         public string? Company { get; }
 
         [RelayCommand]
@@ -169,7 +173,20 @@ public partial class FutureAccountViewModel : ObservableObject
 
         [RelayCommand]
         public void GenerateOpenAccountFiles()
-        {
+        { 
+            var wnd = new FutureOpenFilesGeneratorWindow();
+            wnd.Owner = App.Current.MainWindow;
+            wnd.DataContext = new FutureOpenFilesGeneratorWindowViewModel
+            {
+                FundId = FundId,
+                Company = Company!,
+                TemplatePath = @$"files\tpl\{Company}.docx",
+                TargetFolder = Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "future", Id.ToString(), Name!, "原始文件")
+            };
+            wnd.ShowDialog();
+
+            return;
+
             try
             {
                 // 模板文件
@@ -200,7 +217,7 @@ public partial class FutureAccountViewModel : ObservableObject
                     LegalPerson = new
                     {
                         Name = m.LegalAgent?.Name,
-                        IDType = m.LegalAgent?.IDType switch { IDType.IdentityCard or null => "身份证", var x => EnumDescriptionTypeConverter.GetEnumDescription(x)},
+                        IDType = m.LegalAgent?.IDType switch { IDType.IdentityCard or null => "身份证", var x => EnumDescriptionTypeConverter.GetEnumDescription(x) },
                         Id = m.LegalAgent?.Id,
                         Phone = m.LegalAgent?.Phone,
                         Address = m.LegalAgent?.Address,
