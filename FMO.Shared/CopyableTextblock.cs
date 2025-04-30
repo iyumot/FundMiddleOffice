@@ -129,8 +129,8 @@ public class CopyableTextBlock : Control
     {
         base.OnApplyTemplate();
 
-        if(Template.FindName("PART_Copy", this) is Button button)
-            button.Click += (s,e) => Clipboard.SetDataObject(new DataObject(Text));
+        if (Template.FindName("PART_Copy", this) is Button button)
+            button.Click += (s, e) => { if (Text is not null) Clipboard.SetDataObject(new DataObject(Text)); };
     }
      
 }
