@@ -11,6 +11,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="day.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="day.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="System.Int32">
       <Alias>FID</Alias>
     </Using>
