@@ -3,9 +3,11 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DesignHeight="200"
+    d:DataContext="{d:DesignInstance Type=local:OpenRuleViewModel}"
+    d:DesignHeight="500"
     d:DesignWidth="400"
     mc:Ignorable="d">
     <UserControl.Resources>
@@ -18,22 +20,51 @@
         </DataTemplate>
     </UserControl.Resources>
     <StackPanel>
-        <ListBox
-            ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus}"
-            ItemTemplate="{StaticResource EnumItem}"
-            ItemsPanel="{StaticResource WrapItemPanel}"
-            ItemsSource="{x:Static local:OpenRuleViewModel.Types}" />
-
-        <DockPanel LastChildFill="False">
+        <DockPanel>
             <ListBox
+                Name="lbType"
                 ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus}"
                 ItemTemplate="{StaticResource EnumItem}"
                 ItemsPanel="{StaticResource WrapItemPanel}"
-                ItemsSource="{x:Static local:OpenRuleViewModel.Months}"
-                SelectionMode="Multiple" />
+                ItemsSource="{x:Static local:OpenRuleViewModel.Types}"
+                SelectedItem="{Binding SelectedType}" />
 
-            <Button Content="全选" />
-            <Button Content="反选" />
+            <DockPanel LastChildFill="False" Visibility="{Binding ShowMonth, Converter={StaticResource Boolean2VisibilityConverter}}">
+                <ListBox
+                    ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus}"
+                    ItemsPanel="{StaticResource WrapItemPanel}"
+                    ItemsSource="{Binding MonthOfYear}"
+                    SelectionMode="Multiple">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Month, Converter={StaticResource EnumDescriptionConverter}}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <Button Content="全选" />
+                <Button Content="反选" />
+            </DockPanel>
         </DockPanel>
+
+        <ListBox
+            ItemsPanel="{StaticResource WrapItemPanel}"
+            ItemsSource="{Binding Years}"
+            SelectedItem="{Binding SelectedYear}" />
+
+
+        <!--<ListBox ItemsPanel="{StaticResource WrapItemPanel}" ItemsSource="{Binding AllDays}" />-->
+
+        <ListBox
+            d:ItemsSource="{d:SampleData}"
+            IsHitTestVisible="False"
+            ItemsPanel="{StaticResource WrapItemPanel}"
+            ItemsSource="{Binding Calendars}"
+            Style="{StaticResource ListBoxCustom}">
+            <!--<ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Calendar DisplayDateEnd="{Binding End}" DisplayDateStart="{Binding Start}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>-->
+        </ListBox>
     </StackPanel>
 </UserControl>
