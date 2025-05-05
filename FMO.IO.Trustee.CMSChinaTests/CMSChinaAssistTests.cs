@@ -19,7 +19,7 @@ namespace FMO.IO.Trustee.CMSChina.Tests
             using var sr = new StreamReader("test.json");
 
 
-            var obj = JsonSerializer.Deserialize<CMSChina.Json.TransferRequestJson.Root>(sr.ReadToEnd());
+            //var obj = JsonSerializer.Deserialize<CMSChina.Json.TransferRequestJson.Root>(sr.ReadToEnd());
             
             Assert.Fail();
         }
