@@ -15,11 +15,13 @@ public enum DayFlag
     Trade = 0x4
 }
 
+public record DayInfo(DateOnly Date, DayFlag Flag);
+
 
 public static class Days
 {
     private static List<DateOnly> Dates = new();
-    private static List<DayFlag> Flags = new();
+    private static List<DayInfo> Data = new();
 
 
     /// <summary>
@@ -38,6 +40,18 @@ public static class Days
         return Dates[s..e].ToArray();
     }
 
+    public static DayInfo[] DayInfosByYear(int year)
+    {
+        int s = Dates.BinarySearch(new DateOnly(year, 1, 1));
+        int e = Dates.BinarySearch(new DateOnly(year, 12, 31));
+
+        s = s < 0 ? ~s : s;
+        e = e < 0 ? ~e : e + 1;
+
+        return Data[s..e].ToArray();
+    }
+
+
     /// <summary>
     /// 获取指定年份的所有交易日
     /// </summary>
@@ -54,7 +68,7 @@ public static class Days
         List<DateOnly> list = new(366);
         for (int j = s; j < e; j++)
         {
-            if (Flags[j].HasFlag(DayFlag.Trade))
+            if (Data[j].Flag.HasFlag(DayFlag.Trade))
                 list.Add(Dates[j]);
         }
         return list.ToArray();
@@ -72,7 +86,7 @@ public static class Days
 
         for (int i = s + 1; i < Dates.Count; i++)
         {
-            if (Flags[i].HasFlag(DayFlag.Trade))
+            if (Data[i].Flag.HasFlag(DayFlag.Trade))
                 return Dates[i];
         }
         return default;
@@ -90,7 +104,7 @@ public static class Days
         s = s < 0 ? ~s : s;
         e = e < 0 ? ~e : e;
 
-        return Flags[s..e].Count(x=>x.HasFlag(DayFlag.Trade));
+        return Data[s..e].Count(x => x.Flag.HasFlag(DayFlag.Trade));
     }
 
     static Days() => Init();
@@ -106,7 +120,7 @@ public static class Days
                 string[] strings = sr.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 var d = strings.Select(x => x.Split(','));
                 Dates = d.Select(x => x[0]).Select(x => DateOnly.Parse(x)).ToList();
-                Flags = d.Select(x => x[1]).Select(x => (DayFlag)Enum.Parse(typeof(DayFlag), x)).ToList();
+                Data = d.Select(x => new DayInfo(DateOnly.Parse(x[0]), (DayFlag)Enum.Parse(typeof(DayFlag), x[1]))).ToList();
             }
             else InitFromAssembly();
         }
@@ -123,6 +137,6 @@ public static class Days
         string[] strings = sr.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         var d = strings.Select(x => x.Split(','));
         Dates = d.Select(x => x[0]).Select(x => DateOnly.Parse(x)).ToList();
-        Flags = d.Select(x => x[1]).Select(x => (DayFlag)Enum.Parse(typeof(DayFlag), x)).ToList();
+        Data = d.Select(x => new DayInfo(DateOnly.Parse(x[0]), (DayFlag)Enum.Parse(typeof(DayFlag), x[1]))).ToList();
     }
 }
