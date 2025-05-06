@@ -123,6 +123,8 @@ public partial class FutureOpenFilesGeneratorWindowViewModel : ObservableObject
             {
                 Manager = new
                 {
+                    Id = m.Id,
+                    Duration = $"{m.SetupDate}-{m.ExpireDate}",
                     Name = m.Name,
                     EnglishName = m.EnglishName,
                     LegalPerson = m.LegalAgent?.Name ?? m.ArtificialPerson,
@@ -135,6 +137,7 @@ public partial class FutureOpenFilesGeneratorWindowViewModel : ObservableObject
                     RealCapital = $"{m.RealCapital}万",
                     BusinessScope = m.BusinessScope,
                     Telephone = m.Telephone,
+                    //ZipCode = 
                 },
                 Fund = new
                 {
