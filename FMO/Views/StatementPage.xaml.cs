@@ -1,28 +1,55 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.IO;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using FMO.Models;
+using FMO.TPL;
+using FMO.Utilities;
 
-namespace FMO
+namespace FMO;
+
+/// <summary>
+/// StatementPage.xaml 的交互逻辑
+/// </summary>
+public partial class StatementPage : UserControl
 {
-    /// <summary>
-    /// StatementPage.xaml 的交互逻辑
-    /// </summary>
-    public partial class StatementPage : UserControl
+    public StatementPage()
     {
-        public StatementPage()
+        InitializeComponent();
+    }
+}
+
+
+public partial class StatementPageViewModel : ObservableObject
+{
+
+
+    [RelayCommand]
+    public void GenerateReport()
+    {
+        try
         {
-            InitializeComponent();
+            using var db = DbHelper.Base();
+            var funds = db.GetCollection<Fund>().Find(x=>x.Status == FundStatus.Normal).ToArray();
+
+            var ds = funds.Select(x => new { f = x, d = db.GetDailyCollection(x.Id).FindAll().Where(x => x?.NetValue > 0).MaxBy(x => x.Date) }).ToArray();
+
+            var obj = new
+            {
+                Funds = ds.Select(x => new
+                {
+                    Name = x.f.Name,
+                    Code = x.f.Code,
+                    LastDate = x.d!.Date,
+                    NetAsset = x.d.NetAsset / 10000,
+                    NetValue = x.d.NetValue
+                })
+            };
+
+            ExcelTpl.GenerateFromTemplate(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "summary.xlsx"), "nv_summary.xlsx", obj);
+        }
+        catch (Exception e)
+        { 
         }
     }
 }
