@@ -21,6 +21,14 @@
             HorizontalAlignment="Left"
             VerticalAlignment="Top"
             Panel.ZIndex="99">
+
+            <Button
+                Margin="10,0"
+                hc:IconElement.Geometry="{StaticResource f.plus}"
+                Command="{Binding AddTARecordCommand}"
+                Content="录入"
+                Style="{StaticResource ButtonDefault.Small}" />
+
             <Button
                 Background="PaleGoldenrod"
                 Command="{Binding CalcFeeCommand}"
