@@ -6,9 +6,10 @@
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     Title="添加TA记录"
     Width="500"
-    Height="450"
+    Height="250"
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
     <Window.DataContext>
@@ -20,57 +21,79 @@
         </Style>
     </Window.Resources>
     <StackPanel Margin="10">
+        <DockPanel>
+            <Button
+                Height="50"
+                Margin="4,0,0,0"
+                VerticalAlignment="Stretch"
+                Command="{Binding ConfirmCommand}"
+                Content="确认"
+                DockPanel.Dock="Right"
+                Style="{StaticResource ButtonSuccess}" />
 
-        <!--  产品列表  -->
-        <ComboBox
-            HorizontalContentAlignment="Center"
-            hc:InfoElement.Placeholder="产品"
-            DisplayMemberPath="Name"
-            IsEditable="True"
-            IsTextSearchEnabled="False"
-            ItemsSource="{Binding FundSource.View}"
-            KeyDown="ComboBox_KeyDown"
-            MouseDown="ComboBox_MouseDown"
-            SelectedIndex="-1"
-            SelectedItem="{Binding SelectedFund}"
-            Text="{Binding SearchFundKey, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged, Delay=200}">
-            <!--<ComboBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding Name}" />
-                </DataTemplate>
-            </ComboBox.ItemTemplate>-->
-        </ComboBox>
+            <!--  产品列表  -->
+
+            <DockPanel DockPanel.Dock="Top">
+                <TextBlock Width="60" Text="基金产品" />
+                <ComboBox
+                    HorizontalContentAlignment="Center"
+                    hc:InfoElement.Placeholder="产品"
+                    DisplayMemberPath="Name"
+                    IsEditable="True"
+                    IsSynchronizedWithCurrentItem="False"
+                    IsTextSearchEnabled="False"
+                    ItemsSource="{Binding FundSource.View}"
+                    KeyDown="Search_KeyDown"
+                    MouseDown="ComboBox_MouseDown"
+                    SelectedIndex="-1"
+                    SelectedItem="{Binding SelectedFund}"
+                    Text="{Binding SearchFundKey, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+
+            </DockPanel>
 
 
-        <!--  投资人列表  -->
-        <ComboBox
-            Margin="0,4"
-            HorizontalContentAlignment="Center"
-            DisplayMemberPath="Name"
-            IsEditable="True"
-            IsTextSearchEnabled="False"
-            ItemsSource="{Binding InvestorSource.View}"
-            KeyDown="ComboBox_KeyDown"
-            MouseDown="ComboBox_MouseDown"
-            SelectedIndex="-1"
-            SelectedItem="{Binding SelectedInvestor}"
-            Text="{Binding SearchInvestorKey, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+            <!--  投资人列表  -->
+            <DockPanel>
+                <TextBlock Width="60" Text="投资人" />
 
+                <ComboBox
+                    Margin="0,4"
+                    HorizontalContentAlignment="Center"
+                    DisplayMemberPath="Name"
+                    IsEditable="True"
+                    IsSynchronizedWithCurrentItem="False"
+                    IsTextSearchEnabled="False"
+                    ItemsSource="{Binding InvestorSource.View}"
+                    KeyDown="Search_KeyDown"
+                    MouseDown="ComboBox_MouseDown"
+                    SelectedItem="{Binding SelectedInvestor}"
+                    Text="{Binding SearchInvestorKey, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+            </DockPanel>
+        </DockPanel>
+
+
+        <!--  申请  -->
         <DockPanel>
             <TextBlock
                 Width="60"
                 VerticalAlignment="Center"
                 Text="申请日期" />
 
-            <DatePicker Width="100" SelectedDate="{Binding ConfirmDate}" />
+            <DatePicker Width="100" SelectedDate="{Binding RequestDate}" />
 
             <ListBox
+                Margin="5,0"
                 ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
                 ItemsSource="{Binding Types}"
-                SelectedItem="{Binding SelectedType}" />
+                SelectedItem="{Binding SelectedType}"
+                Style="{StaticResource ListBox.Small}" />
 
             <!--  申请金额/份额  -->
-            <TextBox Text="{Binding RequestNumber}" Visibility="{Binding ShowRequestNumber, Converter={StaticResource Boolean2VisibilityConverter}}" />
+            <TextBox
+                hc:InfoElement.Placeholder="金额/份额"
+                Style="{StaticResource TextBoxExtend}"
+                Text="{Binding RequestNumber, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                Visibility="{Binding ShowRequestNumber, Converter={StaticResource Boolean2VisibilityConverter}}" />
         </DockPanel>
 
         <DockPanel Margin="0,4">
@@ -96,11 +119,11 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="份额" />
 
-                <TextBox Grid.Column="1" Text="{Binding ConfirmShare}" />
+                <TextBox Grid.Column="1" Text="{Binding ConfirmShare, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
 
                 <TextBlock Grid.Column="2" Text="金额" />
 
-                <TextBox Grid.Column="3" Text="{Binding ConfirmAmount}" />
+                <TextBox Grid.Column="3" Text="{Binding ConfirmAmount, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
 
 
             </Grid>
@@ -108,9 +131,42 @@
 
         </DockPanel>
 
+        <UniformGrid Rows="1">
+            <UniformGrid.Resources>
+
+                <Style TargetType="TextBlock">
+                    <Setter Property="VerticalAlignment" Value="Center" />
+                    <Setter Property="HorizontalAlignment" Value="Center" />
+
+                </Style>
+            </UniformGrid.Resources>
+            <BulletDecorator>
+                <BulletDecorator.Bullet>
+                    <TextBlock Text="费用" />
+                </BulletDecorator.Bullet>
+                <TextBox Margin="5,0" Text="{Binding Fee, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+            </BulletDecorator>
+
+            <BulletDecorator>
+                <BulletDecorator.Bullet>
+                    <TextBlock Text="净额" />
+                </BulletDecorator.Bullet>
+                <TextBox Margin="5,0" Text="{Binding ConfirmNetAmount, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+            </BulletDecorator>
+
+            <BulletDecorator>
+                <BulletDecorator.Bullet>
+                    <TextBlock Text="业绩报酬" />
+                </BulletDecorator.Bullet>
+                <TextBox Margin="5,0,0,0" Text="{Binding PerformanceFee, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+            </BulletDecorator>
+        </UniformGrid>
 
 
-
+        <TextBlock
+            Margin="0,5"
+            Foreground="Red"
+            Text="{Binding Tips}" />
 
 
     </StackPanel>

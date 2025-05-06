@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -301,8 +302,13 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
 
 
 
-    public partial class FundViewModel : ObservableObject
+    public partial class FundViewModel : ObservableObject, IRecipient<FundTipMessage>
     {
+        public FundViewModel()
+        {
+            WeakReferenceMessenger.Default.RegisterAll(this);
+        }
+
         public int Id { get; init; }
 
 
@@ -351,7 +357,7 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
 
 
         [ObservableProperty]
-        public partial ObservableCollection<FundTip> Tips { get; set; }
+        public partial ObservableCollection<FundTip>? Tips { get; set; }
 
         [ObservableProperty]
         public partial bool ShowTips { get; set; } = false; 
@@ -359,7 +365,7 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
         public bool HasTip => Tips?.Count > 0;
 
 
-        partial void OnTipsChanged(ObservableCollection<FundTip> value)
+        partial void OnTipsChanged(ObservableCollection<FundTip>? value)
         {
             if (value is not null)
                 value.CollectionChanged += (s, e) => OnPropertyChanged(nameof(HasTip));
@@ -384,6 +390,11 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
                 Code = fund.Code,
                 Tips = new(DataTracker.FundTips.Where(x => x.FundId == fund.Id))
             };
+        }
+
+        public void Receive(FundTipMessage message)
+        {
+            Tips = new(DataTracker.FundTips.Where(x => x.FundId == Id));
         }
     }
 }

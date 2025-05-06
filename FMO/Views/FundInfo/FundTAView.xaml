@@ -16,6 +16,13 @@
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 
+        <Style x:Key="RightAlign" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextAlignment" Value="Right" />
+        </Style>
+
+
+
         <DataTemplate x:Key="DT.NameCell">
             <local:CopyableControl>
                 <TextBlock Foreground="Black" Text="{Binding Name}" />
@@ -213,6 +220,11 @@
                     <DataGrid.Columns>
                         <DataGridTemplateColumn CellTemplate="{StaticResource DT.NameCell}" Header="投资人" />
                         <DataGridTemplateColumn CellTemplate="{StaticResource DT.ShareCell}" Header="持有份额" />
+
+                        <DataGridTextColumn
+                            Binding="{Binding Asset, StringFormat=N2}"
+                            ElementStyle="{StaticResource RightAlign}"
+                            Header="市值" />
                         <DataGridTemplateColumn CellTemplate="{StaticResource DT.ProfitCell}">
                             <DataGridTemplateColumn.Header>
                                 <DockPanel LastChildFill="False">
@@ -225,6 +237,8 @@
                                 </DockPanel>
                             </DataGridTemplateColumn.Header>
                         </DataGridTemplateColumn>
+
+
 
                         <DataGridTemplateColumn>
                             <DataGridTemplateColumn.CellTemplate>
