@@ -42,7 +42,7 @@ public partial class FundTAViewModel : ObservableObject
             InvestorCount = cur.Count(x=>x.Share > 0);
             CurrentTotalShare = cur.Sum(x => x.Share);
             CurrentShareDate = ta.Max(x => x.ConfirmedDate);
-            CurrentShares = cur.Select(x => new InvestorShareViewModel { Id = x.Id, Name = x.Name, Share = x.Share, RealizedGain = x.Record.Sum(y => y.AmountChange()), UnrealizedGain = x.Share * (nv - 1) }).ToList();
+            CurrentShares = cur.Select(x => new InvestorShareViewModel { Id = x.Id, Name = x.Name, Share = x.Share, Asset = x.Share * nv, Profit = x.Record.Sum(y => y.AmountChange()) + x.Share * nv  }).ToList();
             CurrentTotalProfit = CurrentShares.Sum(x => x.Profit ?? 0);
         }
 
@@ -100,7 +100,7 @@ public partial class FundTAViewModel : ObservableObject
     public partial bool InvestorDetailIsOpen { get; set; }
 
     [ObservableProperty]
-    public partial IEnumerable<TransferRecord> InvestorDetail { get; set; }
+    public partial IEnumerable<TransferRecord>? InvestorDetail { get; set; }
 
     [RelayCommand]
     public void ShowInvestorDetail(InvestorShareViewModel v)
@@ -118,9 +118,11 @@ public class InvestorShareViewModel
      
     public decimal Share { get; set; }
 
-    public decimal? RealizedGain { get; set; }
+    /// <summary>
+    /// 市值
+    /// </summary>
+    public decimal Asset { get; set; }
 
-    public decimal? UnrealizedGain { get; set; }
 
-    public decimal? Profit => RealizedGain + UnrealizedGain;
+    public decimal? Profit { get; set; } 
 }

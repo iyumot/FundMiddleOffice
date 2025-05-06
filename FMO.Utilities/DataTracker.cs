@@ -21,6 +21,9 @@ public enum TipType
 
 public record class FundTip(int FundId, TipType Type, string? Tip);
 
+public record FundTipMessage(int FundId);
+
+
 /// <summary>
 /// 数据校验
 /// </summary>
