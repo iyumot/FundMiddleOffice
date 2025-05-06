@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FMO.IO.Trustee.CMSChina\FMO.IO.Trustee.CMSChina.csproj" />
+    <ProjectReference Include="..\FMO.InterOp\FMO.IO.Trustee.CMSChina\FMO.IO.Trustee.CMSChina.csproj" />
     <ProjectReference Include="..\FMO.IO.Trustee.CSC108\FMO.IO.Trustee.CSC108.csproj" />
   </ItemGroup>
 
