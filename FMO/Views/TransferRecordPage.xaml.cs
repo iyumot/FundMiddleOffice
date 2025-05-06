@@ -1,13 +1,13 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using FMO.Models;
-using FMO.Shared;
-using FMO.Utilities;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Controls;
 using System.Windows.Data;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using FMO.Models;
+using FMO.Shared;
+using FMO.Utilities;
 
 namespace FMO;
 
@@ -106,7 +106,7 @@ public partial class TransferRecordPageViewModel : ObservableObject
 
     partial void OnSearchKeywordChanged(string? value)
     {
-         
+
         {
             RequestsSource.View.Refresh();
             RecordsSource.View.Refresh();
@@ -135,6 +135,15 @@ public partial class TransferRecordPageViewModel : ObservableObject
     public void OpenConfirmFile(FileInfo fi)
     {
         try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(fi.FullName) { UseShellExecute = true }); } catch { }
+    }
+
+
+    [RelayCommand]
+    public void AddTARecord()
+    {
+        var wnd = new AddTAWindow();
+        wnd.Owner = App.Current.MainWindow;
+        wnd.ShowDialog();
     }
 }
 
