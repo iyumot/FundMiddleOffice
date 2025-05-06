@@ -80,25 +80,11 @@ public partial class AddTAWindowViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
     public partial DateTime? RequestDate { get; set; }
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowRequestNumber))]
-    [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
-    public partial TARecordType? SelectedType { get; set; }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
     public partial DateTime? ConfirmDate { get; set; }
 
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
-    public partial DateTime? RequestDate { get; set; }
-
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
-    public partial DateTime? ConfirmDate { get; set; }
-
-    public bool ShowRequestNumber => SelectedType switch { TARecordType.Purchase or TARecordType.Subscription or TARecordType.Redemption or TARecordType.ForceRedemption => true, _ => false };
 
     public bool ShowRequestNumber => SelectedType switch { TARecordType.Purchase or TARecordType.Subscription or TARecordType.Redemption or TARecordType.ForceRedemption => true, _ => false };
 
@@ -161,55 +147,10 @@ public partial class AddTAWindowViewModel : ObservableObject
 
     public bool CanConfirm => SelectedFund is not null && SelectedType is not null && SelectedInvestor is not null && RequestDate is not null && ConfirmDate is not null && ConfirmShare is not null && ConfirmAmount is not null && ConfirmNetAmount is not null && SelectedType switch { TARecordType.Distribution or TARecordType.Redemption or TARecordType.ForceRedemption => PerformanceFee is not null, _ => true };
 
-    [RelayCommand(CanExecute = nameof(CanConfirm))]
-    public void Confirm()
-    {
-        using var db = DbHelper.Base();
-
-        var tq = new TransferRequest
-        {
-            FundId = SelectedFund!.Id,
-            FundCode = SelectedFund!.Code,
-            FundName = SelectedFund!.Name,
-            CustomerId = SelectedInvestor!.Id,
-            CustomerIdentity = SelectedInvestor.Identity.Id,
-            CustomerName = SelectedInvestor!.Name,
-            RequestDate = DateOnly.FromDateTime(RequestDate!.Value),
-            RequestAmount = SelectedType switch { TARecordType.Subscription or TARecordType.Purchase => RequestNumber ?? 0, _ => 0 },
-            RequestShare = SelectedType switch { TARecordType.Redemption or TARecordType.ForceRedemption => RequestNumber ?? 0, _ => 0 },
-            RequestType = SelectedType switch { TARecordType.Subscription => RequestType.Subscription, TARecordType.Purchase => RequestType.Purchase, TARecordType.Redemption => RequestType.Redemption, TARecordType.ForceRedemption => RequestType.ForceRedemption },
-            CreateDate = DateOnly.FromDateTime(DateTime.Today),
-            Source = "manual"
-        };
-        db.GetCollection<TransferRecord>().Insert(tq);
 
 
-        var ta = new TransferRecord
-        {
-            FundId = SelectedFund!.Id,
-            FundCode = SelectedFund!.Code,
-            FundName = SelectedFund!.Name,
-            CustomerId = SelectedInvestor!.Id,
-            CustomerIdentity = SelectedInvestor.Identity.Id,
-            CustomerName = SelectedInvestor!.Name,
-            RequestDate = DateOnly.FromDateTime(RequestDate!.Value),
-            ConfirmedDate = DateOnly.FromDateTime(ConfirmDate!.Value),
-            RequestAmount = SelectedType switch { TARecordType.Subscription or TARecordType.Purchase => RequestNumber ?? 0, _ => 0 },
-            RequestShare = SelectedType switch { TARecordType.Redemption or TARecordType.ForceRedemption => RequestNumber ?? 0, _ => 0 },
-            ConfirmedShare = ConfirmShare ?? 0,
-            ConfirmedAmount = ConfirmAmount ?? 0,
-            ConfirmedNetAmount = ConfirmNetAmount ?? 0,
-            CreateDate = DateOnly.FromDateTime(DateTime.Today),
-            Type = SelectedType!.Value,
-            Source = "manual",
-            Fee = Fee ?? 0,
-            PerformanceFee = PerformanceFee ?? 0,
-            RequestId = tq.Id
-        };
-        db.GetCollection<TransferRecord>().Insert(ta);
 
-        App.Current.Windows[^1].Close();
-    }
+
 
     [RelayCommand(CanExecute = nameof(CanConfirm))]
     public void Confirm()
@@ -231,7 +172,7 @@ public partial class AddTAWindowViewModel : ObservableObject
             CreateDate = DateOnly.FromDateTime(DateTime.Today),
             Source = "manual"
         };
-        db.GetCollection<TransferRecord>().Insert(tq);
+        db.GetCollection<TransferRequest>().Insert(tq);
 
 
         var ta = new TransferRecord
