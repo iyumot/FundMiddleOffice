@@ -15,9 +15,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FMO.InterOp\FMO.IO.Trustee\FMO.IO.Trustee.csproj" />
-    <ProjectReference Include="..\FMO.Models\FMO.Models.csproj" />
-    <ProjectReference Include="..\FMO.Utilities\FMO.Utilities.csproj" />
+    <ProjectReference Include="..\..\FMO.Models\FMO.Models.csproj" />
+    <ProjectReference Include="..\..\FMO.Utilities\FMO.Utilities.csproj" />
+    <ProjectReference Include="..\FMO.IO.Trustee\FMO.IO.Trustee.csproj" />
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy $(TargetPath) ..\..\FMO\plugins\$(AssemblyName).dll" />
+  </Target>
 
 </Project>
