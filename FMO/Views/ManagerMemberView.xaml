@@ -95,9 +95,6 @@
                     </shared:ChangeableControl.ContentTemplate>
                 </shared:ChangeableControl>
             </DockPanel>
-            <shared:ChangeableControl Binding="{Binding Phone}" />
-            <shared:ChangeableControl Binding="{Binding Email}" />
-            <shared:ChangeableControl Binding="{Binding Address}" />
             <shared:ChangeableControl Binding="{Binding Efficient}">
                 <shared:ChangeableControl.EditTemplate>
                     <DataTemplate>
@@ -118,13 +115,24 @@
                     </DataTemplate>
                 </shared:ChangeableControl.EditTemplate>
             </shared:ChangeableControl>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="3*" />
+                </Grid.ColumnDefinitions>
+                <shared:ChangeableControl Binding="{Binding Phone}" />
+                <shared:ChangeableControl Grid.Column="1" Binding="{Binding Email}" />
+            </Grid>
+            <shared:ChangeableControl Binding="{Binding Address}" />
             <shared:ChangeableControl Binding="{Binding Profile}">
                 <shared:ChangeableControl.EditTemplate>
                     <DataTemplate>
                         <TextBox
                             MinHeight="60"
+                            Padding="6"
                             AcceptsReturn="True"
-                            Text="{Binding NewValue}" />
+                            Text="{Binding NewValue}"
+                            TextWrapping="Wrap" />
                     </DataTemplate>
                 </shared:ChangeableControl.EditTemplate>
             </shared:ChangeableControl>
