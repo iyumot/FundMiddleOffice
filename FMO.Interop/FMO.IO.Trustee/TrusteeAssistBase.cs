@@ -1,8 +1,7 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
+﻿using System.Text.RegularExpressions;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
-using FMO.Utilities;
 using Microsoft.Playwright;
-using System.Text.RegularExpressions;
 
 
 
@@ -71,7 +70,16 @@ public abstract class TrusteeAssistBase : ITrusteeAssist
 
     public virtual async Task<bool> PrepareLoginAsync(IPage page)
     {
-        return (await page.GotoAsync(Domain))?.Ok ?? false;
+        try
+        {
+            var resp = await page.GotoAsync(Domain);
+
+            return resp?.Ok ?? false;
+        }
+        catch (Exception)
+        {
+            return false;
+        } 
     }
 
     public virtual async Task<bool> EndLoginAsync(IPage page)
@@ -80,7 +88,7 @@ public abstract class TrusteeAssistBase : ITrusteeAssist
         await page.Keyboard.PressAsync("Escape");
         return true;
     }
-     
+
 
     public abstract Task<bool> SynchronizeFundRaisingRecord();
 
@@ -96,7 +104,7 @@ public abstract class TrusteeAssistBase : ITrusteeAssist
     /// </summary>
     /// <returns></returns>
     public abstract Task<bool> SynchronizeTransferRequestAsync();
-     
+
 
     public abstract Task<bool> SynchronizeTransferRecordAsync();
 
