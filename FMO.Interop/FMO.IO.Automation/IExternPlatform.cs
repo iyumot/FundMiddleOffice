@@ -74,7 +74,7 @@ public interface IExternPlatform //: IDisposable
 
         if (page.IsNew) await page.GotoAsync(Domain);
 
-        if (page is not null && await LoginValidationOverrideAsync(page))
+        if (page is not null && await LoginValidationAsync(page))
             return true;
 
 
