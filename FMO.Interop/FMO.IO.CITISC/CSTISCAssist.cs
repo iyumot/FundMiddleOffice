@@ -1,13 +1,13 @@
 ﻿//using FMO.IO.Trustee.Json.FundRasing;
+using System.Data;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using FMO.IO.Trustee.CITISC;
 using FMO.Models;
 using FMO.Utilities;
 using LiteDB;
 using Microsoft.Playwright;
 using Serilog;
-using System.Data;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 
@@ -526,7 +526,7 @@ public class CSTISCAssist : TrusteeAssistBase
         int fid = 291;
         await using var page = await Automation.AcquirePage(Identifier);
         if (page.IsNew) await page.GotoAsync(Domain);
-         
+
 
         await page.GotoAsync($"https://iservice.citics.com/iservice/zcdj/jyqrcx?refresh={DateTime.Now.TimeStampBySeconds()}");
 
@@ -662,7 +662,7 @@ public class CSTISCAssist : TrusteeAssistBase
         await using var page = await Automation.AcquirePage(Identifier);
         if (page.IsNew) await page.GotoAsync(Domain);
 
- 
+
         // 网址https://iservice.citics.com/iservice/zcdj/jyqrcx?refresh=1744077069249
         await page.GotoAsync($"https://iservice.citics.com/iservice/zcdj/jyqrcx?refresh={DateTime.Now.TimeStampBySeconds()}");
 
@@ -969,7 +969,7 @@ public class CSTISCAssist : TrusteeAssistBase
             if (data is null)
                 return Array.Empty<(string Code, ManageFeeDetail[] Fee)>();
 
-            var glf = data.Select(x => (Code:x.fcpdm, x.ToFeeDetail())).GroupBy(x=>x.Code).Select(x=>(x.Key, x.Select(y=>y.Item2).ToArray())).ToArray();//.GroupBy(x => x.fcpdm).Select(x => (x.Key, x.Select(y => y.ToFeeDetail()).ToArray())).ToArray();
+            var glf = data.Select(x => (Code: x.fcpdm, x.ToFeeDetail())).GroupBy(x => x.Code).Select(x => (x.Key, x.Select(y => y.Item2).ToArray())).ToArray();//.GroupBy(x => x.fcpdm).Select(x => (x.Key, x.Select(y => y.ToFeeDetail()).ToArray())).ToArray();
 
             return glf;
         }
