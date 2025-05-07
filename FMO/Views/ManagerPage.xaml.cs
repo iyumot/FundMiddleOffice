@@ -12,6 +12,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
+using Microsoft.Win32;
 
 namespace FMO;
 
@@ -750,5 +751,33 @@ public partial class ParticipantViewModel : ObservableObject
         IdFile = ff.LastOrDefault(x => x.Name.StartsWith($@"{Id}.{Identity.Id}"));
         SealedIdFile = ff.LastOrDefault(x => x.Name.StartsWith($@"sealed.{Id}.{Identity.Id}"));
     }
+
+
+    [RelayCommand]
+    public void View()
+    {
+        if (IdFile?.Exists ?? false)
+            try { System.Diagnostics.Process.Start(new ProcessStartInfo { FileName = IdFile.FullName, UseShellExecute = true }); } catch { }
+    }
+
+    [RelayCommand]
+    public void SetFile()
+    {
+        var dlg = new OpenFileDialog();
+        var r = dlg.ShowDialog();
+
+        if (r is null || !r.Value) return;
+
+        var di = new DirectoryInfo($@"manager\members");
+
+        if (!di.Exists) di.Create();
+
+        string tar = Path.Combine("manager", "members", $"{Id}.{Identity.Id}{Path.GetExtension(dlg.FileName)}");
+        try { File.Copy(dlg.FileName, tar); IdFile = new FileInfo(tar); } catch { }
+    }
+
+
+
+
 
 }
