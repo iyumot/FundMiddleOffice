@@ -330,6 +330,58 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
+
+                    <DataGridTemplateColumn>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <DockPanel>
+                                    <DockPanel LastChildFill="False">
+                                        <Button
+                                            Margin="-5"
+                                            hc:IconElement.Geometry="{DynamicResource f.book-open-reader}"
+                                            Command="{Binding ViewCommand}"
+                                            Foreground="Lime"
+                                            Style="{DynamicResource ButtonIcon.Small}"
+                                            ToolTip="查看" />
+                                        <Button
+                                            Margin="-5"
+                                            hc:IconElement.Geometry="{DynamicResource f.file-export}"
+                                            Command="{Binding SaveAsCommand}"
+                                            Style="{DynamicResource ButtonIcon.Small}"
+                                            ToolTip="另存为" />
+
+                                        <Button
+                                            Margin="-5"
+                                            hc:IconElement.Geometry="{DynamicResource f.print}"
+                                            Command="{Binding PrintCommand}"
+                                            Style="{DynamicResource ButtonIcon.Small}"
+                                            ToolTip="打印" />
+                                    </DockPanel>
+                                    <Button
+                                        Margin="-5"
+                                        hc:IconElement.Geometry="{DynamicResource f.gear}"
+                                        Command="{Binding SetFileCommand}"
+                                        CommandParameter="{Binding .}"
+                                        Style="{DynamicResource ButtonIcon.Small}"
+                                        ToolTip="更换"
+                                        Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                                    <Button
+                                        Margin="-5"
+                                        hc:IconElement.Geometry="{DynamicResource f.xmark}"
+                                        Command="{Binding DeleteFileCommand}"
+                                        CommandParameter="{Binding .}"
+                                        Foreground="Red"
+                                        Style="{DynamicResource ButtonIcon.Small}"
+                                        ToolTip="删除"
+                                        Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                                </DockPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+
+
+                    <!--  编辑/删除  -->
                     <DataGridTemplateColumn>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>

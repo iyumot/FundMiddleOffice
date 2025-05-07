@@ -117,16 +117,6 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
 
 
     /// <summary>
-    /// 法人
-    /// </summary> 
-    public ChangeableViewModel<Manager, PersonViewModel> LegalPerson { get; }
-
-    /// <summary>
-    /// 实控人
-    /// </summary>
-    public ChangeableViewModel<Manager, PersonViewModel> ActualController { get; }
-
-    /// <summary>
     /// 营业执照正本
     /// </summary>
     [ObservableProperty]
@@ -159,7 +149,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
 
 
     [ObservableProperty]
-    public partial ObservableCollection<Participant> Members { get; set; }
+    public partial ObservableCollection<ParticipantViewModel> Members { get; set; }
 
     public CollectionViewSource MemberSource { get; } = new();
 
@@ -203,7 +193,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
             MainLogo = bitmapSource;
         }
 
-        Members = new(db.GetCollection<Participant>().FindAll()/*.Select(x => new PersonViewModel(x)*/);
+        Members = new(db.GetCollection<Participant>().FindAll().ToArray().Select(x => new ParticipantViewModel(x))/*.Select(x => new PersonViewModel(x)*/);
         MemberSource.Source = Members;
         //if (manager.LegalAgent is not null)
         //    Members.Add( (manager.LegalAgent));
@@ -230,23 +220,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         };
         ArtificialPerson.Init(manager);
 
-        LegalPerson = new()
-        {
-            Label = "法人代表/委派代表",
-            InitFunc = x => new(x.LegalAgent),
-            UpdateFunc = (x, y) => x.LegalAgent = y!.Build(),
-            ClearFunc = x => x.LegalAgent = null,
-        };
-        LegalPerson.Init(manager);
 
-        ActualController = new()
-        {
-            Label = "实控人",
-            InitFunc = x => new(x.ActualController),
-            UpdateFunc = (x, y) => x.ActualController = y!.Build(),
-            ClearFunc = x => x.ActualController = null,
-        };
-        ActualController.Init(manager);
 
         RegisterNo = new ChangeableViewModel<Manager, string>
         {
@@ -428,14 +402,14 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     public void AddMember()
     {
         Participant obj = new();
-        Members.Add(obj);
+        Members.Add(new(obj));
         MemberContext = new ManagerMemberViewModel(obj);
         ShowMemberPopup = true;
     }
 
 
     [RelayCommand]
-    public void RemoveMember(Participant participant)
+    public void RemoveMember(ParticipantViewModel participant)
     {
         if (HandyControl.Controls.MessageBox.Show($"是否确认删除 {participant.Name}？", button: MessageBoxButton.YesNo) == MessageBoxResult.Yes)
         {
@@ -447,9 +421,11 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     }
 
     [RelayCommand]
-    public void EditMember(Participant participant)
+    public void EditMember(ParticipantViewModel participant)
     {
-        MemberContext = new ManagerMemberViewModel(participant);
+        using var db = DbHelper.Base();
+        var obj = db.GetCollection<Participant>().FindById(participant.Id);
+        MemberContext = new ManagerMemberViewModel(obj);
         ShowMemberPopup = true;
     }
 
@@ -471,7 +447,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
                 string hash = item.ComputeHash()!;
 
                 // 保存副本
-                var dir = Directory.CreateDirectory("Manager");
+                var dir = Directory.CreateDirectory("manager");
                 var tar = FileHelper.CopyFile(item, dir.FullName);
 
                 FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
@@ -512,7 +488,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
                 string hash = item.ComputeHash()!;
 
                 // 保存副本
-                var dir = Directory.CreateDirectory("Manager");
+                var dir = Directory.CreateDirectory("manager");
                 var tar = FileHelper.CopyFile(item, dir.FullName);
 
                 FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
@@ -553,7 +529,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
                 string hash = item.ComputeHash()!;
 
                 // 保存副本
-                var dir = Directory.CreateDirectory("Manager");
+                var dir = Directory.CreateDirectory("manager");
                 var tar = FileHelper.CopyFile(item, dir.FullName);
 
                 FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
@@ -594,7 +570,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
                 string hash = item.ComputeHash()!;
 
                 // 保存副本
-                var dir = Directory.CreateDirectory("Manager");
+                var dir = Directory.CreateDirectory("manager");
                 var tar = FileHelper.CopyFile(item, dir.FullName);
 
                 FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
@@ -635,7 +611,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
                 string hash = item.ComputeHash()!;
 
                 // 保存副本
-                var dir = Directory.CreateDirectory("Manager");
+                var dir = Directory.CreateDirectory("manager");
                 var tar = FileHelper.CopyFile(item, dir.FullName);
 
                 FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
@@ -698,7 +674,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         var obj = db.GetCollection<Participant>().FindById(message.Id);
 
 
-        if (obj is not null && (Members.FirstOrDefault(x => x.Id == message.Id) ?? Members.LastOrDefault(x => x.Id == 0)) is Participant old)
+        if (obj is not null && (Members.FirstOrDefault(x => x.Id == message.Id) ?? Members.LastOrDefault(x => x.Id == 0)) is ParticipantViewModel old)
         {
             old.UpdateFrom(obj);
             MemberSource.View.Refresh();
@@ -708,39 +684,32 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
 }
 
 
-//[AutoChangeableViewModel(typeof(Person))]
-public partial class PersonViewModel : ObservableObject, IEquatable<PersonViewModel>
+public partial class ParticipantViewModel : ObservableObject
 {
-    public PersonViewModel(FMO.Models.Person? instance)
+    public ParticipantViewModel(FMO.Models.Participant? instance)
     {
-        if (instance is FMO.Models.Person obj)
+        if (instance is FMO.Models.Participant obj)
         {
             Id = obj.Id;
             Name = obj.Name;
             Role = obj.Role;
-            IDType = obj.IDType;
+            Identity = obj.Identity;
             Title = obj.Title;
-            Cellphone = obj.Cellphone;
             Phone = obj.Phone;
             Address = obj.Address;
             Email = obj.Email;
             Profile = obj.Profile;
         }
     }
-    public PersonViewModel()
-    {
-    }
-
 
     [ObservableProperty]
     public partial string? Name { get; set; }
 
 
-    [ObservableProperty]
-    public partial string? Id { get; set; }
+    public int Id { get; set; }
 
     [ObservableProperty]
-    public partial IDType IDType { get; set; } = IDType.IdentityCard;
+    public partial Identity Identity { get; set; }
 
     [ObservableProperty]
     public partial PersonRole Role { get; set; }
@@ -763,39 +732,23 @@ public partial class PersonViewModel : ObservableObject, IEquatable<PersonViewMo
     [ObservableProperty]
     public partial string? Profile { get; set; }
 
-    public bool Equals(PersonViewModel? other)
+    [ObservableProperty]
+    public partial FileInfo? IdFile { get; set; }
+
+
+    [ObservableProperty]
+    public partial FileInfo? SealedIdFile { get; set; }
+
+
+    partial void OnIdentityChanged(Identity value)
     {
-        if (other is null) return false;
-        if (ReferenceEquals(this, other)) return true;
-        return EqualityComparer<string?>.Default.Equals(Id, other.Id) &&
-            EqualityComparer<PersonRole>.Default.Equals(Role, other.Role) &&
-            EqualityComparer<string?>.Default.Equals(Name, other.Name) &&
-            EqualityComparer<string?>.Default.Equals(Title, other.Title)
-            && EqualityComparer<string?>.Default.Equals(Cellphone, other.Cellphone)
-            && EqualityComparer<string?>.Default.Equals(Phone, other.Phone)
-            && EqualityComparer<string?>.Default.Equals(Address, other.Address)
-            && EqualityComparer<string?>.Default.Equals(Email, other.Email)
-            && EqualityComparer<string?>.Default.Equals(Profile, other.Profile);
+        var path = $@"manager\members\{Id}.{Identity.Id}";
+        var di = new DirectoryInfo($@"manager\members");
+
+        if (!di.Exists) return;
+        var ff = di.GetFiles();
+        IdFile = ff.LastOrDefault(x => x.Name.StartsWith($@"{Id}.{Identity.Id}"));
+        SealedIdFile = ff.LastOrDefault(x => x.Name.StartsWith($@"sealed.{Id}.{Identity.Id}"));
     }
 
-
-    public FMO.Models.Person? Build()
-    {
-        if (string.IsNullOrWhiteSpace(Id) || string.IsNullOrWhiteSpace(Name))
-            return null;
-
-        var result = new FMO.Models.Person()
-        {
-            Title = Title,
-            Id = Id,
-            Role = Role,
-            Address = Address,
-            Email = Email,
-            Profile = Profile,
-            Name = Name,
-            Cellphone = Cellphone,
-            Phone = Phone
-        };
-        return result;
-    }
 }
