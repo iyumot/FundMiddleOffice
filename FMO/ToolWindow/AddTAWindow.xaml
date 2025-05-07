@@ -43,8 +43,8 @@
                     IsSynchronizedWithCurrentItem="False"
                     IsTextSearchEnabled="False"
                     ItemsSource="{Binding FundSource.View}"
-                    KeyDown="Search_KeyDown"
-                    MouseDown="ComboBox_MouseDown"
+                    PreviewKeyDown="Search_KeyDown"
+                    PreviewMouseDown="Search_MouseDown"
                     SelectedIndex="-1"
                     SelectedItem="{Binding SelectedFund}"
                     Text="{Binding SearchFundKey, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
@@ -65,7 +65,7 @@
                     IsTextSearchEnabled="False"
                     ItemsSource="{Binding InvestorSource.View}"
                     KeyDown="Search_KeyDown"
-                    MouseDown="ComboBox_MouseDown"
+                    MouseDown="Search_MouseDown"
                     SelectedItem="{Binding SelectedInvestor}"
                     Text="{Binding SearchInvestorKey, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
             </DockPanel>
