@@ -393,8 +393,8 @@ public partial class DateEfficientViewModel : ObservableObject, IEquatable<DateE
 
     public DateEfficientViewModel(DateEfficient efficient)
     {
-        Begin = efficient.Begin;
-        End = efficient.End;
+        Begin = efficient.Begin == default ? null : efficient.Begin;
+        End = efficient.End == default || efficient.End == DateOnly.MaxValue ? null : efficient.End;
         IsLongTerm = efficient.LongTerm;
     }
 

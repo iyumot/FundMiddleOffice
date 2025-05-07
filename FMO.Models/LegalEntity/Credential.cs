@@ -126,16 +126,24 @@ public enum IDType
 public record struct Identity
 {
     /// <summary>
-    /// 证件类型
-    /// </summary>
-    public IDType Type { get; set; }
-
-    /// <summary>
     /// 证件号码
     /// </summary>
     public required string Id { get; set; }
 
+
+    /// <summary>
+    /// 证件类型
+    /// </summary>
+    public IDType Type { get; set; }
+     
+
     public string? Other { get; set; }
+
+    /// <summary>
+    /// 有效期
+    /// </summary>
+    public DateEfficient Efficient { get; set; }
+
 
     public override int GetHashCode()
     {

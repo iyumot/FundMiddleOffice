@@ -76,26 +76,48 @@
             </StackPanel.Resources>
 
             <shared:ChangeableControl Binding="{Binding Name}" />
-            <shared:ChangeableControl Binding="{Binding IdType}">
-                <shared:ChangeableControl.EditTemplate>
-                    <DataTemplate>
-                        <ComboBox
-                            MinWidth="100"
-                            ItemsSource="{x:Static local:ManagerMemberViewModel.IDTypes}"
-                            SelectedItem="{Binding NewValue}" />
-                    </DataTemplate>
-                </shared:ChangeableControl.EditTemplate>
-            </shared:ChangeableControl>
-            <shared:ChangeableControl Binding="{Binding IdNumber}">
-                <shared:ChangeableControl.ContentTemplate>
-                    <DataTemplate>
-                        <shared:CopyableTextBlock IsMasked="True" Text="{Binding OldValue}" />
-                    </DataTemplate>
-                </shared:ChangeableControl.ContentTemplate>
-            </shared:ChangeableControl>
+            <DockPanel>
+                <shared:ChangeableControl Binding="{Binding IdType}">
+                    <shared:ChangeableControl.EditTemplate>
+                        <DataTemplate>
+                            <ComboBox
+                                MinWidth="100"
+                                ItemsSource="{x:Static local:ManagerMemberViewModel.IDTypes}"
+                                SelectedItem="{Binding NewValue}" />
+                        </DataTemplate>
+                    </shared:ChangeableControl.EditTemplate>
+                </shared:ChangeableControl>
+                <shared:ChangeableControl Binding="{Binding IdNumber}">
+                    <shared:ChangeableControl.ContentTemplate>
+                        <DataTemplate>
+                            <shared:CopyableTextBlock IsMasked="True" Text="{Binding OldValue}" />
+                        </DataTemplate>
+                    </shared:ChangeableControl.ContentTemplate>
+                </shared:ChangeableControl>
+            </DockPanel>
             <shared:ChangeableControl Binding="{Binding Phone}" />
             <shared:ChangeableControl Binding="{Binding Email}" />
             <shared:ChangeableControl Binding="{Binding Address}" />
+            <shared:ChangeableControl Binding="{Binding Efficient}">
+                <shared:ChangeableControl.EditTemplate>
+                    <DataTemplate>
+                        <DockPanel DataContext="{Binding NewValue}">
+                            <DatePicker MinWidth="100" SelectedDate="{Binding Begin, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
+                            <DockPanel Visibility="{Binding IsLongTerm, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                                <TextBlock
+                                    Margin="5,0"
+                                    VerticalAlignment="Center"
+                                    Text="-" />
+                                <DatePicker MinWidth="100" SelectedDate="{Binding End, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
+                            </DockPanel>
+                            <CheckBox
+                                Margin="5,0"
+                                Content="长期"
+                                IsChecked="{Binding IsLongTerm}" />
+                        </DockPanel>
+                    </DataTemplate>
+                </shared:ChangeableControl.EditTemplate>
+            </shared:ChangeableControl>
             <shared:ChangeableControl Binding="{Binding Profile}">
                 <shared:ChangeableControl.EditTemplate>
                     <DataTemplate>
