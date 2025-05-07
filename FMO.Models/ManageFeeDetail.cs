@@ -6,5 +6,5 @@ using System.Threading.Tasks;
 
 namespace FMO.Models;
 
-public record class ManageFeeDetail(DateOnly Date, decimal Fee, decimal Share);
+public record class ManageFeeDetail(int Id, DateOnly Date, decimal Fee, decimal Share);
  
