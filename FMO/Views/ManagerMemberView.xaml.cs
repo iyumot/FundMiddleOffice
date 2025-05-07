@@ -51,7 +51,7 @@ public partial class ManagerMemberViewModel : EditableControlViewModelBase<Parti
 
     public ChangeableViewModel<Participant, PersonRole?> Role { get; }
 
-
+    public ChangeableViewModel<Participant, DateEfficientViewModel?> Efficient { get; }
 
     public ManagerMemberViewModel(Participant person)
     {
@@ -84,6 +84,14 @@ public partial class ManagerMemberViewModel : EditableControlViewModelBase<Parti
         };
         IdNumber.Init(person);
 
+        Efficient = new()
+        {
+            Label = "有效期",
+            InitFunc = x => new(x.Identity.Efficient),
+            UpdateFunc = (x, y) => x.Identity = x.Identity with { Efficient = y!.Build() },
+            ClearFunc = x => x.Identity = x.Identity with { Efficient = default }
+        };
+        Efficient.Init(person);
 
         Phone = new()
         {
