@@ -305,7 +305,6 @@
                 AutoGenerateColumns="False"
                 IsReadOnly="True"
                 ItemsSource="{Binding MemberSource.View}"
-                SelectedItem="{Binding SelectedMember}"
                 Style="{StaticResource DataGrid.NoSelect}">
                 <DataGrid.Columns>
                     <DataGridTemplateColumn Header="姓名">
@@ -331,49 +330,27 @@
                     </DataGridTemplateColumn>
 
 
-                    <DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="证件">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <DockPanel>
-                                    <DockPanel LastChildFill="False">
-                                        <Button
-                                            Margin="-5"
-                                            hc:IconElement.Geometry="{DynamicResource f.book-open-reader}"
-                                            Command="{Binding ViewCommand}"
-                                            Foreground="Lime"
-                                            Style="{DynamicResource ButtonIcon.Small}"
-                                            ToolTip="查看" />
-                                        <Button
-                                            Margin="-5"
-                                            hc:IconElement.Geometry="{DynamicResource f.file-export}"
-                                            Command="{Binding SaveAsCommand}"
-                                            Style="{DynamicResource ButtonIcon.Small}"
-                                            ToolTip="另存为" />
+                                <DockPanel LastChildFill="False">
+                                    <Button
+                                        Margin="-5"
+                                        hc:IconElement.Geometry="{DynamicResource f.book-open-reader}"
+                                        Command="{Binding ViewCommand}"
+                                        Foreground="Lime"
+                                        Style="{DynamicResource ButtonIcon.Small}"
+                                        ToolTip="查看"
+                                        Visibility="{Binding IdFile, TargetNullValue=Collapsed, Converter={StaticResource FileExistsToVisibilityConverter}}" />
 
-                                        <Button
-                                            Margin="-5"
-                                            hc:IconElement.Geometry="{DynamicResource f.print}"
-                                            Command="{Binding PrintCommand}"
-                                            Style="{DynamicResource ButtonIcon.Small}"
-                                            ToolTip="打印" />
-                                    </DockPanel>
                                     <Button
                                         Margin="-5"
                                         hc:IconElement.Geometry="{DynamicResource f.gear}"
                                         Command="{Binding SetFileCommand}"
                                         CommandParameter="{Binding .}"
                                         Style="{DynamicResource ButtonIcon.Small}"
-                                        ToolTip="更换"
-                                        Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource Boolean2VisibilityConverter}}" />
-                                    <Button
-                                        Margin="-5"
-                                        hc:IconElement.Geometry="{DynamicResource f.xmark}"
-                                        Command="{Binding DeleteFileCommand}"
-                                        CommandParameter="{Binding .}"
-                                        Foreground="Red"
-                                        Style="{DynamicResource ButtonIcon.Small}"
-                                        ToolTip="删除"
-                                        Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                                        ToolTip="更换" />
+
                                 </DockPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
