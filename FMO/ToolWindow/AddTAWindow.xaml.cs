@@ -29,7 +29,7 @@ public partial class AddTAWindow : Window
         if (sender is ComboBox obj) obj.IsDropDownOpen = true;
     }
 
-    private void ComboBox_MouseDown(object sender, MouseButtonEventArgs e)
+    private void Search_MouseDown(object sender, MouseButtonEventArgs e)
     {
         if (sender is ComboBox obj) obj.IsDropDownOpen = true;
     }
