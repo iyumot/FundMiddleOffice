@@ -138,9 +138,9 @@ public class FutureAccount
 
 
 /// <summary>
-/// 
+/// 每个基金只有一个的账户
 /// </summary>
-public class FundAccounts
+public class FundSingletonAccounts
 {
     public int Id { get; set; }
 
