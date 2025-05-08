@@ -19,11 +19,12 @@
             x:Key="GeneratorButton"
             BasedOn="{StaticResource ButtonIconCircular.Small}"
             TargetType="Button">
-            <Setter Property="hc:IconElement.Geometry" Value="{StaticResource f.hammer}" />
+            <Setter Property="Visibility" Value="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+            <Setter Property="hc:IconElement.Geometry" Value="{StaticResource f.file-signature}" />
             <Setter Property="Command" Value="{Binding GenerateFileCommand}" />
-            <Setter Property="Foreground" Value="Salmon" />
+            <Setter Property="Foreground" Value="RoyalBlue" />
             <Setter Property="ToolTip" Value="生成" />
-
+            <Setter Property="BorderBrush" Value="Transparent" />
         </Style>
 
         <Style x:Key="Style.TextBlock.FlowName" TargetType="TextBlock">
