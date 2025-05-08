@@ -598,7 +598,8 @@
                         Command="{Binding DataContext.DeleteFlowCommand, RelativeSource={RelativeSource AncestorType=local:FundLifeTimeView}}"
                         CommandParameter="{Binding .}"
                         Content="废除"
-                        DockPanel.Dock="Right" />
+                        DockPanel.Dock="Right"
+                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
 
 
                     <DockPanel
@@ -681,7 +682,8 @@
                         Command="{Binding DataContext.DeleteFlowCommand, RelativeSource={RelativeSource AncestorType=local:FundLifeTimeView}}"
                         CommandParameter="{Binding .}"
                         Content="废除"
-                        DockPanel.Dock="Right" />
+                        DockPanel.Dock="Right"
+                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
 
 
                     <StackPanel MinWidth="500" VerticalAlignment="Center">
