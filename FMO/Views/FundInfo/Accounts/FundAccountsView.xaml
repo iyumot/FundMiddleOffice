@@ -2,6 +2,7 @@
     x:Class="FMO.FundAccountsView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:componentmodel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO"
@@ -14,22 +15,41 @@
     mc:Ignorable="d">
     <UserControl.Resources>
 
-
+        <CollectionViewSource
+            x:Key="SecurityCardsSource"
+            IsLiveSortingRequested="True"
+            Source="{Binding SecurityCards}">
+            <CollectionViewSource.SortDescriptions>
+                <componentmodel:SortDescription PropertyName="Group" />
+                <componentmodel:SortDescription PropertyName="Tag" />
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
 
         <DataTemplate x:Key="SecurityCardItem" DataType="model:SecurityCard">
             <hc:SimplePanel>
-                <Border Margin="2" Background="WhiteSmoke">
+                <Border
+                    Margin="2"
+                    Background="WhiteSmoke"
+                    BorderBrush="{Binding GroupBrush}"
+                    BorderThickness="0,0,0,4">
                     <DockPanel Margin="6">
                         <DockPanel
                             Margin="0,6"
                             DockPanel.Dock="Bottom"
                             LastChildFill="False">
+                            <DockPanel.Resources>
+                                <Style BasedOn="{StaticResource ButtonIcon}" TargetType="Button">
+                                    <Setter Property="Height" Value="20" />
+                                    <Setter Property="Width" Value="34" />
+                                    <Setter Property="Padding" Value="6,1" />
+                                    <Setter Property="hc:IconElement.Height" Value="16" />
+                                </Style>
+                            </DockPanel.Resources>
                             <Button
                                 Margin="-5"
                                 hc:IconElement.Geometry="{DynamicResource f.copy}"
                                 Command="{Binding CopyCommand}"
                                 Foreground="RoyalBlue"
-                                Style="{DynamicResource ButtonIcon}"
                                 ToolTip="复制账号" />
 
                             <Button
@@ -37,32 +57,63 @@
                                 hc:IconElement.Geometry="{DynamicResource f.book-open-reader}"
                                 Command="{Binding ViewCommand}"
                                 Foreground="Lime"
-                                Style="{DynamicResource ButtonIcon}"
                                 ToolTip="查看" />
                             <Button
                                 Margin="-5"
                                 hc:IconElement.Geometry="{DynamicResource f.file-export}"
                                 Command="{Binding SaveAsCommand}"
-                                Style="{DynamicResource ButtonIcon}"
                                 ToolTip="另存为" />
 
                             <Button
+                                HorizontalAlignment="Left"
+                                hc:IconElement.Geometry="{StaticResource f.group-arrows-rotate}"
+                                Command="{Binding SetGroupCommand}" />
+
+                            <Button
+                                Name="switch"
                                 Margin="-5"
-                                hc:IconElement.Geometry="{DynamicResource f.print}"
-                                Command="{Binding PrintCommand}"
-                                Style="{DynamicResource ButtonIcon}"
-                                ToolTip="打印" />
+                                hc:IconElement.Geometry="{DynamicResource f.eraser}"
+                                Command="{Binding DeregisterCommand}"
+                                Foreground="Red"
+                                ToolTip="注销/恢复" />
                         </DockPanel>
 
-                        <TextBlock
-                            Margin="0,3,0,0"
-                            HorizontalAlignment="Center"
-                            DockPanel.Dock="Bottom"
-                            Foreground="Gray"
-                            Text="{Binding Date, StringFormat=yyyy-MM-dd}" />
+                        <Grid DockPanel.Dock="Bottom">
+                            <TextBlock
+                                Margin="0,3,0,0"
+                                HorizontalAlignment="Center"
+                                Foreground="Gray"
+                                Text="{Binding Date, StringFormat=yyyy-MM-dd}" />
+                            <Popup
+                                AllowsTransparency="True"
+                                IsOpen="{Binding ShowGroupPop}"
+                                StaysOpen="False">
+                                <Border>
+                                    <ListBox
+                                        ItemsSource="{x:Static local:SecurityCardViewModel.GroupBrushes}"
+                                        SelectedIndex="{Binding Group}"
+                                        SelectedItem="{Binding GroupBrush}">
+                                        <ListBox.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <UniformGrid Columns="3" Rows="3" />
+                                            </ItemsPanelTemplate>
+                                        </ListBox.ItemsPanel>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Rectangle
+                                                    Width="20"
+                                                    Height="20"
+                                                    Fill="{Binding .}" />
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Border>
+                            </Popup>
+                        </Grid>
 
 
                         <TextBlock
+                            Name="card"
                             HorizontalAlignment="Center"
                             FontSize="16"
                             FontWeight="Bold"
@@ -79,6 +130,14 @@
                         Text="{Binding Tag}" />
                 </hc:SimplePanel>
             </hc:SimplePanel>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsDeregistered}" Value="True">
+                    <Setter TargetName="card" Property="TextDecorations" Value="Strikethrough" />
+                    <Setter TargetName="card" Property="Foreground" Value="Gray" />
+                    <Setter TargetName="switch" Property="hc:IconElement.Geometry" Value="{StaticResource f.reply}" />
+                    <Setter TargetName="switch" Property="Foreground" Value="Black" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
         </DataTemplate>
 
         <DataTemplate x:Key="StockItem" DataType="local:StockAccountViewModel">
@@ -500,7 +559,7 @@
                 BorderThickness="0"
                 ItemTemplate="{StaticResource SecurityCardItem}"
                 ItemsPanel="{StaticResource SecurityCardPanel}"
-                ItemsSource="{Binding SecurityCards}"
+                ItemsSource="{Binding Source={StaticResource SecurityCardsSource}}"
                 Style="{StaticResource ListBoxCustom}" />
         </DockPanel>
 

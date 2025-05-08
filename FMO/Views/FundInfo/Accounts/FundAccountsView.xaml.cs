@@ -1,4 +1,10 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.IO;
+using System.Text.RegularExpressions;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using FMO.PDF;
@@ -6,12 +12,6 @@ using FMO.Shared;
 using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Text.RegularExpressions;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
 
 namespace FMO;
 
@@ -170,7 +170,7 @@ public partial class FundAccountsViewModel : ObservableObject
 
     [ObservableProperty]
     public partial bool ShowChooseFutureCompany { get; set; }
-     
+
 
     [ObservableProperty]
     public partial string? FutureCompanyKeyword { get; set; }
@@ -325,24 +325,22 @@ public partial class FundAccountsViewModel : ObservableObject
 
                 }
 
-                if (list.Count > 0)
-                {
-                    if (SecurityCards is null)
-                        SecurityCards = new(list.Select(x => new SecurityCardViewModel(x)));
-                    else
-                        foreach (var l in list)
-                            SecurityCards.Add(new(l));
-                }
-
-
-                HandyControl.Controls.Growl.Info($"已解析{cnt}个股卡{(list.Count < cnt ? $"，{cnt - list.Count}个不属于本产品" : "")}");
             }
             catch (Exception e)
             {
 
             }
         }
+        if (list.Count > 0)
+        {
+            if (SecurityCards is null)
+                SecurityCards = new(list.Select(x => new SecurityCardViewModel(x)));
+            else
+                foreach (var l in list)
+                    SecurityCards.Add(new(l));
+        }
 
+        HandyControl.Controls.Growl.Info($"已解析{cnt}个股卡{(list.Count < cnt ? $"，{cnt - list.Count}个不属于本产品" : "")}");
     }
 
     bool FindFund(SecurityCard sa)
@@ -550,7 +548,7 @@ public partial class FundAccountsViewModel : ObservableObject
 
 
 public partial class FundSingletonAccountsViewModel : EditableControlViewModelBase<FundSingletonAccounts>
-{ 
+{
     public ChangeableViewModel<FundSingletonAccounts, string?> UniversalNo { get; }
     public ChangeableViewModel<FundSingletonAccounts, string?> FutureNo { get; }
 

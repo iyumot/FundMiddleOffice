@@ -47,7 +47,15 @@ public class SecurityCard
     /// </summary>
     public DateOnly Date { get; set; }
 
+    /// <summary>
+    /// 是否注销
+    /// </summary>
+    public bool IsDeregistered { get; set; }
 
+    /// <summary>
+    /// 组
+    /// </summary>
+    public int Group { get; set; }
 }
 
 

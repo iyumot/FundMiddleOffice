@@ -1,11 +1,12 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.IO;
+using System.Windows;
+using System.Windows.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
+using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
-using System.IO;
-using System.Windows;
-using System.Windows.Controls;
 
 namespace FMO;
 
@@ -22,7 +23,10 @@ public partial class SecurityCardViewModel : ObservableObject
         SerialNo = x.SerialNo;
         CardNo = x.CardNo;
         UniversalNo = x.UniversalNo;
+        Group = x.Group >= GroupBrushes.Length ? 0 : x.Group;
+        GroupBrush = GroupBrushes[Group];
         FundCode = x.FundCode;
+        IsDeregistered = x.IsDeregistered;
         Date = x.Date;
         Tag = x.Type switch { SecurityCardType.ShangHai => "沪", SecurityCardType.ShenZhen => "深", _ => x.CardNo.StartsWith('B') ? "沪" : "深" };
         File = new FileInfo(@$"files\accounts\security\{SerialNo}-{CardNo}.pdf");
@@ -51,6 +55,19 @@ public partial class SecurityCardViewModel : ObservableObject
 
     [ObservableProperty] public partial string? FundCode { get; set; }
 
+
+    [ObservableProperty] public partial bool IsDeregistered { get; set; }
+
+    [ObservableProperty] public partial bool ShowGroupPop { get; set; }
+
+    [ObservableProperty] public partial int Group { get; set; }
+
+    [ObservableProperty]
+    public partial SolidColorBrush? GroupBrush { get; set; }
+
+    public static SolidColorBrush[] GroupBrushes { get; } = [Brushes.Transparent, Brushes.Yellow, Brushes.Orange, Brushes.Green, Brushes.RoyalBlue];
+
+
     /// <summary>
     /// 申请日期
     /// </summary>
@@ -60,6 +77,19 @@ public partial class SecurityCardViewModel : ObservableObject
 
     public FileInfo File { get; set; }
 
+
+    partial void OnGroupChanged(int value)
+    {
+        using var db = DbHelper.Base();
+        var card = db.GetCollection<SecurityCard>().FindById(Id);
+        card.Group = value;
+        db.GetCollection<SecurityCard>().Update(card);
+        ShowGroupPop = false;
+    }
+
+
+
+
     [RelayCommand]
     public void View()
     {
@@ -67,27 +97,15 @@ public partial class SecurityCardViewModel : ObservableObject
             try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(File.FullName) { UseShellExecute = true }); } catch { }
     }
 
+
     [RelayCommand]
-    public void Print()
+    public void Deregister()
     {
-        if (File is null || !File.Exists) return;
-
-
-        PrintDialog printDialog = new PrintDialog();
-        if (printDialog.ShowDialog() == true)
-        {
-            // 获取默认打印机名称
-            string printerName = printDialog.PrintQueue.Name;
-
-            // 使用系统默认的PDF阅读器打印PDF文档
-            System.Diagnostics.Process process = new System.Diagnostics.Process();
-            process.StartInfo.FileName = File.FullName;
-            process.StartInfo.Verb = "print";
-            process.Start();
-
-            // 等待打印任务完成
-            process.WaitForExit();
-        }
+        using var db = DbHelper.Base();
+        var card = db.GetCollection<SecurityCard>().FindById(Id);
+        card.IsDeregistered = !card.IsDeregistered;
+        IsDeregistered = card.IsDeregistered;
+        db.GetCollection<SecurityCard>().Update(card);
     }
 
 
@@ -115,6 +133,12 @@ public partial class SecurityCardViewModel : ObservableObject
     public void Copy()
     {
         Clipboard.SetDataObject(new DataObject(CardNo));
+    }
+
+    [RelayCommand]
+    public void SetGroup()
+    {
+        ShowGroupPop = true;
     }
 }
 
