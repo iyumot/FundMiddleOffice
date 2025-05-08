@@ -10,27 +10,28 @@ public class NumberHelper
 {
     public static string NumberToChinese(decimal number)
     {
-        string[] numChinese = { "零", "一", "二", "三", "四", "五", "六", "七", "八", "九" };
-        string[] unitChinese = { "", "十", "百", "千" };
-        string[] bigUnitChinese = { "", "万", "亿", "兆" };
+        string[] numArray = { "零", "壹", "贰", "叁", "肆", "伍", "陆", "柒", "捌", "玖" };
+        string[] unitArray = { "", "拾", "佰", "仟" };
+        string[] sectionArray = { "", "万", "亿", "万亿" };
 
-        string integerPart = Math.Truncate(number).ToString();
-        string decimalPart = ((number - Math.Truncate(number)) * 100).ToString("00");
+        string numStr = Math.Abs(number).ToString("0.00");
+        string[] parts = numStr.Split('.');
+        string integerPart = parts[0];
+        string decimalPart = parts[1];
 
         string result = "";
-        int groupCount = (integerPart.Length + 3) / 4;
-        for (int i = 0; i < groupCount; i++)
+        int sectionIndex = 0;
+        while (integerPart.Length > 0)
         {
-            int startIndex = Math.Max(0, integerPart.Length - (i + 1) * 4);
-            int length = Math.Min(4, integerPart.Length - startIndex);
-            string group = integerPart.Substring(startIndex, length);
+            string section = integerPart.Length >= 4 ? integerPart.Substring(integerPart.Length - 4) : integerPart;
+            integerPart = integerPart.Length >= 4 ? integerPart.Substring(0, integerPart.Length - 4) : "";
 
-            string groupResult = "";
+            string sectionResult = "";
             bool zeroFlag = false;
-            for (int j = 0; j < group.Length; j++)
+            for (int i = 0; i < section.Length; i++)
             {
-                int digit = int.Parse(group[j].ToString());
-                if (digit == 0)
+                int num = int.Parse(section[i].ToString());
+                if (num == 0)
                 {
                     zeroFlag = true;
                 }
@@ -38,35 +39,54 @@ public class NumberHelper
                 {
                     if (zeroFlag)
                     {
-                        groupResult += "零";
+                        sectionResult = "零" + sectionResult;
                         zeroFlag = false;
                     }
-                    groupResult += numChinese[digit] + unitChinese[group.Length - j - 1];
+                    sectionResult = numArray[num] + unitArray[section.Length - i - 1] + sectionResult;
                 }
             }
-            if (groupResult.EndsWith("零"))
+
+            if (sectionResult != "")
             {
-                groupResult = groupResult.TrimEnd('零');
+                sectionResult += sectionArray[sectionIndex];
             }
-            if (!string.IsNullOrEmpty(groupResult))
-            {
-                groupResult += bigUnitChinese[i];
-            }
-            result = groupResult + result;
+            result = sectionResult + result;
+            sectionIndex++;
         }
-        if (string.IsNullOrEmpty(result))
+
+        if (result == "")
         {
             result = "零";
         }
+
         if (decimalPart != "00")
         {
-            result += "点";
-            for (int i = 0; i < decimalPart.Length; i++)
+            result += "元";
+            int jiao = int.Parse(decimalPart[0].ToString());
+            int fen = int.Parse(decimalPart[1].ToString());
+            if (jiao != 0)
             {
-                int digit = int.Parse(decimalPart[i].ToString());
-                result += numChinese[digit];
+                result += numArray[jiao] + "角";
+            }
+            else if (fen != 0)
+            {
+                result += "零";
+            }
+            if (fen != 0)
+            {
+                result += numArray[fen] + "分";
             }
         }
+        else
+        {
+            result += "元整";
+        }
+
+        if (number < 0)
+        {
+            result = "负" + result;
+        }
+
         return result;
     }
 }
