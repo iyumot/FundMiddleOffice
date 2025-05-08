@@ -304,6 +304,8 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         };
         RiskLevel.Init(elements);
 
+
+        /// 最大999，认为是永续
         DurationInMonths = new ChangeableViewModel<FundElements, int?>
         {
             Label = "存续期",
@@ -314,12 +316,21 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
                 if (y is not null)
                 {
                     x.DurationInMonths!.SetValue(y.Value, newValue);
-                    ExpirationDate.NewValue = SetupDate.AddMonths(y.Value).AddDays(-1);
-                    ExpirationDate.OldValue = ExpirationDate.NewValue;
+
+                    if (newValue >= 999)
+                    {
+                        ExpirationDate.NewValue = new(2099, 12, 31);
+                        ExpirationDate.OldValue = new(2099, 12, 31);
+                    }
+                    else
+                    {
+                        ExpirationDate.NewValue = SetupDate.AddMonths(y.Value).AddDays(-1);
+                        ExpirationDate.OldValue = ExpirationDate.NewValue;
+                    }
                 }
             },
             ClearFunc = x => x.DurationInMonths!.RemoveValue(newValue),
-            DisplayFunc = x => x switch { var m when m % 12 == 0 => $"{x / 12}年" , > 0 => $"{x}个月", _=> "" }
+            DisplayFunc = x => x switch { >= 999 => "无固定期限", var m when m % 12 == 0 => $"{x / 12}年" , > 0 => $"{x}个月", _=> "" }
         };
         DurationInMonths.Init(elements);
 
