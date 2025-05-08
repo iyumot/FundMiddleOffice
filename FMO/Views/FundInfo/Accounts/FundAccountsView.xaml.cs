@@ -223,6 +223,7 @@ public partial class FundAccountsViewModel : ObservableObject
     {
         var fd = new OpenFileDialog();
         fd.Filter = "PDF|*.pdf";
+        fd.Multiselect = true;
         var dr = fd.ShowDialog();
         if (dr is null || !dr.Value) return;
 
