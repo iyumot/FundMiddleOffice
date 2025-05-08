@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using FMO.PDF;
+using FMO.Shared;
 using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
@@ -47,7 +48,8 @@ public partial class FundAccountsViewModel : ObservableObject
         if (fas is not null)
             FutureAccounts = new(fas.Select(x => new FutureAccountViewModel(x)));
 
-        var fa = db.GetCollection<FundAccounts>().FindById(FundId);
+        var fa = db.GetCollection<FundSingletonAccounts>().FindById(FundId);
+        Singleton = new(fa ?? new() { Id = fundId });
         UniversalNo = fa?.UniversalNo;
         FutureNo = fa?.FutureNo;
         CCDCBondAccount = fa?.CCDCBondAccount;
@@ -61,7 +63,7 @@ public partial class FundAccountsViewModel : ObservableObject
             {
                 if (fa is null) fa = new();
                 fa.UniversalNo = UniversalNo;
-                db.GetCollection<FundAccounts>().Update(fa);
+                db.GetCollection<FundSingletonAccounts>().Update(fa);
             }
         }
 
@@ -208,7 +210,8 @@ public partial class FundAccountsViewModel : ObservableObject
     [ObservableProperty]
     public partial string? SHCBondAccount { get; set; }
 
-
+    [ObservableProperty]
+    public partial FundSingletonAccountsViewModel Singleton { get; set; }
 
 
 
@@ -545,3 +548,60 @@ public partial class FundAccountsViewModel : ObservableObject
 }
 
 
+public partial class FundSingletonAccountsViewModel : EditableControlViewModelBase<FundSingletonAccounts>
+{ 
+    public ChangeableViewModel<FundSingletonAccounts, string?> UniversalNo { get; }
+    public ChangeableViewModel<FundSingletonAccounts, string?> FutureNo { get; }
+
+    public ChangeableViewModel<FundSingletonAccounts, string?> CCDCBondAccount { get; }
+
+    public ChangeableViewModel<FundSingletonAccounts, string?> SHCBondAccount { get; }
+
+
+    public FundSingletonAccountsViewModel(FundSingletonAccounts obj)
+    {
+        Id = obj.Id;
+
+        UniversalNo = new()
+        {
+            Label = "证券一码通",
+            InitFunc = x => x.UniversalNo,
+            UpdateFunc = (x, y) => x.UniversalNo = y,
+            ClearFunc = x => x.UniversalNo = null
+        };
+        UniversalNo.Init(obj);
+
+        FutureNo = new()
+        {
+            Label = "统一开户编码",
+            InitFunc = x => x.FutureNo,
+            UpdateFunc = (x, y) => x.FutureNo = y,
+            ClearFunc = x => x.FutureNo = null
+        };
+        FutureNo.Init(obj);
+
+        CCDCBondAccount = new()
+        {
+            Label = "中债登债券账户",
+            InitFunc = x => x.CCDCBondAccount,
+            UpdateFunc = (x, y) => x.CCDCBondAccount = y,
+            ClearFunc = x => x.CCDCBondAccount = null
+        };
+        CCDCBondAccount.Init(obj);
+
+        SHCBondAccount = new()
+        {
+            Label = "上清所债券账户",
+            InitFunc = x => x.SHCBondAccount,
+            UpdateFunc = (x, y) => x.SHCBondAccount = y,
+            ClearFunc = x => x.SHCBondAccount = null
+        };
+        SHCBondAccount.Init(obj);
+    }
+
+
+    protected override FundSingletonAccounts InitNewEntity()
+    {
+        return new FundSingletonAccounts { Id = Id };
+    }
+}

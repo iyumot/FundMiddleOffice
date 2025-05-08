@@ -433,7 +433,7 @@
     </UserControl.Resources>
     <StackPanel Margin="10">
 
-        <UniformGrid Rows="2">
+        <UniformGrid DataContext="{Binding Singleton}" Rows="2">
             <UniformGrid.Resources>
                 <Style BasedOn="{StaticResource TextBoxExtend}" TargetType="TextBox">
                     <Setter Property="Margin" Value="5,0,0,0" />
@@ -441,43 +441,33 @@
                 <Style TargetType="TextBlock">
                     <Setter Property="Width" Value="85" />
                 </Style>
+
+                <Style BasedOn="{StaticResource {x:Type shared:ChangeableControl}}" TargetType="shared:ChangeableControl">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="Width" Value="400" />
+                    <Setter Property="Margin" Value="1" />
+                    <Setter Property="HeaderTemplate">
+                        <Setter.Value>
+                            <DataTemplate>
+                                <TextBlock
+                                    Width="85"
+                                    VerticalAlignment="Center"
+                                    DockPanel.Dock="Left"
+                                    Foreground="{DynamicResource LabelBrush}"
+                                    Text="{Binding .}" />
+                            </DataTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
             </UniformGrid.Resources>
-            <BulletDecorator>
-                <BulletDecorator.Bullet>
-                    <TextBlock Text="证券一码通" />
-                </BulletDecorator.Bullet>
-                <shared:CopyableControl HorizontalContentAlignment="Stretch">
-                    <TextBox Text="{Binding UniversalNo}" />
-                </shared:CopyableControl>
-            </BulletDecorator>
 
-            <BulletDecorator>
-                <BulletDecorator.Bullet>
-                    <TextBlock Text="中债登债券账户" />
-                </BulletDecorator.Bullet>
-                <shared:CopyableControl HorizontalContentAlignment="Stretch">
-                    <TextBox Text="{Binding UniversalNo}" />
-                </shared:CopyableControl>
-            </BulletDecorator>
+            <shared:ChangeableControl Binding="{Binding UniversalNo}" Entity="{Binding .}" />
+            <shared:ChangeableControl Binding="{Binding CCDCBondAccount}" Entity="{Binding .}" />
+            <shared:ChangeableControl Binding="{Binding FutureNo}" Entity="{Binding .}" />
+            <shared:ChangeableControl Binding="{Binding SHCBondAccount}" Entity="{Binding .}" />
 
-            <BulletDecorator>
-                <BulletDecorator.Bullet>
-                    <TextBlock Text="统一开户编码" />
-                </BulletDecorator.Bullet>
-                <shared:CopyableControl HorizontalContentAlignment="Stretch">
-                    <TextBox Text="{Binding UniversalNo}" />
-                </shared:CopyableControl>
-            </BulletDecorator>
-
-            <BulletDecorator>
-                <BulletDecorator.Bullet>
-                    <TextBlock Text="上清所债券账户" />
-                </BulletDecorator.Bullet>
-                <shared:CopyableControl HorizontalContentAlignment="Stretch">
-                    <TextBox Text="{Binding UniversalNo}" />
-                </shared:CopyableControl>
-            </BulletDecorator>
         </UniformGrid>
+
 
         <!--  证券账户  -->
 
