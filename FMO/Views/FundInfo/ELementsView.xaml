@@ -1033,7 +1033,7 @@
                                 <shared:ChangeableContainer Binding="{Binding ExpirationDate}">
                                     <shared:ChangeableContainer.ContentTemplate>
                                         <DataTemplate>
-                                            <DatePicker Width="120" SelectedDate="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
+                                            <DatePicker Width="100" SelectedDate="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
                                         </DataTemplate>
                                     </shared:ChangeableContainer.ContentTemplate>
                                 </shared:ChangeableContainer>
