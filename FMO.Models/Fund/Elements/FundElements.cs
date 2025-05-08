@@ -177,7 +177,10 @@ public class FundElements
     /// </summary>
     public PortionMutable<FundFeeInfo> RedemptionFee { get; set; } = new(nameof(RedemptionFee));
 
-
+    /// <summary>
+    /// 业绩报酬
+    /// </summary>
+    public PortionMutable<string> PerformanceFeeStatement { get; set; } = new(nameof(PerformanceFeeStatement));
 
 
 

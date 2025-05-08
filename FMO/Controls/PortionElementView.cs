@@ -52,6 +52,24 @@ namespace FMO
             DefaultStyleKeyProperty.OverrideMetadata(typeof(PortionElementView), new FrameworkPropertyMetadata(typeof(PortionElementView)));
         }
 
+
+
+        /// <summary>
+        /// 可分割，单一份额时为false
+        /// </summary>
+        public bool CanDivide
+        {
+            get { return (bool)GetValue(CanDivideProperty); }
+            set { SetValue(CanDivideProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for CanDivide.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty CanDivideProperty =
+            DependencyProperty.Register("CanDivide", typeof(bool), typeof(PortionElementView), new PropertyMetadata(true));
+
+
+
+
         public ControlTemplate EditTemplate
         {
             get { return (ControlTemplate)GetValue(EditTemplateProperty); }

@@ -353,11 +353,13 @@
                 ContentTemplate="{Binding ContentTemplate, RelativeSource={RelativeSource AncestorType=local:PortionElementView}}"
                 EditTemplate="{Binding EditTemplate, RelativeSource={RelativeSource AncestorType=local:PortionElementView}}" />
             <DockPanel Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityReConverter}}">
-                <Button
-                    hc:IconElement.Geometry="{StaticResource f.knife}"
-                    Command="{Binding DataContext.DivideCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
-                    Style="{StaticResource ButtonIcon.Small}"
-                    Visibility="{Binding DataContext.UnifiedClass, RelativeSource={RelativeSource AncestorType=ListBox}, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                <hc:SimplePanel Visibility="{Binding CanDivide, RelativeSource={RelativeSource AncestorType=local:PortionElementView}, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    <Button
+                        hc:IconElement.Geometry="{StaticResource f.knife}"
+                        Command="{Binding DataContext.DivideCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                        Style="{StaticResource ButtonIcon.Small}"
+                        Visibility="{Binding DataContext.UnifiedClass, RelativeSource={RelativeSource AncestorType=ListBox}, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                </hc:SimplePanel>
                 <Button
                     hc:IconElement.Geometry="{StaticResource f.code-merge}"
                     Command="{Binding DataContext.UnifyCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"

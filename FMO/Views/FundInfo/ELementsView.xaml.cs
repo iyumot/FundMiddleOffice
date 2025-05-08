@@ -208,7 +208,13 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
 
 
+    [ObservableProperty]
+    public partial ShareElementsViewModel<string, string> PerformanceFeeStatement { get; set; }
 
+
+    /// <summary>
+    /// 单一份额
+    /// </summary>
     [ObservableProperty]
     public partial bool OnlyOneShare { get; set; }
 
@@ -236,6 +242,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         IsSharesInherited = cinfo.FlowId < newValue;
         var sc = cinfo.Value ?? [ShareClass.DefaultShare];
         Shares = new(sc.Select(x => new ShareClassViewModel { Id = x.Id, Name = x.Name, Requirement = x.Requirement }));
+        OnlyOneShare = Shares.Count <= 1;
 
         FullName = new ChangeableViewModel<FundElements, string>
         {
@@ -527,6 +534,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         PurchasRule = new ShareElementsViewModel<FundPurchaseRule, FundPurchaseRuleViewModel>(FundId, FlowId, elements, sc, x => x.PurchasRule, x => new(x) { FeeName = "申购费" }, x => x!.Build());
 
         RedemptionFee = new ShareElementsViewModel<FundFeeInfo, FundFeeInfoViewModel>(FundId, FlowId, elements, sc, x => x.RedemptionFee, x => new(x), x => x!.Build());
+        PerformanceFeeStatement = new ShareElementsViewModel<string, string>(FundId, FlowId, elements, sc, x => x.PerformanceFeeStatement, x => x!, x => x!);
 
         ManageFee = new ShareElementsViewModel<FundFeeInfo, FundFeeInfoViewModel>(FundId, FlowId, elements, sc, x => x.ManageFee, x => new(x), x => x!.Build());
         ManageFeePay = new ChangeableViewModel<FundElements, FeePayInfoViewModel>

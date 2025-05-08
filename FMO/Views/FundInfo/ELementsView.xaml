@@ -21,7 +21,9 @@
 
         <Style BasedOn="{StaticResource {x:Type local:PortionElementView}}" TargetType="local:PortionElementView">
             <Setter Property="IsReadOnly" Value="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}}" />
+            <Setter Property="CanDivide" Value="{Binding OnlyOneShare, Converter={StaticResource Boolean2BooleanReConverter}}" />
         </Style>
+
         <Style TargetType="TextBox">
             <Setter Property="BorderThickness" Value="0,0,0,1" />
             <Setter Property="Padding" Value="1" />
@@ -397,6 +399,7 @@
 
         <DataTemplate x:Key="DT.LongText">
             <TextBox
+                MinWidth="200"
                 AcceptsReturn="True"
                 Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}"
                 TextWrapping="Wrap" />
@@ -961,6 +964,7 @@
             <UniformGrid Columns="1" IsItemsHost="True" />
         </ItemsPanelTemplate>
 
+
     </UserControl.Resources>
 
     <Grid Margin="0,10">
@@ -1149,6 +1153,18 @@
                                 EditTemplate="{StaticResource CT.Fee}"
                                 Header="赎回费" />
 
+
+
+
+                            <local:PortionElementView
+                                Content="{Binding PerformanceFeeStatement}"
+                                ContentTemplate="{StaticResource DT.LongText}"
+                                Header="业绩报酬" />
+
+
+
+
+
                             <!--  费用  -->
                             <WrapPanel Margin="{StaticResource LineSpacing}">
 
@@ -1196,7 +1212,10 @@
                         </Border>
                         <StackPanel>
                             <DockPanel LastChildFill="False">
-                                <shared:ChangeableContainer HorizontalContentAlignment="Stretch" Binding="{Binding OpenDayInfo}" />
+                                <shared:ChangeableContainer
+                                    MinWidth="200"
+                                    HorizontalContentAlignment="Stretch"
+                                    Binding="{Binding OpenDayInfo}" />
 
                                 <Button
                                     Command="{Binding SetOpenRuleCommand}"
