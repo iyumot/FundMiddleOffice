@@ -65,7 +65,9 @@ public partial class SecurityCardViewModel : ObservableObject
     [ObservableProperty]
     public partial SolidColorBrush? GroupBrush { get; set; }
 
-    public static SolidColorBrush[] GroupBrushes { get; } = [Brushes.Transparent, Brushes.Yellow, Brushes.Orange, Brushes.Green, Brushes.RoyalBlue];
+    public static SolidColorBrush[] GroupBrushes { get; } = [Brushes.Transparent, Brushes.Orange, Brushes.Green,
+                                                            Brushes.RoyalBlue, Brushes.Purple, Brushes.Honeydew,
+                                                            Brushes.Magenta, Brushes.Cyan,Brushes.Khaki];
 
 
     /// <summary>

@@ -6,6 +6,7 @@ using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
 using System.IO;
+using System.Windows.Media;
 
 namespace FMO;
 
@@ -18,6 +19,7 @@ public partial class StockAccountViewModel : ObservableObject
     {
         Company = v.Company;
         Id = v.Id;
+        Group = v.Group;
 
         Common = new(v.Id, v.Common);
         Credit = new(v.Id, v.Credit);
@@ -34,6 +36,13 @@ public partial class StockAccountViewModel : ObservableObject
     public BasicAccountViewModel Credit { get; set; }
 
 
+
+    [ObservableProperty] public partial bool ShowGroupPop { get; set; }
+
+    [ObservableProperty] public partial int Group { get; set; }
+
+    [ObservableProperty]
+    public partial SolidColorBrush? GroupBrush { get; set; }
 
 
     public partial class BasicAccountViewModel : ObservableObject
@@ -238,4 +247,19 @@ public partial class StockAccountViewModel : ObservableObject
     }
 
 
+    partial void OnGroupChanged(int value)
+    {
+        using var db = DbHelper.Base();
+        var obj = db.GetCollection<StockAccount>().FindById(Id);
+        obj.Group = value;
+        db.GetCollection<StockAccount>().Update(obj);
+        ShowGroupPop = false;
+    }
+
+
+    [RelayCommand]
+    public void SetGroup()
+    {
+        ShowGroupPop = true;
+    }
 }
