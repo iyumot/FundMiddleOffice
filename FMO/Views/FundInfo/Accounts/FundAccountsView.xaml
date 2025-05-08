@@ -64,10 +64,7 @@
                                 Command="{Binding SaveAsCommand}"
                                 ToolTip="另存为" />
 
-                            <Button
-                                HorizontalAlignment="Left"
-                                hc:IconElement.Geometry="{StaticResource f.group-arrows-rotate}"
-                                Command="{Binding SetGroupCommand}" />
+                            <Button hc:IconElement.Geometry="{StaticResource f.flag}" Command="{Binding SetGroupCommand}" />
 
                             <Button
                                 Name="switch"
@@ -153,6 +150,41 @@
                             Foreground="Red"
                             Style="{StaticResource ButtonIcon.Small}"
                             Visibility="Collapsed" />
+
+
+                        <hc:SimplePanel>
+                            <Button
+                                Name="group"
+                                hc:IconElement.Geometry="{StaticResource f.flag}"
+                                Command="{Binding SetGroupCommand}"
+                                Foreground="{Binding GroupBrush}"
+                                Style="{StaticResource ButtonIcon}" />
+                            <Popup
+                                AllowsTransparency="True"
+                                IsOpen="{Binding ShowGroupPop}"
+                                StaysOpen="False">
+                                <Border>
+                                    <ListBox
+                                        ItemsSource="{x:Static local:SecurityCardViewModel.GroupBrushes}"
+                                        SelectedIndex="{Binding Group}"
+                                        SelectedItem="{Binding GroupBrush}">
+                                        <ListBox.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <UniformGrid Columns="3" Rows="3" />
+                                            </ItemsPanelTemplate>
+                                        </ListBox.ItemsPanel>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Rectangle
+                                                    Width="20"
+                                                    Height="20"
+                                                    Fill="{Binding .}" />
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Border>
+                            </Popup>
+                        </hc:SimplePanel>
 
                         <TextBlock
                             Margin="4"
@@ -345,6 +377,9 @@
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter TargetName="del" Property="Visibility" Value="Visible" />
                 </Trigger>
+                <DataTrigger Binding="{Binding Group}" Value="0">
+                    <Setter TargetName="group" Property="Foreground" Value="Black" />
+                </DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
 

@@ -104,6 +104,11 @@ public class StockAccount
 
     public int FundId { get; set; }
 
+    /// <summary>
+    /// 对应股卡组
+    /// </summary>
+    public int Group { get; set; }
+
     public string? Company { get; set; }
 
     /// <summary>
