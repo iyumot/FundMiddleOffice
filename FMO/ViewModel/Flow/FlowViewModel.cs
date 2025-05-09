@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
+using FMO.Shared;
 using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
@@ -82,6 +83,19 @@ public partial class FlowFileViewModel : ObservableObject
         var fi = new FileInfo(fd.FileName);
         
         SetFile(fi);
+    }
+
+
+    [RelayCommand]
+    public void ChooseFile(FileViewModelBase file)
+    {
+        var fd = new OpenFileDialog();
+        fd.Filter = file.Filter;
+        if (fd.ShowDialog() != true)
+            return;
+
+        
+
     }
 
 
@@ -226,6 +240,12 @@ public partial class FlowFileViewModel : ObservableObject
         }
     }
 }
+
+
+
+
+
+
 
 
 /// <summary>

@@ -1,11 +1,12 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using FMO.Models;
-using Microsoft.Win32;
-using Serilog;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using FMO.Models;
+using FMO.Utilities;
+using Microsoft.Win32;
+using Serilog;
 
 namespace FMO.Shared;
 
@@ -37,16 +38,57 @@ public partial class FileViewModelBase : ObservableObject, IFileViewModel
     [NotifyPropertyChangedFor(nameof(DisplayName))]
     public partial FileInfo? File { get; set; }
 
+    /// <summary>
+    /// "Word Documents|*.doc|Office Files|*.doc;*.xls;*.ppt"
+    /// </summary>
+    public string? Filter { get; set; }
+
+
     public string? DisplayName => GetShort(File?.Name);
 
     public bool Exists => File?.Exists ?? false;
 
     public bool Deleted => File is not null && !File.Exists;
 
+
+    /// <summary>
+    /// 特定名称
+    /// </summary>
+    public Func<string>? SpecificFileName { get; set; }
+
+
+    public string? SaveFolder { get; set; }
+
     private string? GetShort(string? name, int cnt = 20)
     {
         int a = cnt / 3, b = cnt * 2 / 3;
         return name switch { string s => s.Length > a + b ? s[..a] + " ...... " + s[^b..] : s, _ => name };
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    public FileStorageInfo? Build()
+    {
+        if (File is null || SaveFolder is null) return null;
+        var di = new DirectoryInfo(SaveFolder);
+        if (!di.Exists) try { di.Create(); } catch { return null; }
+
+
+        string hash = File.ComputeHash()!;
+
+        // 保存副本 
+        var tar = FileHelper.CopyFile2(File, SaveFolder, SpecificFileName is null ? null : SpecificFileName());
+        if (tar is null)
+        {
+            Log.Error($"保存文件出错，{File.FullName}");
+            HandyControl.Controls.Growl.Error($"无法保存{File.FullName}，文件名异常或者存在过多重名文件");
+            return null;
+        }
+
+        return new FileStorageInfo(tar, hash, File.LastWriteTime);
     }
 
     [RelayCommand]
@@ -106,7 +148,6 @@ public partial class FileViewModel<T> : FileViewModelBase, IFileSelector
     [ObservableProperty]
     public partial string Label { get; set; }
 
-    public string? Filter { get; set; }
 
     public required Func<T, FileStorageInfo?> GetProperty { get; set; }
 

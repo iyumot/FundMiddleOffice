@@ -282,12 +282,7 @@
                                             Style="{DynamicResource ButtonIcon.Small}"
                                             ToolTip="另存为" />
 
-                                        <Button
-                                            Margin="-5"
-                                            hc:IconElement.Geometry="{DynamicResource f.print}"
-                                            Command="{Binding PrintCommand}"
-                                            Style="{DynamicResource ButtonIcon.Small}"
-                                            ToolTip="打印" />
+                               
                                     </DockPanel>
                                     <Button
                                         Margin="-5"
@@ -300,7 +295,7 @@
                                     <Button
                                         Margin="-5"
                                         hc:IconElement.Geometry="{DynamicResource f.xmark}"
-                                        Command="{Binding DeleteFileCommand}"
+                                        Command="{Binding ClearCommand}"
                                         CommandParameter="{Binding Binding, RelativeSource={RelativeSource TemplatedParent}}"
                                         Foreground="Red"
                                         Style="{DynamicResource ButtonIcon.Small}"
