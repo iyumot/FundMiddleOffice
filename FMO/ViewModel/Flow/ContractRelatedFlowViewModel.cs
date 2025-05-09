@@ -1,12 +1,14 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-using FMO.Models;
-using FMO.Utilities;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Windows;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using FMO.Models;
+using FMO.PDF;
+using FMO.Utilities;
+using Serilog;
 
 namespace FMO;
 
@@ -84,14 +86,17 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
     public ContractRelatedFlowViewModel(ContractFlow flow, Mutable<ShareClass[]>? shareClass) : base(flow)
 #pragma warning restore CS9264 // 退出构造函数时，不可为 null 的属性必须包含非 null 值。请考虑添加 ‘required’ 修饰符，或将属性声明为可为 null，或添加 ‘[field: MaybeNull, AllowNull]’ 特性。
     {
-        Contract = new(FundId, FlowId, "合同定稿" ,flow.ContractFile?.Path, "Contract", nameof(ContractFlow.ContractFile));
+        Contract = new(FundId, FlowId, "合同定稿", flow.ContractFile?.Path, "Contract", nameof(ContractFlow.ContractFile));
 
-        RiskDisclosureDocument = new(FundId, FlowId, "风险揭示书", flow.RiskDisclosureDocument?.Path,  "Contract", nameof(ContractFlow.RiskDisclosureDocument));
-         
-        CollectionAccount = new(FundId, FlowId, "募集账户函", flow.CollectionAccountFile?.Path,  "Account", nameof(ContractFlow.CollectionAccountFile));
+        RiskDisclosureDocument = new(FundId, FlowId, "风险揭示书", flow.RiskDisclosureDocument?.Path, "Contract", nameof(ContractFlow.RiskDisclosureDocument));
+
+        CollectionAccount = new(FundId, FlowId, "募集账户函", flow.CollectionAccountFile?.Path, "Account", nameof(ContractFlow.CollectionAccountFile));
 
         CustodyAccount = new(FundId, FlowId, "托管账户函", flow.CustodyAccountFile?.Path, "Account", nameof(ContractFlow.CustodyAccountFile));
 
+        CollectionAccount.FileChanged += x => UpdateElement(x, x => x.CollectionAccount, FundAccountType.Collection);
+        CustodyAccount.FileChanged += x => UpdateElement(x, x => x.CustodyAccount, FundAccountType.Custody);
+        
 
 
         if (flow is ContractFinalizeFlow)
@@ -109,7 +114,7 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
 
         InitShare(shareClass);
     }
-     
+
     public void InitShare(Mutable<ShareClass[]>? shareClass = null)
     {
         if (shareClass is null)
@@ -203,45 +208,41 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
         InitShare();
     }
 
-    //partial void OnCollectionAccountChanged(FileInfo? oldValue, FileInfo? newValue)
-    //{
-    //    if (!Initialized) return;
 
-    //    if (newValue?.Exists ?? false)
-    //    {
-    //        SaveFile<ContractFlow>(newValue, "Account", x => x.CollectionAccountFile, x => x.CollectionAccountFile = new FundFileInfo("募集账户函"));
-    //    }
 
-    //}
+    private void UpdateElement(FileInfo? x, Func<FundElements, Mutable<BankAccount>> property, FundAccountType accountType)
+    {
+        Task.Run(() =>
+        {
+            try
+            {
+                if (x?.Exists ?? false)
+                {
+                    using var fs = x.OpenRead();
+                    var ac = PdfHelper.GetAccountInfo(fs);
 
-    //partial void OnCustodyAccountChanged(FileInfo? oldValue, FileInfo? newValue)
-    //{
-    //    if (!Initialized) return;
-
-    //    if (newValue?.Exists ?? false)
-    //    {
-    //        SaveFile<ContractFlow>(newValue, "Account", x => x.CustodyAccountFile, x => x.CustodyAccountFile = new FundFileInfo("托管账户函"));
-    //    }
-    //}
-
-    //partial void OnRiskDisclosureDocumentChanged(FileInfo? oldValue, FileInfo? newValue)
-    //{
-    //    if (!Initialized) return;
-
-    //    if (newValue?.Exists ?? false)
-    //    {
-    //        SaveFile<ContractFlow>(newValue, "Contract", x => x.RiskDisclosureDocument, x => x.RiskDisclosureDocument = new FundFileInfo("风险揭示书"));
-    //    }
-    //}
-
-    //partial void OnContractChanged(FileInfo? oldValue, FileInfo? newValue)
-    //{
-    //    if (!Initialized) return;
-
-    //    if (newValue?.Exists ?? false)
-    //    {
-    //        SaveFile<ContractFlow>(newValue, "Contract", x => x.ContractFile, x => x.ContractFile = new FundFileInfo("定稿合同"));
-    //    }
-
-    //}
+                    if (ac is not null)
+                    {
+                        using var db = DbHelper.Base();
+                        var ele = db.GetCollection<FundElements>().FindById(FundId);
+                        property(ele).SetValue(ac.First(), FlowId);
+                        db.GetCollection<FundElements>().Update(ele);
+                        WeakReferenceMessenger.Default.Send(new ElementChangedBackgroundMessage(FundId, FlowId));
+                        WeakReferenceMessenger.Default.Send(new FundAccountChangedMessage(FundId, accountType));
+                    }
+                }
+                else
+                {
+                    using var db = DbHelper.Base();
+                    var ele = db.GetCollection<FundElements>().FindById(FundId);
+                    property(ele).RemoveValue(FlowId);
+                    db.GetCollection<FundElements>().Update(ele);
+                    WeakReferenceMessenger.Default.Send(new ElementChangedBackgroundMessage(FundId, FlowId));
+                    WeakReferenceMessenger.Default.Send(new FundAccountChangedMessage(FundId, accountType));
+                }
+                Log.Information($"设置 {accountType} 账户成功 {FundId}.{FlowId}");
+            }
+            catch (Exception e) { Log.Error($"设置 {accountType} 账户出错 {FundId}.{FlowId} {e}"); }
+        });
+    }
 }

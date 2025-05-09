@@ -20,5 +20,13 @@ namespace FMO.PDF.Tests
 
             Assert.Fail();
         }
+
+
+        [TestMethod]
+        public void GetAccountInfo()
+        {
+            using var fs = new FileStream(@"C:\Users\lenovo\Downloads\鑫享世宸量化CTA1号A期私募证券投资基金_募集账户信息函.pdf", FileMode.Open);
+            PdfHelper.GetAccountInfo(fs);
+        }
     }
 }

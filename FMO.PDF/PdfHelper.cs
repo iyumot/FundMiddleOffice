@@ -1,17 +1,22 @@
-﻿using PDFiumSharp;
-using PDFiumSharp.Enums;
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using FMO.Models;
+using PDFiumSharp;
+using PDFiumSharp.Enums;
 
 namespace FMO.PDF;
 
 public static class PdfHelper
 {
 
-
+    /// <summary>
+    /// 获取股卡信息
+    /// </summary>
+    /// <param name="s"></param>
+    /// <returns></returns>
     public static (string text, byte[] page)[]? GetSecurityAccounts(Stream s)
     {
         List<(string text, byte[] page)> result = new();
@@ -63,7 +68,7 @@ public static class PdfHelper
                     }
                     else
                     {
-                        bool sameLine = rc == default ? true : IntersectionRatio(rc.Top, rc.Bottom, t, b) > 0.7;
+                        bool sameLine = rc == default ? true : IntersectionXRatio(rc.Top, rc.Bottom, t, b) > 0.7;
 
                         // 间隔>5个字宽
                         if (l - rc.Right > rc.Width / chcnt * 5)
@@ -71,7 +76,7 @@ public static class PdfHelper
                             rc = new Rect(l, t, r - l, b - t);
                             sb.Append('\n');
                             chcnt = 0;
-                        } 
+                        }
                         else if (t - rc.Bottom > 3) // 换行
                         {
                             // 第一个空白符，不要
@@ -131,9 +136,128 @@ public static class PdfHelper
     }
 
 
+    public static BankAccount[]? GetAccountInfo(Stream s)
+    {
+        List<BankAccount> result = new();
 
 
-    static double IntersectionRatio(double a, double b, double c, double d)
+        {
+            List<string> strings = new List<string>();
+
+            byte[] buf = new byte[s.Length];
+            s.Seek(0, SeekOrigin.Begin);
+#pragma warning disable CA2022 // 避免使用 "Stream.Read" 进行不准确读取
+            s.Read(buf, 0, buf.Length);
+#pragma warning restore CA2022 // 避免使用 "Stream.Read" 进行不准确读取
+            var d = PDFium.FPDF_LoadDocument(buf);
+            var cnt = PDFium.FPDF_GetPageCount(d);
+
+
+            for (int i = 0; i < cnt; i++)
+            {
+                var page = PDFium.FPDF_LoadPage(d, i);
+                var textpage = PDFium.FPDFText_LoadPage(page);
+                var charcnt = PDFium.FPDFText_CountChars(textpage);
+                if (charcnt == 0) continue;
+
+                var rotate = PDFium.FPDFPage_GetRotation(page);
+
+                var str = PDFium.FPDFText_GetText(textpage, 0, charcnt);
+
+                // 获取字的位置，并排列 
+                double[] l = new double[charcnt], r = new double[charcnt], t = new double[charcnt], b = new double[charcnt];
+                Parallel.For(0, charcnt, j =>
+                {
+                    // pdf 坐标从下往上，交换t b
+                    PDFium.FPDFText_GetCharBox(textpage, j, out l[j], out r[j], out t[j], out b[j]);
+                    Rotate(rotate, ref l[j], ref b[j], ref r[j], ref t[j]);
+                });
+
+                // 分析行
+                List<Rect> line = new();
+                int[] lineId = new int[charcnt];
+                line.Add(new Rect(l[0], t[0], r[0] - l[0], b[0] - t[0]));
+                for (int j = 1; j < charcnt; j++)
+                {
+                    bool find = false;
+                    // 找同行
+                    for (int k = 0; k < line.Count; k++)
+                    {
+                        if (IntersectionYRatio(line[k].Top, line[k].Bottom, t[j], b[j]) > 0.6)
+                        {
+                            var nt = Math.Min(line[k].Top, t[j]);
+                            line[k] = line[k] with { Y = nt, Height = Math.Max(line[k].Bottom, b[j]) - nt };
+                            lineId[j] = k;
+                            find = true;
+                            break;
+                        }
+                    }
+
+                    if (!find && r[j] > l[j] && b[j] > t[j])
+                    {
+                        line.Add(new Rect(l[j], t[j], r[j] - l[j], b[j] - t[j]));
+                        lineId[j] = line.Count - 1;
+                    }
+                }
+
+                // 对齐
+                string[] strs = new string[line.Count];
+                for (int j = 0; j < line.Count; j++)
+                {
+                    var sel = lineId.Index().Where(x => x.Item == j).Select(x => x.Index);
+
+                    // 字符顺序
+                    var idx = l.Index().Where(x => sel.Contains(x.Index)).OrderBy(x => x.Item).Select(x => x.Index);
+
+                    strs[j] = new string(idx.Select(x => str[x]).ToArray());
+                }
+
+                var ac = BankAccount.FromString(string.Join('\n', strs));
+
+                if (ac is not null)
+                    result.Add(ac);
+
+                PDFium.FPDFText_ClosePage(textpage);
+                PDFium.FPDF_ClosePage(page);
+            }
+
+
+            PDFium.FPDF_CloseDocument(d);
+        }
+
+
+        return result.ToArray();
+    }
+
+
+    /// <summary>
+    /// pdf 坐标 t > b
+    /// </summary>
+    /// <param name="rc"></param>
+    /// <param name="l"></param>
+    /// <param name="t"></param>
+    /// <param name="r"></param>
+    /// <param name="b"></param>
+    /// <returns></returns>
+    static double IntersectionRatio(Rect rc, double l, double t, double r, double b)
+    {
+        // 判断是否存在交集
+        if (rc.Left > r) return 0;
+        if (rc.Right < l) return 0;
+        if (rc.Top < b) return 0;
+        if (rc.Bottom > t) return 0;
+
+        // 存在交集 
+        l = Math.Max(rc.Left, l);
+        r = Math.Min(rc.Right, r);
+        t = Math.Min(rc.Top, t);
+        b = Math.Max(rc.Bottom, b);
+
+        return (r - l) * (t - b) / rc.Width / rc.Height;
+    }
+
+
+    static double IntersectionXRatio(double a, double b, double c, double d)
     {
         // 找出两个区间左端点的最大值
         double leftMax = Math.Max(a, c);
@@ -146,8 +270,20 @@ public static class PdfHelper
         return 0;
     }
 
-
-
+    /// <summary>
+    /// t<b      有相交 > 0
+    /// </summary>
+    /// <param name="t1"></param>
+    /// <param name="b1"></param>
+    /// <param name="t2"></param>
+    /// <param name="b2"></param>
+    /// <returns></returns>
+    static double IntersectionYRatio(double t1, double b1, double t2, double b2)
+    {
+        // 1 包含 2
+        if (t1 <= t2 && b1 >= b2) return 1;
+        return (Math.Min(b1, b2) - Math.Max(t1, t2)) / (Math.Max(b1, b2) - Math.Min(t1, t2));
+    }
 
 
     private static void Rotate(PageOrientations o, ref double l, ref double t, ref double r, ref double b)

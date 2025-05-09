@@ -19,6 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FMO.Models\FMO.Models.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="PDFiumSharp\PDFium.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>PDFium.g.cs</LastGenOutput>

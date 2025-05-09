@@ -24,8 +24,13 @@ public partial class ElementsView : UserControl
 
 
 
-public partial class ElementsViewModel : EditableControlViewModelBase<FundElements>
+public partial class ElementsViewModel : EditableControlViewModelBase<FundElements>,IRecipient<ElementChangedBackgroundMessage>
 {
+    public ElementsViewModel()
+    {
+        WeakReferenceMessenger.Default.RegisterAll(this);
+    }
+
     public static RiskLevel[] RiskLevels { get; } = [Models.RiskLevel.R1, Models.RiskLevel.R2, Models.RiskLevel.R3, Models.RiskLevel.R4, Models.RiskLevel.R5];
 
     public static FundMode[] FundModes { get; } = [Models.FundMode.Open, Models.FundMode.Close, Models.FundMode.Other];
@@ -712,6 +717,12 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         base.SaveOverride();
         WeakReferenceMessenger.Default.Send(new FundAccountChangedMessage(FundId, FundAccountType.Collection));
         WeakReferenceMessenger.Default.Send(new FundAccountChangedMessage(FundId, FundAccountType.Custody));
+    }
+
+    public void Receive(ElementChangedBackgroundMessage message)
+    {
+        if (message.FundId == FundId && message.FlowId == FlowId)
+            OnFlowIdChanged(FlowId, FlowId);
     }
 }
 
