@@ -45,6 +45,11 @@ public partial class FlowFileViewModel : ObservableObject
     public Func<string>? SpecificFileName { get; set; }
 
 
+    public delegate void FileChangedHandler(FileInfo? file);
+
+    public event FileChangedHandler? FileChanged;
+
+
     [SetsRequiredMembers]
     public FlowFileViewModel(int fundId, int flowId, string name, string? path, string folder, string property)
     {
@@ -91,6 +96,8 @@ public partial class FlowFileViewModel : ObservableObject
 
             db.GetCollection<FundFlow>().Update(flow);
             File = null;
+
+            FileChanged?.Invoke(null);
         }
         else
         {
@@ -117,6 +124,7 @@ public partial class FlowFileViewModel : ObservableObject
             db.GetCollection<FundFlow>().Update(flow);
 
             File = new FileInfo(tar);
+            FileChanged?.Invoke(File);
         }
     }
 
@@ -185,31 +193,7 @@ public partial class FlowFileViewModel : ObservableObject
     public void OnDrop(string s)
     {
         var fi = new FileInfo(s);
-        if (!fi.Exists) return;
-
-        string hash = fi.ComputeHash()!;
-
-        // 保存副本
-        var dir = FundHelper.GetFolder(FundId);
-        dir = dir.CreateSubdirectory(Folder);
-        var tar = FileHelper.CopyFile2(fi, dir.FullName);
-        if (tar is null)
-        {
-            Log.Error($"保存Flow文件出错，{s}");
-            HandyControl.Controls.Growl.Error($"无法保存{fi.Name}，文件名异常或者存在过多重名文件");
-            return;
-        }
-
-        var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
-
-        using var db = DbHelper.Base();
-        var flow = db.GetCollection<FundFlow>().FindById(FlowId);
-        if (flow!.GetType().GetProperty(Property) is PropertyInfo property && property.PropertyType == typeof(FileStorageInfo))
-            property.SetValue(flow, new FileStorageInfo(tar, hash, fi.LastWriteTime));
-
-        db.GetCollection<FundFlow>().Update(flow);
-
-        File = new FileInfo(tar);
+        SetFile(fi);
     }
 
     [RelayCommand]
