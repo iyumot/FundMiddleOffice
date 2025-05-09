@@ -116,6 +116,8 @@ public class MultiFileDisplay : Control
         CommandBindings.Add(new CommandBinding(ViewFileCommand, OnOpenFile));
         CommandBindings.Add(new CommandBinding(FileSaveAsCommand, OnSaveFile));
         CommandBindings.Add(new CommandBinding(FileDeleteCommand, OnDeleteFile));
+
+        AllowDrop = true; 
     }
 
 
@@ -173,5 +175,16 @@ public class MultiFileDisplay : Control
         if (e.Parameter is FileInfo fi)
             try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(fi.FullName) { UseShellExecute = true }); } catch { }
     }
-  
+
+
+    protected override void OnDrop(DragEventArgs e)
+    {
+        base.OnDrop(e);
+
+        if(e.Data.GetData(DataFormats.FileDrop) is string[] paths)
+        {
+            foreach (var item in paths)
+                Files.Add(new FileInfo(item));
+        }
+    }
 }
