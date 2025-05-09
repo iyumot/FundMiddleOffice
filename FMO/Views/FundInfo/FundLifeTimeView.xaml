@@ -213,12 +213,12 @@
                                 Style="{StaticResource ButtonIcon.Small}"
                                 ToolTip="另存为" />
 
-                            <Button
+                            <!--<Button
                                 Margin="-5"
                                 hc:IconElement.Geometry="{StaticResource f.print}"
                                 Command="{Binding PrintCommand}"
                                 Style="{StaticResource ButtonIcon.Small}"
-                                ToolTip="打印" />
+                                ToolTip="打印" />-->
                             <Button
                                 Margin="-5"
                                 hc:IconElement.Geometry="{StaticResource f.repeat}"
@@ -304,12 +304,12 @@
                                 Style="{StaticResource ButtonIcon.Small}"
                                 ToolTip="另存为" />
 
-                            <Button
+                            <!--<Button
                                 Margin="-5"
                                 hc:IconElement.Geometry="{StaticResource f.print}"
                                 Command="{Binding PrintCommand}"
                                 Style="{StaticResource ButtonIcon.Small}"
-                                ToolTip="打印" />
+                                ToolTip="打印" />-->
                             <Button
                                 Margin="-5"
                                 hc:IconElement.Geometry="{StaticResource f.repeat}"
@@ -386,12 +386,12 @@
                                 Style="{StaticResource ButtonIcon.Small}"
                                 ToolTip="另存为" />
 
-                            <Button
+                            <!--<Button
                                 Margin="-5"
                                 hc:IconElement.Geometry="{StaticResource f.print}"
                                 Command="{Binding PrintCommand}"
                                 Style="{StaticResource ButtonIcon.Small}"
-                                ToolTip="打印" />
+                                ToolTip="打印" />-->
                             <Button
                                 Margin="-5"
                                 hc:IconElement.Geometry="{StaticResource f.repeat}"
