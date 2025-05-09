@@ -1,13 +1,17 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Reflection;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.PDF;
+using FMO.Shared;
 using FMO.Utilities;
+using Microsoft.Win32;
+using MiniExcelLibs;
 using Serilog;
 
 namespace FMO;
@@ -39,8 +43,11 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
     /// <summary>
     /// 定稿合同
     /// </summary>
-    [ObservableProperty]
-    public partial FlowFileViewModel? Contract { get; set; }
+    //[ObservableProperty]
+//    public partial FlowFileViewModel? Contract { get; set; }
+
+
+    public FileViewModel<ContractFlow> Contract { get; }
 
     /// <summary>
     /// 募集账户函
@@ -86,7 +93,19 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
     public ContractRelatedFlowViewModel(ContractFlow flow, Mutable<ShareClass[]>? shareClass) : base(flow)
 #pragma warning restore CS9264 // 退出构造函数时，不可为 null 的属性必须包含非 null 值。请考虑添加 ‘required’ 修饰符，或将属性声明为可为 null，或添加 ‘[field: MaybeNull, AllowNull]’ 特性。
     {
-        Contract = new(FundId, FlowId, "合同定稿", flow.ContractFile?.Path, "Contract", nameof(ContractFlow.ContractFile));
+        //Contract = new(FundId, FlowId, "合同定稿", flow.ContractFile?.Path, "Contract", nameof(ContractFlow.ContractFile));
+
+        Contract = new()
+        {
+            Label = "合同定稿",
+            SaveFolder = FundHelper.GetFolder(FundId, "Contract"),
+            GetProperty = x => x.ContractFile,
+            SetProperty = (x, y) => x.ContractFile = y,
+            Filter = "文本|*.docx;*.doc;*.pdf"
+        };
+        Contract.Init(flow);
+
+
 
         RiskDisclosureDocument = new(FundId, FlowId, "风险揭示书", flow.RiskDisclosureDocument?.Path, "Contract", nameof(ContractFlow.RiskDisclosureDocument));
 
@@ -96,7 +115,7 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
 
         CollectionAccount.FileChanged += x => UpdateElement(x, x => x.CollectionAccount, FundAccountType.Collection);
         CustodyAccount.FileChanged += x => UpdateElement(x, x => x.CustodyAccount, FundAccountType.Custody);
-        
+
 
 
         if (flow is ContractFinalizeFlow)
@@ -194,6 +213,44 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
 
         _shareChanged = false;
         IsDividingShare = false;
+    }
+
+
+    [RelayCommand]
+    public void SetFile(FileViewModel<ContractFlow> file)
+    {
+        var fd = new OpenFileDialog();
+        fd.Filter = file.Filter;
+        if (fd.ShowDialog() != true)
+            return;
+
+
+        var fi = new FileInfo(fd.FileName);
+
+
+        using var db = DbHelper.Base();
+        var flow = db.GetCollection<FundFlow>().FindById(FlowId) as ContractFlow;
+        if(flow is ContractFlow f)
+        {
+            file.SetProperty(flow, file.Build());
+            db.GetCollection<FundFlow>().Update(flow);
+        }
+
+    }
+
+
+
+
+
+
+    [RelayCommand]
+    public void Clear(FileViewModel<ContractFlow> file)
+    {
+        using var db = DbHelper.Base();
+        var flow = db.GetCollection<FundFlow>().FindById(FlowId) as ContractFlow;
+        file.SetProperty(flow!, null);
+        db.GetCollection<FundFlow>().Update(flow);
+        file.File = null;
     }
 
 

@@ -169,7 +169,7 @@
         <!--  单个文件模板  -->
         <DataTemplate x:Key="SingleFile">
             <Border>
-                <DockPanel Background="Transparent">
+                <DockPanel Background="Transparent" LastChildFill="False">
                     <TextBlock VerticalAlignment="Center" Text="{Binding Name}" />
 
                     <Viewbox
@@ -183,8 +183,6 @@
                             Stroke="Black" />
                     </Viewbox>
 
-                    <TextBlock Margin="5,2" Text="{Binding File.Name}" />
-
                     <Grid Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityReConverter}}">
                         <Button
                             hc:IconElement.Geometry="{StaticResource f.gear}"
@@ -194,48 +192,58 @@
                             Visibility="{Binding File.Exists, Converter={StaticResource Boolean2VisibilityReConverter}}" />
                     </Grid>
 
-                    <Grid
-                        x:Name="p"
-                        VerticalAlignment="Center"
-                        Visibility="Collapsed">
-                        <DockPanel LastChildFill="False" Visibility="{Binding File, Converter={StaticResource FileExistsToVisibilityConverter}}">
-                            <Button
-                                Margin="-5"
-                                hc:IconElement.Geometry="{StaticResource f.book-open-reader}"
-                                Command="{Binding ViewCommand}"
-                                Foreground="Lime"
-                                Style="{StaticResource ButtonIcon.Small}"
-                                ToolTip="查看" />
-                            <Button
-                                Margin="-5"
-                                hc:IconElement.Geometry="{StaticResource f.file-export}"
-                                Command="{Binding SaveAsCommand}"
-                                Style="{StaticResource ButtonIcon.Small}"
-                                ToolTip="另存为" />
+                    <hc:SimplePanel>
+                        <TextBlock Margin="5,2" Text="{Binding File.Name}" />
+                        <hc:SimplePanel
+                            x:Name="p"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Background="White"
+                            Visibility="Collapsed">
+                            <DockPanel
+                                Margin="8,2"
+                                LastChildFill="False"
+                                Visibility="{Binding File, Converter={StaticResource FileExistsToVisibilityConverter}}">
+                                <Button
+                                    Margin="-5"
+                                    hc:IconElement.Geometry="{StaticResource f.book-open-reader}"
+                                    Command="{Binding ViewCommand}"
+                                    Foreground="Lime"
+                                    Style="{StaticResource ButtonIcon.Small}"
+                                    ToolTip="查看" />
+                                <Button
+                                    Margin="-5"
+                                    hc:IconElement.Geometry="{StaticResource f.file-export}"
+                                    Command="{Binding SaveAsCommand}"
+                                    Style="{StaticResource ButtonIcon.Small}"
+                                    ToolTip="另存为" />
 
-                            <!--<Button
-                                Margin="-5"
-                                hc:IconElement.Geometry="{StaticResource f.print}"
-                                Command="{Binding PrintCommand}"
-                                Style="{StaticResource ButtonIcon.Small}"
-                                ToolTip="打印" />-->
-                            <Button
-                                Margin="-5"
-                                hc:IconElement.Geometry="{StaticResource f.repeat}"
-                                Command="{Binding ChangeCommand}"
-                                Style="{StaticResource ButtonIcon.Small}"
-                                ToolTip="更换"
-                                Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-                            <Button
-                                Margin="-5"
-                                hc:IconElement.Geometry="{StaticResource f.xmark}"
-                                Command="{Binding ClearCommand}"
-                                Foreground="Red"
-                                Style="{StaticResource ButtonIcon.Small}"
-                                ToolTip="删除"
-                                Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-                        </DockPanel>
-                    </Grid>
+                                <!--<Button
+             Margin="-5"
+             hc:IconElement.Geometry="{StaticResource f.print}"
+             Command="{Binding PrintCommand}"
+             Style="{StaticResource ButtonIcon.Small}"
+             ToolTip="打印" />-->
+                                <Button
+                                    Margin="-5"
+                                    hc:IconElement.Geometry="{StaticResource f.repeat}"
+                                    Command="{Binding ChangeCommand}"
+                                    Style="{StaticResource ButtonIcon.Small}"
+                                    ToolTip="更换"
+                                    Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                                <Button
+                                    Margin="-5"
+                                    hc:IconElement.Geometry="{StaticResource f.xmark}"
+                                    Command="{Binding ClearCommand}"
+                                    Foreground="Red"
+                                    Style="{StaticResource ButtonIcon.Small}"
+                                    ToolTip="删除"
+                                    Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                            </DockPanel>
+                        </hc:SimplePanel>
+                    </hc:SimplePanel>
+
+
 
                 </DockPanel>
             </Border>
@@ -444,7 +452,10 @@
             <UserControl Template="{StaticResource FlowShell}">
                 <DockPanel>
                     <StackPanel MinWidth="500" VerticalAlignment="Center">
-                        <ContentControl Content="{Binding Contract}" Style="{StaticResource SingleFileStyle}" />
+                        <!--<ContentControl Content="{Binding Contract}" Style="{StaticResource SingleFileStyle}" />-->
+
+                        <shared:FileControl Binding="{Binding Contract}" />
+
                         <ContentControl Content="{Binding RiskDisclosureDocument}" Style="{StaticResource SingleFileStyle}" />
                         <ContentControl Content="{Binding CollectionAccount}" Style="{StaticResource SingleFileStyle}" />
                         <ContentControl Content="{Binding CustodyAccount}" Style="{StaticResource SingleFileStyle}" />
