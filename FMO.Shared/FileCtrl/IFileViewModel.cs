@@ -1,12 +1,13 @@
-﻿using System.Collections.ObjectModel;
-using System.IO;
-using System.Windows.Controls;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace FMO.Shared;
 
@@ -26,6 +27,12 @@ public interface IFileSelector
     string Label { get; set; }
 
     string? Filter { get; set; }
+}
+
+
+public interface IFileSetter
+{
+    void SetFile(IFileViewModel? file, string path);
 }
 
 
@@ -119,6 +126,15 @@ public partial class FileViewModelBase : ObservableObject, IFileViewModel
             // 等待打印任务完成
             process.WaitForExit();
         }
+    }
+
+
+    [RelayCommand]
+    public void Copy()
+    {
+        if (File is null || !File.Exists) return;
+
+        Clipboard.SetDataObject(new DataObject(DataFormats.FileDrop, new string[] { File.FullName }));
     }
 
 

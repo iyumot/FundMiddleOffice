@@ -3,6 +3,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO.Shared">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
 
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     <local:BooleanToVisibilityReverseConverter x:Key="BooleanToVisibilityReverseConverter" />
@@ -229,6 +234,7 @@
 
     <Style TargetType="{x:Type local:FileControl}">
         <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="AllowDrop" Value="{Binding IsReadOnly,Converter={StaticResource Boolean2BooleanReConverter}}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:FileControl}">
@@ -251,73 +257,82 @@
                             </Viewbox>
 
 
-                            <Grid DockPanel.Dock="Right" Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityReverseConverter}}">
+                            <hc:SimplePanel DockPanel.Dock="Right" Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityReverseConverter}}">
                                 <Button
                                     hc:IconElement.Geometry="{DynamicResource f.gear}"
-                                    Command="{Binding SetFileCommand}"
+                                    Command="{Binding ChooseFileCommand}"
                                     CommandParameter="{Binding Binding, RelativeSource={RelativeSource TemplatedParent}}"
                                     Style="{DynamicResource ButtonIcon.Small}"
                                     ToolTip="设置文件"
                                     Visibility="{Binding Binding.Exists, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityReverseConverter}}" />
-                            </Grid>
+                            </hc:SimplePanel>
 
-                            <Grid
-                                x:Name="p"
-                                VerticalAlignment="Center"
-                                DockPanel.Dock="Right"
-                                Visibility="Collapsed">
-                                <DockPanel LastChildFill="False">
-                                    <DockPanel DataContext="{Binding Binding, RelativeSource={RelativeSource TemplatedParent}}" LastChildFill="False">
-                                        <Button
-                                            Margin="-5"
-                                            hc:IconElement.Geometry="{DynamicResource f.book-open-reader}"
-                                            Command="{Binding ViewCommand}"
-                                            Foreground="Lime"
-                                            Style="{DynamicResource ButtonIcon.Small}"
-                                            ToolTip="查看" />
-                                        <Button
-                                            Margin="-5"
-                                            hc:IconElement.Geometry="{DynamicResource f.file-export}"
-                                            Command="{Binding SaveAsCommand}"
-                                            Style="{DynamicResource ButtonIcon.Small}"
-                                            ToolTip="另存为" />
+                            <hc:SimplePanel>
+                                <local:AbbreviationText Text="{Binding Binding.File.Name, RelativeSource={RelativeSource TemplatedParent}}" />
 
-                               
+                                <hc:SimplePanel
+                                    x:Name="p"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Stretch"
+                                    Background="White"
+                                    Visibility="Collapsed">
+                                    <hc:SimplePanel.Resources>
+                                        <Style BasedOn="{StaticResource ButtonIcon.Small}" TargetType="Button">
+                                            <Setter Property="Margin" Value="2,-5" />
+                                        </Style>
+                                    </hc:SimplePanel.Resources>
+                                    <DockPanel Margin="5,2" LastChildFill="False">
+                                        <DockPanel DataContext="{Binding Binding, RelativeSource={RelativeSource TemplatedParent}}" LastChildFill="False">
+                                            <Button
+                                                hc:IconElement.Geometry="{DynamicResource f.book-open-reader}"
+                                                Command="{Binding ViewCommand}"
+                                                Foreground="Lime"
+                                                ToolTip="查看" />
+
+                                            <Button
+                                                hc:IconElement.Geometry="{DynamicResource f.clone}"
+                                                Command="{Binding CopyCommand}"
+                                                Foreground="RoyalBlue"
+                                                ToolTip="复制" />
+
+                                            <Button
+                                                hc:IconElement.Geometry="{DynamicResource f.file-export}"
+                                                Command="{Binding SaveAsCommand}"
+                                                ToolTip="另存为" />
+
+
+                                        </DockPanel>
+                                        <Button
+                                            hc:IconElement.Geometry="{DynamicResource f.repeat}"
+                                            Command="{Binding SetFileCommand}"
+                                            CommandParameter="{Binding Binding, RelativeSource={RelativeSource TemplatedParent}}"
+                                            ToolTip="更换"
+                                            Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityReverseConverter}}" />
+                                        <Button
+                                            hc:IconElement.Geometry="{DynamicResource f.xmark}"
+                                            Command="{Binding ClearCommand}"
+                                            CommandParameter="{Binding Binding, RelativeSource={RelativeSource TemplatedParent}}"
+                                            Foreground="Red"
+                                            ToolTip="删除"
+                                            Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityReverseConverter}}" />
                                     </DockPanel>
-                                    <Button
-                                        Margin="-5"
-                                        hc:IconElement.Geometry="{DynamicResource f.repeat}"
-                                        Command="{Binding SetFileCommand}"
-                                        CommandParameter="{Binding Binding, RelativeSource={RelativeSource TemplatedParent}}"
-                                        Style="{DynamicResource ButtonIcon.Small}"
-                                        ToolTip="更换"
-                                        Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                    <Button
-                                        Margin="-5"
-                                        hc:IconElement.Geometry="{DynamicResource f.xmark}"
-                                        Command="{Binding ClearCommand}"
-                                        CommandParameter="{Binding Binding, RelativeSource={RelativeSource TemplatedParent}}"
-                                        Foreground="Red"
-                                        Style="{DynamicResource ButtonIcon.Small}"
-                                        ToolTip="删除"
-                                        Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityReverseConverter}}" />
-                                </DockPanel>
-                            </Grid>
+                                </hc:SimplePanel>
 
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                DockPanel.Dock="Right"
-                                FontSize="8"
-                                Foreground="Red"
-                                Text="文件已被删除"
-                                Visibility="{Binding Binding.Deleted, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontSize="8"
+                                    Foreground="Red"
+                                    Text="文件已被删除"
+                                    Visibility="{Binding Binding.Deleted, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
-                            <TextBlock
+                            </hc:SimplePanel>
+
+                            <!--<TextBlock
                                 x:Name="PART_FileName"
                                 MaxWidth="240"
                                 Margin="5,2"
                                 Padding="0"
-                                Text="{Binding Binding.DisplayName, RelativeSource={RelativeSource TemplatedParent}}" />
+                                Text="{Binding Binding.DisplayName, RelativeSource={RelativeSource TemplatedParent}}" />-->
                         </DockPanel>
                     </Border>
                     <ControlTemplate.Triggers>

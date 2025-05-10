@@ -454,7 +454,7 @@
                     <StackPanel MinWidth="500" VerticalAlignment="Center">
                         <!--<ContentControl Content="{Binding Contract}" Style="{StaticResource SingleFileStyle}" />-->
 
-                        <shared:FileControl Binding="{Binding Contract}" />
+                        <shared:FileControl Binding="{Binding Contract}" IsReadOnly="{Binding IsReadOnly}" />
 
                         <ContentControl Content="{Binding RiskDisclosureDocument}" Style="{StaticResource SingleFileStyle}" />
                         <ContentControl Content="{Binding CollectionAccount}" Style="{StaticResource SingleFileStyle}" />
@@ -467,7 +467,6 @@
                             Style="{StaticResource ListBoxCustom}" />
                     </StackPanel>
 
-                    <TextBlock />
                 </DockPanel>
             </UserControl>
 

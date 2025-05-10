@@ -1,9 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Reflection;
-using System.Windows;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
@@ -11,8 +6,11 @@ using FMO.PDF;
 using FMO.Shared;
 using FMO.Utilities;
 using Microsoft.Win32;
-using MiniExcelLibs;
 using Serilog;
+using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Windows;
 
 namespace FMO;
 
@@ -38,13 +36,13 @@ public partial class ShareClassViewModel : ObservableObject
         Requirement = s.Requirement;
     }
 }
-public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IElementChangable
+public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IElementChangable, IFileSetter
 {
     /// <summary>
     /// 定稿合同
     /// </summary>
     //[ObservableProperty]
-//    public partial FlowFileViewModel? Contract { get; set; }
+    //    public partial FlowFileViewModel? Contract { get; set; }
 
 
     public FileViewModel<ContractFlow> Contract { get; }
@@ -217,28 +215,32 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
 
 
     [RelayCommand]
-    public void SetFile(FileViewModel<ContractFlow> file)
+    public void ChooseFile(FileViewModel<ContractFlow> file)
     {
         var fd = new OpenFileDialog();
         fd.Filter = file.Filter;
         if (fd.ShowDialog() != true)
             return;
 
-
-        var fi = new FileInfo(fd.FileName);
-
-
-        using var db = DbHelper.Base();
-        var flow = db.GetCollection<FundFlow>().FindById(FlowId) as ContractFlow;
-        if(flow is ContractFlow f)
-        {
-            file.SetProperty(flow, file.Build());
-            db.GetCollection<FundFlow>().Update(flow);
-        }
-
+        SetFile(file, fd.FileName);
     }
 
 
+    public void SetFile(IFileViewModel? file, string path)
+    {
+        if (file is FileViewModel<ContractFlow> ff)
+        {
+            ff.File = new FileInfo(path);
+
+            using var db = DbHelper.Base();
+            var flow = db.GetCollection<FundFlow>().FindById(FlowId) as ContractFlow;
+            if (flow is ContractFlow f)
+            {
+                ff.SetProperty(flow, ff.Build());
+                db.GetCollection<FundFlow>().Update(flow);
+            }
+        }
+    }
 
 
 
@@ -246,10 +248,17 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
     [RelayCommand]
     public void Clear(FileViewModel<ContractFlow> file)
     {
+        if (file is null) return;
+
+        var r = HandyControl.Controls.MessageBox.Show("是否删除文件", "提示", MessageBoxButton.YesNoCancel);
+        if (r == MessageBoxResult.Cancel) return;
+
+        if (r == MessageBoxResult.Yes) file.File?.Delete();
+
         using var db = DbHelper.Base();
         var flow = db.GetCollection<FundFlow>().FindById(FlowId) as ContractFlow;
         file.SetProperty(flow!, null);
-        db.GetCollection<FundFlow>().Update(flow);
+        db.GetCollection<FundFlow>().Update(flow!);
         file.File = null;
     }
 
@@ -302,4 +311,5 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
             catch (Exception e) { Log.Error($"设置 {accountType} 账户出错 {FundId}.{FlowId} {e}"); }
         });
     }
+
 }

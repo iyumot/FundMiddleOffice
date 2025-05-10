@@ -16,9 +16,13 @@ public class FileControl : Control
         DefaultStyleKeyProperty.OverrideMetadata(typeof(FileControl), new FrameworkPropertyMetadata(typeof(FileControl)));
     }
 
+ 
 
-
-
+    protected override void OnDrop(DragEventArgs e)
+    {
+        if (DataContext is IFileSetter setter && Binding is not null && e.Data.GetData(DataFormats.FileDrop) is string[] ss)
+            setter.SetFile(Binding, ss[0]);
+    }
 
     public bool IsReadOnly
     {
