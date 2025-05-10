@@ -215,6 +215,12 @@
                     Style="{StaticResource ButtonIcon.Small}" />
 
 
+                <Button
+                    hc:IconElement.Geometry="{StaticResource f.folder}"
+                    Command="{Binding OpenFolderCommand}"
+                    DockPanel.Dock="Right"
+                    Style="{StaticResource ButtonIcon.Small}" />
+
                 <local:CopyableControl>
                     <TextBlock FontWeight="Bold" Text="{Binding FundCode}" />
                 </local:CopyableControl>

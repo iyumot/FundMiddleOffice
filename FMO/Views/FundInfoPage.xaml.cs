@@ -391,6 +391,16 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         try { if (Fund.Url is not null) System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(Fund.Url) { UseShellExecute = true }); } catch { }
     }
 
+    [RelayCommand]
+    public void OpenFolder()
+    {
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = FundHelper.GetFolder(FundId).FullName,
+            UseShellExecute = true
+        });
+    }
+
 
     [RelayCommand]
     public void SetupFund()
