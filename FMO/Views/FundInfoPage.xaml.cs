@@ -1,10 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Windows.Controls;
-using System.Windows.Data;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
@@ -12,6 +6,12 @@ using FMO.TPL;
 using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
+using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace FMO;
 
@@ -28,7 +28,7 @@ public partial class FundInfoPage : UserControl
 }
 
 
-public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<FundShareChangedMessage>, IRecipient<FundDailyUpdateMessage>, IRecipient<FundStrategyChangedMessage>,IRecipient<FundAccountChangedMessage>
+public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<FundShareChangedMessage>, IRecipient<FundDailyUpdateMessage>, IRecipient<FundStrategyChangedMessage>, IRecipient<FundAccountChangedMessage>
 {
     public Fund Fund { get; init; }
 
@@ -101,7 +101,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         AccountsDataContext = new(FundId, FundCode!, names);
         TADataContext = new(FundId);
 
-         
+
         IsActive = true;
         _initialized = true;
     }
@@ -377,7 +377,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     [ObservableProperty]
     public partial FundAccountsViewModel AccountsDataContext { get; set; }
 
-    
+
     [ObservableProperty]
     public partial FundTAViewModel TADataContext { get; set; }
     #endregion
@@ -444,7 +444,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     {
         var flow = new ModifyByAnnounceFlow { FundId = Fund.Id };
         using var db = DbHelper.Base();
-        db.GetCollection<FundFlow>().Insert(flow);  
+        db.GetCollection<FundFlow>().Insert(flow);
         Flows.Add(new ModifyByAnnounceFlowViewModel(flow));
     }
 
@@ -583,7 +583,14 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         var r = fd.ShowDialog();
         if (r is null || !r.Value) return;
 
-        ExcelTpl.GenerateFromTemplate(fd.FileName, "sigle_fund_nvlist.xlsx", new { nvs = DailyValues.Where(x => x.NetValue > 0) });
+
+        if (!Tpl.IsExists("sigle_fund_nvlist.xlsx"))
+        {
+            HandyControl.Controls.Growl.Warning("文件模板不存在");
+            return;
+        }
+
+        try { Tpl.Generate(fd.FileName, Tpl.GetPath("sigle_fund_nvlist.xlsx"), new { nvs = DailyValues.Where(x => x.NetValue > 0) }); } catch (Exception e) { Log.Error($"{e}"); }
     }
     #endregion
 
@@ -664,7 +671,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
                 DailyValues.Remove(old);
 
             DailyValues.Add(message.Daily);
-             
+
             CurveViewDataContext.Data = DailyValues.OrderBy(x => x.Date).ToList();
         }
     }
