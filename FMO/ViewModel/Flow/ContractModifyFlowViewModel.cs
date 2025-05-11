@@ -1,11 +1,12 @@
-﻿using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
+using FMO.Shared;
 using FMO.TPL;
 using FMO.Utilities;
+using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 
 namespace FMO;
 
@@ -30,7 +31,7 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
     public partial bool ModifyInvestmentManager { get; set; }
 
     [ObservableProperty]
-    public partial FlowFileViewModel? RegistrationLetter { get; set; }
+    public partial FileViewModel? RegistrationLetter { get; set; }
 
 
     [ObservableProperty]
@@ -40,13 +41,13 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
     /// 变更公告
     /// </summary>
     [ObservableProperty]
-    public partial FlowFileViewModel? Announcement { get; set; }
+    public partial FileViewModel? Announcement { get; set; }
 
 
     [ObservableProperty]
-    public partial FlowFileViewModel? SealedAnnouncement { get; set; }
+    public partial FileViewModel? SealedAnnouncement { get; set; }
 
-    public FlowFileViewModel CommitmentLetter { get; }
+    public FileViewModel CommitmentLetter { get; }
 
 
 
@@ -56,13 +57,13 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
     {
         if (flow.Section.HasFlag(ContractModifySection.Name))
             ModifyName = true;
-        if(flow.Section.HasFlag(ContractModifySection.InvestManager))
+        if (flow.Section.HasFlag(ContractModifySection.InvestManager))
             ModifyInvestmentManager = true;
-        if(flow.Section.HasFlag(ContractModifySection.ShareClass))
+        if (flow.Section.HasFlag(ContractModifySection.ShareClass))
             ModifyShareClass = true;
-        if(flow.Section.HasFlag(ContractModifySection.CollectionAccount))
+        if (flow.Section.HasFlag(ContractModifySection.CollectionAccount))
             ModifyCollectionAccount = true;
-        if(flow.Section.HasFlag(ContractModifySection.CustodyAccount))
+        if (flow.Section.HasFlag(ContractModifySection.CustodyAccount))
             ModifyCustodyAccount = true;
 
 
@@ -70,10 +71,26 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
         SupplementaryFile = new(flow.SupplementaryFile?.Files.Select(x => new FileInfo(x.Path)) ?? Array.Empty<FileInfo>());
         SupplementaryFile.CollectionChanged += SupplementaryFile_CollectionChanged;
 
-        RegistrationLetter = new FlowFileViewModel(FundId, FlowId, "备案函", flow.RegistrationLetter?.Path, "Registration", nameof(ContractModifyFlowViewModel.RegistrationLetter)) { Filter = "PDF (*.pdf)|*.pdf;" };
-        Announcement = new(FundId, FlowId, "变更公告", flow.Announcement?.Path, "Announcement", nameof(ContractModifyFlowViewModel.Announcement)) { Filter = "文档 (*.pdf,*.doc,*.docx)|*.pdf;*.doc;*.docx;" };
-        SealedAnnouncement = new(FundId, FlowId, "变更公告", flow.SealedAnnouncement?.Path, "Announcement", nameof(ContractModifyFlowViewModel.SealedAnnouncement))
+        RegistrationLetter = new()
         {
+            Label = "备案函",
+            SaveFolder = FundHelper.GetFolder(FundId, "Registration"),
+            GetProperty = x => x switch { ContractModifyFlow f => f.RegistrationLetter, _ => null },
+            SetProperty = (x, y) => { if (x is ContractModifyFlow f) f.RegistrationLetter = y; },
+        }; RegistrationLetter.Init(flow);
+        Announcement = new()
+        {
+            Label = "变更公告",
+            SaveFolder = FundHelper.GetFolder(FundId, "Announcement"),
+            GetProperty = x => x switch { ContractModifyFlow f => f.Announcement, _ => null },
+            SetProperty = (x, y) => { if (x is ContractModifyFlow f) f.Announcement = y; },
+        }; Announcement.Init(flow);
+        SealedAnnouncement = new()
+        {
+            Label = "变更公告",
+            SaveFolder = FundHelper.GetFolder(FundId, "Announcement"),
+            GetProperty = x => x switch { ContractModifyFlow f => f.SealedAnnouncement, _ => null },
+            SetProperty = (x, y) => { if (x is ContractModifyFlow f) f.SealedAnnouncement = y; },
             Filter = "PDF (*.pdf)|*.pdf;",
             SpecificFileName = () =>
             {
@@ -82,9 +99,16 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
 
                 return $"{fund.Name}_变更公告_{Date:yyyy年MM月dd日}.pdf";
             }
-        };
+        }; SealedAnnouncement.Init(flow);
 
-        CommitmentLetter = new(FundId, FlowId, "信息变更承诺函", flow.CommitmentLetter?.Path, "Registration", nameof(CommitmentLetter)) { Filter = "文档 (*.pdf,*.doc,*.docx)|*.pdf;*.doc;*.docx;" };
+
+        CommitmentLetter = new()
+        {
+            Label = "信息变更承诺函",
+            SaveFolder = FundHelper.GetFolder(FundId, "Registration"),
+            GetProperty = x => x switch { ContractModifyFlow f => f.CommitmentLetter, _ => null },
+            SetProperty = (x, y) => { if (x is ContractModifyFlow f) f.CommitmentLetter = y; },
+        }; CommitmentLetter.Init(flow);
 
         Initialized = true;
     }
@@ -138,38 +162,34 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
 
 
     [RelayCommand]
-    public void GenerateFile(FlowFileViewModel v)
+    public void GenerateFile(FileViewModel v)
     {
-        switch (v.Property)
+        if (v == CommitmentLetter)
         {
-            case nameof(CommitmentLetter):
-                try
+            try
+            {
+                // 需要先设置日期
+                if (Date is null)
                 {
-                    // 需要先设置日期
-                    if (Date is null)
-                    {
-                        HandyControl.Controls.Growl.Warning("请先设置变更日期");
-                        return;
-                    }
-
-                    using var db = DbHelper.Base();
-                    var fund = db.GetCollection<Fund>().FindById(FundId);
-                    string path = @$"{FundHelper.GetFolder(FundId)}\Registration\{fund.Name}_信息变更承诺函_{Date:yyyy年MM月dd日}.docx";
-                    var fi = new FileInfo(path);
-                    if (!fi.Directory!.Exists) fi.Directory.Create();
-
-                    if (WordTpl.GenerateFromTemplate(path, "信息变更承诺函.docx", new { Name = fund.Name, Code = fund.Code }))
-                    {
-                        if (CommitmentLetter.File?.Exists ?? false)
-                            CommitmentLetter.File.Delete();
-                        CommitmentLetter.SetFile(new System.IO.FileInfo(path));
-                    }
-                    else HandyControl.Controls.Growl.Error("生成文件失败，请查看Log，检查模板是否存在");
+                    HandyControl.Controls.Growl.Warning("请先设置变更日期");
+                    return;
                 }
-                catch { }
-                break;
-            default:
-                break;
+
+                using var db = DbHelper.Base();
+                var fund = db.GetCollection<Fund>().FindById(FundId);
+                string path = @$"{FundHelper.GetFolder(FundId)}\Registration\{fund.Name}_信息变更承诺函_{Date:yyyy年MM月dd日}.docx";
+                var fi = new FileInfo(path);
+                if (!fi.Directory!.Exists) fi.Directory.Create();
+
+                if (WordTpl.GenerateFromTemplate(path, "信息变更承诺函.docx", new { Name = fund.Name, Code = fund.Code }))
+                {
+                    if (CommitmentLetter.File?.Exists ?? false)
+                        CommitmentLetter.File.Delete();
+                    SetFile(v, path);
+                }
+                else HandyControl.Controls.Growl.Error("生成文件失败，请查看Log，检查模板是否存在");
+            }
+            catch { }
         }
     }
 
@@ -189,7 +209,7 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
         if (flow is not null)
         {
             flow.Section = section;
-            db.GetCollection<FundFlow>().Update(flow); 
+            db.GetCollection<FundFlow>().Update(flow);
         }
     }
 }

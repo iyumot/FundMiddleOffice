@@ -5,7 +5,6 @@ using FMO.Models;
 using FMO.PDF;
 using FMO.Shared;
 using FMO.Utilities;
-using Microsoft.Win32;
 using Serilog;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
@@ -36,6 +35,9 @@ public partial class ShareClassViewModel : ObservableObject
         Requirement = s.Requirement;
     }
 }
+
+
+
 public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IElementChangable, IFileSetter
 {
     /// <summary>
@@ -45,20 +47,18 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
     //    public partial FlowFileViewModel? Contract { get; set; }
 
 
-    public FileViewModel<ContractFlow> Contract { get; }
+    public FileViewModel Contract { get; }
 
     /// <summary>
     /// 募集账户函
     /// </summary>
-    [ObservableProperty]
-    public partial FlowFileViewModel? CollectionAccount { get; set; }
+    public FileViewModel CollectionAccount { get; set; }
 
 
     /// <summary>
     /// 托管账户函
     /// </summary>
-    [ObservableProperty]
-    public partial FlowFileViewModel? CustodyAccount { get; set; }
+    public FileViewModel CustodyAccount { get; set; }
 
 
     [ObservableProperty]
@@ -69,9 +69,7 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
     public partial bool IsDividingShare { get; set; }
 
 
-
-    [ObservableProperty]
-    public partial FlowFileViewModel? RiskDisclosureDocument { get; set; }
+    public FileViewModel RiskDisclosureDocument { get; set; }
 
     /// <summary>
     /// 份额分类
@@ -97,23 +95,41 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
         {
             Label = "合同定稿",
             SaveFolder = FundHelper.GetFolder(FundId, "Contract"),
-            GetProperty = x => x.ContractFile,
-            SetProperty = (x, y) => x.ContractFile = y,
+            GetProperty = x => x switch { ContractFlow f => f.ContractFile, _ => null },
+            SetProperty = (x, y) => { if (x is ContractFlow f) f.ContractFile = y; },
             Filter = "文本|*.docx;*.doc;*.pdf"
         };
         Contract.Init(flow);
 
+        RiskDisclosureDocument = new()
+        {
+            Label = "风险揭示书",
+            SaveFolder = FundHelper.GetFolder(FundId, "Contract"),
+            GetProperty = x => x switch { ContractFlow f => f.RiskDisclosureDocument, _ => null },
+            SetProperty = (x, y) => { if (x is ContractFlow f) f.RiskDisclosureDocument = y; },
+            Filter = "文本|*.docx;*.doc;*.pdf"
+        };
+        RiskDisclosureDocument.Init(flow);
 
+        CollectionAccount = new()
+        {
+            Label = "募集账户函",
+            SaveFolder = FundHelper.GetFolder(FundId, "Account"),
+            GetProperty = x => x switch { ContractFlow f => f.RiskDisclosureDocument, _ => null },
+            SetProperty = (x, y) => { if (x is not ContractFlow f) return; f.RiskDisclosureDocument = y; UpdateElement(y?.Path is null ? null : new FileInfo(y.Path), x => x.CollectionAccount, FundAccountType.Collection); },
+            Filter = "文本|*.docx;*.doc;*.pdf"
+        };
+        CollectionAccount.Init(flow);
 
-        RiskDisclosureDocument = new(FundId, FlowId, "风险揭示书", flow.RiskDisclosureDocument?.Path, "Contract", nameof(ContractFlow.RiskDisclosureDocument));
-
-        CollectionAccount = new(FundId, FlowId, "募集账户函", flow.CollectionAccountFile?.Path, "Account", nameof(ContractFlow.CollectionAccountFile));
-
-        CustodyAccount = new(FundId, FlowId, "托管账户函", flow.CustodyAccountFile?.Path, "Account", nameof(ContractFlow.CustodyAccountFile));
-
-        CollectionAccount.FileChanged += x => UpdateElement(x, x => x.CollectionAccount, FundAccountType.Collection);
-        CustodyAccount.FileChanged += x => UpdateElement(x, x => x.CustodyAccount, FundAccountType.Custody);
-
+        CustodyAccount = new()
+        {
+            Label = "托管账户函",
+            SaveFolder = FundHelper.GetFolder(FundId, "Account"),
+            GetProperty = x => x switch { ContractFlow f => f.CustodyAccountFile, _ => null },
+            SetProperty = (x, y) => { if (x is not ContractFlow f) return; f.CustodyAccountFile = y; UpdateElement(y?.Path is null ? null : new FileInfo(y.Path), x => x.CustodyAccount, FundAccountType.Custody); },
+            Filter = "文本|*.docx;*.doc;*.pdf"
+        };
+        CustodyAccount.Init(flow);
 
 
         if (flow is ContractFinalizeFlow)
@@ -214,53 +230,53 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
     }
 
 
-    [RelayCommand]
-    public void ChooseFile(FileViewModel<ContractFlow> file)
-    {
-        var fd = new OpenFileDialog();
-        fd.Filter = file.Filter;
-        if (fd.ShowDialog() != true)
-            return;
+    //[RelayCommand]
+    //public void ChooseFile(FileViewModel<ContractFlow> file)
+    //{
+    //    var fd = new OpenFileDialog();
+    //    fd.Filter = file.Filter;
+    //    if (fd.ShowDialog() != true)
+    //        return;
 
-        SetFile(file, fd.FileName);
-    }
-
-
-    public void SetFile(IFileViewModel? file, string path)
-    {
-        if (file is FileViewModel<ContractFlow> ff)
-        {
-            ff.File = new FileInfo(path);
-
-            using var db = DbHelper.Base();
-            var flow = db.GetCollection<FundFlow>().FindById(FlowId) as ContractFlow;
-            if (flow is ContractFlow f)
-            {
-                ff.SetProperty(flow, ff.Build());
-                db.GetCollection<FundFlow>().Update(flow);
-            }
-        }
-    }
+    //    SetFile(file, fd.FileName);
+    //}
 
 
+    //public void SetFile(IFileViewModel? file, string path)
+    //{
+    //    if (file is FileViewModel<ContractFlow> ff)
+    //    {
+    //        ff.File = new FileInfo(path);
+
+    //        using var db = DbHelper.Base();
+    //        var flow = db.GetCollection<FundFlow>().FindById(FlowId) as ContractFlow;
+    //        if (flow is ContractFlow f)
+    //        {
+    //            ff.SetProperty(flow, ff.Build());
+    //            db.GetCollection<FundFlow>().Update(flow);
+    //        }
+    //    }
+    //}
 
 
-    [RelayCommand]
-    public void Clear(FileViewModel<ContractFlow> file)
-    {
-        if (file is null) return;
 
-        var r = HandyControl.Controls.MessageBox.Show("是否删除文件", "提示", MessageBoxButton.YesNoCancel);
-        if (r == MessageBoxResult.Cancel) return;
 
-        if (r == MessageBoxResult.Yes) file.File?.Delete();
+    //[RelayCommand]
+    //public void Clear(FileViewModel<ContractFlow> file)
+    //{
+    //    if (file is null) return;
 
-        using var db = DbHelper.Base();
-        var flow = db.GetCollection<FundFlow>().FindById(FlowId) as ContractFlow;
-        file.SetProperty(flow!, null);
-        db.GetCollection<FundFlow>().Update(flow!);
-        file.File = null;
-    }
+    //    var r = HandyControl.Controls.MessageBox.Show("是否删除文件", "提示", MessageBoxButton.YesNoCancel);
+    //    if (r == MessageBoxResult.Cancel) return;
+
+    //    if (r == MessageBoxResult.Yes) file.File?.Delete();
+
+    //    using var db = DbHelper.Base();
+    //    var flow = db.GetCollection<FundFlow>().FindById(FlowId) as ContractFlow;
+    //    file.SetProperty(flow!, null);
+    //    db.GetCollection<FundFlow>().Update(flow!);
+    //    file.File = null;
+    //}
 
 
     /// <summary>

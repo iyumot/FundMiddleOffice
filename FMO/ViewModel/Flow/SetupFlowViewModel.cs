@@ -20,7 +20,7 @@ namespace FMO
     }
 
 
-    public partial class SetupFlowViewModel : FlowViewModel, IChangeableEntityViewModel
+    public partial class SetupFlowViewModel : FlowViewModel, IChangeableEntityViewModel, IFileSetter
     {
 
         /// <summary>
@@ -48,17 +48,12 @@ namespace FMO
         /// <summary>
         /// 实缴出资
         /// </summary>
-        //[ObservableProperty]
-        public FlowFileViewModel PaidInCapitalProof { get; }
+        public FileViewModel PaidInCapitalProof { get; }
 
         /// <summary>
         /// 成立公告
-        /// </summary>
-        //[ObservableProperty]
-        public FlowFileViewModel EstablishmentAnnouncement { get; }
-
-
-
+        /// </summary>  
+        public FileViewModel EstablishmentAnnouncement { get; }
 
 
 
@@ -90,7 +85,7 @@ namespace FMO
                 Label = "募集期",
                 InitFunc = x => x.RasingPeriod == default(DateRange) ? new() : new(x.RasingPeriod),
                 UpdateFunc = (x, y) => x.RasingPeriod = y!.Build(),
-                ClearFunc = x => x.RasingPeriod = default, 
+                ClearFunc = x => x.RasingPeriod = default,
             };
             RaisingPeriod.Init(flow);
 
@@ -108,8 +103,29 @@ namespace FMO
             InitialAsset.PropertyChanged += (s, e) => { if (e.PropertyName == "NewValue") OnPropertyChanged(nameof(Capital)); };
 
 
-            PaidInCapitalProof = new(FundId, FlowId, "实缴出资证明", flow.PaidInCapitalProof?.Path, "Establish", nameof(SetupFlow.PaidInCapitalProof));
-            EstablishmentAnnouncement = new(FundId, FlowId, "成立公告", flow.PaidInCapitalProof?.Path, "Announcement", nameof(SetupFlow.EstablishmentAnnouncement));
+            PaidInCapitalProof = new()
+            {
+                Label = "实缴出资证明",
+                SaveFolder = FundHelper.GetFolder(FundId, "Establish"),
+                SetProperty = (x, y) => { if (x is SetupFlow f) f.PaidInCapitalProof = y; },
+                GetProperty = x => x switch { SetupFlow f => f.PaidInCapitalProof, _ => null },
+                Filter = "文档|*.docx;*.doc;*.pdf"
+            };
+            PaidInCapitalProof.Init(flow);
+
+
+            EstablishmentAnnouncement = new()
+            {
+                Label = "成立公告",
+                SaveFolder = FundHelper.GetFolder(FundId, "Announcement"),
+                SetProperty = (x, y) => { if (x is SetupFlow f) f.EstablishmentAnnouncement = y; },
+                GetProperty = x => x switch { SetupFlow f => f.EstablishmentAnnouncement, _ => null }, 
+                Filter = "文档|*.docx;*.doc;*.pdf"
+            };
+            EstablishmentAnnouncement.Init(flow);
+
+
+
 
             Initialized = true;
         }
@@ -179,23 +195,20 @@ namespace FMO
 
 
         [RelayCommand]
-        public void GenerateFile(FlowFileViewModel v)
+        public void GenerateFile(FileViewModel v)
         {
-            switch (v.Property)
+            if (v == EstablishmentAnnouncement)
             {
-                case nameof(EstablishmentAnnouncement):
-                    try
-                    {
-                        var p = EstablishmentAnnouncement;//GetType().GetProperty(v.Property)!.GetValue(this) as FlowFileViewModel;
+                try
+                {
+                    using var db = DbHelper.Base();
+                    var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
+                    var fund = db.GetCollection<Fund>().FindById(FundId);
+                    string path = @$"{v.SaveFolder}\{fund.Name}_产品成立公告.docx";
+                    var fi = new FileInfo(path);
+                    if (!fi.Directory!.Exists) fi.Directory.Create();
 
-                        using var db = DbHelper.Base();
-                        var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
-                        var fund = db.GetCollection<Fund>().FindById(FundId);
-                        string path = @$"{FundHelper.GetFolder(FundId)}\{v.Folder}\{fund.Name}_产品成立公告.docx";
-                        var fi = new FileInfo(path);
-                        if (!fi.Directory!.Exists) fi.Directory.Create();
-
-                        var data = new Dictionary<string, object?>
+                    var data = new Dictionary<string, object?>
                         {
                             {"Manager", manager.Name },
                             {"Name", fund.Name },
@@ -204,19 +217,67 @@ namespace FMO
                             {"Capital", Capital },
                             { "Share", InitialAsset.OldValue }
                         };
-                        if (WordTpl.GenerateFromTemplate(path, "产品成立公告.docx", data))
-                        {
-                            if (p.File?.Exists ?? false)
-                                p.File.Delete();
-                            p.SetFile(new System.IO.FileInfo(path));
-                        }
-                        else HandyControl.Controls.Growl.Error($"生成{v.Name}失败，请查看Log，检查模板是否存在");
+                    if (WordTpl.GenerateFromTemplate(path, "产品成立公告.docx", data))
+                    {
+                        if (v.File?.Exists ?? false)
+                            v.File.Delete();
+                        SetFile(v, path);
                     }
-                    catch { }
-                    break;
-                default:
-                    break;
+                    else HandyControl.Controls.Growl.Error($"生成{v.Label}失败，请查看Log，检查模板是否存在");
+                }
+                catch { }
             }
+
         }
+
+
+
+        //[RelayCommand]
+        //public void ChooseFile(FileViewModel<SetupFlow> file)
+        //{
+        //    var fd = new OpenFileDialog();
+        //    fd.Filter = file.Filter;
+        //    if (fd.ShowDialog() != true)
+        //        return;
+
+        //    SetFile(file, fd.FileName);
+        //}
+
+
+        //public void SetFile(IFileViewModel? file, string path)
+        //{
+        //    if (file is FileViewModel<SetupFlow> ff)
+        //    {
+        //        ff.File = new FileInfo(path);
+
+        //        using var db = DbHelper.Base();
+        //        var flow = db.GetCollection<FundFlow>().FindById(FlowId) as SetupFlow;
+        //        if (flow is SetupFlow f)
+        //        {
+        //            ff.SetProperty(flow, ff.Build());
+        //            db.GetCollection<FundFlow>().Update(flow);
+        //        }
+        //    }
+        //}
+
+
+
+
+        //[RelayCommand]
+        //public void Clear(FileViewModel<SetupFlow> file)
+        //{
+        //    if (file is null) return;
+
+        //    var r = HandyControl.Controls.MessageBox.Show("是否删除文件", "提示", MessageBoxButton.YesNoCancel);
+        //    if (r == MessageBoxResult.Cancel) return;
+
+        //    if (r == MessageBoxResult.Yes) file.File?.Delete();
+
+        //    using var db = DbHelper.Base();
+        //    var flow = db.GetCollection<FundFlow>().FindById(FlowId) as SetupFlow;
+        //    file.SetProperty(flow!, null);
+        //    db.GetCollection<FundFlow>().Update(flow!);
+        //    file.File = null;
+        //}
     }
 }

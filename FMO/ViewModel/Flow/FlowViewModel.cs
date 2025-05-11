@@ -7,241 +7,13 @@ using Microsoft.Win32;
 using Serilog;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace FMO;
-
-
-
-public partial class FlowFileViewModel : ObservableObject
-{
-    public required string Name { get; set; }
-
-    [ObservableProperty]
-    public partial FileInfo? File { get; set; }
-
-    /// <summary>
-    /// 保存的路径
-    /// </summary>
-    public required string Folder { get; init; }
-
-
-    [ObservableProperty]
-    public required partial string Property { get; set; }
-
-    /// <summary>
-    /// 文件类型筛选
-    /// </summary>
-    public string? Filter { get; set; }
-
-    public int FundId { get; init; }
-
-    public int FlowId { get; init; }
-
-
-    public Func<string>? SpecificFileName { get; set; }
-
-
-    public delegate void FileChangedHandler(FileInfo? file);
-
-    public event FileChangedHandler? FileChanged;
-
-
-    [SetsRequiredMembers]
-    public FlowFileViewModel(int fundId, int flowId, string name, string? path, string folder, string property)
-    {
-        if (!string.IsNullOrWhiteSpace(path))
-            File = new FileInfo(path);
-
-        FundId = fundId;
-        FlowId = flowId;
-        Name = name;
-        Folder = folder;
-        Property = property;
-    }
-
-    [RelayCommand]
-    public void View()
-    {
-        if(File?.Exists??false) 
-            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(File.FullName) { UseShellExecute = true }); } catch { }
-    }
-
-    [RelayCommand]
-    public void Change()
-    {
-        var fd = new OpenFileDialog();
-        fd.Filter = Filter;
-        if (fd.ShowDialog() != true)
-            return;
-
-
-        var fi = new FileInfo(fd.FileName);
-        
-        SetFile(fi);
-    }
-
-
-    [RelayCommand]
-    public void ChooseFile(FileViewModelBase file)
-    {
-        var fd = new OpenFileDialog();
-        fd.Filter = file.Filter;
-        if (fd.ShowDialog() != true)
-            return;
-
-        
-
-    }
-
-
-    public void SetFile(FileInfo? fi)
-    {
-        if (fi is null || !fi.Exists)
-        {
-            using var db = DbHelper.Base();
-            var flow = db.GetCollection<FundFlow>().FindById(FlowId);
-            if (flow!.GetType().GetProperty(Property) is PropertyInfo property && property.PropertyType == typeof(FileStorageInfo))
-                property.SetValue(flow, null);
-
-            db.GetCollection<FundFlow>().Update(flow);
-            File = null;
-
-            FileChanged?.Invoke(null);
-        }
-        else
-        {
-            string hash = fi.ComputeHash()!;
-
-            // 保存副本
-            var dir = FundHelper.GetFolder(FundId);
-            dir = dir.CreateSubdirectory(Folder);
-            var tar = FileHelper.CopyFile2(fi, dir.FullName, SpecificFileName is null ? null : SpecificFileName());
-            if (tar is null)
-            {
-                Log.Error($"保存Flow文件出错，{fi.FullName}");
-                HandyControl.Controls.Growl.Error($"无法保存{fi.FullName}，文件名异常或者存在过多重名文件");
-                return;
-            }
-
-            var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
-
-            using var db = DbHelper.Base();
-            var flow = db.GetCollection<FundFlow>().FindById(FlowId);
-            if (flow!.GetType().GetProperty(Property) is PropertyInfo property && property.PropertyType == typeof(FileStorageInfo))
-                property.SetValue(flow, new FileStorageInfo(tar, hash, fi.LastWriteTime));
-
-            db.GetCollection<FundFlow>().Update(flow);
-
-            File = new FileInfo(tar);
-            FileChanged?.Invoke(File);
-        }
-    }
-
-    [RelayCommand]
-    public void Clear()
-    {
-        using var db = DbHelper.Base();
-        var flow = db.GetCollection<FundFlow>().FindById(FlowId);
-        if (flow!.GetType().GetProperty(Property) is PropertyInfo property && property.PropertyType == typeof(FileStorageInfo))
-            property.SetValue(flow, null);
-
-        db.GetCollection<FundFlow>().Update(flow);
-        File = null;
-    }
-
-    [RelayCommand]
-    public void Print()
-    {
-        if (File is null || !File.Exists) return;
-
-
-        PrintDialog printDialog = new PrintDialog();
-        if (printDialog.ShowDialog() == true)
-        {
-            // 获取默认打印机名称
-            string printerName = printDialog.PrintQueue.Name;
-            try
-            {
-
-                // 使用系统默认的PDF阅读器打印PDF文档
-                System.Diagnostics.Process process = new System.Diagnostics.Process();
-                process.StartInfo.FileName = File.FullName;
-                process.StartInfo.Verb = "print";
-                process.Start();
-
-                // 等待打印任务完成
-                process.WaitForExit();
-            }
-            catch //(Exception e)
-            {
-                HandyControl.Controls.Growl.Warning("打印失败");
-            }
-        }
-    }
-
-
-    [RelayCommand]
-    public void SaveAs()
-    {
-        if (File is null || !File.Exists) return;
-
-        try
-        {
-            var d = new SaveFileDialog();
-            d.FileName = File.Name;
-            if (d.ShowDialog() == true)
-                System.IO.File.Copy(File.FullName, d.FileName);
-        }
-        catch (Exception ex)
-        {
-            Log.Error($"文件另存为失败: {ex.Message}");
-        }
-    }
-
-
-    public void OnDrop(string s)
-    {
-        var fi = new FileInfo(s);
-        SetFile(fi);
-    }
-
-    [RelayCommand]
-    public void Save()
-    {
-        if (File is null)
-        {
-            using var db = DbHelper.Base();
-            var flow = db.GetCollection<FundFlow>().FindById(FlowId);
-            if (flow!.GetType().GetProperty(Property) is PropertyInfo property && property.PropertyType == typeof(FileStorageInfo))
-                property.SetValue(flow, null);
-        }
-        else
-        {
-            string hash = File.ComputeHash()!;
-
-            // 保存副本
-            var dir = FundHelper.GetFolder(FundId);
-            dir = dir.CreateSubdirectory(Folder);
-            var tar = FileHelper.CopyFile(File, dir.FullName);
-
-            var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path);
-
-            using var db = DbHelper.Base();
-            var flow = db.GetCollection<FundFlow>().FindById(FlowId);
-            //if (flow!.GetType().GetProperty(Property) is PropertyInfo property && property.PropertyType == typeof(FundFileInfo))
-            //    property.SetValue(flow, new FundFileInfo(tar.Path, hash,  ));
-
-          
-        }
-    }
-}
-
-
 
 
 
@@ -271,7 +43,7 @@ public partial class FlowViewModel : ObservableObject
     /// 要素文件
     /// </summary>
     [ObservableProperty]
-    public partial ObservableCollection<CustomFileInfoViewModel>? CustomFiles { get; set; }
+    public partial ObservableCollection<FileViewModelBase>? CustomFiles { get; set; }
 
     public string CustomFileFolder { get; set; } = "Files";
 
@@ -301,7 +73,7 @@ public partial class FlowViewModel : ObservableObject
 
         Date = flow.Date?.ToDateTime(default) ?? null;
 
-        CustomFiles = flow.CustomFiles is not null ? new(flow.CustomFiles.Select(x => new CustomFileInfoViewModel { Id = x.Id, Name = x.Name, FileInfo = x.Path is null ? null : new FileInfo(x.Path) })) : new();
+        CustomFiles = flow.CustomFiles is not null ? new(flow.CustomFiles.Select(x => new FileViewModelBase { Label = x.Name, File = x.Path is null ? null : new FileInfo(x.Path) })) : new();
         foreach (var item in CustomFiles)
             item.PropertyChanged += CustomFile_PropertyChanged;
 
@@ -339,16 +111,16 @@ public partial class FlowViewModel : ObservableObject
 
         // 如果存在未设置的，则不增加
         var last = CustomFiles.LastOrDefault();
-        if (last is not null && (string.IsNullOrWhiteSpace(last.Name) || last.Name == "未命名") && last.FileInfo is null)
+        if (last is not null && (string.IsNullOrWhiteSpace(last.Label) || last.Label == "未命名") && last.File is null)
             return;
 
-        CustomFileInfoViewModel item = new();
+        FileViewModelBase item = new();
         item.PropertyChanged += CustomFile_PropertyChanged;
         CustomFiles.Add(item);
     }
 
     [RelayCommand]
-    public void DeleteFile(CustomFileInfoViewModel file)
+    public void DeleteFile(FileViewModelBase file)
     {
         CustomFiles?.Remove(file);
     }
@@ -357,27 +129,27 @@ public partial class FlowViewModel : ObservableObject
 
     protected void CustomFile_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (sender is not CustomFileInfoViewModel cfi) return;
+        if (sender is not FileViewModelBase cfi) return;
 
-        using var db = DbHelper.Base();
-        var flow = db.GetCollection<FundFlow>().FindById(FlowId);
+        //using var db = DbHelper.Base();
+        //var flow = db.GetCollection<FundFlow>().FindById(FlowId);
 
-        var file = flow!.CustomFiles?.FirstOrDefault(x => x.Id == cfi.Id);
-        if (file is null) return;
-        if (e.PropertyName == nameof(CustomFileInfoViewModel.Name) && cfi.Name is not null)
-            file.Name = cfi.Name;
+        //var file = flow!.CustomFiles?.FirstOrDefault(x => x.Id == cfi.Id);
+        //if (file is null) return;
+        //if (e.PropertyName == nameof(FileViewModelBase.Name) && cfi.Name is not null)
+        //    file.Name = cfi.Name;
 
-        if (e.PropertyName == nameof(CustomFileInfoViewModel.FileInfo) && cfi.FileInfo is not null)
-        {
-            var dir = FundHelper.GetFolder(FundId);
-            // 保存副本
-            dir = dir.CreateSubdirectory(CustomFileFolder);
-            var tar = FileHelper.CopyFile(cfi.FileInfo, dir.FullName);
-            file.Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path);
-            file.Hash = cfi.FileInfo.ComputeHash()!;
-            file.Time = cfi.FileInfo.LastWriteTime;
-        }
-        db.GetCollection<FundFlow>().Update(flow);
+        //if (e.PropertyName == nameof(CustomFileInfoViewModel.FileInfo) && cfi.FileInfo is not null)
+        //{
+        //    var dir = FundHelper.GetFolder(FundId);
+        //    // 保存副本
+        //    dir = dir.CreateSubdirectory(CustomFileFolder);
+        //    var tar = FileHelper.CopyFile(cfi.FileInfo, dir.FullName);
+        //    file.Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path);
+        //    file.Hash = cfi.FileInfo.ComputeHash()!;
+        //    file.Time = cfi.FileInfo.LastWriteTime;
+        //}
+        //db.GetCollection<FundFlow>().Update(flow);
     }
 
 
@@ -471,7 +243,62 @@ public partial class FlowViewModel : ObservableObject
         db.GetCollection<FundFlow>().Update(flow);
     }
 
-    
+
+
+
+
+    [RelayCommand]
+    public void ChooseFile(FileViewModel file)
+    {
+        var fd = new OpenFileDialog();
+        fd.Filter = file.Filter;
+        if (fd.ShowDialog() != true)
+            return;
+
+        SetFile(file, fd.FileName);
+    }
+
+
+    public void SetFile(IFileViewModel? file, string path)
+    {
+        if (file is FileViewModel ff)
+        {
+            ff.File = new FileInfo(path);
+
+            using var db = DbHelper.Base();
+            var flow = db.GetCollection<FundFlow>().FindById(FlowId);
+            if (flow is not null)
+            {
+                ff.SetProperty(flow, ff.Build());
+                db.GetCollection<FundFlow>().Update(flow);
+            }
+        }
+    }
+
+
+
+
+    [RelayCommand]
+    public void Clear(FileViewModel file)
+    {
+        if (file is null) return;
+
+        var r = HandyControl.Controls.MessageBox.Show("是否删除文件", "提示", MessageBoxButton.YesNoCancel);
+        if (r == MessageBoxResult.Cancel) return;
+
+        if (r == MessageBoxResult.Yes) file.File?.Delete();
+
+        using var db = DbHelper.Base();
+        var flow = db.GetCollection<FundFlow>().FindById(FlowId);
+
+        if (flow is not null)
+        {
+            file.SetProperty(flow, null);
+            db.GetCollection<FundFlow>().Update(flow);
+            file.File = null;
+        }
+    }
+
 }
 
 

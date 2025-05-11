@@ -33,6 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Controls\FileDisplay.cs" />
     <Compile Remove="PageView.cs" />
     <Compile Remove="ViewModel\UnitViewModel.cs" />
     <Compile Remove="Views\TransferRequestPage.xaml.cs" />

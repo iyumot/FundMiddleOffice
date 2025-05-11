@@ -9,7 +9,7 @@ namespace FMO.Shared;
 /// <summary>
 /// 
 /// </summary>
-public class FileControl : Control
+public class FileControl : HeaderedContentControl
 {
     static FileControl()
     {
@@ -21,7 +21,13 @@ public class FileControl : Control
     protected override void OnDrop(DragEventArgs e)
     {
         if (DataContext is IFileSetter setter && Binding is not null && e.Data.GetData(DataFormats.FileDrop) is string[] ss)
+        {
+            // 如果有旧文件
+            if (Binding.File is not null)
+                try { Binding.File.Delete(); } catch { }
+
             setter.SetFile(Binding, ss[0]);
+        }
     }
 
     public bool IsReadOnly
@@ -47,7 +53,18 @@ public class FileControl : Control
         DependencyProperty.Register("Binding", typeof(IFileViewModel), typeof(FileControl), new PropertyMetadata(null));
 
 
+
+
+
+ 
+
 }
+
+
+
+
+
+
 
 public class MultiFileControl : Control
 {

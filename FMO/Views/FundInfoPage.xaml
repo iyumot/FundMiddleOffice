@@ -195,9 +195,7 @@
                 <Style TargetType="local:CopyableControl">
                     <Setter Property="TextElement.FontSize" Value="14" />
                 </Style>
-                <Style BasedOn="{StaticResource {x:Type local:FileDisplay}}" TargetType="local:FileDisplay">
-                    <Setter Property="MaxWidth" Value="340" />
-                </Style>
+
             </StackPanel.Resources>
 
             <local:CopyableControl>

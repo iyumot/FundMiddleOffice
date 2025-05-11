@@ -148,11 +148,10 @@
         <!--  自定义文件  -->
         <DataTemplate x:Key="DT.CustomFile">
             <DockPanel LastChildFill="False">
-                <local:FileDisplay
-                    FileInfo="{Binding FileInfo}"
-                    Header="{Binding Name}"
-                    IsReadOnly="{Binding RelativeSource={RelativeSource AncestorType=ListBox}, Path=DataContext.IsReadOnly}"
-                    Style="{StaticResource CustomFileDisplay}" />
+
+
+                <shared:FileControl Binding="{Binding FileInfo}" />
+
                 <Grid Visibility="{Binding RelativeSource={RelativeSource AncestorType=ListBox}, Path=DataContext.IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}">
                     <Button
                         hc:IconElement.Geometry="{StaticResource f.file-circle-xmark}"
@@ -164,280 +163,70 @@
                 </Grid>
             </DockPanel>
         </DataTemplate>
-        <!--  自定义文件  -->
 
-        <!--  单个文件模板  -->
-        <DataTemplate x:Key="SingleFile">
-            <Border>
-                <DockPanel Background="Transparent" LastChildFill="False">
-                    <TextBlock VerticalAlignment="Center" Text="{Binding Name}" />
-
-                    <Viewbox
-                        Width="14"
-                        Height="14"
-                        Margin="2,0,8,0"
-                        VerticalAlignment="Center">
-                        <Path
-                            Data="{DynamicResource f.angle-right}"
-                            Fill="Black"
-                            Stroke="Black" />
-                    </Viewbox>
-
-                    <Grid Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityReConverter}}">
-                        <Button
-                            hc:IconElement.Geometry="{StaticResource f.gear}"
-                            Command="{Binding ChangeCommand}"
-                            Style="{StaticResource ButtonIcon.Small}"
-                            ToolTip="设置文件"
-                            Visibility="{Binding File.Exists, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-                    </Grid>
-
-                    <hc:SimplePanel>
-                        <TextBlock Margin="5,2" Text="{Binding File.Name}" />
-                        <hc:SimplePanel
-                            x:Name="p"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Center"
-                            Background="White"
-                            Visibility="Collapsed">
-                            <DockPanel
-                                Margin="8,2"
-                                LastChildFill="False"
-                                Visibility="{Binding File, Converter={StaticResource FileExistsToVisibilityConverter}}">
-                                <Button
-                                    Margin="-5"
-                                    hc:IconElement.Geometry="{StaticResource f.book-open-reader}"
-                                    Command="{Binding ViewCommand}"
-                                    Foreground="Lime"
-                                    Style="{StaticResource ButtonIcon.Small}"
-                                    ToolTip="查看" />
-                                <Button
-                                    Margin="-5"
-                                    hc:IconElement.Geometry="{StaticResource f.file-export}"
-                                    Command="{Binding SaveAsCommand}"
-                                    Style="{StaticResource ButtonIcon.Small}"
-                                    ToolTip="另存为" />
-
-                                <!--<Button
-             Margin="-5"
-             hc:IconElement.Geometry="{StaticResource f.print}"
-             Command="{Binding PrintCommand}"
-             Style="{StaticResource ButtonIcon.Small}"
-             ToolTip="打印" />-->
-                                <Button
-                                    Margin="-5"
-                                    hc:IconElement.Geometry="{StaticResource f.repeat}"
-                                    Command="{Binding ChangeCommand}"
-                                    Style="{StaticResource ButtonIcon.Small}"
-                                    ToolTip="更换"
-                                    Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-                                <Button
-                                    Margin="-5"
-                                    hc:IconElement.Geometry="{StaticResource f.xmark}"
-                                    Command="{Binding ClearCommand}"
-                                    Foreground="Red"
-                                    Style="{StaticResource ButtonIcon.Small}"
-                                    ToolTip="删除"
-                                    Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-                            </DockPanel>
-                        </hc:SimplePanel>
-                    </hc:SimplePanel>
-
-
-
-                </DockPanel>
-            </Border>
-            <DataTemplate.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter TargetName="p" Property="Visibility" Value="Visible" />
-                </Trigger>
-            </DataTemplate.Triggers>
-        </DataTemplate>
-        <Style x:Key="SingleFileStyle" TargetType="ContentControl">
-            <Setter Property="ContentTemplate" Value="{StaticResource SingleFile}" />
-            <Setter Property="AllowDrop" Value="True" />
-            <EventSetter Event="Drop" Handler="ContentControl_Drop" />
+        <Style BasedOn="{StaticResource {x:Type shared:FileControl}}" TargetType="shared:FileControl">
+            <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}" />
         </Style>
 
-        <DataTemplate x:Key="SingleFile2">
-            <Border>
-                <DockPanel Background="Transparent">
-                    <TextBlock VerticalAlignment="Center" Text="{Binding Name}" />
-                    <Viewbox
-                        Width="14"
-                        Height="14"
-                        Margin="2,0"
-                        VerticalAlignment="Center">
-                        <Path Data="{DynamicResource f.stamp}" Fill="Red" />
-                    </Viewbox>
 
-                    <Viewbox
-                        Width="14"
-                        Height="14"
-                        Margin="2,0,8,0"
-                        VerticalAlignment="Center">
-                        <Path
-                            Data="{DynamicResource f.angle-right}"
-                            Fill="Black"
-                            Stroke="Black" />
-                    </Viewbox>
+        <Style
+            x:Key="SealedFile"
+            BasedOn="{StaticResource {x:Type shared:FileControl}}"
+            TargetType="shared:FileControl">
+            <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}" />
+            <Setter Property="HeaderTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <Viewbox
+                            Width="14"
+                            Height="14"
+                            Margin="2,0"
+                            VerticalAlignment="Center">
+                            <Path Data="{DynamicResource f.stamp}" Fill="Red" />
+                        </Viewbox>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-                    <TextBlock Margin="5,2" Text="{Binding File.Name}" />
 
-                    <Grid Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityReConverter}}">
-                        <Button
-                            hc:IconElement.Geometry="{StaticResource f.gear}"
-                            Command="{Binding ChangeCommand}"
-                            Style="{StaticResource ButtonIcon.Small}"
-                            ToolTip="设置文件"
-                            Visibility="{Binding File.Exists, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-                    </Grid>
+        <Style
+            x:Key="SealedFile2"
+            BasedOn="{StaticResource {x:Type shared:FileControl}}"
+            TargetType="shared:FileControl">
+            <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}" />
+            <Setter Property="HeaderTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <DockPanel LastChildFill="False">
+                            <TextBlock
+                                Name="lb"
+                                VerticalAlignment="Center"
+                                Text="{Binding Binding.Label, RelativeSource={RelativeSource AncestorType=shared:FileControl}}" />
 
-                    <Grid
-                        x:Name="p"
-                        VerticalAlignment="Center"
-                        Visibility="Collapsed">
-                        <DockPanel LastChildFill="False" Visibility="{Binding File, Converter={StaticResource FileExistsToVisibilityConverter}}">
-                            <Button
-                                Margin="-5"
-                                hc:IconElement.Geometry="{StaticResource f.book-open-reader}"
-                                Command="{Binding ViewCommand}"
-                                Foreground="Lime"
-                                Style="{StaticResource ButtonIcon.Small}"
-                                ToolTip="查看" />
-                            <Button
-                                Margin="-5"
-                                hc:IconElement.Geometry="{StaticResource f.file-export}"
-                                Command="{Binding SaveAsCommand}"
-                                Style="{StaticResource ButtonIcon.Small}"
-                                ToolTip="另存为" />
+                            <Viewbox
+                                Width="14"
+                                Height="14"
+                                Margin="2,0,8,0"
+                                VerticalAlignment="Center">
+                                <Path Data="{DynamicResource f.stamp}" Fill="Red" />
+                            </Viewbox>
 
-                            <!--<Button
-                                Margin="-5"
-                                hc:IconElement.Geometry="{StaticResource f.print}"
-                                Command="{Binding PrintCommand}"
-                                Style="{StaticResource ButtonIcon.Small}"
-                                ToolTip="打印" />-->
-                            <Button
-                                Margin="-5"
-                                hc:IconElement.Geometry="{StaticResource f.repeat}"
-                                Command="{Binding ChangeCommand}"
-                                Style="{StaticResource ButtonIcon.Small}"
-                                ToolTip="更换"
-                                Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-                            <Button
-                                Margin="-5"
-                                hc:IconElement.Geometry="{StaticResource f.xmark}"
-                                Command="{Binding ClearCommand}"
-                                Foreground="Red"
-                                Style="{StaticResource ButtonIcon.Small}"
-                                ToolTip="删除"
-                                Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
                         </DockPanel>
-                    </Grid>
-
-                </DockPanel>
-            </Border>
-            <DataTemplate.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter TargetName="p" Property="Visibility" Value="Visible" />
-                </Trigger>
-            </DataTemplate.Triggers>
-        </DataTemplate>
-
-        <Style x:Key="SingleFileStyle2" TargetType="ContentControl">
-            <Setter Property="ContentTemplate" Value="{StaticResource SingleFile2}" />
-            <Setter Property="AllowDrop" Value="True" />
-            <EventSetter Event="Drop" Handler="ContentControl_Drop" />
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
-        <DataTemplate x:Key="SealedSingleFile">
-            <Border>
-                <DockPanel Background="Transparent">
-                    <!--<TextBlock VerticalAlignment="Center" Text="{Binding Name}" />-->
-
-                    <Viewbox
-                        Width="14"
-                        Height="14"
-                        Margin="2,0"
-                        VerticalAlignment="Center">
-                        <Path Data="{DynamicResource f.stamp}" Fill="Red" />
-                    </Viewbox>
-
-                    <TextBlock Margin="5,2" Text="{Binding File.Name}" />
-
-                    <Grid Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityReConverter}}">
-                        <Button
-                            hc:IconElement.Geometry="{StaticResource f.gear}"
-                            Command="{Binding ChangeCommand}"
-                            Style="{StaticResource ButtonIcon.Small}"
-                            ToolTip="设置文件"
-                            Visibility="{Binding File.Exists, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-                    </Grid>
-
-                    <Grid
-                        x:Name="p"
-                        VerticalAlignment="Center"
-                        Visibility="Collapsed">
-                        <DockPanel LastChildFill="False" Visibility="{Binding File, Converter={StaticResource FileExistsToVisibilityConverter}}">
-                            <Button
-                                Margin="-5"
-                                hc:IconElement.Geometry="{StaticResource f.book-open-reader}"
-                                Command="{Binding ViewCommand}"
-                                Foreground="Lime"
-                                Style="{StaticResource ButtonIcon.Small}"
-                                ToolTip="查看" />
-                            <Button
-                                Margin="-5"
-                                hc:IconElement.Geometry="{StaticResource f.file-export}"
-                                Command="{Binding SaveAsCommand}"
-                                Style="{StaticResource ButtonIcon.Small}"
-                                ToolTip="另存为" />
-
-                            <!--<Button
-                                Margin="-5"
-                                hc:IconElement.Geometry="{StaticResource f.print}"
-                                Command="{Binding PrintCommand}"
-                                Style="{StaticResource ButtonIcon.Small}"
-                                ToolTip="打印" />-->
-                            <Button
-                                Margin="-5"
-                                hc:IconElement.Geometry="{StaticResource f.repeat}"
-                                Command="{Binding ChangeCommand}"
-                                Style="{StaticResource ButtonIcon.Small}"
-                                ToolTip="更换"
-                                Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-                        </DockPanel>
-                    </Grid>
-
-                </DockPanel>
-            </Border>
-            <DataTemplate.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter TargetName="p" Property="Visibility" Value="Visible" />
-                </Trigger>
-            </DataTemplate.Triggers>
-        </DataTemplate>
 
 
-        <Style x:Key="SealedFileStyle" TargetType="ContentControl">
-            <Setter Property="Margin" Value="10,0,0,0" />
-            <Setter Property="ContentTemplate" Value="{StaticResource SealedSingleFile}" />
-            <Setter Property="AllowDrop" Value="True" />
-            <EventSetter Event="Drop" Handler="ContentControl_Drop" />
-        </Style>
+
 
         <DataTemplate x:Key="DT.InitiateFlow">
             <UserControl Template="{StaticResource FlowShell}">
                 <StackPanel VerticalAlignment="Center">
-                    <local:MultiFileDisplay
-                        Files="{Binding ElementFiles}"
-                        Header="基金要素"
-                        IsReadOnly="{Binding IsReadOnly}" />
-                    <local:MultiFileDisplay
-                        Files="{Binding ContractFiles}"
-                        Header="基金合同"
-                        IsReadOnly="{Binding IsReadOnly}" />
+                    <local:MultiFileDisplay Files="{Binding ElementFiles}" Header="基金要素" />
+                    <local:MultiFileDisplay Files="{Binding ContractFiles}" Header="基金合同" />
 
                     <ListBox
                         BorderThickness="0"
@@ -454,11 +243,12 @@
                     <StackPanel MinWidth="500" VerticalAlignment="Center">
                         <!--<ContentControl Content="{Binding Contract}" Style="{StaticResource SingleFileStyle}" />-->
 
-                        <shared:FileControl Binding="{Binding Contract}" IsReadOnly="{Binding IsReadOnly}" />
+                        <shared:FileControl Binding="{Binding Contract}" />
 
-                        <ContentControl Content="{Binding RiskDisclosureDocument}" Style="{StaticResource SingleFileStyle}" />
-                        <ContentControl Content="{Binding CollectionAccount}" Style="{StaticResource SingleFileStyle}" />
-                        <ContentControl Content="{Binding CustodyAccount}" Style="{StaticResource SingleFileStyle}" />
+                        <shared:FileControl Binding="{Binding RiskDisclosureDocument}" />
+                        <shared:FileControl Binding="{Binding CollectionAccount}" />
+                        <shared:FileControl Binding="{Binding CustodyAccount}" />
+
 
                         <ListBox
                             BorderThickness="0"
@@ -538,10 +328,10 @@
 
                     <DockPanel>
                         <Button CommandParameter="{Binding EstablishmentAnnouncement}" Style="{StaticResource GeneratorButton}" />
-                        <ContentControl Content="{Binding EstablishmentAnnouncement}" Style="{StaticResource SingleFileStyle}" />
+                        <shared:FileControl Binding="{Binding EstablishmentAnnouncement}" />
                     </DockPanel>
 
-                    <ContentControl Content="{Binding PaidInCapitalProof}" Style="{StaticResource SingleFileStyle}" />
+                    <shared:FileControl Binding="{Binding PaidInCapitalProof}" />
 
                     <ListBox
                         BorderThickness="0"
@@ -560,32 +350,33 @@
 
                     <WrapPanel>
                         <Button CommandParameter="{Binding CommitmentLetter}" Style="{StaticResource GeneratorButton}" />
-                        <ContentControl Content="{Binding CommitmentLetter}" Style="{StaticResource SingleFileStyle}" />
-                        <ContentControl Content="{Binding SealedCommitmentLetter}" Style="{StaticResource SealedFileStyle}" />
+
+                        <shared:FileControl Binding="{Binding CommitmentLetter}" />
+                        <shared:FileControl Binding="{Binding SealedCommitmentLetter}" Style="{StaticResource SealedFile}" />
+
                     </WrapPanel>
 
                     <WrapPanel>
-                        <ContentControl Content="{Binding Prospectus}" Style="{StaticResource SingleFileStyle}" />
-                        <ContentControl Content="{Binding SealedProspectus}" Style="{StaticResource SealedFileStyle}" />
+                        <shared:FileControl Binding="{Binding Prospectus}" />
+                        <shared:FileControl Binding="{Binding SealedProspectus}" Style="{StaticResource SealedFile}" />
                     </WrapPanel>
 
 
+                    <shared:FileControl Binding="{Binding SealedContract}" Style="{StaticResource SealedFile2}" />
+                    <shared:FileControl Binding="{Binding SealedAccountOversightProtocol}" Style="{StaticResource SealedFile2}" />
 
-                    <ContentControl Content="{Binding SealedContract}" Style="{StaticResource SingleFileStyle2}" />
-                    <ContentControl Content="{Binding SealedAccountOversightProtocol}" Style="{StaticResource SingleFileStyle2}" />
+                    <shared:FileControl Binding="{Binding SealedOutsourcingServicesAgreement}" Style="{StaticResource SealedFile2}" />
 
-                    <ContentControl Content="{Binding SealedOutsourcingServicesAgreement}" Style="{StaticResource SingleFileStyle2}" />
-                    <ContentControl Content="{Binding SealedInvestorList}" Style="{StaticResource SingleFileStyle2}" />
 
 
                     <WrapPanel>
-                        <ContentControl Content="{Binding StructureGraph}" Style="{StaticResource SingleFileStyle}" />
-                        <ContentControl Content="{Binding SealedStructureGraph}" Style="{StaticResource SealedFileStyle}" />
+                        <shared:FileControl Binding="{Binding StructureGraph}" />
+                        <shared:FileControl Binding="{Binding SealedStructureGraph}" Style="{StaticResource SealedFile}" />
                     </WrapPanel>
 
                     <WrapPanel>
-                        <ContentControl Content="{Binding NestedCommitmentLetter}" Style="{StaticResource SingleFileStyle}" />
-                        <ContentControl Content="{Binding SealedNestedCommitmentLetter}" Style="{StaticResource SealedFileStyle}" />
+                        <shared:FileControl Binding="{Binding NestedCommitmentLetter}" />
+                        <shared:FileControl Binding="{Binding SealedNestedCommitmentLetter}" Style="{StaticResource SealedFile}" />
                     </WrapPanel>
 
                     <ListBox
@@ -595,7 +386,7 @@
                         Style="{StaticResource ListBoxCustom}" />
 
                     <Separator />
-                    <ContentControl Content="{Binding RegistrationLetter}" Style="{StaticResource SingleFileStyle}" />
+                    <shared:FileControl Binding="{Binding RegistrationLetter}" />
                 </StackPanel>
             </UserControl>
 
@@ -636,22 +427,15 @@
                     </DockPanel>
 
                     <StackPanel MinWidth="500" VerticalAlignment="Center">
-                        <local:MultiFileDisplay
-                            Files="{Binding SupplementaryFile}"
-                            Header="补充协议"
-                            IsReadOnly="{Binding IsReadOnly}" />
+                        <local:MultiFileDisplay Files="{Binding SupplementaryFile}" Header="补充协议" />
 
 
-                        <ContentControl Content="{Binding Contract}" Style="{StaticResource SingleFileStyle}" />
-                        <ContentControl Content="{Binding RiskDisclosureDocument}" Style="{StaticResource SingleFileStyle}" />
-                        <ContentControl
-                            Content="{Binding CollectionAccount}"
-                            Style="{StaticResource SingleFileStyle}"
-                            Visibility="{Binding ModifyCollectionAccount, Converter={StaticResource Boolean2VisibilityConverter}}" />
-                        <ContentControl
-                            Content="{Binding CustodyAccount}"
-                            Style="{StaticResource SingleFileStyle}"
-                            Visibility="{Binding ModifyCustodyAccount, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                        <shared:FileControl Binding="{Binding Contract}" />
+                        <shared:FileControl Binding="{Binding RiskDisclosureDocument}" />
+
+                        <shared:FileControl Binding="{Binding CollectionAccount}" Visibility="{Binding ModifyCollectionAccount, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                        <shared:FileControl Binding="{Binding CustodyAccount}" Visibility="{Binding ModifyCustodyAccount, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
 
                         <ListBox
@@ -663,19 +447,16 @@
                         <Separator />
 
                         <WrapPanel>
-                            <ContentControl Content="{Binding Announcement}" Style="{StaticResource SingleFileStyle}" />
-                            <ContentControl Content="{Binding SealedAnnouncement}" Style="{StaticResource SealedFileStyle}" />
+                            <shared:FileControl Binding="{Binding Announcement}" />
+                            <shared:FileControl Binding="{Binding SealedAnnouncement}" Style="{StaticResource SealedFile}" />
                         </WrapPanel>
 
                         <DockPanel>
                             <Button CommandParameter="{Binding CommitmentLetter}" Style="{StaticResource GeneratorButton}" />
-                            <ContentControl Content="{Binding CommitmentLetter}" Style="{StaticResource SingleFileStyle}" />
+                            <shared:FileControl Binding="{Binding CommitmentLetter}" />
                         </DockPanel>
 
-                        <ContentControl
-                            Content="{Binding RegistrationLetter}"
-                            Style="{StaticResource SingleFileStyle}"
-                            Visibility="{Binding ModifyName, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                        <shared:FileControl Binding="{Binding RegistrationLetter}" Visibility="{Binding ModifyName, Converter={StaticResource Boolean2VisibilityConverter}}" />
                     </StackPanel>
 
 
@@ -699,8 +480,8 @@
                     <StackPanel MinWidth="500" VerticalAlignment="Center">
 
                         <WrapPanel>
-                            <ContentControl Content="{Binding Announcement}" Style="{StaticResource SingleFileStyle}" />
-                            <ContentControl Content="{Binding SealedAnnouncement}" Style="{StaticResource SealedFileStyle}" />
+                            <shared:FileControl Binding="{Binding Announcement}" />
+                            <shared:FileControl Binding="{Binding SealedAnnouncement}" Style="{StaticResource SealedFile}" />
                         </WrapPanel>
 
 
@@ -730,7 +511,7 @@
 
                     <StackPanel VerticalAlignment="Center">
 
-                        <ContentControl Content="{Binding LiquidationReport}" Style="{StaticResource SingleFileStyle}" />
+                        <shared:FileControl Binding="{Binding LiquidationReport}" />
 
 
                         <ListBox

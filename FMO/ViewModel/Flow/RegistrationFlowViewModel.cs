@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
+using FMO.Shared;
 using FMO.TPL;
 using FMO.Utilities;
 using System.Diagnostics.CodeAnalysis;
@@ -14,29 +15,29 @@ public partial class RegistrationFlowViewModel : FlowViewModel
     /// 备案承诺函
     /// </summary>
     [ObservableProperty]
-    public partial FlowFileViewModel CommitmentLetter { get; set; }
+    public partial FileViewModel CommitmentLetter { get; set; }
 
 
     [ObservableProperty]
-    public partial FlowFileViewModel SealedCommitmentLetter { get; set; }
+    public partial FileViewModel SealedCommitmentLetter { get; set; }
 
 
     /// <summary>
     /// 招募说明书
     /// </summary>
     [ObservableProperty]
-    public partial FlowFileViewModel Prospectus { get; set; }
+    public partial FileViewModel Prospectus { get; set; }
 
 
     [ObservableProperty]
-    public partial FlowFileViewModel SealedProspectus { get; set; }
+    public partial FileViewModel SealedProspectus { get; set; }
 
 
     /// <summary>
     /// 基金合同 用印
     /// </summary>
     [ObservableProperty]
-    public partial FlowFileViewModel SealedContract { get; set; }
+    public partial FileViewModel SealedContract { get; set; }
 
 
 
@@ -45,43 +46,43 @@ public partial class RegistrationFlowViewModel : FlowViewModel
     /// 募集账户监督协议
     /// </summary>
     [ObservableProperty]
-    public partial FlowFileViewModel SealedAccountOversightProtocol { get; set; }
+    public partial FileViewModel SealedAccountOversightProtocol { get; set; }
 
     /// <summary>
     /// 外包服务协议
     /// </summary>
     [ObservableProperty]
-    public partial FlowFileViewModel SealedOutsourcingServicesAgreement { get; set; }
+    public partial FileViewModel SealedOutsourcingServicesAgreement { get; set; }
 
     /// <summary>
     /// 投资者明细
     /// </summary>
-    [ObservableProperty]
-    public partial FlowFileViewModel SealedInvestorList { get; set; }
+    // [ObservableProperty]
+    //  public partial FileViewModel SealedInvestorList { get; set; }
 
     /// <summary>
     /// 产品结构图
     /// </summary>
     [ObservableProperty]
-    public partial FlowFileViewModel StructureGraph { get; set; }
+    public partial FileViewModel StructureGraph { get; set; }
 
 
     [ObservableProperty]
-    public partial FlowFileViewModel SealedStructureGraph { get; set; }
+    public partial FileViewModel SealedStructureGraph { get; set; }
 
     /// <summary>
     /// 嵌套承诺函
     /// </summary>
     [ObservableProperty]
-    public partial FlowFileViewModel NestedCommitmentLetter { get; set; }
+    public partial FileViewModel NestedCommitmentLetter { get; set; }
 
 
     [ObservableProperty]
-    public partial FlowFileViewModel SealedNestedCommitmentLetter { get; set; }
+    public partial FileViewModel SealedNestedCommitmentLetter { get; set; }
 
 
     [ObservableProperty]
-    public partial FlowFileViewModel RegistrationLetter { get; set; }
+    public partial FileViewModel RegistrationLetter { get; set; }
 
 
 
@@ -91,70 +92,149 @@ public partial class RegistrationFlowViewModel : FlowViewModel
     [SetsRequiredMembers]
     public RegistrationFlowViewModel(RegistrationFlow flow) : base(flow)
     {
-        CommitmentLetter = new FlowFileViewModel(FundId, FlowId, "备案承诺函", flow.CommitmentLetter?.Path, "Registration", nameof(RegistrationFlow.CommitmentLetter)) { Filter = "文本文档|*.doc;*.docx;*.wps;*.pdf;" };
-        SealedCommitmentLetter = new FlowFileViewModel(FundId, FlowId, "备案承诺函", flow.SealedCommitmentLetter?.Path, "Registration", nameof(RegistrationFlow.SealedCommitmentLetter));
-        SealedCommitmentLetter.Filter = "PDF (*.pdf)|*.pdf;";
-
-        Prospectus = new FlowFileViewModel(FundId, FlowId, "招募说明书", flow.Prospectus?.Path, "Registration", nameof(RegistrationFlow.Prospectus)) { Filter = "文本文档|*.doc;*.docx;*.wps;*.pdf;" };
-        SealedProspectus = new FlowFileViewModel(FundId, FlowId, "招募说明书", flow.SealedProspectus?.Path, "Registration", nameof(RegistrationFlow.SealedProspectus));
-        SealedProspectus.Filter = "PDF (*.pdf)|*.pdf;";
-
-        SealedContract = new FlowFileViewModel(FundId, FlowId, "基金合同", flow.SealedContract?.Path, "Registration", nameof(RegistrationFlow.SealedContract));
-        SealedContract.Filter = "PDF (*.pdf)|*.pdf;";
-
-        SealedAccountOversightProtocol = new FlowFileViewModel(FundId, FlowId, "募集账户监督协议", flow.SealedAccountOversightProtocol?.Path, "Registration", nameof(RegistrationFlow.SealedAccountOversightProtocol));
-        SealedAccountOversightProtocol.Filter = "PDF (*.pdf)|*.pdf;";
-
-        SealedOutsourcingServicesAgreement = new FlowFileViewModel(FundId, FlowId, "外包服务协议", flow.SealedOutsourcingServicesAgreement?.Path, "Registration", nameof(RegistrationFlow.SealedOutsourcingServicesAgreement));
-        SealedOutsourcingServicesAgreement.Filter = "PDF (*.pdf)|*.pdf;";
-
-        SealedInvestorList = new FlowFileViewModel(FundId, FlowId, "投资者明细", flow.SealedInvestorList?.Path, "Registration", nameof(RegistrationFlow.SealedInvestorList));
-        SealedInvestorList.Filter = "PDF (*.pdf)|*.pdf;";
-
-
-        StructureGraph = new FlowFileViewModel(FundId, FlowId, "产品结构图", flow.StructureGraph?.Path, "Registration", nameof(RegistrationFlow.StructureGraph)) { Filter = "文本文档|*.doc;*.docx;*.wps;*.pdf;" };
-        SealedStructureGraph = new FlowFileViewModel(FundId, FlowId, "产品结构图", flow.SealedStructureGraph?.Path, "Registration", nameof(RegistrationFlow.SealedStructureGraph));
-        SealedStructureGraph.Filter = "PDF (*.pdf)|*.pdf;";
+        CommitmentLetter = new()
+        {
+            Label = "备案承诺函",
+            Filter = "文本文档|*.doc;*.docx;*.wps;*.pdf;",
+            SaveFolder = FundHelper.GetFolder(FundId, "Registration"),
+            GetProperty = x => x switch { RegistrationFlow f => f.CommitmentLetter, _ => null },
+            SetProperty = (x, y) => { if (x is RegistrationFlow f) f.CommitmentLetter = y; },
+        };
+        CommitmentLetter.Init(flow);
 
 
 
-        NestedCommitmentLetter = new FlowFileViewModel(FundId, FlowId, "嵌套承诺函", flow.NestedCommitmentLetter?.Path, "Registration", nameof(RegistrationFlow.NestedCommitmentLetter)) { Filter = "文本文档|*.doc;*.docx;*.wps;*.pdf;" };
-        SealedNestedCommitmentLetter = new FlowFileViewModel(FundId, FlowId, "嵌套承诺函", flow.SealedNestedCommitmentLetter?.Path, "Registration", nameof(RegistrationFlow.SealedNestedCommitmentLetter));
-        SealedNestedCommitmentLetter.Filter = "PDF (*.pdf)|*.pdf;";
+        SealedCommitmentLetter = new()
+        {
+            Label = "备案承诺函",
+            Filter = "PDF (*.pdf)|*.pdf;",
+            SaveFolder = FundHelper.GetFolder(FundId, "Registration"),
+            GetProperty = x => x switch { RegistrationFlow f => f.SealedCommitmentLetter, _ => null },
+            SetProperty = (x, y) => { if (x is RegistrationFlow f) f.SealedCommitmentLetter = y; },
+        };
+        SealedCommitmentLetter.Init(flow);
 
 
-        RegistrationLetter = new FlowFileViewModel(FundId, FlowId, "备案函", flow.RegistrationLetter?.Path, "Registration", nameof(RegistrationFlow.RegistrationLetter)) { Filter = "PDF (*.pdf)|*.pdf;" };
+
+        Prospectus = new()
+        {
+            Label = "招募说明书",
+            Filter = "文本文档|*.doc;*.docx;*.wps;*.pdf;",
+            SaveFolder = FundHelper.GetFolder(FundId, "Registration"),
+            GetProperty = x => x switch { RegistrationFlow f => f.Prospectus, _ => null },
+            SetProperty = (x, y) => { if (x is RegistrationFlow f) f.Prospectus = y; },
+        }; Prospectus.Init(flow);
+
+        SealedProspectus = new()
+        {
+            Label = "招募说明书",
+            Filter = "PDF (*.pdf)|*.pdf;",
+            SaveFolder = FundHelper.GetFolder(FundId, "Registration"),
+            GetProperty = x => x switch { RegistrationFlow f => f.SealedProspectus, _ => null },
+            SetProperty = (x, y) => { if (x is RegistrationFlow f) f.SealedProspectus = y; },
+        };
+        SealedProspectus.Init(flow); 
+
+        SealedContract = new()
+        {
+            Label = "基金合同",
+            Filter = "PDF (*.pdf)|*.pdf;",
+            SaveFolder = FundHelper.GetFolder(FundId, "Registration"),
+            GetProperty = x => x switch { RegistrationFlow f => f.SealedContract, _ => null },
+            SetProperty = (x, y) => { if (x is RegistrationFlow f) f.SealedContract = y; },
+        }; SealedContract.Init(flow);
+
+        SealedAccountOversightProtocol = new()
+        {
+            Label = "募集账户监督协议",
+            Filter = "PDF (*.pdf)|*.pdf;",
+            SaveFolder = FundHelper.GetFolder(FundId, "Registration"),
+            GetProperty = x => x switch { RegistrationFlow f => f.SealedAccountOversightProtocol, _ => null },
+            SetProperty = (x, y) => { if (x is RegistrationFlow f) f.SealedAccountOversightProtocol = y; },
+        }; SealedAccountOversightProtocol.Init(flow);
+
+        SealedOutsourcingServicesAgreement = new()
+        {
+            Label = "外包服务协议",
+            Filter = "PDF (*.pdf)|*.pdf;",
+            SaveFolder = FundHelper.GetFolder(FundId, "Registration"),
+            GetProperty = x => x switch { RegistrationFlow f => f.SealedOutsourcingServicesAgreement, _ => null },
+            SetProperty = (x, y) => { if (x is RegistrationFlow f) f.SealedOutsourcingServicesAgreement = y; },
+        }; SealedOutsourcingServicesAgreement.Init(flow);
 
 
+
+        StructureGraph = new()
+        {
+            Label = "产品结构图",
+            SaveFolder = FundHelper.GetFolder(FundId, "Registration"),
+            GetProperty = x => x switch { RegistrationFlow f => f.StructureGraph, _ => null },
+            SetProperty = (x, y) => { if (x is RegistrationFlow f) f.StructureGraph = y; },
+        };
+        StructureGraph.Init(flow);
+
+        SealedStructureGraph = new()
+        {
+            Label = "产品结构图",
+            Filter = "PDF (*.pdf)|*.pdf;",
+            SaveFolder = FundHelper.GetFolder(FundId, "Registration"),
+            GetProperty = x => x switch { RegistrationFlow f => f.SealedStructureGraph, _ => null },
+            SetProperty = (x, y) => { if (x is RegistrationFlow f) f.SealedStructureGraph = y; },
+        }; SealedStructureGraph.Init(flow);
+
+
+
+        NestedCommitmentLetter = new()
+        {
+            Label = "嵌套承诺函",
+            SaveFolder = FundHelper.GetFolder(FundId, "Registration"),
+            GetProperty = x => x switch { RegistrationFlow f => f.NestedCommitmentLetter, _ => null },
+            SetProperty = (x, y) => { if (x is RegistrationFlow f) f.NestedCommitmentLetter = y; },
+        }; NestedCommitmentLetter.Init(flow);
+        SealedNestedCommitmentLetter = new()
+        {
+            Label = "嵌套承诺函",
+            Filter = "PDF (*.pdf)|*.pdf;",
+            SaveFolder = FundHelper.GetFolder(FundId, "Registration"),
+            GetProperty = x => x switch { RegistrationFlow f => f.SealedNestedCommitmentLetter, _ => null },
+            SetProperty = (x, y) => { if (x is RegistrationFlow f) f.SealedNestedCommitmentLetter = y; },
+        }; SealedNestedCommitmentLetter.Init(flow);
+
+
+        RegistrationLetter = new()
+        {
+            Label = "备案函",
+            SaveFolder = FundHelper.GetFolder(FundId, "Registration"),
+            GetProperty = x => x switch { RegistrationFlow f => f.RegistrationLetter, _ => null },
+            SetProperty = (x, y) => { if (x is RegistrationFlow f) f.RegistrationLetter = y; },
+        }; RegistrationLetter.Init(flow);
+        RegistrationLetter.Init(flow);
     }
 
 
     [RelayCommand]
-    public void GenerateFile(FlowFileViewModel v)
+    public void GenerateFile(FileViewModel v)
     {
-        switch (v.Name)
-        {
-            case "备案承诺函":
-                try
-                {
-                    using var db = DbHelper.Base();
-                    var fund = db.GetCollection<Fund>().FindById(FundId);
-                    string path = @$"{FundHelper.GetFolder(FundId)}\Registration\{fund.Name}_备案承诺函.docx";
-                    var fi = new FileInfo(path);
-                    if (!fi.Directory!.Exists) fi.Directory.Create();
 
-                    if (WordTpl.GenerateRegisterAnounce(fund, path))
-                    {
-                        if (CommitmentLetter.File?.Exists ?? false)
-                            CommitmentLetter.File.Delete();
-                        CommitmentLetter.SetFile(new System.IO.FileInfo(path));
-                    }
-                    else HandyControl.Controls.Growl.Error("生成备案承诺函失败，请查看Log，检查模板是否存在");
+        if (v == CommitmentLetter)
+        {
+            try
+            {
+                using var db = DbHelper.Base();
+                var fund = db.GetCollection<Fund>().FindById(FundId);
+                string path = @$"{v.SaveFolder}\{fund.Name}_备案承诺函.docx";
+                var fi = new FileInfo(path);
+                if (!fi.Directory!.Exists) fi.Directory.Create();
+
+                if (WordTpl.GenerateRegisterAnounce(fund, path))
+                {
+                    if (CommitmentLetter.File?.Exists ?? false)
+                        CommitmentLetter.File.Delete();
+                    SetFile(v, path);
                 }
-                catch { }
-                break;
-            default:
-                break;
+                else HandyControl.Controls.Growl.Error("生成备案承诺函失败，请查看Log，检查模板是否存在");
+            }
+            catch { }
         }
     }
 

@@ -38,6 +38,8 @@ public interface IFileSetter
 
 public partial class FileViewModelBase : ObservableObject, IFileViewModel
 {
+    [ObservableProperty]
+    public partial string Label { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(Exists))]
@@ -157,13 +159,36 @@ public partial class FileViewModelBase : ObservableObject, IFileViewModel
     }
 }
 
-public partial class FileViewModel<T> : FileViewModelBase, IFileSelector
+/// <summary>
+/// 非泛型
+/// </summary>
+public partial class FileViewModel : FileViewModelBase,IFileViewModel, IFileSelector
 {
 
 
-    [ObservableProperty]
-    public partial string Label { get; set; }
 
+    public required Func<object, FileStorageInfo?> GetProperty { get; set; }
+
+    public required Action<object, FileStorageInfo?> SetProperty { get; set; }
+     
+
+    public void Init(object entity)
+    {
+        var p = GetProperty(entity);
+
+        if (p?.Path is not null)
+            File = new FileInfo(p.Path);
+
+    }
+}
+
+/// <summary>
+/// 泛型
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public partial class FileViewModel<T> : FileViewModelBase, IFileSelector
+{
+     
 
     public required Func<T, FileStorageInfo?> GetProperty { get; set; }
 
@@ -178,10 +203,8 @@ public partial class FileViewModel<T> : FileViewModelBase, IFileSelector
         var p = GetProperty(entity);
 
         if (p?.Path is not null)
-        {
             File = new FileInfo(p.Path);
 
-        }
     }
 
 }
