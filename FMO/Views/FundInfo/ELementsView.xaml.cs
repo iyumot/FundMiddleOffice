@@ -738,7 +738,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
     public void Receive(ElementChangedBackgroundMessage message)
     {
-        if (message.FundId == FundId && message.FlowId == FlowId)
+        //if (message.FundId == FundId && message.FlowId == FlowId)
             OnFlowIdChanged(FlowId, FlowId);
     }
 }

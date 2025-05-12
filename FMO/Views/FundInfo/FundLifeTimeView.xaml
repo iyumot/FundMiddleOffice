@@ -248,7 +248,7 @@
                             <shared:FileControl Binding="{Binding CollectionAccount}" />
                             <Button
                                 hc:IconElement.Geometry="{StaticResource f.chart-pie}"
-                                Command="{Binding DataContext.ParseAccountInfoCommand, RelativeSource={RelativeSource AncestorType=shared:FileControl}}"
+                                Command="{Binding ParseAccountInfoCommand}"
                                 CommandParameter="{Binding CollectionAccount}"
                                 Foreground="RoyalBlue"
                                 Style="{StaticResource ButtonIcon.Small}"
@@ -258,7 +258,7 @@
                             <shared:FileControl Binding="{Binding CustodyAccount}" />
                             <Button
                                 hc:IconElement.Geometry="{StaticResource f.chart-pie}"
-                                Command="{Binding DataContext.ParseAccountInfoCommand, RelativeSource={RelativeSource AncestorType=shared:FileControl}}"
+                                Command="{Binding ParseAccountInfoCommand}"
                                 CommandParameter="{Binding CustodyAccount}"
                                 Foreground="RoyalBlue"
                                 Style="{StaticResource ButtonIcon.Small}"
@@ -452,7 +452,7 @@
                             <shared:FileControl Binding="{Binding CollectionAccount}" />
                             <Button
                                 hc:IconElement.Geometry="{StaticResource f.chart-pie}"
-                                Command="{Binding DataContext.ParseAccountInfoCommand, RelativeSource={RelativeSource AncestorType=shared:FileControl}}"
+                                Command="{Binding ParseAccountInfoCommand}"
                                 CommandParameter="{Binding CollectionAccount}"
                                 Foreground="RoyalBlue"
                                 Style="{StaticResource ButtonIcon.Small}"
@@ -462,7 +462,7 @@
                             <shared:FileControl Binding="{Binding CustodyAccount}" />
                             <Button
                                 hc:IconElement.Geometry="{StaticResource f.chart-pie}"
-                                Command="{Binding DataContext.ParseAccountInfoCommand, RelativeSource={RelativeSource AncestorType=shared:FileControl}}"
+                                Command="{Binding ParseAccountInfoCommand}"
                                 CommandParameter="{Binding CustodyAccount}"
                                 Foreground="RoyalBlue"
                                 Style="{StaticResource ButtonIcon.Small}"

@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -116,7 +117,7 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
             Label = "募集账户函",
             SaveFolder = FundHelper.GetFolder(FundId, "Account"),
             GetProperty = x => x switch { ContractFlow f => f.CollectionAccountFile, _ => null },
-            SetProperty = (x, y) => { if (x is not ContractFlow f) return; f.CollectionAccountFile = y; UpdateElement(y?.Path is null ? null : new FileInfo(y.Path), x => x.CollectionAccount, FundAccountType.Collection); },
+            SetProperty = async (x, y) => { if (x is not ContractFlow f) return; f.CollectionAccountFile = y; await UpdateElement(y?.Path is null ? null : new FileInfo(y.Path), x => x.CollectionAccount, FundAccountType.Collection); },
             Filter = "文本|*.docx;*.doc;*.pdf"
         };
         CollectionAccount.Init(flow);
@@ -126,7 +127,7 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
             Label = "托管账户函",
             SaveFolder = FundHelper.GetFolder(FundId, "Account"),
             GetProperty = x => x switch { ContractFlow f => f.CustodyAccountFile, _ => null },
-            SetProperty = (x, y) => { if (x is not ContractFlow f) return; f.CustodyAccountFile = y; UpdateElement(y?.Path is null ? null : new FileInfo(y.Path), x => x.CustodyAccount, FundAccountType.Custody); },
+            SetProperty = async (x, y) => { if (x is not ContractFlow f) return; f.CustodyAccountFile = y; await UpdateElement(y?.Path is null ? null : new FileInfo(y.Path), x => x.CustodyAccount, FundAccountType.Custody); },
             Filter = "文本|*.docx;*.doc;*.pdf"
         };
         CustodyAccount.Init(flow);
@@ -231,12 +232,12 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
 
 
     [RelayCommand]
-    public void ParseAccountInfo(FileViewModel f)
+    public async Task ParseAccountInfo(FileViewModel f)
     {
         if (f == CollectionAccount)
-            UpdateElement(f.File, x => x.CollectionAccount, FundAccountType.Collection);
-        else if(f == CustodyAccount)
-            UpdateElement(f.File, x => x.CustodyAccount, FundAccountType.Custody);
+            await UpdateElement(f.File, x => x.CollectionAccount, FundAccountType.Collection);
+        else if (f == CustodyAccount)
+            await UpdateElement(f.File, x => x.CustodyAccount, FundAccountType.Custody);
     }
 
     /// <summary>
@@ -252,9 +253,9 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
 
 
 
-    private void UpdateElement(FileInfo? x, Func<FundElements, Mutable<BankAccount>> property, FundAccountType accountType)
+    private Task UpdateElement(FileInfo? x, Func<FundElements, Mutable<BankAccount>> property, FundAccountType accountType)
     {
-        Task.Run(() =>
+        return Task.Run(() =>
         {
             try
             {
@@ -285,6 +286,7 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
                 Log.Information($"设置 {accountType} 账户成功 {FundId}.{FlowId}");
             }
             catch (Exception e) { Log.Error($"设置 {accountType} 账户出错 {FundId}.{FlowId} {e}"); }
+
         });
     }
 
