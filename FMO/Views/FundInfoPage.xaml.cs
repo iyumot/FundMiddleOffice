@@ -1,4 +1,10 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Windows.Controls;
+using System.Windows.Data;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
@@ -6,12 +12,6 @@ using FMO.TPL;
 using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
-using System.Collections.Concurrent;
-using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Windows.Controls;
-using System.Windows.Data;
 
 namespace FMO;
 
@@ -693,10 +693,16 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
             case FundAccountType.None:
                 break;
             case FundAccountType.Collection:
-                CollectionAccount = ElementsViewDataContext.CollectionAccount?.OldValue?.ToString();
+                {
+                    using var db = DbHelper.Base();
+                    CollectionAccount = db.GetCollection<FundElements>().FindById(FundId)?.CollectionAccount?.Value?.ToString();
+                }
                 break;
             case FundAccountType.Custody:
-                CustodyAccount = ElementsViewDataContext.CustodyAccount?.OldValue?.ToString();
+                {
+                    using var db = DbHelper.Base();
+                    CustodyAccount = db.GetCollection<FundElements>().FindById(FundId)?.CustodyAccount?.Value?.ToString();
+                }
                 break;
             default:
                 break;
