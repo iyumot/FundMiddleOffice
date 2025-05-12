@@ -465,6 +465,7 @@
                             <shared:FileControl Binding="{Binding BankLetter}" IsReadOnly="{Binding IsReadOnly}" />
 
                             <shared:FileControl Binding="{Binding ServiceAgreement}" IsReadOnly="{Binding IsReadOnly}" />
+                            <shared:FileControl Binding="{Binding AccountLetter}" IsReadOnly="{Binding IsReadOnly}" />
 
                             <BulletDecorator>
                                 <BulletDecorator.Bullet>

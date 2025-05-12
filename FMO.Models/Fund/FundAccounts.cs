@@ -99,6 +99,10 @@ public class OpenAccountEvent : AccountEvent
     /// </summary>
     public FileStorageInfo? ServiceAgreement { get; set; }
 
+    /// <summary>
+    /// 开户信息
+    /// </summary>
+    public FileStorageInfo? AccountLetter { get; set; }
 }
 
 

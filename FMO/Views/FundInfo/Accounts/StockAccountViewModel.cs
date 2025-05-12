@@ -112,10 +112,10 @@ public partial class StockAccountViewModel : ObservableObject
         public FileViewModel<OpenAccountEvent>? BankLetter { get; }
 
 
-
+        /// <summary>
+        /// 经服
+        /// </summary>
         public FileViewModel<OpenAccountEvent>? ServiceAgreement { get; }
-
-
 
         public int Id { get; }
 

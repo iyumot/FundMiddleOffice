@@ -68,6 +68,17 @@ public partial class FutureAccountViewModel : ObservableObject
                 };
 
                 ServiceAgreement.Init(common);
+
+
+                AccountLetter = new FileViewModel<OpenAccountEvent>
+                {
+                    Label = "账户信息函",
+                    SaveFolder = Path.Combine("files", "accounts", "future", Id.ToString(), Name),
+                    GetProperty = x => x.AccountLetter,
+                    SetProperty = (x, y) => x.AccountLetter = y,
+                };
+
+                AccountLetter.Init(common);
             }
 
         }
@@ -105,6 +116,11 @@ public partial class FutureAccountViewModel : ObservableObject
 
         public FileViewModel<OpenAccountEvent>? ServiceAgreement { get; }
 
+
+        /// <summary>
+        /// 账户信息
+        /// </summary>
+        public FileViewModel<OpenAccountEvent>? AccountLetter { get; }
 
 
 
