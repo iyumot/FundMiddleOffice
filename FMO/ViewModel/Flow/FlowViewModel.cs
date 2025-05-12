@@ -1,17 +1,15 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Windows;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Reflection;
-using System.Windows;
-using System.Windows.Controls;
 
 namespace FMO;
 
@@ -23,7 +21,7 @@ namespace FMO;
 /// <summary>
 /// 基类
 /// </summary>
-public partial class FlowViewModel : ObservableObject,IFileSetter
+public partial class FlowViewModel : ObservableObject, IFileSetter
 {
 
     public int FundId { get; set; }
@@ -263,13 +261,15 @@ public partial class FlowViewModel : ObservableObject,IFileSetter
     {
         if (file is FileViewModel ff)
         {
-            ff.File = new FileInfo(path);
+            FileStorageInfo? tar = ff.Build();
+            if (tar?.Path is not null)
+                ff.File = new FileInfo(tar.Path);
 
             using var db = DbHelper.Base();
             var flow = db.GetCollection<FundFlow>().FindById(FlowId);
             if (flow is not null)
             {
-                ff.SetProperty(flow, ff.Build());
+                ff.SetProperty(flow, tar);
                 db.GetCollection<FundFlow>().Update(flow);
             }
         }
