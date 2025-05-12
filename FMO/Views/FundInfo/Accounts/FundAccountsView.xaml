@@ -245,6 +245,9 @@
 
                             <shared:FileControl Binding="{Binding BankLetter}" IsReadOnly="{Binding IsReadOnly}" />
 
+                            <shared:FileControl Binding="{Binding ServiceAgreement}" IsReadOnly="{Binding IsReadOnly}" />
+
+
                             <BulletDecorator>
                                 <BulletDecorator.Bullet>
                                     <TextBlock Text="资金账号" />
@@ -461,6 +464,7 @@
 
                             <shared:FileControl Binding="{Binding BankLetter}" IsReadOnly="{Binding IsReadOnly}" />
 
+                            <shared:FileControl Binding="{Binding ServiceAgreement}" IsReadOnly="{Binding IsReadOnly}" />
 
                             <BulletDecorator>
                                 <BulletDecorator.Bullet>

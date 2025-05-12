@@ -92,6 +92,13 @@ public class OpenAccountEvent : AccountEvent
     /// 银证、银期等
     /// </summary>
     public FileStorageInfo? BankLetter { get; set; }
+
+
+    /// <summary>
+    /// 经服
+    /// </summary>
+    public FileStorageInfo? ServiceAgreement { get; set; }
+
 }
 
 

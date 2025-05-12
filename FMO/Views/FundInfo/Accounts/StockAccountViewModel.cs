@@ -1,12 +1,12 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.IO;
+using System.Windows.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
-using System.IO;
-using System.Windows.Media;
 
 namespace FMO;
 
@@ -61,11 +61,23 @@ public partial class StockAccountViewModel : ObservableObject
                 BankLetter = new FileViewModel<OpenAccountEvent>
                 {
                     Label = "银证",
+                    SaveFolder = Path.Combine("files", "accounts", "stock", Id.ToString(), Name),
                     GetProperty = x => x.BankLetter,
                     SetProperty = (x, y) => x.BankLetter = y,
                 };
 
                 BankLetter.Init(common);
+
+
+                ServiceAgreement = new FileViewModel<OpenAccountEvent>
+                {
+                    Label = "经服",
+                    SaveFolder = Path.Combine("files", "accounts", "stock", Id.ToString(), Name),
+                    GetProperty = x => x.ServiceAgreement,
+                    SetProperty = (x, y) => x.ServiceAgreement = y,
+                };
+
+                ServiceAgreement.Init(common);
             }
 
         }
@@ -97,13 +109,19 @@ public partial class StockAccountViewModel : ObservableObject
         /// <summary>
         /// 银证、银期等
         /// </summary>
-        [ObservableProperty]
-        public partial FileViewModel<OpenAccountEvent>? BankLetter { get; set; }
+        public FileViewModel<OpenAccountEvent>? BankLetter { get; }
+
+
+
+        public FileViewModel<OpenAccountEvent>? ServiceAgreement { get; }
+
+
+
         public int Id { get; }
 
 
         [RelayCommand]
-        public void SetFile(IFileSelector obj)
+        public void ChooseFile(IFileSelector obj)
         {
             if (obj is not FileViewModel<OpenAccountEvent> v) return;
 
@@ -128,37 +146,24 @@ public partial class StockAccountViewModel : ObservableObject
                 return;
             }
 
-            string hash = fi.ComputeHash()!;
 
-            // 保存副本
-            var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "stock", Id.ToString(), Name));
-
-            var tar = FileHelper.CopyFile2(fi, dir.FullName);
-            if (tar is null)
-            {
-                Log.Error($"保存文件出错，{fi.Name}");
-                HandyControl.Controls.Growl.Error($"无法保存{fi.Name}，文件名异常或者存在过多重名文件");
-                return;
-            }
-
-            var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
+            var s = v.Build(fi.FullName);
 
             using var db = DbHelper.Base();
             var obj = db.GetCollection<StockAccount>().FindById(Id);
 
             if (Name == obj.Common?.Name)
             {
-                obj.Common.BankLetter = new FileStorageInfo { Name = "银证", Hash = hash, Path = path, Time = fi.LastWriteTime };
+                v.SetProperty(obj.Common, s);
                 db.GetCollection<StockAccount>().Update(obj);
             }
             else if (Name == obj.Credit?.Name)
             {
-                obj.Credit.BankLetter = new FileStorageInfo { Name = "银信", Hash = hash, Path = path, Time = fi.LastWriteTime };
+                v.SetProperty(obj.Credit, s);
                 db.GetCollection<StockAccount>().Update(obj);
             }
 
-            v.File = fi;
-
+            v.File = s?.Path is null ? null : new FileInfo(s.Path);
         }
 
 
@@ -214,7 +219,7 @@ public partial class StockAccountViewModel : ObservableObject
         }
 
         [RelayCommand]
-        public void DeleteFile(IFileSelector file)
+        public void Clear(IFileSelector file)
         {
             if (file is FileViewModel<OpenAccountEvent> v)
             {

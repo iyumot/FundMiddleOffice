@@ -52,11 +52,22 @@ public partial class FutureAccountViewModel : ObservableObject
                 BankLetter = new FileViewModel<OpenAccountEvent>
                 {
                     Label = "银期",
+                    SaveFolder = Path.Combine("files", "accounts", "future", Id.ToString(), Name),
                     GetProperty = x => x.BankLetter,
                     SetProperty = (x, y) => x.BankLetter = y,
                 };
 
                 BankLetter.Init(common);
+
+                ServiceAgreement = new FileViewModel<OpenAccountEvent>
+                {
+                    Label = "经服",
+                    SaveFolder = Path.Combine("files", "accounts", "future", Id.ToString(), Name),
+                    GetProperty = x => x.ServiceAgreement,
+                    SetProperty = (x, y) => x.ServiceAgreement = y,
+                };
+
+                ServiceAgreement.Init(common);
             }
 
         }
@@ -88,14 +99,21 @@ public partial class FutureAccountViewModel : ObservableObject
         /// <summary>
         /// 银证、银期等
         /// </summary>
-        [ObservableProperty]
-        public partial FileViewModel<OpenAccountEvent>? BankLetter { get; set; }
+        public FileViewModel<OpenAccountEvent>? BankLetter { get; }
+
+
+
+        public FileViewModel<OpenAccountEvent>? ServiceAgreement { get; }
+
+
+
+
         public int Id { get; }
         public int FundId { get; }
         public string? Company { get; }
 
         [RelayCommand]
-        public void SetFile(IFileSelector obj)
+        public void ChooseFile(IFileSelector obj)
         {
             if (obj is not FileViewModel<OpenAccountEvent> v) return;
 
@@ -120,31 +138,19 @@ public partial class FutureAccountViewModel : ObservableObject
                 return;
             }
 
-            string hash = fi.ComputeHash()!;
 
-            // 保存副本
-            var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "future", Id.ToString(), Name));
-
-            var tar = FileHelper.CopyFile2(fi, dir.FullName);
-            if (tar is null)
-            {
-                Log.Error($"保存文件出错，{fi.Name}");
-                HandyControl.Controls.Growl.Error($"无法保存{fi.Name}，文件名异常或者存在过多重名文件");
-                return;
-            }
-
-            var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
+            var s = v.Build(fi.FullName);
 
             using var db = DbHelper.Base();
             var obj = db.GetCollection<FutureAccount>().FindById(Id);
 
             if (Name == obj.Common?.Name)
             {
-                obj.Common.BankLetter = new FileStorageInfo { Name = "银期", Hash = hash, Path = path, Time = fi.LastWriteTime };
+                v.SetProperty(obj.Common, s);
                 db.GetCollection<FutureAccount>().Update(obj);
             }
 
-            v.File = fi;
+            v.File = s?.Path is null ? null : new FileInfo(s.Path);
 
         }
 
@@ -193,7 +199,7 @@ public partial class FutureAccountViewModel : ObservableObject
 
                 var per = db.GetCollection<Participant>().FindAll().ToArray();
                 if (!per.Any(x => x.Role.HasFlag(PersonRole.Agent)) ||
-                    !per.Any(x=>x.Role.HasFlag(PersonRole.OrderPlacer)) ||
+                    !per.Any(x => x.Role.HasFlag(PersonRole.OrderPlacer)) ||
                     !per.Any(x => x.Role.HasFlag(PersonRole.FundTransferor)) ||
                     !per.Any(x => x.Role.HasFlag(PersonRole.ConfirmationPerson)))
                 {
@@ -291,7 +297,7 @@ public partial class FutureAccountViewModel : ObservableObject
         }
 
         [RelayCommand]
-        public void DeleteFile(IFileSelector file)
+        public void Clear(IFileSelector file)
         {
             if (file is FileViewModel<OpenAccountEvent> v)
             {
