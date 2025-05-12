@@ -24,7 +24,7 @@ public partial class ElementsView : UserControl
 
 
 
-public partial class ElementsViewModel : EditableControlViewModelBase<FundElements>,IRecipient<ElementChangedBackgroundMessage>
+public partial class ElementsViewModel : EditableControlViewModelBase<FundElements>, IRecipient<ElementChangedBackgroundMessage>
 {
     public ElementsViewModel()
     {
@@ -342,7 +342,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
                 }
             },
             ClearFunc = x => x.DurationInMonths!.RemoveValue(newValue),
-            DisplayFunc = x => x switch { >= 999 => "无固定期限", var m when m % 12 == 0 => $"{x / 12}年" , > 0 => $"{x}个月", _=> "" }
+            DisplayFunc = x => x switch { >= 999 => "无固定期限", var m when m % 12 == 0 => $"{x / 12}年", > 0 => $"{x}个月", _ => "" }
         };
         DurationInMonths.Init(elements);
 
@@ -714,7 +714,24 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
     protected override void SaveOverride()
     {
-        base.SaveOverride();
+        var ps = GetType().GetProperties();
+        foreach (var p in ps)
+        {
+            if (p.PropertyType.IsAssignableTo(typeof(IPropertyModifier)) && p.GetValue(this) is IPropertyModifier v && v.IsValueChanged)
+                Modify(v);
+
+            if (p.PropertyType.IsGenericType && p.PropertyType.GetGenericTypeDefinition() == typeof(ShareElementsViewModel<,>))
+            {
+                var obj = p.GetValue(this);
+                if (obj is not null)
+                {
+                    var pi = obj.GetType().GetProperty("Data");
+                    if (pi!.GetValue(obj, null) is IEnumerable<IPropertyModifier> e)
+                        foreach (var item in e)
+                            Modify(item);
+                }
+            }
+        }
         WeakReferenceMessenger.Default.Send(new FundAccountChangedMessage(FundId, FundAccountType.Collection));
         WeakReferenceMessenger.Default.Send(new FundAccountChangedMessage(FundId, FundAccountType.Custody));
     }
