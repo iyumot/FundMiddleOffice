@@ -427,7 +427,13 @@
                                 <Setter Property="Margin" Value="2,0" />
                             </Style>
                         </DockPanel.Resources>
-                        <TextBlock Margin="0,0,10,0" Text="变更" />
+
+                        <CheckBox Content="协议变更" IsChecked="{Binding ModifyBySupplementary}" />
+
+                        <TextBlock
+                            Margin="10,0,10,0"
+                            VerticalAlignment="Center"
+                            Text="变更-&gt;" />
                         <CheckBox Content="产品名称" IsChecked="{Binding ModifyName}" />
                         <CheckBox Content="投资经理" IsChecked="{Binding ModifyInvestmentManager}" />
                         <CheckBox Content="份额分类" IsChecked="{Binding ModifyShareClass}" />
@@ -442,7 +448,10 @@
                     </DockPanel>
 
                     <StackPanel MinWidth="500" VerticalAlignment="Center">
-                        <local:MultiFileDisplay Files="{Binding SupplementaryFile}" Header="补充协议" />
+                        <local:MultiFileDisplay
+                            Files="{Binding SupplementaryFile}"
+                            Header="补充协议"
+                            Visibility="{Binding ModifyBySupplementary, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
 
                         <shared:FileControl Binding="{Binding Contract}" />
@@ -570,9 +579,9 @@
             </DockPanel.Resources>
             <Button Command="{Binding SetupFundCommand}" Content="成立备案" />
 
-            <Button Command="{Binding CreateContractModifyCommand}" Content="协议变更" />
+            <Button Command="{Binding CreateContractModifyCommand}" Content="合同变更" />
 
-            <Button Command="{Binding CreateModifyByAnnounceCommand}" Content="公告变更" />
+            <!--<Button Command="{Binding CreateModifyByAnnounceCommand}" Content="公告变更" />-->
 
             <Button Command="{Binding CreateClearFlowCommand}" Content="发起清盘" />
         </DockPanel>

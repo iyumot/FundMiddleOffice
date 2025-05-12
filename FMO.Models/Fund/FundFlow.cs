@@ -273,6 +273,11 @@ public enum ContractModifySection
 /// </summary>
 public class ContractModifyFlow : ContractFlow
 {
+    /// <summary>
+    /// 协议变更
+    /// </summary>
+    public bool ModifyBySupplementary { get; set; }
+
     public ContractModifySection Section { get; set; }
 
     /// <summary>

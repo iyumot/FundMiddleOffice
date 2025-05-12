@@ -1,12 +1,12 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using FMO.Shared;
 using FMO.TPL;
 using FMO.Utilities;
-using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
 
 namespace FMO;
 
@@ -19,6 +19,11 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
     [NotifyPropertyChangedFor(nameof(ModifyCollectionAccount))]
     [NotifyPropertyChangedFor(nameof(ModifyCustodyAccount))]
     public partial bool ModifyName { get; set; }
+
+
+    [ObservableProperty]
+    public partial bool ModifyBySupplementary { get; set; }
+
 
     public bool ModifyCollectionAccount { get => ModifyName || field; set => SetProperty(ref field, value); }
 
@@ -33,7 +38,9 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
     [ObservableProperty]
     public partial FileViewModel? RegistrationLetter { get; set; }
 
-
+    /// <summary>
+    /// 补充协议
+    /// </summary>
     [ObservableProperty]
     public partial ObservableCollection<FileInfo>? SupplementaryFile { get; set; }
 
@@ -65,6 +72,10 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
             ModifyCollectionAccount = true;
         if (flow.Section.HasFlag(ContractModifySection.CustodyAccount))
             ModifyCustodyAccount = true;
+
+        ModifyBySupplementary = flow.ModifyBySupplementary;
+        if (flow.SupplementaryFile?.Files.Any() ?? false)
+            ModifyBySupplementary = true;
 
 
         ///补充协议
@@ -208,6 +219,7 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
         var flow = db.GetCollection<FundFlow>().FindById(FlowId) as ContractModifyFlow;
         if (flow is not null)
         {
+            flow.ModifyBySupplementary = ModifyBySupplementary;
             flow.Section = section;
             db.GetCollection<FundFlow>().Update(flow);
         }

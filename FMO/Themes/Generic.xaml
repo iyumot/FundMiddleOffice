@@ -190,7 +190,7 @@
                     ToolTip="以此为基准，合并要素"
                     Visibility="{Binding DataContext.UnifiedClass, RelativeSource={RelativeSource AncestorType=ListBox}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
             </DockPanel>
-            
+
             <shared:ChangeableContainer
                 VerticalContentAlignment="Center"
                 Binding="{Binding .}"
