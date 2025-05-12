@@ -23,7 +23,7 @@ namespace FMO;
 /// <summary>
 /// 基类
 /// </summary>
-public partial class FlowViewModel : ObservableObject
+public partial class FlowViewModel : ObservableObject,IFileSetter
 {
 
     public int FundId { get; set; }
