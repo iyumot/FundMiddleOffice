@@ -115,8 +115,8 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
         {
             Label = "募集账户函",
             SaveFolder = FundHelper.GetFolder(FundId, "Account"),
-            GetProperty = x => x switch { ContractFlow f => f.RiskDisclosureDocument, _ => null },
-            SetProperty = (x, y) => { if (x is not ContractFlow f) return; f.RiskDisclosureDocument = y; UpdateElement(y?.Path is null ? null : new FileInfo(y.Path), x => x.CollectionAccount, FundAccountType.Collection); },
+            GetProperty = x => x switch { ContractFlow f => f.CollectionAccountFile, _ => null },
+            SetProperty = (x, y) => { if (x is not ContractFlow f) return; f.CollectionAccountFile = y; UpdateElement(y?.Path is null ? null : new FileInfo(y.Path), x => x.CollectionAccount, FundAccountType.Collection); },
             Filter = "文本|*.docx;*.doc;*.pdf"
         };
         CollectionAccount.Init(flow);
