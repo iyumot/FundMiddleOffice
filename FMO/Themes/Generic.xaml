@@ -174,11 +174,6 @@
 
     <DataTemplate x:Key="DTpl.PortionElement">
         <DockPanel LastChildFill="False">
-            <shared:ChangeableContainer
-                VerticalContentAlignment="Center"
-                Binding="{Binding .}"
-                ContentTemplate="{Binding ContentTemplate, RelativeSource={RelativeSource AncestorType=local:PortionElementView}}"
-                EditTemplate="{Binding EditTemplate, RelativeSource={RelativeSource AncestorType=local:PortionElementView}}" />
             <DockPanel Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityReConverter}}">
                 <hc:SimplePanel Visibility="{Binding CanDivide, RelativeSource={RelativeSource AncestorType=local:PortionElementView}, Converter={StaticResource Boolean2VisibilityConverter}}">
                     <Button
@@ -195,6 +190,13 @@
                     ToolTip="以此为基准，合并要素"
                     Visibility="{Binding DataContext.UnifiedClass, RelativeSource={RelativeSource AncestorType=ListBox}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
             </DockPanel>
+            
+            <shared:ChangeableContainer
+                VerticalContentAlignment="Center"
+                Binding="{Binding .}"
+                ContentTemplate="{Binding ContentTemplate, RelativeSource={RelativeSource AncestorType=local:PortionElementView}}"
+                EditTemplate="{Binding EditTemplate, RelativeSource={RelativeSource AncestorType=local:PortionElementView}}" />
+
         </DockPanel>
     </DataTemplate>
     <Style
