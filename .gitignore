@@ -380,3 +380,5 @@ FodyWeavers.xsd
 /FMO.TPLTests/FMO.TPLTests.csproj
 /FMO.ModelsTests/FMO.ModelsTests.csproj
 /data
+/FMO.TPLTests/TplTests.cs
+/FMO.TPLTests/WordTplTests.cs
