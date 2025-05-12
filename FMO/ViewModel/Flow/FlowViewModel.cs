@@ -286,7 +286,19 @@ public partial class FlowViewModel : ObservableObject,IFileSetter
         var r = HandyControl.Controls.MessageBox.Show("是否删除文件", "提示", MessageBoxButton.YesNoCancel);
         if (r == MessageBoxResult.Cancel) return;
 
-        if (r == MessageBoxResult.Yes) file.File?.Delete();
+        if (r == MessageBoxResult.Yes)
+        {
+            try
+            {
+                file.File?.Delete();
+            }
+            catch (Exception e)
+            {
+                HandyControl.Controls.Growl.Warning("文件已打开，无法删除，请先关闭文件");
+                return;
+            }
+        }
+
 
         using var db = DbHelper.Base();
         var flow = db.GetCollection<FundFlow>().FindById(FlowId);

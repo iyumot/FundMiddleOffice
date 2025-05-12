@@ -15,7 +15,7 @@ public static class FileHelper
 
         using (var md5 = MD5.Create())
         {
-            using (var stream = File.OpenRead(path))
+            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read)) 
             {
                 var hashc = md5.ComputeHash(stream);
                 return BitConverter.ToString(hashc).Replace("-", "").ToLowerInvariant();

@@ -86,8 +86,6 @@ public partial class FileViewModelBase : ObservableObject, IFileViewModel
         if (!di.Exists) try { di.Create(); } catch { return null; }
 
 
-        string hash = File.ComputeHash()!;
-
         // 保存副本 
         var tar = FileHelper.CopyFile2(File, SaveFolder, SpecificFileName is null ? null : SpecificFileName());
         if (tar is null)
@@ -97,6 +95,7 @@ public partial class FileViewModelBase : ObservableObject, IFileViewModel
             return null;
         }
 
+        string hash = new FileInfo(tar).ComputeHash()!;
         return new FileStorageInfo(tar, hash, File.LastWriteTime);
     }
 
