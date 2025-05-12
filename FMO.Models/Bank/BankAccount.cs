@@ -100,11 +100,11 @@ public class BankAccount
     public static BankAccount? FromString(string str)
     {
         BankAccount account = new BankAccount();
-        var m = Regex.Match(str, @"[账\s*号|账\s*户\s*号\s*码]\s*[:：]*(\d+)");
-        if (!m.Success) throw new NotImplementedException("不支持的账户信息");
+        var m = Regex.Match(str, @"[账\s*号|账\s*户\s*号\s*码]\s*[:：\s]*(\d+)");
+        if (!m.Success) return null;
         account.Number = m.Groups[1].Value;
 
-        m = Regex.Match(str, @"(?:账\s*)?户\s*名\s*(?:称)?\s*[:：]*\s*(\w+)");
+        m = Regex.Match(str, @"(?:账\s*)?户\s*名\s*(?:称)?\s*[:：\s]*\s*(\w+)");
         if (!m.Success) return null;
         account.Name = m.Groups[1].Value;
 
@@ -113,7 +113,7 @@ public class BankAccount
         account.BankOfDeposit = m.Value;
 
 
-        m = Regex.Match(str, @"大\s*额\s*支\s*付\s*(?:系统)?号\s*[:：]*(\w+)");
+        m = Regex.Match(str, @"大\s*额\s*支\s*付\s*(?:系统)?号\s*[:：\s]*(\w+)");
         if (m.Success) account.LargePayNo = m.Groups[1].Value;
 
         return account;

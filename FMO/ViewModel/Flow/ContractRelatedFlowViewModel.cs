@@ -1,4 +1,8 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Windows;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
@@ -6,10 +10,6 @@ using FMO.PDF;
 using FMO.Shared;
 using FMO.Utilities;
 using Serilog;
-using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Windows;
 
 namespace FMO;
 
@@ -230,54 +230,14 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
     }
 
 
-    //[RelayCommand]
-    //public void ChooseFile(FileViewModel<ContractFlow> file)
-    //{
-    //    var fd = new OpenFileDialog();
-    //    fd.Filter = file.Filter;
-    //    if (fd.ShowDialog() != true)
-    //        return;
-
-    //    SetFile(file, fd.FileName);
-    //}
-
-
-    //public void SetFile(IFileViewModel? file, string path)
-    //{
-    //    if (file is FileViewModel<ContractFlow> ff)
-    //    {
-    //        ff.File = new FileInfo(path);
-
-    //        using var db = DbHelper.Base();
-    //        var flow = db.GetCollection<FundFlow>().FindById(FlowId) as ContractFlow;
-    //        if (flow is ContractFlow f)
-    //        {
-    //            ff.SetProperty(flow, ff.Build());
-    //            db.GetCollection<FundFlow>().Update(flow);
-    //        }
-    //    }
-    //}
-
-
-
-
-    //[RelayCommand]
-    //public void Clear(FileViewModel<ContractFlow> file)
-    //{
-    //    if (file is null) return;
-
-    //    var r = HandyControl.Controls.MessageBox.Show("是否删除文件", "提示", MessageBoxButton.YesNoCancel);
-    //    if (r == MessageBoxResult.Cancel) return;
-
-    //    if (r == MessageBoxResult.Yes) file.File?.Delete();
-
-    //    using var db = DbHelper.Base();
-    //    var flow = db.GetCollection<FundFlow>().FindById(FlowId) as ContractFlow;
-    //    file.SetProperty(flow!, null);
-    //    db.GetCollection<FundFlow>().Update(flow!);
-    //    file.File = null;
-    //}
-
+    [RelayCommand]
+    public void ParseAccountInfo(FileViewModel f)
+    {
+        if (f == CollectionAccount)
+            UpdateElement(f.File, x => x.CollectionAccount, FundAccountType.Collection);
+        else if(f == CustodyAccount)
+            UpdateElement(f.File, x => x.CustodyAccount, FundAccountType.Custody);
+    }
 
     /// <summary>
     /// 如果拆分份额但未保存，则恢复为原始值

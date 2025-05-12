@@ -260,8 +260,8 @@ public partial class FlowViewModel : ObservableObject, IFileSetter
     public void SetFile(IFileViewModel? file, string path)
     {
         if (file is FileViewModel ff)
-        {
-            FileStorageInfo? tar = ff.Build();
+        { 
+            FileStorageInfo? tar = ff.Build(path);
             if (tar?.Path is not null)
                 ff.File = new FileInfo(tar.Path);
 

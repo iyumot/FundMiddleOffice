@@ -219,9 +219,6 @@
         </Style>
 
 
-
-
-
         <DataTemplate x:Key="DT.InitiateFlow">
             <UserControl Template="{StaticResource FlowShell}">
                 <StackPanel VerticalAlignment="Center">
@@ -246,9 +243,27 @@
                         <shared:FileControl Binding="{Binding Contract}" />
 
                         <shared:FileControl Binding="{Binding RiskDisclosureDocument}" />
-                        <shared:FileControl Binding="{Binding CollectionAccount}" />
-                        <shared:FileControl Binding="{Binding CustodyAccount}" />
 
+                        <WrapPanel>
+                            <shared:FileControl Binding="{Binding CollectionAccount}" />
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.chart-pie}"
+                                Command="{Binding DataContext.ParseAccountInfoCommand, RelativeSource={RelativeSource AncestorType=shared:FileControl}}"
+                                CommandParameter="{Binding CollectionAccount}"
+                                Foreground="RoyalBlue"
+                                Style="{StaticResource ButtonIcon.Small}"
+                                Visibility="{Binding CollectionAccount.File, Converter={StaticResource FileExistsToVisibilityConverter}}" />
+                        </WrapPanel>
+                        <WrapPanel>
+                            <shared:FileControl Binding="{Binding CustodyAccount}" />
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.chart-pie}"
+                                Command="{Binding DataContext.ParseAccountInfoCommand, RelativeSource={RelativeSource AncestorType=shared:FileControl}}"
+                                CommandParameter="{Binding CustodyAccount}"
+                                Foreground="RoyalBlue"
+                                Style="{StaticResource ButtonIcon.Small}"
+                                Visibility="{Binding CustodyAccount.File, Converter={StaticResource FileExistsToVisibilityConverter}}" />
+                        </WrapPanel>
 
                         <ListBox
                             BorderThickness="0"
@@ -433,9 +448,26 @@
                         <shared:FileControl Binding="{Binding Contract}" />
                         <shared:FileControl Binding="{Binding RiskDisclosureDocument}" />
 
-                        <shared:FileControl Binding="{Binding CollectionAccount}" Visibility="{Binding ModifyCollectionAccount, Converter={StaticResource Boolean2VisibilityConverter}}" />
-
-                        <shared:FileControl Binding="{Binding CustodyAccount}" Visibility="{Binding ModifyCustodyAccount, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                        <WrapPanel Visibility="{Binding ModifyCollectionAccount, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <shared:FileControl Binding="{Binding CollectionAccount}" />
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.chart-pie}"
+                                Command="{Binding DataContext.ParseAccountInfoCommand, RelativeSource={RelativeSource AncestorType=shared:FileControl}}"
+                                CommandParameter="{Binding CollectionAccount}"
+                                Foreground="RoyalBlue"
+                                Style="{StaticResource ButtonIcon.Small}"
+                                Visibility="{Binding CollectionAccount.File, Converter={StaticResource FileExistsToVisibilityConverter}}" />
+                        </WrapPanel>
+                        <WrapPanel Visibility="{Binding ModifyCustodyAccount, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <shared:FileControl Binding="{Binding CustodyAccount}" />
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.chart-pie}"
+                                Command="{Binding DataContext.ParseAccountInfoCommand, RelativeSource={RelativeSource AncestorType=shared:FileControl}}"
+                                CommandParameter="{Binding CustodyAccount}"
+                                Foreground="RoyalBlue"
+                                Style="{StaticResource ButtonIcon.Small}"
+                                Visibility="{Binding CustodyAccount.File, Converter={StaticResource FileExistsToVisibilityConverter}}" />
+                        </WrapPanel>
 
 
                         <ListBox

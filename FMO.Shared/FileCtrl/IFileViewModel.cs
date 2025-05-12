@@ -79,24 +79,26 @@ public partial class FileViewModelBase : ObservableObject, IFileViewModel
     /// 
     /// </summary>
     /// <returns></returns>
-    public FileStorageInfo? Build()
+    public FileStorageInfo? Build(string? file = null)
     {
-        if (File is null || SaveFolder is null) return null;
+        var fi = file is null ? File : new FileInfo(file); 
+
+        if (fi is null || !fi.Exists || SaveFolder is null) return null;
         var di = new DirectoryInfo(SaveFolder);
         if (!di.Exists) try { di.Create(); } catch { return null; }
 
 
         // 保存副本 
-        var tar = FileHelper.CopyFile2(File, SaveFolder, SpecificFileName is null ? null : SpecificFileName());
+        var tar = FileHelper.CopyFile2(fi, SaveFolder, SpecificFileName is null ? null : SpecificFileName());
         if (tar is null)
         {
-            Log.Error($"保存文件出错，{File.FullName}");
-            HandyControl.Controls.Growl.Error($"无法保存{File.FullName}，文件名异常或者存在过多重名文件");
+            Log.Error($"保存文件出错，{fi.FullName}");
+            HandyControl.Controls.Growl.Error($"无法保存{fi.FullName}，文件名异常或者存在过多重名文件");
             return null;
         }
 
         string hash = new FileInfo(tar).ComputeHash()!;
-        return new FileStorageInfo(tar, hash, File.LastWriteTime);
+        return new FileStorageInfo(tar, hash, fi.LastWriteTime);
     }
 
     [RelayCommand]
