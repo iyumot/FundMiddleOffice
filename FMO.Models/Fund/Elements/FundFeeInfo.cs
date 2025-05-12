@@ -5,7 +5,7 @@ public class FundFeeInfo
     public FundFeeType Type { get; set; }
 
 
-    public bool HasFee { get; set; }
+    //public bool HasFee { get; set; }
 
     public decimal Fee { get; set; }
 

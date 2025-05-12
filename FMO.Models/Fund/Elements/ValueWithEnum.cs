@@ -15,6 +15,9 @@ public enum FundFeeType
 
     [Description("固定金额")] Fix,
 
+
+    [Description("无")] No,
+
     [Description("其它")] Other
 }
 
