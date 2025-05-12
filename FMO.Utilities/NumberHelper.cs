@@ -42,7 +42,7 @@ public class NumberHelper
                         sectionResult = "零" + sectionResult;
                         zeroFlag = false;
                     }
-                    sectionResult = numArray[num] + unitArray[section.Length - i - 1] + sectionResult;
+                    sectionResult = sectionResult + numArray[num] + unitArray[section.Length - i - 1] ;
                 }
             }
 
