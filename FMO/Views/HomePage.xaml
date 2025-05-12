@@ -9,7 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     d:DesignHeight="450"
-    d:DesignWidth="800"
+    d:DesignWidth="1200"
     Background="Transparent"
     KeyDown="UserControl_KeyDown"
     mc:Ignorable="d">
@@ -19,38 +19,7 @@
     <DockPanel>
 
         <StackPanel Width="888" Panel.ZIndex="111">
-            <!--<DockPanel Height="200">
-                <oxy:PlotView
-                    Width="160"
-                    IsHitTestVisible="False"
-                    Model="{Binding FundCountPlot}" />
-                <oxy:PlotView Panel.ZIndex="999" Model="{Binding FundScalePlot}">
-                    <oxy:PlotView.TrackerDefinitions>
-                        <oxy:TrackerDefinition TrackerKey="Default">
-                            <oxy:TrackerDefinition.TrackerTemplate>
-                                <ControlTemplate>
 
-                                    <Canvas>
-                                        <TextBlock
-                                            Canvas.Left="{Binding Position.X}"
-                                            Canvas.Top="{Binding Position.Y}"
-                                            Padding="10"
-                                            Background="WhiteSmoke">
-                                            <TextBlock.Text>
-                                                <MultiBinding StringFormat="{}{0:yyyy-MM-dd}        {1:N0}万">
-                                                    <Binding Converter="{StaticResource OxyDateTimeConverter}" Path="DataPoint.X" />
-                                                    <Binding Path="DataPoint.Y" />
-                                                </MultiBinding>
-                                            </TextBlock.Text>
-                                        </TextBlock>
-                                    </Canvas>
-
-                                </ControlTemplate>
-                            </oxy:TrackerDefinition.TrackerTemplate>
-                        </oxy:TrackerDefinition>
-                    </oxy:PlotView.TrackerDefinitions>
-                </oxy:PlotView>
-            </DockPanel>-->
 
             <Grid DataContext="{Binding FlotContext}">
                 <lvc:CartesianChart
@@ -73,19 +42,50 @@
             DockPanel.Dock="Top"
             Header="常用工具"
             Style="{StaticResource GroupBoxTab}">
-            <DockPanel>
+            <DockPanel LastChildFill="False">
 
-                <Button
+                <!--<Button
                     hc:IconElement.Geometry="{StaticResource f.arrows-split-up-and-left}"
                     Command="{Binding RefreshPlotCommand}"
                     Content="数据文件夹"
-                    Style="{StaticResource ButtonIcon}" />
+                    Style="{StaticResource ButtonIcon}" />-->
 
                 <Button
                     hc:IconElement.Geometry="{StaticResource f.folder}"
                     Command="{Binding OpenDataFolderCommand}"
                     Content="数据文件夹"
                     Style="{StaticResource ButtonIcon}" />
+
+
+                <hc:SimplePanel>
+                    <Button
+                        hc:IconElement.Geometry="{StaticResource f.hard-drive}"
+                        Command="{Binding BackupCommand}"
+                        Content="备份"
+                        Style="{StaticResource ButtonIcon}"
+                        Visibility="{Binding BackupCommand.IsRunning, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                    <!--<DockPanel HorizontalAlignment="Center">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            DockPanel.Dock="Right"
+                            Text="%" />
+                        <TextBlock
+                            HorizontalAlignment="Right"
+                            DockPanel.Dock="Bottom"
+                            FontSize="9"
+                            Text="{Binding BackupProcess2, StringFormat=N0}" />
+                        <TextBlock Text="{Binding BackupProcess, StringFormat={}{0:N0}.}" />
+                    </DockPanel>-->
+
+                    <hc:CircleProgressBar
+                        Width="36"
+                        Height="36"
+                        Margin="-8"
+                        Text="{Binding Value, RelativeSource={RelativeSource Self}, StringFormat=N0}"
+                        Visibility="{Binding BackupCommand.IsRunning, Converter={StaticResource Boolean2VisibilityConverter}}"
+                        Value="{Binding BackupProcess}" />
+                </hc:SimplePanel>
 
                 <Button
                     hc:IconElement.Geometry="{StaticResource f.sack-dollar}"

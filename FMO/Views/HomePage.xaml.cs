@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.IO.Compression;
 using System.Net.Http;
 using System.Windows.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -48,6 +49,13 @@ public partial class HomePageViewModel : ObservableObject
     public partial bool IsSelfTesting { get; set; }
 
     public HomePlotViewModel FlotContext { get; } = new();
+
+
+    [ObservableProperty]
+    public partial double BackupProcess { get; set; }
+    [ObservableProperty]
+    public partial double BackupProcess2 { get; set; }
+
 
     public HomePageViewModel()
     {
@@ -239,6 +247,70 @@ public partial class HomePageViewModel : ObservableObject
         try { System.Diagnostics.Process.Start("explorer.exe", Path.Combine(Directory.GetCurrentDirectory(), "files")); } catch { }
     }
 
+
+    [RelayCommand]
+    public async Task Backup()
+    {
+        Task task = new Task(() =>
+        {
+            try
+            {
+                BackupProcess = 0;
+                // 检测备份大小
+                long bytes = GetFolderSize("data") + GetFolderSize("files") + GetFolderSize("config") + GetFolderSize("manager");
+                int fcnt = GetFileCount("data") + GetFileCount("config") + GetFileCount("files") + GetFileCount("manager");
+                int c = 0;
+                using var fs = new FileStream($"backup-{DateTime.Today:yyyy.MM.dd}.zip", FileMode.Create);
+
+                using ZipArchive archive = new ZipArchive(fs, ZipArchiveMode.Create);
+                AddDirectoryToZip(archive, "data", "data", ref c, fcnt);
+                AddDirectoryToZip(archive, "config", "config", ref c, fcnt);
+                AddDirectoryToZip(archive, "files", "files", ref c, fcnt);
+                AddDirectoryToZip(archive, "manager", "manager", ref c, fcnt);
+            }
+            catch (Exception e)
+            {
+                Log.Error($"备份失败 {e}");
+                HandyControl.Controls.Growl.Error("备份失败");
+            }
+        }, TaskCreationOptions.LongRunning);
+
+        task.Start();
+        await task.WaitAsync(Timeout.InfiniteTimeSpan);
+    }
+
+    private long GetFolderSize(string dir)
+    {
+        var di = new DirectoryInfo(dir);
+        return !di.Exists ? 0 : di.GetFiles("*.*", SearchOption.AllDirectories).Sum(x => x.Length);
+    }
+
+    private int GetFileCount(string dir) => Directory.GetFiles(dir, "*.*", SearchOption.AllDirectories).Length;
+
+    // 将文件夹及其内容添加到压缩包
+    private void AddDirectoryToZip(ZipArchive archive, string sourceDir, string entryBase, ref int c, int size)
+    {
+        // 添加文件夹条目
+        archive.CreateEntry($"{entryBase}/");
+
+        // 添加文件
+        foreach (string filePath in Directory.GetFiles(sourceDir))
+        {
+            string entryName = Path.Combine(entryBase, Path.GetFileName(filePath));
+            archive.CreateEntryFromFile(filePath, entryName);
+
+            BackupProcess = (double)(++c) / size * 100;
+            BackupProcess2 = 100 * (BackupProcess - Math.Floor(BackupProcess));
+        }
+
+        // 递归添加子文件夹
+        foreach (string subDir in Directory.GetDirectories(sourceDir))
+        {
+            string subDirName = Path.GetFileName(subDir);
+            string newEntryBase = Path.Combine(entryBase, subDirName);
+            AddDirectoryToZip(archive, subDir, newEntryBase,ref c, size);
+        }
+    }
 
     [RelayCommand]
     public void RefreshPlot() => InitPlot();
