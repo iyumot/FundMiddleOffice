@@ -15,6 +15,9 @@ public static class Tpl
 
     public static void Generate(string path, string tpl, object obj)
     {
+        var di = new FileInfo(path).Directory;
+        if(di is not null && !di.Exists) di.Create();
+
         if(Regex.IsMatch(tpl, @"\.doc|\.docx", RegexOptions.IgnoreCase)) 
             MiniWord.SaveAsByTemplate(path, tpl, obj);
         if (Regex.IsMatch(tpl, @"\.xls|\.xlsx", RegexOptions.IgnoreCase))
