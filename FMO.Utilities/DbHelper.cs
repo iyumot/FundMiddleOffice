@@ -24,6 +24,23 @@ public static class DatabaseAssist
             //dict[nameof(Manager.ExpireDate)] = new BsonValue(DateOnly.FromDateTime(v.AsDateTime));
 
             //db.GetCollection(nameof(Manager)).Update(new BsonDocument(dict));
+
+            // 校验ta，为TransferRecord的CustomerId为0的设置Id
+            var d = db.GetCollection<TransferRecord>().Find(x => x.CustomerId == 0).ToArray();
+            if(d.Length > 0)
+            {
+                var cc = db.GetCollection<Investor>().FindAll().ToArray();
+                foreach (var item in d)
+                {
+                    var tmp = cc.Where(x => x.Identity.Id == item.CustomerIdentity);
+                    if (tmp.Count() == 1)
+                        item.CustomerId = tmp.First().Id;
+                    else Log.Error($"TransferRecord {item.Id} {item.FundName} {item.CustomerName} 与多个Inverstor对应");
+                }
+                db.GetCollection<TransferRecord>().Update(d);
+            }
+            
+
         }
 
 
