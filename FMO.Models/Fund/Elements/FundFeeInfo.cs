@@ -22,3 +22,17 @@ public class FundFeeInfo
     /// </summary>
     public string? Other { get; set; }
 }
+
+
+public class PartRedemptionFee
+{
+    public int Month { get; set; }
+
+    public bool Include { get; set; }
+
+    public decimal Fee { get; set; }
+}
+public class RedemptionFeeInfo : FundFeeInfo
+{
+    public List<PartRedemptionFee>? Parts { get; set; }
+}
