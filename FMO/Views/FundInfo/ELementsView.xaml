@@ -439,26 +439,44 @@
                         Visibility="{Binding Binding.IsInherited, Converter={StaticResource Boolean2VisibilityConverter}}" />
                 </Grid>
 
-                <TextBox
+                <!--<TextBox
                     MinWidth="180"
                     HorizontalContentAlignment="Center"
                     Text="{Binding Binding.NewValue.Name, UpdateSourceTrigger=PropertyChanged, Delay=300}"
-                    Visibility="{Binding Binding.NewValue.HasAgency, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                    Visibility="{Binding Binding.NewValue.HasAgency, Converter={StaticResource Boolean2VisibilityConverter}}" />-->
+
+
+                <hc:AutoCompleteTextBox
+                    MinWidth="180"
+                    HorizontalContentAlignment="Center"
+                    DataContext="{Binding Binding.NewValue}"
+                    ItemsSource="{x:Static local:ElementsViewModel.TrusteeNames}"
+                    SelectedItem="{Binding Name, Mode=OneTime}"
+                    Text="{Binding Name, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                    Visibility="{Binding HasAgency, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
 
             </DockPanel>
 
         </ControlTemplate>
 
-        <DataTemplate x:Key="DT.Agent">
+        <!--<DataTemplate x:Key="DT.Agent">
             <DockPanel>
                 <CheckBox VerticalContentAlignment="Center" IsChecked="{Binding HasAgency}" />
                 <TextBox
                     MinWidth="180"
                     HorizontalContentAlignment="Center"
                     Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+
+        -->
+        <!--<hc:AutoCompleteTextBox
+                    MinWidth="180"
+                    HorizontalContentAlignment="Center"
+                    ItemsSource="{Binding TrusteeName}"
+                    Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}" />-->
+        <!--
             </DockPanel>
-        </DataTemplate>
+        </DataTemplate>-->
 
         <DataTemplate x:Key="DT.Text.Center">
             <TextBox HorizontalContentAlignment="Center" Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
@@ -1254,10 +1272,12 @@
                                         <DockPanel Margin="10,0,0,0" LastChildFill="False">
                                             <CheckBox Content="仅按新规开放" IsChecked="{Binding NewValue.IsLimited}" />
                                             <CheckBox
+                                                Margin="5,0,0,0"
                                                 Content="申购"
                                                 IsChecked="{Binding NewValue.AllowPurchase}"
                                                 IsEnabled="{Binding NewValue.IsAllowed}" />
                                             <CheckBox
+                                                Margin="5,0,0,0"
                                                 Content="赎回"
                                                 IsChecked="{Binding NewValue.AllowRedemption}"
                                                 IsEnabled="{Binding NewValue.IsAllowed}" />

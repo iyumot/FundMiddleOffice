@@ -43,6 +43,73 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
     public static CoolingPeriodType[] CoolingPeriodTypes { get; } = [CoolingPeriodType.OneDay, CoolingPeriodType.Other];
 
+
+    public static string[] TrusteeNames { get; } = ["中国工商银行股份有限公司",
+"中国农业银行股份有限公司",
+"中国银行股份有限公司",
+"中国建设银行股份有限公司",
+"交通银行股份有限公司",
+"华夏银行股份有限公司",
+"中国光大银行股份有限公司",
+"招商银行股份有限公司",
+"中信银行股份有限公司",
+"中国民生银行股份有限公司",
+"兴业银行股份有限公司",
+"上海浦东发展银行股份有限公司",
+"北京银行股份有限公司",
+"平安银行股份有限公司",
+"广发银行股份有限公司",
+"中国邮政储蓄银行股份有限公司",
+"上海银行股份有限公司",
+"渤海银行股份有限公司",
+"宁波银行股份有限公司",
+"浙商银行股份有限公司",
+"海通证券股份有限公司",
+"国信证券股份有限公司",
+"徽商银行股份有限公司",
+"广州农村商业银行股份有限公司",
+"招商证券股份有限公司",
+"中国证券登记结算有限责任公司",
+"财通证券股份有限公司",
+"恒丰银行股份有限公司",
+"杭州银行股份有限公司",
+"南京银行股份有限公司",
+"广发证券股份有限公司",
+"国泰君安证券股份有限公司",
+"江苏银行股份有限公司",
+"中国银河证券股份有限公司",
+"华泰证券股份有限公司",
+"中信证券股份有限公司",
+"兴业证券股份有限公司",
+"中国证券金融股份有限公司",
+"中信建投证券股份有限公司",
+"中国国际金融股份有限公司",
+"恒泰证券股份有限公司",
+"中泰证券股份有限公司",
+"光大证券股份有限公司",
+"安信证券股份有限公司",
+"东方证券股份有限公司",
+"申万宏源证券有限公司",
+"华鑫证券有限责任公司",
+"华福证券有限责任公司",
+"万联证券股份有限公司",
+"华安证券股份有限公司",
+"国元证券股份有限公司",
+"国金证券股份有限公司",
+"长城证券股份有限公司",
+"长江证券股份有限公司",
+"浙商证券股份有限公司",
+"苏州银行股份有限公司",
+"南京证券股份有限公司",
+"东方财富证券股份有限公司",
+"青岛银行股份有限公司",
+"成都银行股份有限公司",
+"长沙银行股份有限公司",
+"第一创业证券股份有限公司",
+"上海农村商业银行股份有限公司",
+];
+
+
     /// <summary>
     /// 
     /// </summary>
@@ -332,12 +399,12 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
                     if (newValue >= 999)
                     {
                         ExpirationDate.NewValue = new(2099, 12, 31);
-                        ExpirationDate.OldValue = new(2099, 12, 31);
+                        //ExpirationDate.OldValue = new(2099, 12, 31);
                     }
                     else
                     {
                         ExpirationDate.NewValue = SetupDate.AddMonths(y.Value).AddDays(-1);
-                        ExpirationDate.OldValue = ExpirationDate.NewValue;
+                        //ExpirationDate.OldValue = ExpirationDate.NewValue;
                     }
                 }
             },
@@ -583,7 +650,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
             if (DurationInMonths.NewValue is not null && DurationInMonths.NewValue > 0)
                 return SetupDate.AddMonths(DurationInMonths.NewValue.Value).AddDays(-1);
         }
-        return null;
+        return value;
     }
 
     private string BankString(BankAccountInfoViewModel? x)
