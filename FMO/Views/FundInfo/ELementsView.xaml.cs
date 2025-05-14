@@ -132,7 +132,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
 
     [ObservableProperty]
-    public partial ObservableCollection<ShareClassViewModel> Shares { get; set; }
+    public partial ObservableCollection<ShareClassViewModel>? Shares { get; set; }
 
     [ObservableProperty]
     public partial bool IsSharesInherited { get; set; }
@@ -145,21 +145,21 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
 
     [ObservableProperty]
-    public partial ChangeableViewModel<FundElements, string> ShortName { get; set; }
+    public partial ChangeableViewModel<FundElements, string>? ShortName { get; set; }
 
 
     [ObservableProperty]
-    public partial ChangeableViewModel<FundElements, RiskLevel> RiskLevel { get; set; }
+    public partial ChangeableViewModel<FundElements, RiskLevel>? RiskLevel { get; set; }
 
 
 
 
 
     [ObservableProperty]
-    public partial ChangeableViewModel<FundElements, int?> DurationInMonths { get; set; }
+    public partial ChangeableViewModel<FundElements, int?>? DurationInMonths { get; set; }
 
     [ObservableProperty]
-    public partial ChangeableViewModel<FundElements, DateOnly?> ExpirationDate { get; set; }
+    public partial ChangeableViewModel<FundElements, DateOnly?>? ExpirationDate { get; set; }
 
 
 
@@ -207,32 +207,32 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
 
     [ObservableProperty]
-    public partial ChangeableViewModel<FundElements, string> OpenDayInfo { get; set; }
+    public partial ChangeableViewModel<FundElements, string>? OpenDayInfo { get; set; }
 
 
 
     [ObservableProperty]
-    public partial ChangeableViewModel<FundElements, AgencyInfoViewModel> TrusteeInfo { get; set; }
+    public partial ChangeableViewModel<FundElements, AgencyInfoViewModel>? TrusteeInfo { get; set; }
 
     [ObservableProperty]
-    public partial ChangeableViewModel<FundElements, AgencyInfoViewModel> OutsourcingInfo { get; set; }
-
-
-    [ObservableProperty]
-    public partial ChangeableViewModel<FundElements, FundFeeInfoViewModel> TrusteeFee { get; set; }
+    public partial ChangeableViewModel<FundElements, AgencyInfoViewModel>? OutsourcingInfo { get; set; }
 
 
     [ObservableProperty]
-    public partial ChangeableViewModel<FundElements, FundFeeInfoViewModel> OutsourcingFee { get; set; }
+    public partial ChangeableViewModel<FundElements, FundFeeInfoViewModel>? TrusteeFee { get; set; }
 
 
     [ObservableProperty]
-    public partial ChangeableViewModel<FundElements, string> InvestmentManagers { get; set; }
+    public partial ChangeableViewModel<FundElements, FundFeeInfoViewModel>? OutsourcingFee { get; set; }
+
+
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, string>? InvestmentManagers { get; set; }
 
 
 
     [ObservableProperty]
-    public partial ChangeableViewModel<FundElements, TemporarilyOpenInfoViewModel> TemporarilyOpenInfo { get; set; }
+    public partial ChangeableViewModel<FundElements, TemporarilyOpenInfoViewModel>? TemporarilyOpenInfo { get; set; }
 
 
 
@@ -260,32 +260,32 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
 
     [ObservableProperty]
-    public partial ShareElementsViewModel<FundFeeInfo, FundFeeInfoViewModel> ManageFee { get; set; }
+    public partial ShareElementsViewModel<FundFeeInfo, FundFeeInfoViewModel>? ManageFee { get; set; }
 
 
     [ObservableProperty]
-    public partial ChangeableViewModel<FundElements, FeePayInfoViewModel> ManageFeePay { get; set; }
-
-
-
-    [ObservableProperty]
-    public partial ShareElementsViewModel<FundPurchaseRule, FundPurchaseRuleViewModel> SubscriptionRule { get; set; }
-
+    public partial ChangeableViewModel<FundElements, FeePayInfoViewModel>? ManageFeePay { get; set; }
 
 
 
     [ObservableProperty]
-    public partial ShareElementsViewModel<FundPurchaseRule, FundPurchaseRuleViewModel> PurchasRule { get; set; }
+    public partial ShareElementsViewModel<FundPurchaseRule, FundPurchaseRuleViewModel>? SubscriptionRule { get; set; }
 
-
-
-    [ObservableProperty]
-    public partial ShareElementsViewModel<RedemptionFeeInfo, RedemptionFeeInfoViewMdoel> RedemptionFee { get; set; }
 
 
 
     [ObservableProperty]
-    public partial ShareElementsViewModel<string, string> PerformanceFeeStatement { get; set; }
+    public partial ShareElementsViewModel<FundPurchaseRule, FundPurchaseRuleViewModel>? PurchasRule { get; set; }
+
+
+
+    [ObservableProperty]
+    public partial ShareElementsViewModel<RedemptionFeeInfo, RedemptionFeeInfoViewMdoel>? RedemptionFee { get; set; }
+
+
+
+    [ObservableProperty]
+    public partial ShareElementsViewModel<string, string>? PerformanceFeeStatement { get; set; }
 
 
     /// <summary>
@@ -604,10 +604,20 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         #endregion
 
         //SubscriptionFee = new ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel>(FundId, FlowId, elements, sc, x => x.SubscriptionFee, x => new(x), x => x!.Build());
-        SubscriptionRule = new ShareElementsViewModel<FundPurchaseRule, FundPurchaseRuleViewModel>(FundId, FlowId, elements, sc, x => x.SubscriptionRule, x => new(x) { FeeName = "认购费" }, x => x!.Build());
+        SubscriptionRule = new ShareElementsViewModel<FundPurchaseRule, FundPurchaseRuleViewModel>(FundId, FlowId, elements, sc, x => x.SubscriptionRule, x => new(x) { FeeName = "认购费"}, x => x!.Build());
+        foreach (var item in SubscriptionRule.Data)
+        {
+            if (item.NewValue!.MinDeposit == 0 || item.NewValue.MinDeposit is null)
+                item.NewValue.MinDeposit = 1000000;
+        }
 
         //PurchaseFee = new ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel>(FundId, FlowId, elements, sc, x => x.PurchaseFee, x => new(x), x => x!.Build());
         PurchasRule = new ShareElementsViewModel<FundPurchaseRule, FundPurchaseRuleViewModel>(FundId, FlowId, elements, sc, x => x.PurchasRule, x => new(x) { FeeName = "申购费" }, x => x!.Build());
+        foreach (var item in PurchasRule.Data)
+        {
+            if (item.NewValue!.MinDeposit == 0 || item.NewValue.MinDeposit is null)
+                item.NewValue.MinDeposit = 1000000;
+        }
 
         RedemptionFee = new ShareElementsViewModel<RedemptionFeeInfo, RedemptionFeeInfoViewMdoel>(FundId, FlowId, elements, sc, x => x.RedemptionFee, x => new(x), x => x!.Build());
         PerformanceFeeStatement = new ShareElementsViewModel<string, string>(FundId, FlowId, elements, sc, x => x.PerformanceFeeStatement, x => x!, x => x!);
@@ -651,7 +661,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
     {
         if (value == default)
         {
-            if (DurationInMonths.NewValue is not null && DurationInMonths.NewValue > 0)
+            if (DurationInMonths!.NewValue is not null && DurationInMonths.NewValue > 0)
                 return SetupDate.AddMonths(DurationInMonths.NewValue.Value).AddDays(-1);
         }
         return value;
@@ -810,7 +820,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
     public void Receive(ElementChangedBackgroundMessage message)
     {
         //if (message.FundId == FundId && message.FlowId == FlowId)
-            OnFlowIdChanged(FlowId, FlowId);
+        OnFlowIdChanged(FlowId, FlowId);
     }
 }
 
