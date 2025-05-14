@@ -18,35 +18,112 @@
         <DataTemplate x:Key="EnumItem">
             <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
         </DataTemplate>
+
+        <DataTemplate x:Key="NameItem">
+            <TextBlock Text="{Binding Name}" />
+        </DataTemplate>
+
+        <Style
+            x:Key="ListBoxItem.Simple"
+            BasedOn="{StaticResource ListBoxItem.AllaysFocus}"
+            TargetType="ListBoxItem">
+            <Setter Property="IsSelected" Value="{Binding IsSelected}" />
+        </Style>
+
+        <Style
+            x:Key="ListBox.Simple"
+            BasedOn="{StaticResource ListBox.Small}"
+            TargetType="ListBox">
+            <Setter Property="SelectionMode" Value="Multiple" />
+            <Setter Property="ItemContainerStyle" Value="{StaticResource ListBoxItem.Simple}" />
+            <Setter Property="ItemTemplate" Value="{StaticResource NameItem}" />
+            <Setter Property="ItemsPanel" Value="{StaticResource WrapHorizontalItemsPanelTemplate}" />
+        </Style>
     </UserControl.Resources>
-    <StackPanel>
+
+
+    <DockPanel>
+        <WrapPanel Width="500">
+            <!--<DockPanel LastChildFill="False">
+                <DockPanel.Resources>
+                    <Style BasedOn="{StaticResource ToggleButtonDefault}" TargetType="ToggleButton">
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Style.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Background" Value="RoyalBlue" />
+                                <Setter Property="Foreground" Value="White" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DockPanel.Resources>
+                <ToggleButton Content="每年" IsChecked="{Binding YearFlag}" />
+                <ToggleButton Content="每季" IsChecked="{Binding QuarterFlag}" />
+                <ToggleButton Content="每月" IsChecked="{Binding MonthFlag}" />
+                <ToggleButton Content="每周" IsChecked="{Binding WeekFlag}" />
+                <ToggleButton Content="每天" IsChecked="{Binding DayFlag}" />
+            </DockPanel>-->
+
+            <ListBox ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus}" ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}">
+                <ListBoxItem Content="每年" IsSelected="{Binding YearFlag}" />
+                <ListBoxItem Content="每季" IsSelected="{Binding QuarterFlag}" />
+                <ListBoxItem Content="每月" IsSelected="{Binding MonthFlag}" />
+                <ListBoxItem Content="每周" IsSelected="{Binding WeekFlag}" />
+                <ListBoxItem Content="每天" IsSelected="{Binding DayFlag}" />
+            </ListBox>
+
+            <DockPanel LastChildFill="False" Visibility="{Binding ShowQuarterList, Converter={StaticResource Boolean2VisibilityConverter}}">
+                <ListBox ItemsSource="{Binding Quarters}" Style="{StaticResource ListBox.Simple}" />
+            </DockPanel>
+
+
+            <DockPanel LastChildFill="False" Visibility="{Binding ShowMonthList, Converter={StaticResource Boolean2VisibilityConverter}}">
+                <ListBox ItemsSource="{Binding MonthSource.View}" Style="{StaticResource ListBox.Simple}" />
+            </DockPanel>
+
+
+            <DockPanel LastChildFill="False" Visibility="{Binding ShowWeekList, Converter={StaticResource Boolean2VisibilityConverter}}">
+                <ListBox ItemsSource="{Binding WeekSource.View}" Style="{StaticResource ListBox.Simple}" />
+            </DockPanel>
+
+
+            <ListBox ItemsSource="{Binding DaySource.View}" Style="{StaticResource ListBox.Simple}" />
+
+
+
+
+        </WrapPanel>
+
+
+
+
+        <!--  每周  -->
+        <!--
         <DockPanel>
             <ListBox
-                Name="lbType"
-                ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus}"
-                ItemTemplate="{StaticResource EnumItem}"
-                ItemsPanel="{StaticResource WrapItemPanel}"
-                ItemsSource="{x:Static local:OpenRuleViewModel.Types}"
-                SelectedItem="{Binding SelectedType}" />
+                ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
+                ItemsSource="{Binding DayOfWeeks}"
+                SelectionMode="Multiple">
+                <ListBox.ItemContainerStyle>
+                    <Style BasedOn="{StaticResource ListBoxItem.AllaysFocus}" TargetType="ListBoxItem">
+                        <Setter Property="IsSelected" Value="{Binding IsSelected}" />
+                        <Setter Property="ContentTemplate">
+                            <Setter.Value>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}" />
+                                </DataTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+            </ListBox>
+            <ToggleButton Content="{Binding OrderString}" IsChecked="{Binding Descende}" />
+            <ToggleButton Content="{Binding DayTypeString}" IsChecked="{Binding TradeOrNatural}" />
+        </DockPanel>-->
 
-            <DockPanel LastChildFill="False" Visibility="{Binding ShowMonth, Converter={StaticResource Boolean2VisibilityConverter}}">
-                <ListBox
-                    ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus}"
-                    ItemsPanel="{StaticResource WrapItemPanel}"
-                    ItemsSource="{Binding MonthOfYear}"
-                    SelectionMode="Multiple">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Month, Converter={StaticResource EnumDescriptionConverter}}" />
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-                <Button Content="全选" />
-                <Button Content="反选" />
-            </DockPanel>
-        </DockPanel>
+
 
         <ListBox
+            DockPanel.Dock="Top"
             ItemsPanel="{StaticResource WrapItemPanel}"
             ItemsSource="{Binding Years}"
             SelectedItem="{Binding SelectedYear}" />
@@ -66,5 +143,5 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>-->
         </ListBox>
-    </StackPanel>
+    </DockPanel>
 </UserControl>
