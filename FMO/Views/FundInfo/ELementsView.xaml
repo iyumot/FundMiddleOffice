@@ -634,9 +634,66 @@
                         Visibility="Collapsed" />
                 </DockPanel>
 
-                <DockPanel Name="byt" Visibility="Collapsed">
-                    <Button Content="设置" />
-                </DockPanel>
+                <Button
+                    x:Name="bytm"
+                    hc:IconElement.Geometry="{StaticResource f.plus}"
+                    Command="{Binding AddPartCommand}"
+                    Style="{StaticResource ButtonIcon.Small}"
+                    Visibility="Collapsed" />
+
+                <ListBox
+                    Name="byt"
+                    VerticalContentAlignment="Center"
+                    BorderThickness="0"
+                    ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
+                    ItemsSource="{Binding Parts}"
+                    Style="{StaticResource ListBoxCustom}"
+                    Visibility="Collapsed">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <DockPanel Margin="4,0">
+                                <DockPanel.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                    </Style>
+                                </DockPanel.Resources>
+                                <DockPanel Name="nor" LastChildFill="False">
+                                    <TextBlock Text="T" />
+                                    <ToggleButton
+                                        Name="inc"
+                                        BorderBrush="Transparent"
+                                        Content="≤"
+                                        IsChecked="{Binding Include}"
+                                        Style="{StaticResource ToggleButtonDefault.Small}" />
+                                    <TextBox Padding="6,0" Text="{Binding Month}" />
+                                    <TextBlock Text="月," />
+                                </DockPanel>
+
+                                <TextBlock
+                                    Name="last"
+                                    Text="其他"
+                                    Visibility="Collapsed" />
+                                <TextBox Padding="6,0" Text="{Binding Fee}" />
+                                <TextBlock Text="%" />
+                                <Button
+                                    hc:IconElement.Geometry="{StaticResource f.trash}"
+                                    Command="{Binding DataContext.DeletePartCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                    CommandParameter="{Binding .}"
+                                    Foreground="Red"
+                                    Style="{StaticResource ButtonIcon.Small}" />
+                            </DockPanel>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding IsLast}" Value="True">
+                                    <Setter TargetName="nor" Property="Visibility" Value="Collapsed" />
+                                    <Setter TargetName="last" Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Include}" Value="False">
+                                    <Setter TargetName="inc" Property="Content" Value="&lt;" />
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
 
             </WrapPanel>
             <DataTemplate.Triggers>
@@ -652,6 +709,7 @@
                 </DataTrigger>
                 <DataTrigger Binding="{Binding NewValue.Type}" Value="ByTime">
                     <Setter TargetName="byt" Property="Visibility" Value="Visible" />
+                    <Setter TargetName="bytm" Property="Visibility" Value="Visible" />
                     <Setter TargetName="normal" Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
 

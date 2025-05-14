@@ -47,5 +47,6 @@ public class RedemptionFeeInfo
     /// 特殊类型
     /// </summary>
     public string? Other { get; set; }
+
     public List<PartRedemptionFee>? Parts { get; set; }
 }

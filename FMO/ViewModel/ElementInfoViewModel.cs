@@ -1,8 +1,10 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using FMO.Models;
-using FMO.Shared;
+﻿using System.Collections.ObjectModel;
 using System.Text;
 using System.Text.RegularExpressions;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using FMO.Models;
+using FMO.Shared;
 
 namespace FMO;
 
@@ -162,9 +164,9 @@ public partial class BankChangeableViewModel<T> : ChangeableViewModel<T, BankAcc
 
 
 [AutoChangeableViewModel(typeof(FundFeeInfo))]
-public partial class FundFeeInfoViewModel:IDataValidation
+public partial class FundFeeInfoViewModel : IDataValidation
 {
-    public bool IsValid() => Type switch { FundFeeType.Ratio or FundFeeType.Fix => Fee > 0, FundFeeType.Other => Other?.Length > 0,_=> false };
+    public bool IsValid() => Type switch { FundFeeType.Ratio or FundFeeType.Fix => Fee > 0, FundFeeType.Other => Other?.Length > 0, _ => false };
 
     public override string ToString()
     {
@@ -172,31 +174,150 @@ public partial class FundFeeInfoViewModel:IDataValidation
     }
 }
 
-[AutoChangeableViewModel(typeof(RedemptionFeeInfo))]
-public partial class RedemptionFeeInfoViewMdoel :  IDataValidation
+public partial class RedemptionFeeInfoViewMdoel : ObservableObject, IDataValidation, IEquatable<RedemptionFeeInfoViewMdoel>
 {
-     
+    public RedemptionFeeInfoViewMdoel()
+    {
+        Parts = new();
+    }
+
+    public RedemptionFeeInfoViewMdoel(RedemptionFeeInfo fee)
+    {
+        Type = fee?.Type;
+        HasFee = fee?.HasFee ?? false;
+        Fee = fee?.Fee;
+        Other = fee?.Other;
+        Parts = fee?.Parts is null ? new() : new(fee.Parts.Select(x => new PartFeeViewModel(x)));
+        if (Parts.Count > 0)
+            Parts[^1].IsLast = true;
+    }
+
+    [ObservableProperty]
+    public partial FundFeeType? Type { get; set; }
+
+
+    [ObservableProperty]
+    public partial bool HasFee { get; set; }
+
+    [ObservableProperty]
+    public partial decimal? Fee { get; set; }
+
+    /// <summary>
+    /// 特殊类型
+    /// </summary>
+    [ObservableProperty]
+    public partial string? Other { get; set; }
+
+    public ObservableCollection<PartFeeViewModel> Parts { get; init; }
+
+    public RedemptionFeeInfo Build()
+    {
+        return new RedemptionFeeInfo
+        {
+            Fee = Fee ?? default,
+            Other = Other,
+            Type = Type ?? default,
+            HasFee = HasFee,
+            Parts = Parts.Select(x => new PartRedemptionFee { Fee = x.Fee ?? 0, Include = x.Include, Month = x.Month ?? 0 }).ToList()
+        };
+    }
+
+    public bool Equals(RedemptionFeeInfoViewMdoel? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return EqualityComparer<decimal?>.Default.Equals(Fee, other.Fee)
+            && EqualityComparer<FundFeeType?>.Default.Equals(Type, other.Type)
+            && EqualityComparer<bool>.Default.Equals(HasFee, other.HasFee)
+            && EqualityComparer<string?>.Default.Equals(Other, other.Other)
+            && Parts.SequenceEqual(other.Parts);
+    }
+
     public bool IsValid() => Type switch { FundFeeType.ByTime => Parts?.Count > 1, _ => true };
 
-    //    public RedemptionFeeInfoViewMdoel(FMO.Models.RedemptionFeeInfo? instance) : base(instance)
-    //    {
-    //        instance.Parts;
-    //    }
+    public override string? ToString()
+    {
+        return !HasFee ? "无" : Type switch
+        {
+            FundFeeType.Fix => $"固定费用：{Fee}元 / 年",
+            FundFeeType.Ratio => $"{Fee}% / 年",
+            FundFeeType.ByTime => $"持有时间T：" + FeeByTimeString(),
+            FundFeeType.Other => Other,
+            _ => $"未设置"
+        };
+    }
+
+
+    private string FeeByTimeString()
+    {
+        string s = "";
+        for (int i = 0; i < Parts.Count; i++)
+        {
+            var p = Parts[i];
+            if (i == 0)
+                s += $"T{(!p.Include ? '<' : '≤')}{p.Month}月, {p.Fee}%";
+            else if (i == Parts.Count - 1)
+                s += $"；T{(Parts[i - 1].Include ? '>' : '≥')}{Parts[i - 1].Month}月, {p.Fee}%";
+            else s += $"；{Parts[i-1].Month}月{(Parts[i - 1].Include ? '<' : '≤')}T{(!p.Include ? '<' : '≤')}{p.Month}月, {p.Fee}%";
+        }
+        return s;
+    }
+
+
+    [RelayCommand]
+    public void AddPart()
+    {
+        Parts.Add(new());
+        if (Parts.Count == 1) Parts.Add(new() { IsLast = true });
+
+        foreach (var item in Parts.SkipLast(1))
+            item.IsLast = false;
+        Parts[^1].IsLast = true;
+        OnPropertyChanged(nameof(Parts));
+    }
+
+    [RelayCommand]
+    public void DeletePart(PartFeeViewModel obj)
+    {
+        Parts.Remove(obj);
+        Parts[^1].IsLast = true;
+        OnPropertyChanged(nameof(Parts));
+    }
+
+    public partial class PartFeeViewModel : ObservableObject, IEquatable<PartFeeViewModel>
+    {
+        public PartFeeViewModel()
+        {
+        }
+
+        public PartFeeViewModel(PartRedemptionFee obj)
+        {
+            Month = obj.Month switch { 0 => null, var x => x };
+            Include = obj.Include;
+            Fee = obj.Fee;
+        }
 
 
 
+        [ObservableProperty]
+        public partial int? Month { get; set; }
 
-    //    public partial class PartFeeViewModel:ObservableObject
-    //    {
-    //        [ObservableProperty]
-    //        public partial int Month { get; set; }
+        [ObservableProperty]
+        public partial bool Include { get; set; }
 
-    //        [ObservableProperty]
-    //        public partial bool Include { get; set; }
+        [ObservableProperty]
+        public partial decimal? Fee { get; set; }
 
-    //        [ObservableProperty]
-    //        public partial decimal Fee { get; set; }
-    //    }
+        [ObservableProperty]
+        public partial bool IsLast { get; set; }
+
+        public bool Equals(PartFeeViewModel? other)
+        {
+            if (other is null) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return Month == other.Month && Include == other.Include && Fee == other.Fee;
+        }
+    }
 }
 
 
@@ -220,7 +341,7 @@ public partial class TemporarilyOpenInfoViewModel : IDataValidation
 
 
 [AutoChangeableViewModel(typeof(FundPurchaseRule))]
-public partial class FundPurchaseRuleViewModel:IDataValidation
+public partial class FundPurchaseRuleViewModel : IDataValidation
 {
     public string? FeeName { get; set; }
 
