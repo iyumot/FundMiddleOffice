@@ -591,6 +591,73 @@
         </DataTemplate>
 
 
+
+        <DataTemplate x:Key="DT.RedemptionFee">
+            <WrapPanel DataContext="{Binding NewValue}">
+                <ComboBox
+                    Width="90"
+                    Margin="4,0"
+                    ItemsSource="{x:Static local:ElementsViewModel.RedemptionFeeTypes}"
+                    SelectedItem="{Binding Type}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+
+                <DockPanel x:Name="normal" LastChildFill="False">
+                    <TextBox
+                        x:Name="mon"
+                        MinWidth="40"
+                        HorizontalContentAlignment="Center"
+                        Text="{Binding Fee, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                    <TextBlock
+                        x:Name="a"
+                        Margin="4,0"
+                        VerticalAlignment="Center"
+                        FontSize="14"
+                        Text="%"
+                        Visibility="Collapsed" />
+                    <TextBlock
+                        x:Name="b"
+                        Margin="4,0"
+                        VerticalAlignment="Center"
+                        FontSize="14"
+                        Text="元"
+                        Visibility="Collapsed" />
+                    <TextBox
+                        x:Name="other"
+                        MinWidth="300"
+                        Text="{Binding Other, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                        Visibility="Collapsed" />
+                </DockPanel>
+
+                <DockPanel Name="byt" Visibility="Collapsed">
+                    <Button Content="设置" />
+                </DockPanel>
+
+            </WrapPanel>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding NewValue.Type}" Value="Other">
+                    <Setter TargetName="other" Property="Visibility" Value="Visible" />
+                    <Setter TargetName="mon" Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding NewValue.Type}" Value="Ratio">
+                    <Setter TargetName="a" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding NewValue.Type}" Value="Fix">
+                    <Setter TargetName="b" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding NewValue.Type}" Value="ByTime">
+                    <Setter TargetName="byt" Property="Visibility" Value="Visible" />
+                    <Setter TargetName="normal" Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
         <DataTemplate x:Key="DT.FeePay">
             <DockPanel DataContext="{Binding NewValue}" LastChildFill="False">
                 <ComboBox
@@ -1167,7 +1234,7 @@
 
                             <local:PortionElementView
                                 Content="{Binding RedemptionFee}"
-                                ContentTemplate="{StaticResource DT.Fee}"
+                                ContentTemplate="{StaticResource DT.RedemptionFee}"
                                 EditTemplate="{StaticResource CT.Fee}"
                                 Header="赎回费" />
 

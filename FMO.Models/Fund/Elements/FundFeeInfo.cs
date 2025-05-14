@@ -32,7 +32,20 @@ public class PartRedemptionFee
 
     public decimal Fee { get; set; }
 }
-public class RedemptionFeeInfo : FundFeeInfo
+
+
+public class RedemptionFeeInfo
 {
+    public FundFeeType Type { get; set; }
+
+
+    public bool HasFee { get; set; }
+
+    public decimal Fee { get; set; }
+
+    /// <summary>
+    /// 特殊类型
+    /// </summary>
+    public string? Other { get; set; }
     public List<PartRedemptionFee>? Parts { get; set; }
 }

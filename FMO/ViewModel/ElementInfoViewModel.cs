@@ -162,13 +162,43 @@ public partial class BankChangeableViewModel<T> : ChangeableViewModel<T, BankAcc
 
 
 [AutoChangeableViewModel(typeof(FundFeeInfo))]
-public partial class FundFeeInfoViewModel
+public partial class FundFeeInfoViewModel:IDataValidation
 {
+    public bool IsValid() => Type switch { FundFeeType.Ratio or FundFeeType.Fix => Fee > 0, FundFeeType.Other => Other?.Length > 0,_=> false };
+
     public override string ToString()
     {
         return !HasFee ? "无" : Type switch { FundFeeType.Fix => $"固定费用：{Fee}元 / 年", FundFeeType.Ratio => $"{Fee}% / 年", FundFeeType.Other => Other, _ => $"未设置" } + (GuaranteedFee > 0 ? $" 有保底：{GuaranteedFee} / 年" : "");
     }
 }
+
+[AutoChangeableViewModel(typeof(RedemptionFeeInfo))]
+public partial class RedemptionFeeInfoViewMdoel :  IDataValidation
+{
+     
+    public bool IsValid() => Type switch { FundFeeType.ByTime => Parts?.Count > 1, _ => true };
+
+    //    public RedemptionFeeInfoViewMdoel(FMO.Models.RedemptionFeeInfo? instance) : base(instance)
+    //    {
+    //        instance.Parts;
+    //    }
+
+
+
+
+    //    public partial class PartFeeViewModel:ObservableObject
+    //    {
+    //        [ObservableProperty]
+    //        public partial int Month { get; set; }
+
+    //        [ObservableProperty]
+    //        public partial bool Include { get; set; }
+
+    //        [ObservableProperty]
+    //        public partial decimal Fee { get; set; }
+    //    }
+}
+
 
 
 
@@ -190,11 +220,11 @@ public partial class TemporarilyOpenInfoViewModel : IDataValidation
 
 
 [AutoChangeableViewModel(typeof(FundPurchaseRule))]
-public partial class FundPurchaseRuleViewModel
+public partial class FundPurchaseRuleViewModel:IDataValidation
 {
     public string? FeeName { get; set; }
 
-     
+    public bool IsValid() => !HasFee || Type switch { FundFeeType.Ratio or FundFeeType.Fix => Fee > 0, FundFeeType.Other => Other?.Length > 0, _ => false };
 
     public override string ToString()
     {
