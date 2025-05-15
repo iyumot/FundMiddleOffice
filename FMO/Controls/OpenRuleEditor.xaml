@@ -28,7 +28,24 @@
             BasedOn="{StaticResource ListBoxItem.AllaysFocus}"
             TargetType="ListBoxItem">
             <Setter Property="IsSelected" Value="{Binding IsSelected}" />
+
         </Style>
+
+        <Style
+            x:Key="ListBoxItem.Day"
+            BasedOn="{StaticResource ListBoxItem.Simple}"
+            TargetType="ListBoxItem">
+            <Style.Triggers>
+                <Trigger Property="ItemsControl.AlternationIndex" Value="0">
+                    <Setter Property="IsEnabled" Value="{Binding DataContext.AllowDayOrder, RelativeSource={RelativeSource AncestorType=ListBox}}" />
+                    <Setter Property="IsSelected" Value="{Binding DataContext.DayDescend, RelativeSource={RelativeSource AncestorType=ListBox}}" />
+                </Trigger>
+                <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                    <Setter Property="IsSelected" Value="{Binding DataContext.TradeOrNatrual, RelativeSource={RelativeSource AncestorType=ListBox}}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
 
         <Style
             x:Key="ListBox.Simple"
@@ -69,7 +86,11 @@
             </StackPanel>
 
             <DockPanel Visibility="{Binding ShowDayList, Converter={StaticResource Boolean2VisibilityConverter}}">
-                <ListBox ItemsSource="{Binding DaySource.View}" Style="{StaticResource ListBox.Simple}" />
+                <ListBox
+                    AlternationCount="{Binding Items.Count, RelativeSource={RelativeSource Self}, Mode=OneWay}"
+                    ItemContainerStyle="{StaticResource ListBoxItem.Day}"
+                    ItemsSource="{Binding DaySource.View}"
+                    Style="{StaticResource ListBox.Simple}" />
             </DockPanel>
 
 

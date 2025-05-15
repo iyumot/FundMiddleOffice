@@ -1,7 +1,4 @@
-﻿using FMO.Models;
-using System.Xml.Linq;
-
-namespace FMO.Utilities;
+﻿namespace FMO.Utilities;
 
 public static class ObjectExtension
 {
@@ -11,7 +8,7 @@ public static class ObjectExtension
 
         var type = obj.GetType();
         string info = string.Join(",\n\t", type.GetProperties().Select(x => $"{x.Name}:{x.GetValue(obj)?.ToString() ?? "null"}"));
-        return $"{type.Name} \n\t {info} \n\n";             
+        return $"{type.Name} \n\t {info} \n\n";
     }
 
 
@@ -29,9 +26,25 @@ public static class ObjectExtension
             //是否有同名属性
             var ps = pss.FirstOrDefault(x => x.Name == p.Name && x.CanRead);
             if (ps is null) continue;
-            
+
             p.SetValue(des, ps.GetValue(src));
         }
     }
 
+    public static IEnumerable<T> Gather<T>(this IEnumerable<T> obj, IEnumerable<int> idx)
+    {
+        var sort = idx.Order().ToArray();
+        foreach (var t in obj.Index())
+            if (Array.BinarySearch(sort, t.Index) >= 0)
+                yield return t.Item;
+    }
+
+    public static IEnumerable<T> TakeRevese<T>(this IEnumerable<T> obj, int[] idx)
+    {
+        var sort = idx.Order().ToArray();
+        foreach (var t in obj.Reverse().Index())
+            if (Array.BinarySearch(sort, t.Index) >= 0)
+                yield return t.Item;
+    }
 }
+

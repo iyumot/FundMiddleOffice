@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
+using System.Windows;
 using System.Windows.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -244,6 +245,14 @@ public partial class HomePageViewModel : ObservableObject
     [RelayCommand]
     public void OpenDataFolder()
     {
+        Window wnd = new Window
+        {
+            Content = new OpenRuleEditor(),
+            DataContext = new OpenRuleViewModel(),
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Owner = App.Current.MainWindow
+        };
+        wnd.ShowDialog();return;
         try { System.Diagnostics.Process.Start("explorer.exe", Path.Combine(Directory.GetCurrentDirectory(), "files")); } catch { }
     }
 

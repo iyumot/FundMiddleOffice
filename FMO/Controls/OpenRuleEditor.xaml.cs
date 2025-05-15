@@ -1,10 +1,10 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using FMO.Models;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
+using FMO.Models;
 
 namespace FMO;
 
@@ -20,217 +20,6 @@ public partial class OpenRuleEditor : UserControl
 }
 
 
-public enum SequenceOrder { Ascend, Descend }
-
-public class OpenRule
-{
-    static string[] array = ["一", "二", "三", "四", "五",];
-    public FundOpenType Type { get; set; }
-
-    /// <summary>
-    /// 选择季
-    /// Year 否则1-4
-    /// 其它 忽略
-    /// </summary>
-    public int[]? Quarters { get; set; }
-
-    /// <summary>
-    /// 选择月
-    /// Year 否则1-12
-    /// QuarterFlag 则1-3
-    /// Month Week 忽略
-    /// </summary>
-    public int[]? Months { get; set; }
-
-    /// <summary>
-    /// 选择周
-    /// Year 否则1-54
-    /// QuarterFlag 则1-14
-    /// Month 1-5
-    /// Week 忽略
-    /// </summary>
-    public int[]? Weeks { get; set; }
-
-    public SequenceOrder WeekOrder { get; set; }
-
-    /// <summary>
-    /// 选择周
-    /// Year 否则1-54
-    /// QuarterFlag 则1-14
-    /// Month 1-5
-    /// Week 忽略
-    /// </summary>
-    public int[]? Dates { get; set; }
-
-    /// <summary>
-    /// 选择天
-    /// Year 1-365
-    /// QuarterFlag 1-92
-    /// Month 1-31
-    /// Week 7
-    /// </summary>
-    public SequenceOrder DayOrder { get; set; }
-
-    public bool TradeOrNatural { get; set; }
-
-    /// <summary>
-    /// 是否顺延
-    /// </summary>
-    public bool Postpone‌ { get; set; }
-
-    /// <summary>
-    /// 顺延是否跨周
-    /// </summary>
-    public bool CrossWeek { get; set; }
-
-
-    private string WeekStr()
-    {
-        var days = Dates?.Where(x => x < 5);
-        if (days is null || !days.Any()) return "";
-
-        if (DayOrder == SequenceOrder.Ascend)
-        {
-            if (TradeOrNatural)
-                return $"第{string.Join('、', days!.Select(x => x + 1))}个交易日开放";
-            else
-                return $"周{string.Join('、', days!.Select(x => array[x]))}开放";
-        }
-        else
-        {
-            if (TradeOrNatural)
-                return $"倒数第{string.Join('、', days!.Select(x => x + 1))}个交易日开放";
-            else
-                return $"倒数第{string.Join('、', days!.Select(x => x + 1))}个自然日开放";
-        }
-    }
-
-
-    private string MonthStr()
-    {
-        if (Dates is null || Dates.Length == 0) return "";
-
-        if (Weeks?.Length > 0)
-            return $"{(WeekOrder == SequenceOrder.Ascend ? "" : "倒数")}第{string.Join('、', Weeks.Select(x => x + 1))}周的{WeekStr()}";
-        else
-            return $"{(DayOrder == SequenceOrder.Ascend ? "" : "倒数")}第{string.Join('、', Dates.Select(x => x + 1))}个{(TradeOrNatural ? "交易" : "自然")}日开放";
-    }
-
-    private string QuarterStr()
-    {
-        if (Dates is null || Dates.Length == 0) return "";
-
-        if (Months?.Length > 0)
-            return $"第{string.Join('、', Months.Select(x => x + 1))}月的{MonthStr()}";
-        else if (Weeks?.Length > 0)
-            return $"{(WeekOrder == SequenceOrder.Ascend ? "" : "倒数")}第{string.Join('、', Weeks.Select(x => x + 1))}周的{WeekStr()}";
-        else
-            return $"{(DayOrder == SequenceOrder.Ascend ? "" : "倒数")}第{string.Join('、', Dates.Select(x => x + 1))}个{(TradeOrNatural ? "交易" : "自然")}日开放";
-    }
-
-    public override string ToString()
-    {
-        switch (Type)
-        {
-            case FundOpenType.Closed:
-                return "不开放";
-            case FundOpenType.Yearly:
-                if (Dates is null || Dates.Length == 0) return "无效的设置";
-                if (Quarters?.Length > 0)
-                    return $"每年第{string.Join('、', Quarters.Select(x => x))}季度的{QuarterStr()}";
-                else if (Months?.Length > 0)
-                    return $"每年第{string.Join('、', Months.Select(x => x))}月的{MonthStr()}";
-                else if (Weeks?.Length > 0)
-                    return $"每年{(WeekOrder == SequenceOrder.Ascend ? "" : "倒数")}第{string.Join('、', Weeks.Select(x => x + 1))}周的{WeekStr()}";
-                else
-                    return $"每年{(DayOrder == SequenceOrder.Ascend ? "" : "倒数")}第{string.Join('、', Dates.Select(x => x + 1))}个{(TradeOrNatural ? "交易" : "自然")}日开放";
-            case FundOpenType.Quarterly:
-                if (Dates is null || Dates.Length == 0) return "无效的设置";
-                return "每季" + QuarterStr();
-            case FundOpenType.Monthly:
-                if (Dates is null || Dates.Length == 0) return "无效的设置";
-                return "每月" + MonthStr();
-            case FundOpenType.Weekly:
-                if (Dates is null || Dates.Length == 0) return "无效的设置";
-
-                return "每周" + WeekStr();
-            case FundOpenType.Daily:
-                return "每日开放";
-            default:
-                return "-";
-        }
-    }
-
-
-    public IEnumerable<DateMeta> FilterByWeek2(IEnumerable<DateMeta> dates)
-    {
-        foreach (var item in dates)
-        {
-
-
-            yield return item;
-        }
-    }
-    public IEnumerable<DateMeta> FilterByWeek(IEnumerable<DateMeta> dates)
-    {
-        var days = Dates?.Where(x => x <= 5);
-        if (days is null || !days.Any())
-            return Array.Empty<DateMeta>();
-
-        if (DayOrder == SequenceOrder.Ascend)
-        {
-            if (TradeOrNatural)
-                return dates.Where(x => x.Flag.HasFlag(DayFlag.Trade)).GroupBy(x => x.Week).SelectMany(x => ) && days.Contains((int)x.Date.DayOfWeek));
-            else
-                return dates.Where(x => days.Contains((int)x.Date.DayOfWeek));
-        }
-        else
-        {
-            if (TradeOrNatural)
-                return $"倒数第{string.Join('、', days!.Select(x => x + 1))}个交易日开放";
-            else
-                return $"倒数第{string.Join('、', days!.Select(x => x + 1))}个自然日开放";
-        }
-    }
-
-
-    //public DateOnly[] FilterDays(int year)
-    //{
-    //    IEnumerable<DateMeta> dates = Days.DayInfosByYear(year);
-
-    //    switch (Type)
-    //    {
-    //        case FundOpenType.Closed:
-    //            return Array.Empty<DateOnly>();
-    //        case FundOpenType.Yearly:
-    //            if (Quarters?.Length > 0)
-    //                dates = dates.Where(x => Quarters.Contains(QuarterOfDay(x)));
-    //            if (Months?.Length > 0)
-    //                dates = dates.Where(x => Months.Contains(x.Month));
-    //            else if (Weeks?.Length > 0)
-    //                return $"每年{(WeekOrder == SequenceOrder.Ascend ? "" : "倒数")}第{string.Join('、', Weeks.Select(x => x + 1))}周的{WeekStr()}";
-    //            else
-    //                break;
-    //        case FundOpenType.Quarterly:
-    //            break;
-    //        case FundOpenType.Monthly:
-    //            break;
-    //        case FundOpenType.Weekly:
-    //            break;
-    //        case FundOpenType.Daily:
-    //            return dates.Where(x=>x.Flag.HasFlag(DayFlag.Trade)).Select(x=>x.Date).ToArray();
-    //        default:
-    //            break;
-    //    }
-
-
-
-
-    //}
-
-
-    private static int QuarterOfDay(DateOnly d) => (d.Month - 1) / 3;
-}
 
 public partial class OpenRuleViewModel : ObservableObject
 {
@@ -293,11 +82,26 @@ public partial class OpenRuleViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(ShowQuarterList))]
     [NotifyPropertyChangedFor(nameof(ShowWeekList))]
     [NotifyPropertyChangedFor(nameof(ShowDayList))]
+    [NotifyPropertyChangedFor(nameof(AllowDayOrder))]
     public partial FundOpenType SelectedType { get; set; }
 
     public static FundOpenType[] Types { get; } = [FundOpenType.Daily, FundOpenType.Weekly, FundOpenType.Monthly, FundOpenType.Quarterly, FundOpenType.Yearly,];
 
 
+    public bool AllowDayOrder => SelectedType != FundOpenType.Weekly || TradeOrNatrual;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(AllowDayOrder))]
+    [NotifyPropertyChangedFor(nameof(Statement))]
+    public partial bool TradeOrNatrual { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Statement))] 
+    public partial bool WeekDescend { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Statement))]
+    public partial bool DayDescend { get; set; }
 
 
     public bool ShowQuarterList => SelectedType switch { FundOpenType.Yearly => true, _ => false };
@@ -309,11 +113,15 @@ public partial class OpenRuleViewModel : ObservableObject
     public bool ShowDayList => SelectedType switch { FundOpenType.Daily or FundOpenType.Closed => false, _ => true };
 
 
-    [ObservableProperty]
-    public partial string? Statement { get; set; }
+    public string? Statement => Rule.ToString();
 
     public OpenRule Rule => Build();
 
+    partial void OnTradeOrNatrualChanged(bool value)
+    {
+        if (!value && SelectedType == FundOpenType.Weekly)
+            DayDescend = false;
+    }
 
     partial void OnSelectedTypeChanged(FundOpenType value)
     {
@@ -321,7 +129,7 @@ public partial class OpenRuleViewModel : ObservableObject
         WeekSource.View.Refresh();
         DaySource.View.Refresh();
 
-        Statement = Rule.ToString();
+        OnPropertyChanged(nameof(Statement)); 
     }
 
 
@@ -401,7 +209,8 @@ public partial class OpenRuleViewModel : ObservableObject
         WeekSource.View.Refresh();
         DaySource.View.Refresh();
 
-        Statement = Rule.ToString();
+        
+        OnPropertyChanged(nameof(Statement));
     }
 
     private void MonthChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -409,7 +218,7 @@ public partial class OpenRuleViewModel : ObservableObject
         WeekSource.View.Refresh();
         DaySource.View.Refresh();
 
-        Statement = Rule.ToString();
+        OnPropertyChanged(nameof(Statement));
     }
 
     private void WeekChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -417,12 +226,12 @@ public partial class OpenRuleViewModel : ObservableObject
         DaySource.View.Refresh();
 
 
-        Statement = Rule.ToString();
+        OnPropertyChanged(nameof(Statement));
     }
 
     private void DayChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        Statement = Rule.ToString();
+    { 
+        OnPropertyChanged(nameof(Statement));
     }
 
 
@@ -438,8 +247,8 @@ public partial class OpenRuleViewModel : ObservableObject
             Weeks = Weeks.Skip(1).Where(x => x.IsSelected).Select(x => x.Value).ToArray(),
             WeekOrder = Weeks[0].IsSelected ? SequenceOrder.Descend : SequenceOrder.Ascend,
             Dates = Days.Skip(2).Where(x => x.IsSelected).Select(x => x.Value).ToArray(),
-            DayOrder = Days[0].IsSelected ? SequenceOrder.Descend : SequenceOrder.Ascend,
-            TradeOrNatural = Days[1].IsSelected
+            DayOrder = /*Days[0].IsSelected*/ DayDescend ? SequenceOrder.Descend : SequenceOrder.Ascend,
+            TradeOrNatural = TradeOrNatrual//Days[1].IsSelected
         };
     }
 
