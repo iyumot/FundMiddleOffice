@@ -31,7 +31,7 @@ public enum ManageType
 public enum FundAccountType
 {
     None,
-     
+
     Collection,
 
     Custody
@@ -43,13 +43,10 @@ public enum FundAccountType
 [TypeConverter(nameof(EnumDescriptionTypeConverter))]
 public enum FundOpenType
 {
-    [Description("不开放")]Closed,
+    [Description("不开放")] Closed,
 
     [Description("每年")]
     Yearly,
-
-    [Description("每半年")]
-    SemiAnnually,
 
     [Description("每季度")]
     Quarterly,

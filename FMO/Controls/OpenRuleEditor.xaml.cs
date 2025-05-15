@@ -1,10 +1,10 @@
-﻿using System.Diagnostics;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using FMO.Models;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
-using CommunityToolkit.Mvvm.ComponentModel;
-using FMO.Models;
 
 namespace FMO;
 
@@ -24,13 +24,8 @@ public enum SequenceOrder { Ascend, Descend }
 
 public class OpenRule
 {
-    public bool YearFlag { get; set; }
-
-    public bool QuarterFlag { get; set; }
-
-    public bool MonthFlag { get; set; }
-
-    public bool WeekFlag { get; set; }
+    static string[] array = ["一", "二", "三", "四", "五",];
+    public FundOpenType Type { get; set; }
 
     /// <summary>
     /// 选择季
@@ -65,7 +60,7 @@ public class OpenRule
     /// Month 1-5
     /// Week 忽略
     /// </summary>
-    public int[]? Days { get; set; }
+    public int[]? Dates { get; set; }
 
     /// <summary>
     /// 选择天
@@ -74,43 +69,171 @@ public class OpenRule
     /// Month 1-31
     /// Week 7
     /// </summary>
-    public SequenceOrder DaykOrder { get; set; }
+    public SequenceOrder DayOrder { get; set; }
 
     public bool TradeOrNatural { get; set; }
+
+    /// <summary>
+    /// 是否顺延
+    /// </summary>
+    public bool Postpone‌ { get; set; }
+
+    /// <summary>
+    /// 顺延是否跨周
+    /// </summary>
+    public bool CrossWeek { get; set; }
+
+
+    private string WeekStr()
+    {
+        var days = Dates?.Where(x => x < 5);
+        if (days is null || !days.Any()) return "";
+
+        if (DayOrder == SequenceOrder.Ascend)
+        {
+            if (TradeOrNatural)
+                return $"第{string.Join('、', days!.Select(x => x + 1))}个交易日开放";
+            else
+                return $"周{string.Join('、', days!.Select(x => array[x]))}开放";
+        }
+        else
+        {
+            if (TradeOrNatural)
+                return $"倒数第{string.Join('、', days!.Select(x => x + 1))}个交易日开放";
+            else
+                return $"倒数第{string.Join('、', days!.Select(x => x + 1))}个自然日开放";
+        }
+    }
+
+
+    private string MonthStr()
+    {
+        if (Dates is null || Dates.Length == 0) return "";
+
+        if (Weeks?.Length > 0)
+            return $"{(WeekOrder == SequenceOrder.Ascend ? "" : "倒数")}第{string.Join('、', Weeks.Select(x => x + 1))}周的{WeekStr()}";
+        else
+            return $"{(DayOrder == SequenceOrder.Ascend ? "" : "倒数")}第{string.Join('、', Dates.Select(x => x + 1))}个{(TradeOrNatural ? "交易" : "自然")}日开放";
+    }
+
+    private string QuarterStr()
+    {
+        if (Dates is null || Dates.Length == 0) return "";
+
+        if (Months?.Length > 0)
+            return $"第{string.Join('、', Months.Select(x => x + 1))}月的{MonthStr()}";
+        else if (Weeks?.Length > 0)
+            return $"{(WeekOrder == SequenceOrder.Ascend ? "" : "倒数")}第{string.Join('、', Weeks.Select(x => x + 1))}周的{WeekStr()}";
+        else
+            return $"{(DayOrder == SequenceOrder.Ascend ? "" : "倒数")}第{string.Join('、', Dates.Select(x => x + 1))}个{(TradeOrNatural ? "交易" : "自然")}日开放";
+    }
+
+    public override string ToString()
+    {
+        switch (Type)
+        {
+            case FundOpenType.Closed:
+                return "不开放";
+            case FundOpenType.Yearly:
+                if (Dates is null || Dates.Length == 0) return "无效的设置";
+                if (Quarters?.Length > 0)
+                    return $"每年第{string.Join('、', Quarters.Select(x => x))}季度的{QuarterStr()}";
+                else if (Months?.Length > 0)
+                    return $"每年第{string.Join('、', Months.Select(x => x))}月的{MonthStr()}";
+                else if (Weeks?.Length > 0)
+                    return $"每年{(WeekOrder == SequenceOrder.Ascend ? "" : "倒数")}第{string.Join('、', Weeks.Select(x => x + 1))}周的{WeekStr()}";
+                else
+                    return $"每年{(DayOrder == SequenceOrder.Ascend ? "" : "倒数")}第{string.Join('、', Dates.Select(x => x + 1))}个{(TradeOrNatural ? "交易" : "自然")}日开放";
+            case FundOpenType.Quarterly:
+                if (Dates is null || Dates.Length == 0) return "无效的设置";
+                return "每季" + QuarterStr();
+            case FundOpenType.Monthly:
+                if (Dates is null || Dates.Length == 0) return "无效的设置";
+                return "每月" + MonthStr();
+            case FundOpenType.Weekly:
+                if (Dates is null || Dates.Length == 0) return "无效的设置";
+
+                return "每周" + WeekStr();
+            case FundOpenType.Daily:
+                return "每日开放";
+            default:
+                return "-";
+        }
+    }
+
+
+    public IEnumerable<DateMeta> FilterByWeek2(IEnumerable<DateMeta> dates)
+    {
+        foreach (var item in dates)
+        {
+
+
+            yield return item;
+        }
+    }
+    public IEnumerable<DateMeta> FilterByWeek(IEnumerable<DateMeta> dates)
+    {
+        var days = Dates?.Where(x => x <= 5);
+        if (days is null || !days.Any())
+            return Array.Empty<DateMeta>();
+
+        if (DayOrder == SequenceOrder.Ascend)
+        {
+            if (TradeOrNatural)
+                return dates.Where(x => x.Flag.HasFlag(DayFlag.Trade)).GroupBy(x => x.Week).SelectMany(x => ) && days.Contains((int)x.Date.DayOfWeek));
+            else
+                return dates.Where(x => days.Contains((int)x.Date.DayOfWeek));
+        }
+        else
+        {
+            if (TradeOrNatural)
+                return $"倒数第{string.Join('、', days!.Select(x => x + 1))}个交易日开放";
+            else
+                return $"倒数第{string.Join('、', days!.Select(x => x + 1))}个自然日开放";
+        }
+    }
+
+
+    //public DateOnly[] FilterDays(int year)
+    //{
+    //    IEnumerable<DateMeta> dates = Days.DayInfosByYear(year);
+
+    //    switch (Type)
+    //    {
+    //        case FundOpenType.Closed:
+    //            return Array.Empty<DateOnly>();
+    //        case FundOpenType.Yearly:
+    //            if (Quarters?.Length > 0)
+    //                dates = dates.Where(x => Quarters.Contains(QuarterOfDay(x)));
+    //            if (Months?.Length > 0)
+    //                dates = dates.Where(x => Months.Contains(x.Month));
+    //            else if (Weeks?.Length > 0)
+    //                return $"每年{(WeekOrder == SequenceOrder.Ascend ? "" : "倒数")}第{string.Join('、', Weeks.Select(x => x + 1))}周的{WeekStr()}";
+    //            else
+    //                break;
+    //        case FundOpenType.Quarterly:
+    //            break;
+    //        case FundOpenType.Monthly:
+    //            break;
+    //        case FundOpenType.Weekly:
+    //            break;
+    //        case FundOpenType.Daily:
+    //            return dates.Where(x=>x.Flag.HasFlag(DayFlag.Trade)).Select(x=>x.Date).ToArray();
+    //        default:
+    //            break;
+    //    }
+
+
+
+
+    //}
+
+
+    private static int QuarterOfDay(DateOnly d) => (d.Month - 1) / 3;
 }
 
 public partial class OpenRuleViewModel : ObservableObject
 {
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowQuarterList))]
-    [NotifyPropertyChangedFor(nameof(ShowMonthList))]
-    [NotifyPropertyChangedFor(nameof(ShowWeekList))]
-    public partial bool YearFlag { get; set; }
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowQuarterList))]
-    [NotifyPropertyChangedFor(nameof(ShowMonthList))]
-    [NotifyPropertyChangedFor(nameof(ShowWeekList))]
-    public partial bool QuarterFlag { get; set; }
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowQuarterList))]
-    [NotifyPropertyChangedFor(nameof(ShowMonthList))]
-    [NotifyPropertyChangedFor(nameof(ShowWeekList))]
-    public partial bool MonthFlag { get; set; }
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowQuarterList))]
-    [NotifyPropertyChangedFor(nameof(ShowMonthList))]
-    [NotifyPropertyChangedFor(nameof(ShowWeekList))]
-    public partial bool WeekFlag { get; set; }
-
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowQuarterList))]
-    [NotifyPropertyChangedFor(nameof(ShowMonthList))]
-    [NotifyPropertyChangedFor(nameof(ShowWeekList))]
-    public partial bool DayFlag { get; set; }
 
     /// <summary>
     /// 选择季
@@ -151,7 +274,7 @@ public partial class OpenRuleViewModel : ObservableObject
     /// Month 1-5
     /// Week 忽略
     /// </summary>
-    public DayInfo[]? Days { get; set; }
+    public DateInfo[] Days { get; set; }
     public CollectionViewSource DaySource { get; } = new();
 
     /// <summary>
@@ -162,144 +285,165 @@ public partial class OpenRuleViewModel : ObservableObject
     /// Week 7
     /// </summary>
     [ObservableProperty]
-    public partial SequenceOrder DaykOrder { get; set; }
+    public partial SequenceOrder DayOrder { get; set; }
 
 
-    public static FundOpenType[] Types { get; } = [FundOpenType.Yearly, FundOpenType.SemiAnnually, FundOpenType.Quarterly, FundOpenType.Monthly, FundOpenType.Weekly, FundOpenType.Daily];
-
-
-
-    //public static DayOfWeek[] DayOfWeeks { get; } = [DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday];
-
-    public static int[] DayIndex { get; } = [1, 2, 3, 4, 5];
-
-    /// <summary>
-    /// 倒序
-    /// </summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(OrderString))]
-    public partial bool Descende { get; set; }
+    [NotifyPropertyChangedFor(nameof(ShowMonthList))]
+    [NotifyPropertyChangedFor(nameof(ShowQuarterList))]
+    [NotifyPropertyChangedFor(nameof(ShowWeekList))]
+    [NotifyPropertyChangedFor(nameof(ShowDayList))]
+    public partial FundOpenType SelectedType { get; set; }
 
-    /// <summary>
-    /// 自然日或交易日
-    /// </summary>
+    public static FundOpenType[] Types { get; } = [FundOpenType.Daily, FundOpenType.Weekly, FundOpenType.Monthly, FundOpenType.Quarterly, FundOpenType.Yearly,];
+
+
+
+
+    public bool ShowQuarterList => SelectedType switch { FundOpenType.Yearly => true, _ => false };
+
+    public bool ShowMonthList => SelectedType switch { FundOpenType.Yearly or FundOpenType.Quarterly => true, _ => false };
+
+    public bool ShowWeekList => SelectedType switch { FundOpenType.Yearly or FundOpenType.Quarterly or FundOpenType.Monthly => true, _ => false };
+
+    public bool ShowDayList => SelectedType switch { FundOpenType.Daily or FundOpenType.Closed => false, _ => true };
+
+
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(DayTypeString))]
-    public partial bool TradeOrNatural { get; set; }
+    public partial string? Statement { get; set; }
+
+    public OpenRule Rule => Build();
 
 
-    public bool ShowQuarterList => !DayFlag && !WeekFlag && !MonthFlag && !QuarterFlag && YearFlag;
-
-    public bool ShowMonthList => !DayFlag && !WeekFlag && !MonthFlag && (QuarterFlag || YearFlag);
-
-    public bool ShowWeekList => !DayFlag && !WeekFlag && (MonthFlag || QuarterFlag || YearFlag);
-
-
-    partial void OnQuarterFlagChanged(bool value)
+    partial void OnSelectedTypeChanged(FundOpenType value)
     {
         MonthSource.View.Refresh();
         WeekSource.View.Refresh();
         DaySource.View.Refresh();
-    }
-    partial void OnMonthFlagChanged(bool value)
-    {
-        WeekSource.View.Refresh();
-        DaySource.View.Refresh();
+
+        Statement = Rule.ToString();
     }
 
-    partial void OnWeekFlagChanged(bool value)
-    {
-        DaySource.View.Refresh();
-    }
 
-    partial void OnYearFlagChanged(bool value)
-    {
-        WeekSource.View.Refresh();
-        DaySource.View.Refresh();
-    }
 
     public OpenRuleViewModel()
     {
         SelectedYear = DateTime.Today.Year;
 
 
-        Quarters = [new(0), new(1), new(2), new(3)];
+        Quarters = Enumerable.Range(1, 4).Select(x => new QuarterInfo(x)).ToArray();
         foreach (var item in Quarters)
             item.PropertyChanged += QuarterChanged;
 
 
-        Months = Enumerable.Range(0, 12).Select(x => new MonthInfo(x)).ToArray();
+        Months = Enumerable.Range(1, 12).Select(x => new MonthInfo(x)).ToArray();
         MonthSource.Source = Months;
-        MonthSource.Filter += (s, e) => e.Accepted = e.Item switch { MonthInfo m => QuarterFlag ? m.Value < 3 : true, _ => true };
+        MonthSource.Filter += MonthSource_Filter;
 
         foreach (var item in Months)
             item.PropertyChanged += MonthChanged;
+
+        Weeks = [new WeekInfo { Value = -1, Name = "倒序" }, .. Enumerable.Range(1, 54).Select(x => new WeekInfo(x))];
+
+        foreach (var item in Weeks)
+            item.PropertyChanged += WeekChanged;
+        WeekSource.Source = Weeks;
+        WeekSource.Filter += WeekSource_Filter;
+
+
+        Days = [new DateInfo { Value = -1, Name = "倒序" }, new DateInfo { Value = -1, Name = "交易日" }, .. Enumerable.Range(1, 366).Select(x => new DateInfo(x))];
+        foreach (var item in Days)
+            item.PropertyChanged += DayChanged;
+        DaySource.Source = Days;
+        DaySource.Filter += DaySource_Filter;
 
         DayOfWeeks = [new(DayOfWeek.Monday), new(DayOfWeek.Tuesday), new(DayOfWeek.Wednesday), new(DayOfWeek.Thursday), new(DayOfWeek.Friday)];
         foreach (var item in DayOfWeeks)
             item.PropertyChanged += (s, e) => UpdateByDayOfWeekChoose();
 
-
-        Weeks = Enumerable.Range(0, 54).Select(x => new WeekInfo(x)).ToArray();
-        
-        foreach (var item in Weeks)
-            item.PropertyChanged += WeekChanged;
-        WeekSource.Source = Weeks;
-        WeekSource.Filter += WeekSource_Filter; ;
-
-
-        Days = Enumerable.Range(0, 365).Select(x => new DayInfo(x)).ToArray();
-        DaySource.Source = Days;
-        DaySource.Filter += DaySource_Filter; ; ;
     }
 
-    private void WeekChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private void MonthSource_Filter(object sender, FilterEventArgs e)
     {
-        DaySource.View.Refresh();
+        if (SelectedType == FundOpenType.Quarterly || Quarters.Any(x => x.IsSelected))
+            e.Accepted = (e.Item as MonthInfo)!.Value <= 3;
+        else if (SelectedType == FundOpenType.Yearly)
+            e.Accepted = true;
     }
 
     private void DaySource_Filter(object sender, FilterEventArgs e)
     {
-        if (WeekFlag || Weeks.Any(x=>x.IsSelected))
-            e.Accepted = (e.Item as DayInfo)!.Value < 5;
-        else if (MonthFlag)
-            e.Accepted = (e.Item as DayInfo)!.Value < 31;
-        else if (QuarterFlag)
-            e.Accepted = (e.Item as DayInfo)!.Value < 92;
-        else if (YearFlag)
+        if (SelectedType == FundOpenType.Weekly || (Weeks.Any(x => x.IsSelected && x.Value != -1)))
+            e.Accepted = (e.Item as DateInfo)!.Value <= 5;
+        else if (SelectedType == FundOpenType.Monthly || Months.Any(x => x.IsSelected))
+            e.Accepted = (e.Item as DateInfo)!.Value <= 31;
+        else if (SelectedType == FundOpenType.Quarterly || Quarters.Any(x => x.IsSelected))
+            e.Accepted = (e.Item as DateInfo)!.Value <= 92;
+        else if (SelectedType == FundOpenType.Yearly)
             e.Accepted = true;
+
+        if (!e.Accepted) (e.Item as DateInfo)!.IsSelected = false;
     }
 
     private void WeekSource_Filter(object sender, FilterEventArgs e)
     {
-        if (MonthFlag)
-            e.Accepted = (e.Item as WeekInfo)!.Value < 6;
-        else if (QuarterFlag)
-            e.Accepted = (e.Item as WeekInfo)!.Value < 26;
-        else if (YearFlag)
+        if (SelectedType == FundOpenType.Monthly || Months.Any(x => x.IsSelected))
+            e.Accepted = (e.Item as WeekInfo)!.Value <= 6;
+        else if (SelectedType == FundOpenType.Quarterly || Quarters.Any(x => x.IsSelected))
+            e.Accepted = (e.Item as WeekInfo)!.Value <= 26;
+        else if (SelectedType == FundOpenType.Yearly)
             e.Accepted = true;
     }
 
     private void QuarterChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (sender is QuarterInfo q && !q.IsSelected) return;
+        MonthSource.View.Refresh();
+        WeekSource.View.Refresh();
+        DaySource.View.Refresh();
 
-        if (Quarters.Any(x => x.IsSelected))
-            foreach (var m in Months)
-                m.IsSelected = false;
+        Statement = Rule.ToString();
     }
+
     private void MonthChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (sender is MonthInfo q && !q.IsSelected) return;
+        WeekSource.View.Refresh();
+        DaySource.View.Refresh();
 
-        if (Months.Any(x => x.IsSelected))
-            foreach (var m in Quarters)
-                m.IsSelected = false;
+        Statement = Rule.ToString();
+    }
+
+    private void WeekChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        DaySource.View.Refresh();
+
+
+        Statement = Rule.ToString();
+    }
+
+    private void DayChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        Statement = Rule.ToString();
     }
 
 
-    public string OrderString => Descende ? "倒序" : "顺序";
-    public string DayTypeString => TradeOrNatural ? "交易日" : "自然日";
+
+
+    public OpenRule Build()
+    {
+        return new OpenRule
+        {
+            Type = SelectedType,
+            Quarters = Quarters.Where(x => x.IsSelected).Select(x => x.Value).ToArray(),
+            Months = Months.Where(x => x.IsSelected).Select(x => x.Value).ToArray(),
+            Weeks = Weeks.Skip(1).Where(x => x.IsSelected).Select(x => x.Value).ToArray(),
+            WeekOrder = Weeks[0].IsSelected ? SequenceOrder.Descend : SequenceOrder.Ascend,
+            Dates = Days.Skip(2).Where(x => x.IsSelected).Select(x => x.Value).ToArray(),
+            DayOrder = Days[0].IsSelected ? SequenceOrder.Descend : SequenceOrder.Ascend,
+            TradeOrNatural = Days[1].IsSelected
+        };
+    }
+
+
 
 
     public int[] Years { get; set; } = Enumerable.Range(DateTime.Today.Year - 10, 11).ToArray();
@@ -308,31 +452,13 @@ public partial class OpenRuleViewModel : ObservableObject
     public partial int SelectedYear { get; set; } //= DateTime.Now.Year;
 
 
-    [ObservableProperty]
-    public partial FundOpenType SelectedType { get; set; }
 
-
-    [ObservableProperty]
-    public partial DayIsOpenViewModel[]? AllDays { get; set; }
-
-    [ObservableProperty]
-    public partial DayIsOpenViewModel[]? Selected { get; set; }
-
-
-    [ObservableProperty]
-    public partial MonthInfo[]? MonthOfYear { get; set; }
 
     public Calendar[] Calendars { get; } = Enumerable.Range(1, 12).Select(x => new Calendar { SelectionMode = CalendarSelectionMode.MultipleRange, LayoutTransform = new ScaleTransform(0.7, 0.7) }).ToArray();
 
 
-    [ObservableProperty]
-    public partial DayOfWeek[]? SelectedDayOfWeek { get; set; }
 
     public DayOfWeekInfo[] DayOfWeeks { get; }
-
-
-    [ObservableProperty]
-    public partial bool ShowMonth { get; set; }
 
 
 
@@ -362,30 +488,26 @@ public partial class OpenRuleViewModel : ObservableObject
         //}
     }
 
-    partial void OnSelectedChanged(DayIsOpenViewModel[]? value)
-    {
-        Debug.WriteLine(value?.Length);
-    }
 
-    partial void OnSelectedTypeChanged(FundOpenType value)
-    {
-        //ShowMonth = value switch { FundOpenType.Yearly or FundOpenType.SemiAnnually => true, _ => false };
+    //partial void OnSelectedTypeChanged(FundOpenType value)
+    //{
+    //    //ShowMonth = value switch { FundOpenType.Yearly or FundOpenType.SemiAnnually => true, _ => false };
 
-        //if (value == FundOpenType.Daily)
-        //{
-        //    var days = Days.TradeDaysByYear(SelectedYear);
-        //    foreach (var c in Calendars)
-        //    {
-        //        foreach (var d in days.Where(x => x.Month == c.DisplayDateEnd!.Value.Month))
-        //            c.SelectedDates.Add(new DateTime(d, default));
-        //    }
-        //}
-        //else
-        //{
-        //    foreach (var c in Calendars)
-        //        c.SelectedDates.Clear();
-        //}
-    }
+    //    //if (value == FundOpenType.Daily)
+    //    //{
+    //    //    var days = Days.TradeDaysByYear(SelectedYear);
+    //    //    foreach (var c in Calendars)
+    //    //    {
+    //    //        foreach (var d in days.Where(x => x.Month == c.DisplayDateEnd!.Value.Month))
+    //    //            c.SelectedDates.Add(new DateTime(d, default));
+    //    //    }
+    //    //}
+    //    //else
+    //    //{
+    //    //    foreach (var c in Calendars)
+    //    //        c.SelectedDates.Clear();
+    //    //}
+    //}
 
     private void UpdateByDayOfWeekChoose()
     {
@@ -422,7 +544,7 @@ public partial class OpenRuleViewModel : ObservableObject
         public QuarterInfo(int i)
         {
             Value = i;
-            Name = i switch { 0 => "一季度", 1 => "二季度", 2 => "三季度", 3 => "四季度", _ => "Error" };
+            Name = i switch { 1 => "一季度", 2 => "二季度", 3 => "三季度", 4 => "四季度", _ => "Error" };
         }
     }
 
@@ -434,7 +556,7 @@ public partial class OpenRuleViewModel : ObservableObject
         public MonthInfo(int month)
         {
             Value = month;
-            Name = $"{array[month]}月";
+            Name = $"{array[month - 1]}月";
         }
 
 
@@ -458,11 +580,13 @@ public partial class OpenRuleViewModel : ObservableObject
     {
 
         [SetsRequiredMembers]
-        public WeekInfo(int month)
+        public WeekInfo(int w)
         {
-            Value = month;
-            Name = $"第{month + 1}周";
+            Value = w;
+            Name = $"第{w}周";
         }
+
+        public WeekInfo() { }
 
 
         public required string Name { get; set; }
@@ -474,15 +598,17 @@ public partial class OpenRuleViewModel : ObservableObject
     }
 
 
-    public partial class DayInfo : ObservableObject
+    public partial class DateInfo : ObservableObject
     {
 
         [SetsRequiredMembers]
-        public DayInfo(int month)
+        public DateInfo(int day)
         {
-            Value = month;
-            Name = $"第{month + 1}日";
+            Value = day;
+            Name = $"第{day}日";
         }
+
+        public DateInfo() { }
 
 
         public required string Name { get; set; }

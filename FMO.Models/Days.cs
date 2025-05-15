@@ -15,13 +15,13 @@ public enum DayFlag
     Trade = 0x4
 }
 
-public record DayInfo(DateOnly Date, DayFlag Flag);
+public record DateMeta(DateOnly Date, int Week, DayFlag Flag);
 
 
 public static class Days
 {
     private static List<DateOnly> Dates = new();
-    private static List<DayInfo> Data = new();
+    private static List<DateMeta> Data = new();
 
 
     /// <summary>
@@ -40,7 +40,7 @@ public static class Days
         return Dates[s..e].ToArray();
     }
 
-    public static DayInfo[] DayInfosByYear(int year)
+    public static DateMeta[] DayInfosByYear(int year)
     {
         int s = Dates.BinarySearch(new DateOnly(year, 1, 1));
         int e = Dates.BinarySearch(new DateOnly(year, 12, 31));
@@ -117,10 +117,7 @@ public static class Days
             if (fi.Exists)
             {
                 using var sr = new StreamReader(@"config\day.csv");
-                string[] strings = sr.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                var d = strings.Select(x => x.Split(','));
-                Dates = d.Select(x => x[0]).Select(x => DateOnly.Parse(x)).ToList();
-                Data = d.Select(x => new DayInfo(DateOnly.Parse(x[0]), (DayFlag)Enum.Parse(typeof(DayFlag), x[1]))).ToList();
+                InitFromStream(sr);
             }
             else InitFromAssembly();
         }
@@ -133,10 +130,28 @@ public static class Days
     private static void InitFromAssembly()
     {
         using var ri = Assembly.GetExecutingAssembly().GetManifestResourceStream("FMO.Models.day.csv");
-        using var sr = new StreamReader(ri);
+        using var sr = new StreamReader(ri!);
+        InitFromStream(sr);
+    }
+
+    private static void InitFromStream(StreamReader sr)
+    {
         string[] strings = sr.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         var d = strings.Select(x => x.Split(','));
         Dates = d.Select(x => x[0]).Select(x => DateOnly.Parse(x)).ToList();
-        Data = d.Select(x => new DayInfo(DateOnly.Parse(x[0]), (DayFlag)Enum.Parse(typeof(DayFlag), x[1]))).ToList();
+
+        var tmp = d.Select(x => new { a = DateOnly.Parse(x[0]), b = (DayFlag)Enum.Parse(typeof(DayFlag), x[1]) }).ToArray();
+        Data = new List<DateMeta>(tmp.Length);
+        int n = 1;
+        Data.Add(new DateMeta(tmp[0].a, 1, tmp[0].b));
+        foreach (var item in tmp.Skip(1))
+        {
+            if (item.a.DayOfWeek == DayOfWeek.Monday)
+                ++n;
+            if (Data[^1].Date.Year < item.a.Year)
+                n = 1;
+
+            Data.Add(new DateMeta(item.a, n, item.b));
+        }
     }
 }
