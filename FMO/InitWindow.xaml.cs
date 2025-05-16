@@ -149,9 +149,12 @@ public partial class InitWindowViewModel : ObservableRecipient, IRecipient<InitS
     /// </summary>
     public void Restart()
     {
+#if !DEBUG
+
         var field = App.Current.GetType().GetField("mutex", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var mutex = field!.GetValue(App.Current) as Mutex;
-        mutex!.Close();
+        mutex!.Close(); 
+#endif
 
         System.Diagnostics.Process.Start(System.Diagnostics.Process.GetCurrentProcess().MainModule!.FileName);
 
