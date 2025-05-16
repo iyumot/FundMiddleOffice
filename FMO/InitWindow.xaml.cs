@@ -107,7 +107,8 @@ public partial class InitWindowViewModel : ObservableRecipient, IRecipient<InitS
         ShowStep1 = false;
         ShowStep2 = true;
         ShowProgress = true;
-        var funds = await AmacAssist.CrawleManagerInfo(Manager);
+        List<FundBasicInfo> funds = new List<FundBasicInfo>();
+        await AmacAssist.CrawleManagerInfo(Manager, funds, new System.Net.Http.HttpClient());
 
         ///保存数据库
         Manager.IsMaster = true;

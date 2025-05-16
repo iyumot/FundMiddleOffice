@@ -27,8 +27,6 @@
     <EmbeddedResource Include="logo.png" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy $(TargetPath) ..\..\FMO\plugins\$(AssemblyName).dll" />
-  </Target>
+ 
 
 </Project>

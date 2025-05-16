@@ -1,9 +1,4 @@
-﻿using System.IO;
-using System.IO.Compression;
-using System.Net.Http;
-using System.Windows;
-using System.Windows.Controls;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.IO.AMAC;
@@ -12,6 +7,11 @@ using FMO.Schedule;
 using FMO.Utilities;
 using LiveCharts;
 using Serilog;
+using System.IO;
+using System.IO.Compression;
+using System.Net.Http;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace FMO;
 
@@ -84,7 +84,7 @@ public partial class HomePageViewModel : ObservableObject
         db.Dispose();
 
 
-        Task[] t = [Task.Run(async() => db = await SyncFundsFromAmac(db, c) ),
+        Task[] t = [Task.Run(async() => await SyncFundsFromAmac(c) ),
                     Task.Run(() => DataTracker.CheckFundFolder(c)),
                     Task.Run(()=> DataTracker.CheckShareIsPair(c))];
 
@@ -92,13 +92,14 @@ public partial class HomePageViewModel : ObservableObject
         IsSelfTesting = false;
     }
 
-    private static async Task<BaseDatabase> SyncFundsFromAmac(BaseDatabase db, Fund[] c)
+    private static async Task SyncFundsFromAmac(Fund[] c)
     {
-        var ned = c.Where(x => x.Status >= FundStatus.Normal && x.PublicDisclosureSynchronizeTime == default).ToArray();
+        var ned = c.Where(x => x.PublicDisclosureSynchronizeTime == default).ToArray();
         if (ned.Length > 0)
         {
             try
             {
+                var db = DbHelper.Base();
                 HandyControl.Controls.Growl.Warning($"发现{ned.Length}个基金未同步公示信息");
 
                 using HttpClient client = new HttpClient();
@@ -107,7 +108,9 @@ public partial class HomePageViewModel : ObservableObject
                     foreach (var (j, f) in set.Index())
                     {
                         await AmacAssist.SyncFundInfoAsync(f, client);
+                        DataTracker.CheckFundFolder([f]);
 
+                        db.GetCollection<Fund>().Update(f);
                         WeakReferenceMessenger.Default.Send(f);
 
                         await Task.Delay(200);
@@ -116,22 +119,17 @@ public partial class HomePageViewModel : ObservableObject
                     int finished = i * 50 + set.Length;
                     if (finished < ned.Length)
                         HandyControl.Controls.Growl.Success($"已同步{finished}个基金，剩余{ned.Length - finished}个");
-
-                    db = DbHelper.Base();
-                    db.GetCollection<Fund>().Update(set);
-                    db.Dispose();
                 }
 
+                db.Dispose();
                 HandyControl.Controls.Growl.Success($"基金同步公示信息完成");
             }
             catch (Exception ex)
             {
-                Log.Error($"同步公示信息失败：{ex.Message}");
+                Log.Error($"同步公示信息失败：{ex}");
                 HandyControl.Controls.Growl.Error($"同步基金公示信息失败");
             }
         }
-
-        return db;
     }
 
     public void InitPlot()
@@ -146,6 +144,7 @@ public partial class HomePageViewModel : ObservableObject
         if (fids.Count > 0)
         {
             var sd = fids.Select(x => db.GetDailyCollection(x).FindAll().Where(x => x is not null).OrderBy(x => x.Date).ToList()).Where(x => x.Count > 0);
+            if (!sd.Any()) return;
             var mindate = sd.Select(x => x[0].Date).Min(); var maxdate = sd.Select(x => x[^1].Date).Max();
             var tmpdate = mindate;
             var dates = new List<DateOnly>();
@@ -252,7 +251,7 @@ public partial class HomePageViewModel : ObservableObject
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             Owner = App.Current.MainWindow
         };
-        wnd.ShowDialog();return;
+        wnd.ShowDialog(); return;
         try { System.Diagnostics.Process.Start("explorer.exe", Path.Combine(Directory.GetCurrentDirectory(), "files")); } catch { }
     }
 
@@ -317,7 +316,7 @@ public partial class HomePageViewModel : ObservableObject
         {
             string subDirName = Path.GetFileName(subDir);
             string newEntryBase = Path.Combine(entryBase, subDirName);
-            AddDirectoryToZip(archive, subDir, newEntryBase,ref c, size);
+            AddDirectoryToZip(archive, subDir, newEntryBase, ref c, size);
         }
     }
 

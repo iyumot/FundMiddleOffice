@@ -185,7 +185,6 @@ public static class AmacAssist
 
 
             Fill(fund, field, value);
-
         }
 
         fund.PublicDisclosureSynchronizeTime = DateTime.Now;
@@ -343,60 +342,117 @@ public static class AmacAssist
     }
 
 
-    //public static async Task<(Manager, FundBasicInfo[])?> CrawleManagerInfo(string name, string amacid)
-    //{
-    //    try
-    //    {
-    //        using IPlaywright pw = await Playwright.CreateAsync();
-    //        var browser = await pw.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Channel = "msedge" });
-    //        var page = await browser.NewPageAsync();
-    //        await page.GotoAsync($"https://gs.amac.org.cn/amac-infodisc/res/pof/manager/{amacid}.html");
 
-    //        object InitProgress = 20;
-    //        WeakReferenceMessenger.Default.Send(InitProgress, MessageToken);
+    public static async Task<bool> CrawleManagerInfo(Manager manager, List<FundBasicInfo> list, HttpClient client)
+    {
+        try
+        {
+            var response = await client.GetAsync($"https://gs.amac.org.cn/amac-infodisc/res/pof/manager/{manager.AmacId}.html");
 
+            InitStep2Info info = new();
+            info.Progress = 20;
 
-    //        var sec = page.Locator(".section");
-    //        var basic = page.Locator(".section[0]");
-    //        var fvs = await page.Locator(".section").First.Locator(".table > tbody > tr").AllAsync();
-
-    //        var dict = new Dictionary<string, string>();
-    //        LocatorInnerTextOptions options = new LocatorInnerTextOptions { Timeout = 100 };
-
-    //        foreach (var item in fvs)
-    //        {
-    //            var nlc = item.Locator("td");
-    //            var cnt = await nlc.CountAsync();
-    //            if (cnt > 3) continue;
-
-    //            dict.Add(await nlc.Nth(0).InnerTextAsync(), await nlc.Nth(1).InnerTextAsync());
-    //        }
-
-    //        var id = dict.First(x => x.Key.Contains("组织机构代码")).Value;
-    //        var regno = dict.First(x => x.Key.Contains("登记编号")).Value;
-
-    //        Manager manager = new Manager() { Name = name, AmacId = amacid, RegisterNo = regno, Id = id };
-
-    //        manager.RegisterCapital = decimal.Parse(dict.FirstOrDefault(x => x.Key.Contains("注册资本")).Value);
-    //        manager.RealCapital = decimal.Parse(dict.FirstOrDefault(x => x.Key.Contains("实缴资本")).Value);
-    //        manager.Advisorable = dict.FirstOrDefault(x => x.Key.Contains("提供投资建议")).Value?.Contains("是") ?? false;
-    //        manager.ScaleRange = dict.FirstOrDefault(x => x.Key.Contains("管理规模区间")).Value;
-    //        InitProgress = 30;
-    //        WeakReferenceMessenger.Default.Send(InitProgress, MessageToken);
+            // 检查 section
+            // 获取所有table
+            var content = await response.Content.ReadAsStringAsync();
 
 
-    //        /////////////////////////////////////////////////////////////////////////////
+            // <div class="info-body">
+            var m = Regex.Match(content, "<div class=\"section\"[\\s\\S]*?关闭");
+            if (!content.Contains("机构信息") || !m.Success)
+            {
+                Log.Error("获取的网页内容异常");
+                return false;
+            }
 
-    //        var nus = await ExtractFund(page);
+            // 获取section
+            var array = m.Value.Split("<div class=\"section\">", StringSplitOptions.RemoveEmptyEntries);
+            var result = new List<(string t, string[][] d)>();
+            foreach (var sec in array)
+            {
+                m = Regex.Match(sec, @"<div\s+class=""common-tit""[^>]*>\s*<span>(.*?)</span>", RegexOptions.Singleline);
 
-    //        return (manager, nus);
-    //    }
-    //    catch (Exception e)
-    //    {
-    //        Log.Error(e, $"CrawleManagerInfo. Fund Url is Empty");
-    //        return null;
-    //    } 
-    //}
+                var title = m.Groups[1].Value;
+
+                // 获取所有tr
+                var ms = Regex.Matches(sec, "<tr>.*?</tr>", RegexOptions.Singleline);
+                var data = ms.Select(x => Regex.Matches(x.Value, @"<td[^>]*?>(.*?)</td>", RegexOptions.Singleline).Select(y => y.Groups[1].Value).
+                    Select(y => Regex.Replace(y, @"<[^>]*?>", string.Empty)).Select(x => x.Replace("&nbsp;", " ").Trim()).ToArray()).Where(x => x.Length > 1).ToArray();
+
+                result.Add((title, data));
+            }
+
+            // 解析
+            foreach (var sec in result)
+            {
+                switch (sec.t)
+                {
+                    case "机构信息":
+                        manager.Id = sec.d.FirstOrDefault(x => x[0].Contains("组织机构代码"))![1];
+                        //v = sec.d.FirstOrDefault(x => x[0].Contains("登记编号"));
+                        //if (v is null) return false;
+                        //manager.RegisterNo = v[1];
+
+                        manager.RegisterCapital = decimal.Parse(sec.d.FirstOrDefault(x => x[0].Contains("注册资本"))![1]);
+                        manager.RealCapital = decimal.Parse(sec.d.FirstOrDefault(x => x[0].Contains("实缴资本"))![1]);
+                        manager.Advisorable = sec.d.FirstOrDefault(x => x[0].Contains("提供投资建议"))?[1].Contains("是") ?? false;
+                        manager.ScaleRange = sec.d.FirstOrDefault(x => x[0].Contains("管理规模区间"))![1];
+                        info.Progress = 30;
+                        info.CurrentScale = manager.ScaleRange;
+                        WeakReferenceMessenger.Default.Send(info, MessageToken);
+                        break;
+                    default:
+                        break;
+                }
+
+            }
+
+            // 解析产品
+            var fstr = array.Last(x => x.Contains("产品信息"));
+            var msf = Regex.Matches(fstr, @"(?s)<tr>(?:(?!</?tr).)*<tr>(?:(?!</?tr).)*</tr>(?:(?!</?tr).)*</tr>");
+
+            var flist = new List<(bool a, bool b, IEnumerable<string> c)>();
+            var trs = HtmlParser.GetTags(fstr, "tr");
+            foreach (var tr in trs)
+            {
+                bool ispre = tr.Contains("暂行办法实施前成立的基金");
+                bool isadv = tr.Contains("投资顾问类产品");
+
+                var funds = HtmlParser.GetTags(tr[5..], "tr");
+                flist.Add((ispre, isadv, funds.Skip(1)));
+            }
+
+            double unit = 70.0 / flist.Sum(x => x.c.Count());
+
+            foreach (var item in flist)
+            {
+                foreach (var f in item.c)
+                {
+                    var tds = HtmlParser.GetTags(f, "td");
+                    m = Regex.Match(tds[0], @"(/fund/\w+.html).*?>([^<]+)");
+
+                    list.Add(new FundBasicInfo
+                    {
+                        Name = m.Groups[2].Value,
+                        Url = m.Groups[1].Value,
+                        IsPreRule = item.a,
+                        IsAdvisor = item.b
+                    });
+
+                    info.Progress += unit;
+                    WeakReferenceMessenger.Default.Send(info, MessageToken);
+                }
+
+            }
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            Log.Error($"CrawleManagerInfo {e}");
+            return false;
+        }
+    }
 
     public static async Task<FundBasicInfo[]> CrawleManagerInfo(Manager manager)
     {
@@ -459,4 +515,165 @@ public static class AmacAssist
 
 
 
+}
+
+
+public static class HtmlParser
+{
+    /// <summary>
+    /// 获取 HTML 中匹配标签名的内容（不依赖外部库）
+    /// </summary>
+    /// <param name="html">HTML 字符串</param>
+    /// <param name="tagName">标签名（如 "div"、"tr"，不包含尖括号）</param>
+    /// <param name="includeOuter">是否包含标签本身</param>
+    /// <returns>匹配的标签内容列表</returns>
+    public static List<string> GetTags(string html, string tagName, bool includeOuter = true)
+    {
+        var results = new List<string>();
+        int index = 0;
+        tagName = tagName.ToLower();
+
+        while (index < html.Length)
+        {
+            // 查找开始标签 <tagName
+            int startTagIndex = FindTagStart(html, tagName, index);
+            if (startTagIndex == -1) break;
+
+            // 解析标签属性，找到结束符 >
+            int tagEndIndex = FindTagEnd(html, startTagIndex);
+            if (tagEndIndex == -1) break;
+
+            bool isSelfClosing = html[tagEndIndex - 1] == '/';
+            string fullStartTag = html.Substring(startTagIndex, tagEndIndex - startTagIndex + 1);
+
+            if (isSelfClosing)
+            {
+                // 自闭合标签 <tagName ... />
+                if (includeOuter)
+                    results.Add(fullStartTag);
+                index = tagEndIndex + 1;
+                continue;
+            }
+
+            // 查找对应的结束标签 </tagName>
+            int endTagIndex = FindMatchingEndTag(html, tagName, tagEndIndex + 1);
+            if (endTagIndex == -1)
+            {
+                // 未找到匹配的结束标签，继续查找下一个开始标签
+                index = startTagIndex + 1;
+                continue;
+            }
+
+            // 提取标签内容
+            int contentStart = tagEndIndex + 1;
+            int contentEnd = endTagIndex - 2; // 排除 </
+
+            if (includeOuter)
+            {
+                results.Add(html.Substring(startTagIndex, endTagIndex + tagName.Length + 3 - startTagIndex));
+            }
+            else
+            {
+                results.Add(html.Substring(contentStart, contentEnd - contentStart + 1));
+            }
+
+            index = endTagIndex + tagName.Length + 3; // 跳过 </tagName>
+        }
+
+        return results;
+    }
+
+    // 查找标签开始位置 <tagName
+    private static int FindTagStart(string html, string tagName, int startIndex)
+    {
+        int index = html.IndexOf('<', startIndex);
+        while (index != -1)
+        {
+            if (index + tagName.Length + 1 >= html.Length) return -1;
+
+            // 检查是否为目标标签（忽略大小写）
+            bool isMatch = true;
+            for (int i = 0; i < tagName.Length; i++)
+            {
+                if (char.ToLower(html[index + 1 + i]) != tagName[i])
+                {
+                    isMatch = false;
+                    break;
+                }
+            }
+
+            if (isMatch)
+            {
+                // 确认标签名后是空格、属性或 >
+                char nextChar = html[index + 1 + tagName.Length];
+                if (nextChar == ' ' || nextChar == '>' || nextChar == '/')
+                    return index;
+            }
+
+            index = html.IndexOf('<', index + 1);
+        }
+        return -1;
+    }
+
+    // 查找标签结束符 >
+    private static int FindTagEnd(string html, int startIndex)
+    {
+        int index = html.IndexOf('>', startIndex);
+        return index;
+    }
+
+    // 查找匹配的结束标签 </tagName>
+    private static int FindMatchingEndTag(string html, string tagName, int startIndex)
+    {
+        int openCount = 1; // 当前嵌套层级
+        int index = startIndex;
+
+        while (index < html.Length)
+        {
+            // 查找下一个 <
+            int nextOpen = html.IndexOf('<', index);
+            if (nextOpen == -1) return -1;
+
+            // 检查是否为结束标签 </tagName>
+            if (nextOpen + tagName.Length + 3 <= html.Length &&
+                html[nextOpen + 1] == '/' &&
+                StringEqualsIgnoreCase(html, nextOpen + 2, tagName))
+            {
+                openCount--;
+                if (openCount == 0)
+                    return nextOpen;
+            }
+            // 检查是否为开始标签 <tagName
+            else if (nextOpen + tagName.Length + 1 <= html.Length &&
+                     StringEqualsIgnoreCase(html, nextOpen + 1, tagName))
+            {
+                char nextChar = html[nextOpen + 1 + tagName.Length];
+                if (nextChar == ' ' || nextChar == '>' || nextChar == '/')
+                {
+                    // 确认不是结束标签
+                    if (nextChar != '/' || (nextChar == '/' && nextOpen + tagName.Length + 2 < html.Length && html[nextOpen + tagName.Length + 2] != '>'))
+                    {
+                        openCount++;
+                    }
+                }
+            }
+
+            index = nextOpen + 1;
+        }
+
+        return -1;
+    }
+
+    // 忽略大小写比较字符串
+    private static bool StringEqualsIgnoreCase(string source, int startIndex, string value)
+    {
+        if (startIndex + value.Length > source.Length) return false;
+
+        for (int i = 0; i < value.Length; i++)
+        {
+            if (char.ToLower(source[startIndex + i]) != value[i])
+                return false;
+        }
+        return true;
+    }
 }

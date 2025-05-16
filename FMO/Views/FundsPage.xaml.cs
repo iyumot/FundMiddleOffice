@@ -12,6 +12,7 @@ using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using DocumentFormat.OpenXml.Spreadsheet;
 using FMO.IO.AMAC;
 using FMO.Models;
 using FMO.Utilities;
@@ -169,6 +170,7 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
                 await AmacAssist.SyncFundInfoAsync(f, client);
 
                 var old = Funds.FirstOrDefault(x => x.Code == f.Code);
+                if (old is null) old = Funds.FirstOrDefault(x => string.IsNullOrWhiteSpace(x.Code) && x.Name == f.Name); // 未设置code
 
                 if (old is null)
                 {
@@ -180,19 +182,28 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
                 }
                 else
                 {
-                    if (!old.IsCleared && f.Status > FundStatus.StartLiquidation)
-                    {
+                    //if (!old.IsCleared && f.Status > FundStatus.StartLiquidation)
+                   // { 
                         old.IsCleared = true;
                         var oldf = db.GetCollection<Fund>().FindById(old.Id);
                         oldf.Status = f.Status;
+                        if (string.IsNullOrWhiteSpace(old.Code))
+                            old.Code = f.Code;
+                        oldf.SetupDate = f.SetupDate;
+                        oldf.AuditDate = f.AuditDate;
+                        oldf.Type = f.Type;
+                        oldf.Trustee = f.Trustee;
+                        oldf.LastUpdate = f.LastUpdate;
                         db.GetCollection<Fund>().Update(oldf);
+
+                        WeakReferenceMessenger.Default.Send(oldf);
                         ClearCount += 1;
-                    }
+                   // }
                 }
                 await Task.Delay(200);
             }
 
-            HandyControl.Controls.Growl.Error($"更新基金信息完成");
+            HandyControl.Controls.Growl.Success($"更新基金信息完成");
         }
         catch (Exception e)
         {

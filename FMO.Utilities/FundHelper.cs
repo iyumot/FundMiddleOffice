@@ -1,32 +1,46 @@
-﻿using System.Data;
-using FMO.Models;
+﻿using FMO.Models;
+using System.Collections.Concurrent;
+using System.Data;
 
 namespace FMO.Utilities;
 
 public static class FundHelper
 {
 
-    private static Dictionary<int, string> FundStorageMap = new();
+    private static ConcurrentDictionary<int, string> FundStorageMap { get; } = new();
 
-    public static DirectoryInfo Folder(this Fund fund)
-    {
-        return new DirectoryInfo(FundStorageMap[fund.Id]);
-    }
+    public static DirectoryInfo Folder(this Fund fund) => GetFolder(fund.Id);
 
     public static DirectoryInfo GetFolder(int fundId)
     {
+        if (FundStorageMap.TryGetValue(fundId, out var folder))
+            return new DirectoryInfo(folder);
+
+        var dis = new DirectoryInfo(@"files\funds").GetDirectories();
+        var di = dis.FirstOrDefault(x => x.Name.StartsWith($"{fundId}."));
+        if (di is not null)
+            FundStorageMap.AddOrUpdate(fundId, di.FullName, (a, b) => di.FullName);
+
         return new DirectoryInfo(FundStorageMap[fundId]);
     }
 
     public static string GetFolder(int fundId, string sub)
     {
+        if (FundStorageMap.TryGetValue(fundId, out var folder))
+            return Path.Combine(FundStorageMap[fundId], sub);
+
+        var dis = new DirectoryInfo(@"files\funds").GetDirectories();
+        var di = dis.FirstOrDefault(x => x.Name.StartsWith($"{fundId}."));
+        if (di is not null)
+            FundStorageMap.AddOrUpdate(fundId, di.FullName, (a, b) => di.FullName);
+
         return Path.Combine(FundStorageMap[fundId], sub);
     }
 
 
     public static void Map(Fund fund, string folder)
     {
-        FundStorageMap[fund.Id] = folder;
+        FundStorageMap.AddOrUpdate(fund.Id, folder, (a, b) => folder);
     }
 
     public static void InitNew(Fund f)

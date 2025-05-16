@@ -1,6 +1,6 @@
-﻿using System.Collections.Concurrent;
-using FMO.Models;
+﻿using FMO.Models;
 using Serilog;
+using System.Collections.Concurrent;
 
 namespace FMO.Utilities;
 
@@ -46,9 +46,9 @@ public static class DataTracker
         {
             if (f.Code?.Length > 4)
             {
-                var di = dis.FirstOrDefault(x => x.Name.StartsWith(f.Code));
+                var di = dis.FirstOrDefault(x => x.Name.StartsWith($"{f.Id}.")) ?? dis.FirstOrDefault(x => x.Name.StartsWith(f.Code));
 
-                var name = $"{f.Code}.{f.Name}";
+                var name = $"{f.Id}.{f.Code}.{f.Name}";
 
                 string folder = $"files\\funds\\{name}";
 
@@ -95,7 +95,7 @@ public static class DataTracker
 
             var sh = c.LastOrDefault(x => x.Date < last.Date);
 
-            if(sh?.Share != last.Share)
+            if (sh?.Share != last.Share)
             {
                 FundTips.Add(new FundTip(fund.Id, TipType.FundShareNotPair, "基金份额与估值表不一致"));
                 continue;

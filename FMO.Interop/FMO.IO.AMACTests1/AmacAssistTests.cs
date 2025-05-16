@@ -1,6 +1,9 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using FMO.IO.AMAC;
+using CommunityToolkit.Mvvm.ComponentModel;
 using FMO.Models;
 using FMO.Utilities;
+using System.Threading.Tasks;
 
 namespace FMO.IO.AMAC.Tests;
 
@@ -29,7 +32,7 @@ public class AmacAssistTests
 
 
     [TestMethod()]
-public void test()
+    public void test()
     {
         DataItem<string> item = new DataItem<string>() { NewValue = "11" };
 
@@ -37,10 +40,20 @@ public void test()
 
         item.Upd(o.name);
     }
+
+    [TestMethod()]
+    public async Task CrawleManagerInfoTest()
+    {
+        var manager = new Manager { AmacId = "101000003206", Id = "", Name = "", RegisterNo = "" };
+        var client = new HttpClient();
+        var lsit = new List<FundBasicInfo>();
+
+         await AmacAssist.CrawleManagerInfo(manager, lsit, client);
+    }
 }
 
 
-public   class DataItem<T> 
+public class DataItem<T> 
 { 
     public   T? OldValue { get; set; }
      
