@@ -734,14 +734,14 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
     {
         Window wnd = new Window
         {
+            Height = 930,
+            Width = 1200,
             Content = new OpenRuleEditor(),
             DataContext = new OpenRuleViewModel(),
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             Owner = App.Current.MainWindow
         };
-        wnd.ShowDialog();
-
-
+        wnd.ShowDialog(); 
     }
 
     public void InitShare(Mutable<ShareClass[]>? shareClass = null)

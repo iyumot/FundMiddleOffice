@@ -10,7 +10,6 @@ using Serilog;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
-using System.Windows;
 using System.Windows.Controls;
 
 namespace FMO;
@@ -244,14 +243,6 @@ public partial class HomePageViewModel : ObservableObject
     [RelayCommand]
     public void OpenDataFolder()
     {
-        Window wnd = new Window
-        {
-            Content = new OpenRuleEditor(),
-            DataContext = new OpenRuleViewModel(),
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            Owner = App.Current.MainWindow
-        };
-        wnd.ShowDialog(); return;
         try { System.Diagnostics.Process.Start("explorer.exe", Path.Combine(Directory.GetCurrentDirectory(), "files")); } catch { }
     }
 

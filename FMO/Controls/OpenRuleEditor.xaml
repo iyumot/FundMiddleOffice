@@ -6,6 +6,7 @@
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     d:DataContext="{d:DesignInstance Type=local:OpenRuleViewModel}"
     d:DesignHeight="500"
     d:DesignWidth="1400"
@@ -35,6 +36,8 @@
             x:Key="ListBoxItem.Day"
             BasedOn="{StaticResource ListBoxItem.Simple}"
             TargetType="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
             <Style.Triggers>
                 <Trigger Property="ItemsControl.AlternationIndex" Value="0">
                     <Setter Property="IsEnabled" Value="{Binding DataContext.AllowDayOrder, RelativeSource={RelativeSource AncestorType=ListBox}}" />
@@ -42,6 +45,10 @@
                 </Trigger>
                 <Trigger Property="ItemsControl.AlternationIndex" Value="1">
                     <Setter Property="IsSelected" Value="{Binding DataContext.TradeOrNatrual, RelativeSource={RelativeSource AncestorType=ListBox}}" />
+                </Trigger>
+                <Trigger Property="ItemsControl.AlternationIndex" Value="2">
+                    <Setter Property="IsSelected" Value="{Binding DataContext.Postpone, RelativeSource={RelativeSource AncestorType=ListBox}}" />
+                    <Setter Property="Visibility" Value="{Binding DataContext.ShowPostpone, Converter={StaticResource Boolean2VisibilityConverter}, RelativeSource={RelativeSource AncestorType=ListBox}}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -51,6 +58,8 @@
             x:Key="ListBox.Simple"
             BasedOn="{StaticResource ListBox.Small}"
             TargetType="ListBox">
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="SelectionMode" Value="Multiple" />
             <Setter Property="ItemContainerStyle" Value="{StaticResource ListBoxItem.Simple}" />
             <Setter Property="ItemTemplate" Value="{StaticResource NameItem}" />
@@ -63,6 +72,11 @@
         <DockPanel Width="610">
 
             <StackPanel DockPanel.Dock="Top">
+                <TextBlock
+                    Margin="0,5"
+                    HorizontalAlignment="Center"
+                    DockPanel.Dock="Top"
+                    Text="{Binding Statement}" />
                 <ListBox
                     ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus}"
                     ItemTemplate="{StaticResource EnumItem}"
@@ -125,7 +139,6 @@
             <ToggleButton Content="{Binding DayTypeString}" IsChecked="{Binding TradeOrNatural}" />
         </DockPanel>-->
 
-        <TextBlock DockPanel.Dock="Top" Text="{Binding Statement}" />
 
         <ListBox
             DockPanel.Dock="Top"
@@ -136,17 +149,22 @@
 
         <!--<ListBox ItemsPanel="{StaticResource WrapItemPanel}" ItemsSource="{Binding AllDays}" />-->
 
-        <ListBox
+
+        <shared:YearCalender ItemsSource="{Binding Data}" />
+
+        <!--<ListBox
             d:ItemsSource="{d:SampleData}"
             IsHitTestVisible="False"
             ItemsPanel="{StaticResource WrapItemPanel}"
             ItemsSource="{Binding Calendars}"
             Style="{StaticResource ListBoxCustom}">
-            <!--<ListBox.ItemTemplate>
+        -->
+        <!--<ListBox.ItemTemplate>
                 <DataTemplate>
                     <Calendar DisplayDateEnd="{Binding End}" DisplayDateStart="{Binding Start}" />
                 </DataTemplate>
             </ListBox.ItemTemplate>-->
-        </ListBox>
+        <!--
+        </ListBox>-->
     </DockPanel>
 </UserControl>
