@@ -91,6 +91,9 @@ public class FundElements
     public Mutable<string> OpenDayInfo { get; set; } = new(nameof(OpenDayInfo));
 
 
+    public Mutable<OpenRule> FundOpenRule { get; set; } = new(nameof(FundOpenRule));
+
+
     public Mutable<AgencyInfo> TrusteeInfo { get; set; } = new(nameof(TrusteeInfo));
 
     /// <summary>

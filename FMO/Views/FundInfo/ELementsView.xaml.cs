@@ -1,13 +1,13 @@
-﻿using System.Collections.ObjectModel;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
+using System.Collections.ObjectModel;
+using System.Text;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace FMO;
 
@@ -136,6 +136,8 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
     [ObservableProperty]
     public partial bool IsSharesInherited { get; set; }
+
+    public OpenRule? OpenRule { get; set; }
 
     #region 要素
 
@@ -319,6 +321,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         var sc = cinfo.Value ?? [ShareClass.DefaultShare];
         Shares = new(sc.Select(x => new ShareClassViewModel { Id = x.Id, Name = x.Name, Requirement = x.Requirement }));
         OnlyOneShare = Shares.Count <= 1;
+        OpenRule = elements.FundOpenRule.GetValue(newValue).Value;
 
         FullName = new ChangeableViewModel<FundElements, string>
         {
@@ -604,7 +607,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         #endregion
 
         //SubscriptionFee = new ShareElementsViewModel2<FundFeeInfo, FundFeeInfoViewModel>(FundId, FlowId, elements, sc, x => x.SubscriptionFee, x => new(x), x => x!.Build());
-        SubscriptionRule = new ShareElementsViewModel<FundPurchaseRule, FundPurchaseRuleViewModel>(FundId, FlowId, elements, sc, x => x.SubscriptionRule, x => new(x) { FeeName = "认购费"}, x => x!.Build());
+        SubscriptionRule = new ShareElementsViewModel<FundPurchaseRule, FundPurchaseRuleViewModel>(FundId, FlowId, elements, sc, x => x.SubscriptionRule, x => new(x) { FeeName = "认购费" }, x => x!.Build());
         foreach (var item in SubscriptionRule.Data)
         {
             if (item.NewValue!.MinDeposit == 0 || item.NewValue.MinDeposit is null)
@@ -732,16 +735,27 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
     [RelayCommand]
     public void SetOpenRule()
     {
-        Window wnd = new Window
+        OpenRuleViewModel openRuleViewModel = new();
+        if (OpenRule is not null) openRuleViewModel.Init(OpenRule);
+
+        var wnd = new OpenRuleEditor
         {
             Height = 930,
             Width = 1200,
-            Content = new OpenRuleEditor(),
-            DataContext = new OpenRuleViewModel(),
+            DataContext = openRuleViewModel,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             Owner = App.Current.MainWindow
         };
-        wnd.ShowDialog(); 
+        if (wnd.ShowDialog() switch { true => true, _ => false })
+        {
+            using var db = DbHelper.Base();
+            var e = db.GetCollection<FundElements>().FindById(Id);
+            OpenRule = openRuleViewModel.Rule;
+            e.FundOpenRule.SetValue(openRuleViewModel.Rule, FlowId);
+
+            if (string.IsNullOrWhiteSpace(OpenDayInfo!.NewValue))
+                OpenDayInfo.NewValue = OpenRule.ToString();
+        }
     }
 
     public void InitShare(Mutable<ShareClass[]>? shareClass = null)

@@ -1363,6 +1363,7 @@
                                 <Button
                                     Command="{Binding SetOpenRuleCommand}"
                                     Content="开放日规则"
+                                    IsEnabled="{Binding IsReadOnly, Converter={StaticResource Boolean2BooleanReConverter}}"
                                     Style="{StaticResource ButtonPrimary.Small}" />
 
                             </DockPanel>

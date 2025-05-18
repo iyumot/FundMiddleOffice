@@ -1,9 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using FMO.Shared;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Windows.Controls;
+using System.Windows;
 using System.Windows.Data;
 
 namespace FMO;
@@ -11,7 +12,7 @@ namespace FMO;
 /// <summary>
 /// OpenRuleEditor.xaml 的交互逻辑
 /// </summary>
-public partial class OpenRuleEditor : UserControl
+public partial class OpenRuleEditor : Window
 {
     public OpenRuleEditor()
     {
@@ -53,10 +54,6 @@ public partial class OpenRuleViewModel : ObservableObject
     public CollectionViewSource WeekSource { get; } = new();
 
 
-
-    [ObservableProperty]
-    public partial SequenceOrder WeekOrder { get; set; }
-
     /// <summary>
     /// 选择周
     /// Year 否则1-54
@@ -67,16 +64,6 @@ public partial class OpenRuleViewModel : ObservableObject
     public DateInfo[] Days { get; set; }
     public CollectionViewSource DaySource { get; } = new();
 
-    /// <summary>
-    /// 选择天
-    /// Year 1-365
-    /// QuarterFlag 1-92
-    /// Month 1-31
-    /// Week 7
-    /// </summary>
-    [ObservableProperty]
-    public partial SequenceOrder DayOrder { get; set; }
-
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowMonthList))]
@@ -86,7 +73,7 @@ public partial class OpenRuleViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(AllowDayOrder))]
     public partial FundOpenType SelectedType { get; set; }
 
-    public static FundOpenType[] Types { get; } = [FundOpenType.Daily, FundOpenType.Weekly, FundOpenType.Monthly, FundOpenType.Quarterly, FundOpenType.Yearly,];
+    public static FundOpenType[] Types { get; } = [FundOpenType.Closed ,FundOpenType.Daily, FundOpenType.Weekly, FundOpenType.Monthly, FundOpenType.Quarterly, FundOpenType.Yearly,];
 
 
     public bool AllowDayOrder => SelectedType != FundOpenType.Weekly || TradeOrNatrual;
@@ -157,7 +144,6 @@ public partial class OpenRuleViewModel : ObservableObject
             item.PropertyChanged += DayChanged;
         DaySource.Source = Days;
         DaySource.Filter += DaySource_Filter;
-         
 
     }
 
@@ -240,11 +226,36 @@ public partial class OpenRuleViewModel : ObservableObject
             Weeks = Weeks.Skip(1).Where(x => x.IsSelected).Select(x => x.Value).ToArray(),
             WeekOrder = WeekDescend ? SequenceOrder.Descend : SequenceOrder.Ascend,
             Dates = Days.Skip(3).Where(x => x.IsSelected).Select(x => x.Value).ToArray(),
-            DayOrder = /*Days[0].IsSelected*/ DayDescend ? SequenceOrder.Descend : SequenceOrder.Ascend,
+            DayOrder = DayDescend ? SequenceOrder.Descend : SequenceOrder.Ascend,
             TradeOrNatural = TradeOrNatrual,
             Postpone = Postpone,
         };
     }
+
+    public void Init(OpenRule rule)
+    {
+        SelectedType = rule.Type;
+        Postpone = rule.Postpone;
+        TradeOrNatrual = rule.TradeOrNatural;
+        DayDescend = rule.DayOrder == SequenceOrder.Descend;
+        WeekDescend = rule.WeekOrder == SequenceOrder.Descend;
+        if (rule.Quarters is not null)
+            foreach (var item in Quarters.Where(x => rule.Quarters.Contains(x.Value)))
+                item.IsSelected = true;
+
+        if (rule.Months is not null)
+            foreach (var item in Months.Where(x => rule.Months.Contains(x.Value)))
+                item.IsSelected = true;
+
+        if (rule.Weeks is not null)
+            foreach (var item in Weeks.Where(x => rule.Weeks.Contains(x.Value)))
+                item.IsSelected = true;
+
+        if (rule.Dates is not null)
+            foreach (var item in Days.Where(x => rule.Dates.Contains(x.Value)))
+                item.IsSelected = true;
+    }
+
 
     partial void OnTradeOrNatrualChanged(bool value)
     {
@@ -282,8 +293,6 @@ public partial class OpenRuleViewModel : ObservableObject
         switch (e.PropertyName)
         {
             case nameof(SelectedType):
-            case nameof(WeekOrder):
-            case nameof(DayOrder):
             case nameof(WeekDescend):
             case nameof(DayDescend):
             case nameof(TradeOrNatrual):
@@ -301,7 +310,7 @@ public partial class OpenRuleViewModel : ObservableObject
 
     [ObservableProperty]
     public partial int SelectedYear { get; set; }
-     
+
 
     [ObservableProperty]
     public partial DayIsOpenViewModel[]? Data { get; set; }
@@ -336,6 +345,7 @@ public partial class OpenRuleViewModel : ObservableObject
     public void UpdateRule()
     {
         OnPropertyChanged(nameof(Statement));
+        ConfirmCommand.NotifyCanExecuteChanged();
 
         var r = Rule.Apply(SelectedYear);
 
@@ -377,8 +387,15 @@ public partial class OpenRuleViewModel : ObservableObject
         //}
     }
 
- 
 
+    public bool CanConfirm => Rule?.IsValid() ?? false;
+
+    [RelayCommand(CanExecute = nameof(CanConfirm))]
+    public void Confirm(Window wnd)
+    {
+        wnd.DialogResult = true;
+        wnd.Close();
+    }
 
     public partial class QuarterInfo : ObservableObject
     {

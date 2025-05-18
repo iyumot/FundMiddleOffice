@@ -1,5 +1,4 @@
 ﻿using FMO.Models;
-using FMO.Shared;
 using System.Diagnostics;
 
 namespace FMO;
@@ -146,7 +145,30 @@ public class OpenRule
         }
     }
 
-
+    public bool IsValid()
+    {
+        switch (Type)
+        {
+            case FundOpenType.Closed:
+                return true;
+            case FundOpenType.Yearly:
+                if (Dates is null || Dates.Length == 0) return false;                
+                return true;
+            case FundOpenType.Quarterly:
+                if (Dates is null || Dates.Length == 0) return false;
+                return true;
+            case FundOpenType.Monthly:
+                if (Dates is null || Dates.Length == 0) return false;
+                return true;
+            case FundOpenType.Weekly:
+                if (Dates is null || Dates.Length == 0) return false;
+                return true;
+            case FundOpenType.Daily:
+                return true;
+            default:
+                return false;
+        }
+    }
 
     public OpenDateSheet[] Apply(int year)
     {
@@ -659,362 +681,7 @@ public class OpenRule
         }
         return result.ToArray();
     }
-
-
-
-
-
-
-
-
-    public bool IsPair(DateOnly date)
-    {
-        // 不开放
-        if (Type == FundOpenType.Closed) return false;
-
-        // 季度
-        if (Type == FundOpenType.Yearly)
-        {
-            if (Quarters?.Length > 0)
-            {
-                // 计算
-                int v = (date.Month - 1) / 3 + 1;
-
-                if (Array.BinarySearch(Quarters, v) < 0)
-                    return false;
-            }
-        }
-
-        // 月
-        if (Type < FundOpenType.Monthly)
-        {
-            if (Months?.Length > 0)
-            {
-                // 计算
-                int v = Type == FundOpenType.Quarterly ? (date.Month - 1) % 3 + 1 : date.Month;
-
-                if (Array.BinarySearch(Months, v) < 0)
-                    return false;
-            }
-        }
-
-
-        return true;
-    }
-
-
-
-
-
-
-    /// <summary>
-    /// 获取对应序号的date
-    /// </summary>
-    /// <param name="dates"></param>
-    /// <param name="ids">id+1</param>
-    /// <returns></returns>
-    private IEnumerable<DateMeta> GetTradeDates(IEnumerable<DateMeta> dates, int[] ids, bool reverse = false)
-    {
-        var obj = dates.Where(x => x.Flag.HasFlag(DayFlag.Trade));
-        if (reverse) obj = obj.Reverse();
-        foreach (var d in obj.Index())
-        {
-            if (ids.Contains(d.Index + 1))
-                yield return d.Item;
-        }
-    }
-
-
-
-
-    public void Filter(DateMeta[] dates)
-    {
-        var ex = dates.Select(x => new DateEx { Date = x.Date, Flag = x.Flag, WeekOfMonth = 1, WeekOfYear = 1 }).ToArray();
-
-        // 计算周序号
-        for (int i = 1; i < ex.Length; i++)
-        {
-            var last = WeekOrder == SequenceOrder.Ascend ? ex[i - 1] : ex[^i];
-            var cur = WeekOrder == SequenceOrder.Ascend ? ex[i] : ex[^(i + 1)];
-            if (WeekOrder == SequenceOrder.Ascend ? cur.Date.DayOfWeek == DayOfWeek.Monday : cur.Date.DayOfWeek == DayOfWeek.Sunday)
-                cur.WeekOfYear = last.WeekOfYear + 1;
-            else cur.WeekOfYear = last.WeekOfYear;
-        }
-
-        // 计算月内周序号
-        var p = ex.AsEnumerable();
-        foreach (var m in (WeekOrder == SequenceOrder.Ascend ? p : p.Reverse()).GroupBy(x => x.Date.Month))
-        {
-            foreach (var w in m.GroupBy(x => x.WeekOfYear).Index())
-            {
-                foreach (var n in w.Item)
-                {
-                    n.WeekOfMonth = w.Index + 1;
-                }
-            }
-        }
-
-        // 计算季内周序号 
-        foreach (var m in (WeekOrder == SequenceOrder.Ascend ? p : p.Reverse()).GroupBy(x => QuarterOfDay(x.Date)))
-        {
-            foreach (var w in m.GroupBy(x => x.WeekOfYear).Index())
-            {
-                foreach (var n in w.Item)
-                {
-                    n.WeekOfQuarter = w.Index + 1;
-                }
-            }
-        }
-
-        switch (Type)
-        {
-            case FundOpenType.Closed:
-                break;
-            case FundOpenType.Yearly:
-                if (Quarters?.Length > 0) // 选了季度
-                {
-                    foreach (var item in ex)
-                    {
-                        if (Array.BinarySearch(Quarters, QuarterOfDay(item.Date) + 1) >= 0) // 符合要求
-                            item.PairTo(Pair.Quarter);
-                    }
-                }
-                else
-                    PairTo(ex, Pair.Quarter); //所有季度
-
-                if (Quarters?.Length > 0)
-                    PairToMonth(ex, FundOpenType.Quarterly);
-                else
-                    PairToMonth(ex, FundOpenType.Yearly);
-
-                if (Months?.Length > 0)
-                    PairToWeek(ex, FundOpenType.Monthly);
-                else if (Quarters?.Length > 0)
-                    PairToWeek(ex, FundOpenType.Quarterly);
-                else
-                    PairToWeek(ex, FundOpenType.Yearly);
-
-                if (Weeks?.Length > 0)
-                    PairToDay(ex, FundOpenType.Weekly);
-                else if (Months?.Length > 0)
-                    PairToDay(ex, FundOpenType.Monthly);
-                else if (Quarters?.Length > 0)
-                    PairToDay(ex, FundOpenType.Quarterly);
-                else
-                    PairToDay(ex, FundOpenType.Yearly);
-
-                break;
-            case FundOpenType.Quarterly:
-                PairTo(ex, Pair.Quarter);
-                PairToMonth(ex, FundOpenType.Quarterly);
-
-                if (Months?.Length > 0)
-                    PairToWeek(ex, FundOpenType.Monthly);
-                else
-                    PairToWeek(ex, FundOpenType.Quarterly);
-
-                if (Weeks?.Length > 0)
-                    PairToDay(ex, FundOpenType.Weekly);
-                else if (Months?.Length > 0)
-                    PairToDay(ex, FundOpenType.Monthly);
-                else
-                    PairToDay(ex, FundOpenType.Quarterly);
-                break;
-            case FundOpenType.Monthly:
-                PairTo(ex, Pair.Quarter);
-                PairTo(ex, Pair.Month);
-                PairToWeek(ex, FundOpenType.Monthly);
-
-                if (Weeks?.Length > 0)
-                    PairToDay(ex, FundOpenType.Weekly);
-                else
-                    PairToDay(ex, FundOpenType.Monthly);
-                break;
-            case FundOpenType.Weekly:
-                PairTo(ex, Pair.Quarter);
-                PairTo(ex, Pair.Month);
-                PairTo(ex, Pair.Week);
-                PairToDay(ex, FundOpenType.Weekly);
-                break;
-            case FundOpenType.Daily:
-                PairTo(ex, Pair.Quarter);
-                PairTo(ex, Pair.Month);
-                PairTo(ex, Pair.Week);
-                PairTo(ex, Pair.Day);
-                break;
-            default:
-                break;
-        }
-
-
-
-        var ok = ex.Where(x => x.Pair == Pair.Ok).ToList();
-
-        foreach (var x in ok)
-            Debug.WriteLine($"{x.Date:MM-dd}     {x.WeekOfYear,2} | {x.Date.DayOfWeek}");
-        //FilterByWeek(dates.Select(x => new DateEx { Date = x, Select = !x.Flag.HasFlag(DayFlag.Weekend) }).ToArray());
-    }
-
-    private void PairTo(DateEx[] ex, Pair flag)
-    {
-        foreach (var item in ex)
-            item.PairTo(flag);
-    }
-
-    private void PairToWeek(DateEx[] ex, Pair flag, FundOpenType type)
-    {
-        foreach (var item in ex)
-        {
-            if (Array.BinarySearch(Weeks!, type switch { FundOpenType.Monthly => item.WeekOfMonth, FundOpenType.Quarterly => item.WeekOfQuarter, _ => item.WeekOfYear }) >= 0) // 符合要求
-                item.PairTo(Pair.Week);
-        }
-    }
-    private void PairToMonth(DateEx[] ex, FundOpenType up)
-    {
-        if (Months?.Length > 0) // 选了周
-        {
-            switch (up)
-            {
-                case FundOpenType.Yearly:
-                    foreach (var v in (DayOrder == SequenceOrder.Ascend ? ex.AsEnumerable() : ex.AsEnumerable().Reverse()))
-                        v.Calc = v.Date.Month;
-                    break;
-                case FundOpenType.Quarterly:
-                    foreach (var q in (DayOrder == SequenceOrder.Ascend ? ex.AsEnumerable() : ex.AsEnumerable().Reverse()).GroupBy(x => QuarterOfDay(x.Date)))
-                        foreach (var w in q.GroupBy(x => x.Date.Month).Index())
-                            foreach (var v in w.Item)
-                                v.Calc = w.Index + 1;
-                    break;
-                case FundOpenType.Closed:
-                    return;
-                default:
-                    throw new NotImplementedException();
-                    break;
-            }
-
-            foreach (var v in ex)
-            {
-                if (Array.BinarySearch(Months!, v.Calc) >= 0) // 符合要求
-                    v.PairTo(Pair.Month);
-            }
-        }
-        else PairTo(ex, Pair.Month);
-    }
-
-    private void PairToWeek(DateEx[] ex, FundOpenType up)
-    {
-        if (Weeks?.Length > 0) // 选了周
-        {
-            switch (up)
-            {
-                case FundOpenType.Yearly:
-                    foreach (var v in (DayOrder == SequenceOrder.Ascend ? ex.AsEnumerable() : ex.AsEnumerable().Reverse()))
-                        v.Calc = v.WeekOfYear;
-                    break;
-                case FundOpenType.Quarterly:
-                    foreach (var q in (DayOrder == SequenceOrder.Ascend ? ex.AsEnumerable() : ex.AsEnumerable().Reverse()).GroupBy(x => QuarterOfDay(x.Date)))
-                        foreach (var w in q.GroupBy(x => x.WeekOfYear).Index())
-                            foreach (var v in w.Item)
-                                v.Calc = w.Index + 1;
-                    break;
-                case FundOpenType.Monthly:
-                    foreach (var q in (DayOrder == SequenceOrder.Ascend ? ex.AsEnumerable() : ex.AsEnumerable().Reverse()).GroupBy(x => x.Date.Month))
-                        foreach (var w in q.GroupBy(x => x.WeekOfYear).Index())
-                            foreach (var v in w.Item)
-                                v.Calc = w.Index + 1;
-                    break;
-                case FundOpenType.Closed:
-                    return;
-                default:
-                    throw new NotImplementedException();
-                    break;
-            }
-
-            foreach (var v in ex)
-            {
-                if (Array.BinarySearch(Weeks!, v.Calc) >= 0) // 符合要求
-                    v.PairTo(Pair.Week);
-            }
-        }
-        else PairTo(ex, Pair.Week);
-    }
-
-    private void PairToDay(DateEx[] ex, FundOpenType up)
-    {
-        if (Dates?.Length > 0) // 选了日期
-        {
-            switch (up)
-            {
-                case FundOpenType.Yearly:
-                    foreach (var v in (DayOrder == SequenceOrder.Ascend ? ex.AsEnumerable() : ex.AsEnumerable().Reverse()).Index())
-                        v.Item.Calc = v.Index + 1;
-                    break;
-                case FundOpenType.Quarterly:
-                    foreach (var q in (DayOrder == SequenceOrder.Ascend ? ex.AsEnumerable() : ex.AsEnumerable().Reverse()).GroupBy(x => QuarterOfDay(x.Date)))
-                        foreach (var v in q.Index())
-                            v.Item.Calc = v.Index + 1;
-                    break;
-                case FundOpenType.Monthly:
-                    foreach (var q in (DayOrder == SequenceOrder.Ascend ? ex.AsEnumerable() : ex.AsEnumerable().Reverse()).GroupBy(x => x.Date.Month))
-                        foreach (var v in q.Index())
-                            v.Item.Calc = v.Index + 1;
-                    break;
-                case FundOpenType.Weekly:
-                    foreach (var q in (DayOrder == SequenceOrder.Ascend ? ex.AsEnumerable() : ex.AsEnumerable().Reverse()).GroupBy(x => x.WeekOfYear))
-                        foreach (var v in q.Index())
-                            v.Item.Calc = v.Index + 1;
-                    break;
-                case FundOpenType.Daily:
-                    PairTo(ex, Pair.Day);
-                    return;
-                case FundOpenType.Closed:
-                    return;
-                default:
-                    throw new NotImplementedException();
-                    break;
-            }
-
-            foreach (var v in ex)
-            {
-                if (Array.BinarySearch(Dates!, v.Calc) >= 0) // 符合要求
-                    v.PairTo(Pair.Day);
-            }
-        }
-    }
-
-    //public DateOnly[] FilterDays(int year)
-    //{
-    //    IEnumerable<DateMeta> dates = Days.DayInfosByYear(year);
-
-    //    switch (Type)
-    //    {
-    //        case FundOpenType.Closed:
-    //            return Array.Empty<DateOnly>();
-    //        case FundOpenType.Yearly:
-    //            if (Quarters?.Length > 0)
-    //                dates = dates.Where(x => Quarters.Contains(QuarterOfDay(x)));
-    //            if (Months?.Length > 0)
-    //                dates = dates.Where(x => Months.Contains(x.Month));
-    //            else if (Weeks?.Length > 0)
-    //                return $"每年{(WeekOrder == SequenceOrder.Ascend ? "" : "倒数")}第{string.Join('、', Weeks.Select(x => x + 1))}周的{WeekStr()}";
-    //            else
-    //                break;
-    //        case FundOpenType.Quarterly:
-    //            break;
-    //        case FundOpenType.Monthly:
-    //            break;
-    //        case FundOpenType.Weekly:
-    //            break;
-    //        case FundOpenType.Daily:
-    //            return dates.Where(x=>x.Flag.HasFlag(DayFlag.Trade)).Select(x=>x.Date).ToArray();
-    //        default:
-    //            break;
-    //    }
-
-
-
-
-    //}
+     
 
 
     private static int QuarterOfDay(DateOnly d) => (d.Month - 1) / 3;
@@ -1072,6 +739,12 @@ public enum OpenType
     /// </summary>
     Postpone
 }
+
+public interface IDate
+{
+    public DateOnly Date { get; }
+}
+
 
 public class OpenDateSheet : IDate
 {

@@ -4,11 +4,6 @@ using System.Windows.Controls;
 namespace FMO.Shared;
 
 
-public interface IDate
-{
-    public DateOnly Date { get; }
-}
-
 /// <summary>
 /// 按照步骤 1a 或 1b 操作，然后执行步骤 2 以在 XAML 文件中使用此自定义控件。
 ///
