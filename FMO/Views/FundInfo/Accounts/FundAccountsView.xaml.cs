@@ -35,10 +35,16 @@ public partial class FundAccountsViewModel : ObservableObject
         Code = code;
         Names = names;
 
+        List<ISecurityCard> ls = new();
         using var db = DbHelper.Base();
         var sas = db.GetCollection<SecurityCard>().Find(x => x.FundId == fundId).ToArray();
         if (sas is not null)
-            SecurityCards = new(sas.Select(x => new SecurityCardViewModel(x)));
+            ls.AddRange(sas.Select(x=>new SecurityCardViewModel(x)));
+
+        var sac = db.GetCollection<SecurityCardChange>().Find(x => x.FundId == fundId).ToArray();
+        if (sac is not null)
+            ls.AddRange(sac.Select(x=> new SecurityCardChangeViewModel(x)));
+        SecurityCards = [.. ls];
 
         var sa = db.GetCollection<StockAccount>().Find(x => x.FundId == fundId).ToArray();
         if (sa is not null)
@@ -138,7 +144,7 @@ public partial class FundAccountsViewModel : ObservableObject
     public string[] Names { get; }
 
     [ObservableProperty]
-    public partial ObservableCollection<SecurityCardViewModel>? SecurityCards { get; set; }
+    public partial ObservableCollection<ISecurityCard>? SecurityCards { get; set; }
 
 
     #region Stock
@@ -227,8 +233,9 @@ public partial class FundAccountsViewModel : ObservableObject
         var dr = fd.ShowDialog();
         if (dr is null || !dr.Value) return;
 
-        List<SecurityCard> list = new();
+        List<ISecurityCard> list = new();
         int cnt = 0;
+        int total = 0;
         foreach (var f in fd.FileNames)
         {
             try
@@ -236,6 +243,7 @@ public partial class FundAccountsViewModel : ObservableObject
                 using var fs = new FileStream(f, FileMode.Open);
 
                 var result = PdfHelper.GetSecurityAccounts(fs);
+                total += result?.Length ?? 0;
                 if (result is null) continue;
 
                 // 解析
@@ -264,6 +272,36 @@ public partial class FundAccountsViewModel : ObservableObject
                         continue;
                     }
                     var d = m.Groups[1].Value;
+
+                    if (c.text.Contains("变更")) // 股卡变更
+                    {
+                        m = Regex.Match(c.text, @"(\d{4})\s*年\s*(\d{2})\s*月\s*(\d{2})\s*日", RegexOptions.Singleline);
+                        if (m.Success)
+                        {
+                            SecurityCardChange change = new()
+                            {
+                                FundId = FundId,
+                                Name = d,
+                                SerialNo = a,
+                                Date = DateOnly.ParseExact($"{m.Groups[1].Value}{m.Groups[2].Value}{m.Groups[3].Value}", "yyyyMMdd")
+                            };
+                            // 保存文件
+                            using var file = new FileStream(@$"files\accounts\security\G-{a}.pdf", FileMode.Create);
+                            file.Write(c.page);
+                            file.Flush();
+
+                            using var db = DbHelper.Base();
+                            db.GetCollection<SecurityCardChange>().EnsureIndex(x => x.SerialNo, true);
+                            var old = db.GetCollection<SecurityCardChange>().FindOne(x => x.SerialNo == change.SerialNo);
+                            if (old is not null) change.Id = old.Id;
+                            db.GetCollection<SecurityCardChange>().Upsert(change);
+
+                            list.Add(change);
+                            continue;
+                        }
+
+                    }
+
 
                     m = Regex.Match(c.text, @"\b(?:子账户号码|证券账户号码)\s*[:：]\s*([A-Z0-9]+)");
                     if (!m.Success)
@@ -311,8 +349,7 @@ public partial class FundAccountsViewModel : ObservableObject
 
                     if (FindFund(sa))
                     {
-                        using var db = DbHelper.Base();
-                        db.GetCollection<SecurityCard>().DropIndex(nameof(SecurityCard.SerialNo));
+                        using var db = DbHelper.Base(); 
                         db.GetCollection<SecurityCard>().EnsureIndex(x => x.CardNo, true);
                         var old = db.GetCollection<SecurityCard>().FindOne(x => x.CardNo == sa.CardNo);
                         if (old is not null) sa.Id = old.Id;
@@ -335,13 +372,13 @@ public partial class FundAccountsViewModel : ObservableObject
         if (list.Count > 0)
         {
             if (SecurityCards is null)
-                SecurityCards = new(list.Select(x => new SecurityCardViewModel(x)));
+                SecurityCards = new(list.Select(x => x is SecurityCard c ? new SecurityCardViewModel(c) : x));
             else
-                foreach (var l in list)
-                    SecurityCards.Add(new(l));
+                foreach (var x in list)
+                    SecurityCards.Add(x is SecurityCard c ? new SecurityCardViewModel(c) : x);
         }
 
-        HandyControl.Controls.Growl.Info($"已解析{cnt}个股卡{(list.Count < cnt ? $"，{cnt - list.Count}个不属于本产品" : "")}");
+        HandyControl.Controls.Growl.Info($"已解析{cnt}/{total}个股卡{(list.Count < cnt ? $"，{cnt - list.Count}个不属于本产品" : "")}");
     }
 
     bool FindFund(SecurityCard sa)

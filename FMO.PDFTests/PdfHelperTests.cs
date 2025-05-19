@@ -14,7 +14,7 @@ namespace FMO.PDF.Tests
         [TestMethod()]
         public void GetSecurityAccountsTest()
         {
-            using var fs = new FileStream(@"C:\Users\iyu\Downloads\鑫享世宸量化CTA1号私募证券投资基金.pdf",FileMode.Open);
+            using var fs = new FileStream(@"C:\Users\lenovo\Downloads\5555\鑫享世宸量化选股1号私募证券投资基金变更回执.pdf", FileMode.Open);
 
             var res = PdfHelper.GetSecurityAccounts(fs);
 

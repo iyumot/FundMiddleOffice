@@ -25,7 +25,7 @@
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
 
-        <DataTemplate x:Key="SecurityCardItem" DataType="model:SecurityCard">
+        <DataTemplate DataType="{x:Type local:SecurityCardViewModel}">
             <hc:SimplePanel>
                 <Border
                     Margin="2"
@@ -136,6 +136,71 @@
                 </DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
+
+        <DataTemplate DataType="{x:Type local:SecurityCardChangeViewModel}">
+            <hc:SimplePanel>
+                <Border
+                    Margin="2"
+                    Background="WhiteSmoke"
+                    BorderBrush="{Binding GroupBrush}"
+                    BorderThickness="0,0,0,4">
+                    <DockPanel Margin="6">
+                        <DockPanel
+                            Margin="0,6"
+                            DockPanel.Dock="Bottom"
+                            LastChildFill="False">
+                            <DockPanel.Resources>
+                                <Style BasedOn="{StaticResource ButtonIcon}" TargetType="Button">
+                                    <Setter Property="Height" Value="20" />
+                                    <Setter Property="Width" Value="34" />
+                                    <Setter Property="Padding" Value="6,1" />
+                                    <Setter Property="hc:IconElement.Height" Value="16" />
+                                </Style>
+                            </DockPanel.Resources>
+
+                            <Button
+                                Margin="-5"
+                                hc:IconElement.Geometry="{DynamicResource f.book-open-reader}"
+                                Command="{Binding ViewCommand}"
+                                Foreground="Lime"
+                                ToolTip="查看" />
+                            <Button
+                                Margin="-5"
+                                hc:IconElement.Geometry="{DynamicResource f.file-export}"
+                                Command="{Binding SaveAsCommand}"
+                                ToolTip="另存为" />
+
+                            <Button
+                                Name="switch"
+                                Margin="-5"
+                                hc:IconElement.Geometry="{DynamicResource f.eraser}"
+                                Command="{Binding DeregisterCommand}"
+                                Foreground="Red"
+                                ToolTip="注销/恢复" />
+                        </DockPanel>
+
+                        <TextBlock
+                            Margin="0,3,0,0"
+                            HorizontalAlignment="Center"
+                            DockPanel.Dock="Bottom"
+                            Foreground="Gray"
+                            Text="{Binding Date, StringFormat=yyyy-MM-dd}" />
+
+                        <TextBlock
+                            Name="card"
+                            HorizontalAlignment="Center"
+                            FontSize="16"
+                            FontWeight="Bold"
+                            Text="变更" />
+                    </DockPanel>
+                </Border>
+
+            </hc:SimplePanel>
+        </DataTemplate>
+
+
+
+
 
         <DataTemplate x:Key="StockItem" DataType="local:StockAccountViewModel">
             <Border Margin="2,0" Background="WhiteSmoke">
@@ -597,7 +662,6 @@
             <ListBox
                 d:ItemsSource="{d:SampleData}"
                 BorderThickness="0"
-                ItemTemplate="{StaticResource SecurityCardItem}"
                 ItemsPanel="{StaticResource SecurityCardPanel}"
                 ItemsSource="{Binding Source={StaticResource SecurityCardsSource}}"
                 Style="{StaticResource ListBoxCustom}" />

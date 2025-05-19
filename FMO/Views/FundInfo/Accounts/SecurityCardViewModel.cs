@@ -14,7 +14,7 @@ namespace FMO;
 /// <summary>
 /// 股卡
 /// </summary>
-public partial class SecurityCardViewModel : ObservableObject
+public partial class SecurityCardViewModel : ObservableObject, ISecurityCard
 {
     public SecurityCardViewModel(SecurityCard x)
     {
@@ -40,7 +40,7 @@ public partial class SecurityCardViewModel : ObservableObject
     /// <summary>
     /// 流水号
     /// </summary>
-    [ObservableProperty] public partial string? SerialNo { get; set; }
+    [ObservableProperty] public partial string SerialNo { get; set; }
 
     /// <summary>
     /// 子账户号
@@ -52,7 +52,7 @@ public partial class SecurityCardViewModel : ObservableObject
     /// </summary>
     [ObservableProperty] public partial string? UniversalNo { get; set; }
 
-    [ObservableProperty] public partial string? Name { get; set; }
+    [ObservableProperty] public partial string Name { get; set; }
 
     [ObservableProperty] public partial string? FundCode { get; set; }
 
@@ -152,4 +152,62 @@ public partial class SecurityCardViewModel : ObservableObject
     }
 }
 
+
+
+public partial class SecurityCardChangeViewModel : ObservableObject,ISecurityCard
+{
+    public SecurityCardChangeViewModel(SecurityCardChange x)
+    {
+        Id = x.Id;
+        FundId = x.FundId;
+        Name = x.Name;
+        SerialNo = x.SerialNo;
+        Date = x.Date;
+        File = new FileInfo(@$"files\accounts\security\G-{SerialNo}.pdf");
+    }
+
+    public FileInfo File { get; set; }
+
+    public int Id { get; set; }
+
+    public int FundId { get; set; }
+
+    public string Name { get; }
+
+    /// <summary>
+    /// 流水号
+    /// </summary>
+    public string? SerialNo { get; set; }
+    public DateOnly Date { get; }
+
+    [RelayCommand]
+    public void View()
+    {
+        if (File?.Exists ?? false)
+            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(File.FullName) { UseShellExecute = true }); } catch { }
+    }
+
+
+
+    [RelayCommand]
+    public void SaveAs()
+    {
+        if (File is null || !File.Exists) return;
+
+        try
+        {
+            var d = new SaveFileDialog();
+            d.FileName = File.Name;
+            d.DefaultExt = ".pdf";
+            d.Filter = "Pdf文件|*.pdf";
+            if (d.ShowDialog() == true)
+                System.IO.File.Copy(File.FullName, d.FileName);
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"文件另存为失败: {ex.Message}");
+        }
+    }
+     
+}
 
