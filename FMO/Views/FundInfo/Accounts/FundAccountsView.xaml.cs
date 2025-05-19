@@ -249,7 +249,7 @@ public partial class FundAccountsViewModel : ObservableObject
                     }
                     var a = m.Groups[1].Value;
 
-                    m = Regex.Match(c.text, @"一码通\w*号码\s*[:：]\s*(\w+)");
+                    m = Regex.Match(c.text, @"一码通\w*号码\s*[:：]\s*([a-z0-9]+)");
                     if (!m.Success)
                     {
                         Log.Error($"解析股卡失败:\n {c.text}");
@@ -265,7 +265,7 @@ public partial class FundAccountsViewModel : ObservableObject
                     }
                     var d = m.Groups[1].Value;
 
-                    m = Regex.Match(c.text, @"\b(?:子账户号码|证券账户号码)\s*[:：]\s*(\w+)");
+                    m = Regex.Match(c.text, @"\b(?:子账户号码|证券账户号码)\s*[:：]\s*([A-Z0-9]+)");
                     if (!m.Success)
                     {
                         Log.Error($"解析股卡失败:\n {c.text}");
@@ -312,8 +312,9 @@ public partial class FundAccountsViewModel : ObservableObject
                     if (FindFund(sa))
                     {
                         using var db = DbHelper.Base();
-                        db.GetCollection<SecurityCard>().EnsureIndex(x => x.SerialNo, true);
-                        var old = db.GetCollection<SecurityCard>().FindOne(x => x.SerialNo == sa.SerialNo);
+                        db.GetCollection<SecurityCard>().DropIndex(nameof(SecurityCard.SerialNo));
+                        db.GetCollection<SecurityCard>().EnsureIndex(x => x.CardNo, true);
+                        var old = db.GetCollection<SecurityCard>().FindOne(x => x.CardNo == sa.CardNo);
                         if (old is not null) sa.Id = old.Id;
                         db.GetCollection<SecurityCard>().Upsert(sa);
 
