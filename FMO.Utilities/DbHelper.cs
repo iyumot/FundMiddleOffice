@@ -27,7 +27,7 @@ public static class DatabaseAssist
 
             // 校验ta，为TransferRecord的CustomerId为0的设置Id
             var d = db.GetCollection<TransferRecord>().Find(x => x.CustomerId == 0).ToArray();
-            if(d.Length > 0)
+            if (d.Length > 0)
             {
                 var cc = db.GetCollection<Investor>().FindAll().ToArray();
                 foreach (var item in d)
@@ -39,8 +39,33 @@ public static class DatabaseAssist
                 }
                 db.GetCollection<TransferRecord>().Update(d);
             }
-            
 
+            //fix fund folder miggrate
+            //var f = db.GetCollection<FundFlow>().FindAll().ToArray();
+            //foreach (var item in f)
+            //{
+            //    foreach (var p in item.GetType().GetProperties())
+            //    {
+            //        if (p.PropertyType == typeof(FileStorageInfo))
+            //        {
+            //            var s = p.GetValue(item, null) as FileStorageInfo;
+            //            if (s?.Path is null) continue;
+            //            var fi = new FileInfo(s.Path);
+            //            if (!fi.Exists)
+            //            {
+            //                if (s.Path.StartsWith("files\\funds\\"))
+            //                {
+            //                    var np = s.Path.Replace("files\\funds\\", $"files\\funds\\{item.FundId}.");
+            //                    if (File.Exists(np))
+            //                    {
+            //                        s.Path = np;
+            //                        db.GetCollection<FundFlow>().Update(item);
+            //                    }
+            //                }
+            //            }
+            //        }
+            //    }
+            //}
         }
 
 
@@ -115,8 +140,8 @@ public static class DbHelper
 
             var data = db.GetCollection<TransferRecord>().Find(x => x.FundId == fundid).GroupBy(x => x.ConfirmedDate).OrderBy(x => x.Key);
             var list = new List<FundShareRecord>();
-            foreach (var item in data) 
-                list.Add(new FundShareRecord(0, fundid, item.Key, item.Sum(x => x.ShareChange()) + (list.Count > 0 ? list[^1].Share : 0)));            
+            foreach (var item in data)
+                list.Add(new FundShareRecord(0, fundid, item.Key, item.Sum(x => x.ShareChange()) + (list.Count > 0 ? list[^1].Share : 0)));
 
             db.GetCollection<FundShareRecord>().DeleteMany(x => x.FundId == fundid);
             db.GetCollection<FundShareRecord>().Insert(list);
