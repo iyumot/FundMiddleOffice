@@ -82,7 +82,8 @@ public partial class AnnouncementViewModel : EditableControlViewModelBase<FundAn
         {
             InitFunc = x => x.Date == default ? null : new DateTime(x.Date, default),
             UpdateFunc = (x, y) => x.Date = y is null ? default : DateOnly.FromDateTime(y.Value),
-            ClearFunc = x => x.Date = default
+            ClearFunc = x => x.Date = default,
+            DisplayFunc = x => x?.ToString("yyyy-MM-dd")
         };
         Date.Init(obj);
 
