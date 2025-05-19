@@ -383,3 +383,4 @@ FodyWeavers.xsd
 /FMO.TPLTests/TplTests.cs
 /FMO.TPLTests/WordTplTests.cs
 /TestProject1.zip
+/FundMiddleOfficeTests/IdGeneratorTests.cs
