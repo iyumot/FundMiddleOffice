@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -44,74 +45,8 @@ public static class PdfHelper
 
                 var str = PDFium.FPDFText_GetText(textpage, 0, charcnt);
 
-                //double lb = 0, lr = 0, width = 0; int chcnt = 0;
-                //double[] rect = [0, 0, 0, 0];
-                //Rect rc = new();
-
-                //for (int j = 0; j < charcnt; j++)
-                //{
-                //    var value = str[j];
-                //    if (value == '\r' || value == '\n') continue;
-                //    if (value == ' ' && rc == default) continue;
-
-                //    var ok = PDFium.FPDFText_GetCharBox(textpage, j, out double l, out double r, out double b, out double t);
-                //    if (!ok) break;
-
-
-                //    Rotate(rotate, ref l, ref t, ref r, ref b);
-
-                //    //是否同行
-                //    if (rc == default)
-                //    {
-                //        rc = new Rect(l, t, r - l, b - t);
-                //        sb.Append(value);
-                //    }
-                //    else
-                //    {
-                //        bool sameLine = rc == default ? true : IntersectionXRatio(rc.Top, rc.Bottom, t, b) > 0.7;
-
-                //        // 间隔>5个字宽
-                //        if (l - rc.Right > rc.Width / chcnt * 5)
-                //        {
-                //            rc = new Rect(l, t, r - l, b - t);
-                //            sb.Append('\n');
-                //            chcnt = 0;
-                //        }
-                //        else if (t - rc.Bottom > 3) // 换行
-                //        {
-                //            // 第一个空白符，不要
-                //            if (value == ' ') continue;
-
-                //            rc = new Rect(l, t, r - l, b - t);
-                //            sb.Append('\n');
-                //            chcnt = 0;
-                //        }
-                //        else rc.Union(new Point(r, b));
-
-                //        sb.Append(value);
-                //    }
-                //    width += r - l;
-                //    ++chcnt;
-
-                //    //if (j > 5 && str[j - 2] == '\r' && str[j - 1] == '\n' && Math.Abs(b - lb) < Math.Abs(t - b) / 2)
-                //    //    sb.Remove(sb.Length - 2, 2);
-
-                //    ////Debug.WriteLine($"{str[j]}       {l:n2},{t:n2},{r:n2},{b:n2}        {l - lr:n2} {t - lb:n2}");
-
-                //    //if (str[j] != ' ' && lr > 0 && lb > 0 && ((l - lr < 0 && t - lb > 3) || (l - lr > width / chcnt * 8)))
-                //    //{
-                //    //    sb.Append('\n');
-                //    //    rect = [0, 0, 0, 0];
-                //    //    width = 0;
-                //    //    chcnt = 0;
-                //    //}
-
-                //    //if (str[j] != ' ')
-                //    //{ lr = r; lb = b; }
-
-                //    //sb.Append(value);
-
-                //}
+                str = Regex.Replace(str, @"(客户名称：.*?)\r\n(.*?)客户类型", "$1$2\n客户类型", RegexOptions.Singleline);
+                 
 
                 PDFium.FPDFText_ClosePage(textpage);
                 PDFium.FPDF_ClosePage(page);

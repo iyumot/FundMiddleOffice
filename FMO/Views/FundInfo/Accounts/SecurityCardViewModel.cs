@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -105,6 +106,13 @@ public partial class SecurityCardViewModel : ObservableObject
     {
         using var db = DbHelper.Base();
         var card = db.GetCollection<SecurityCard>().FindById(Id);
+
+        if (Regex.IsMatch(card.CardNo, @"[^B0-9\s]"))
+        {
+            db.GetCollection<SecurityCard>().Delete(card.Id);
+            return;
+        }
+
         card.IsDeregistered = !card.IsDeregistered;
         IsDeregistered = card.IsDeregistered;
         db.GetCollection<SecurityCard>().Update(card);
