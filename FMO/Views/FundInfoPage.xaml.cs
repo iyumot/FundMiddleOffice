@@ -100,7 +100,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         StrategyDataContext = new(FundId, fund.SetupDate);
         AccountsDataContext = new(FundId, FundCode!, names);
         TADataContext = new(FundId);
-
+        AnnouncementContext = new(FundId);
 
         IsActive = true;
         _initialized = true;
@@ -380,6 +380,11 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
     [ObservableProperty]
     public partial FundTAViewModel TADataContext { get; set; }
+
+
+    [ObservableProperty]
+    public partial FundAnnouncementViewModel AnnouncementContext { get; set; }
+
     #endregion
 
     /// <summary>

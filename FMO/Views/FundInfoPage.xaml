@@ -143,18 +143,62 @@
                 <local:FundLifeTimeView />
             </TabItem>
 
-            <TabItem Header="TA">
+            <TabItem>
+                <TabItem.Header>
+                    <DockPanel>
+                        <Viewbox
+                            Width="14"
+                            Height="14"
+                            Margin="4,0">
+                            <Path Data="{StaticResource f.sheet-plastic}" Fill="Gold" />
+                        </Viewbox>
+                        <TextBlock Text="TA" />
+                    </DockPanel>
+                </TabItem.Header>
                 <local:FundTAView DataContext="{Binding TADataContext}" />
             </TabItem>
 
 
-            <TabItem Header="净值">
+            <TabItem>
+                <TabItem.Header>
+                    <DockPanel>
+                        <Viewbox
+                            Width="14"
+                            Height="14"
+                            Margin="4,0">
+                            <Path Data="{StaticResource f.chart-simple}" Fill="CadetBlue" />
+                        </Viewbox>
+                        <TextBlock Text="净值" />
+                    </DockPanel>
+                </TabItem.Header>
                 <local:NetValueListView />
             </TabItem>
-            <TabItem Header="曲线">
+            <TabItem>
+                <TabItem.Header>
+                    <DockPanel>
+                        <Viewbox
+                            Width="14"
+                            Height="14"
+                            Margin="4,0">
+                            <Path Data="{StaticResource f.chart-line}" Fill="Magenta" />
+                        </Viewbox>
+                        <TextBlock Text="曲线" />
+                    </DockPanel>
+                </TabItem.Header>
                 <local:NetValueCurveView DataContext="{Binding CurveViewDataContext}" />
             </TabItem>
-            <TabItem Header="要素">
+            <TabItem>
+                <TabItem.Header>
+                    <DockPanel>
+                        <Viewbox
+                            Width="14"
+                            Height="14"
+                            Margin="4,0">
+                            <Path Data="{StaticResource f.indent}" Fill="Orange" />
+                        </Viewbox>
+                        <TextBlock Text="要素" />
+                    </DockPanel>
+                </TabItem.Header>
                 <DockPanel>
                     <DockPanel DockPanel.Dock="Top">
                         <ListBox
@@ -173,11 +217,49 @@
                 </DockPanel>
             </TabItem>
 
-            <TabItem Header="策略">
+            <TabItem>
+                <TabItem.Header>
+                    <DockPanel>
+                        <Viewbox
+                            Width="14"
+                            Height="14"
+                            Margin="4,0">
+                            <Path Data="{StaticResource f.chess}" Fill="RoyalBlue" />
+                        </Viewbox>
+                        <TextBlock Text="策略" />
+                    </DockPanel>
+                </TabItem.Header>
                 <local:FundStrategyView DataContext="{Binding StrategyDataContext}" />
             </TabItem>
-            <TabItem Header="账户">
+            <TabItem>
+                <TabItem.Header>
+                    <DockPanel>
+                        <Viewbox
+                            Width="14"
+                            Height="14"
+                            Margin="4,0">
+                            <Path Data="{StaticResource f.credit-card}" Fill="Orange" />
+                        </Viewbox>
+                        <TextBlock Text="账户" />
+                    </DockPanel>
+                </TabItem.Header>
                 <local:FundAccountsView DataContext="{Binding AccountsDataContext}" />
+            </TabItem>
+
+
+            <TabItem>
+                <TabItem.Header>
+                    <DockPanel>
+                        <Viewbox
+                            Width="14"
+                            Height="14"
+                            Margin="4,0">
+                            <Path Data="{StaticResource f.bullhorn}" Fill="Peru" />
+                        </Viewbox>
+                        <TextBlock Text="信披" />
+                    </DockPanel>
+                </TabItem.Header>
+                <local:FundAnnouncementView DataContext="{Binding AnnouncementContext}" />
             </TabItem>
         </TabControl>
 
