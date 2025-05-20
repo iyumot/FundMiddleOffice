@@ -14,7 +14,9 @@
         <local:TaskPageViewModel />
     </UserControl.DataContext>
     <DockPanel>
-        <StackPanel Width="500" />
+        <StackPanel Width="500">
+            <Button Command="{Binding AddMailCacheCommand}" Content="缓存邮件" />
+        </StackPanel>
 
         <ListBox
             Margin="0"

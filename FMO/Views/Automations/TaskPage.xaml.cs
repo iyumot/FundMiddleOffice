@@ -1,4 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.Schedule;
 using System.Collections.ObjectModel;
 using System.Reflection;
@@ -20,7 +22,7 @@ public partial class TaskPage : UserControl
 
 
 
-public partial class TaskPageViewModel : ObservableObject
+public partial class TaskPageViewModel : ObservableObject,IRecipient<RemoveMissionMessage>
 {
 
     public ObservableCollection<AutomationViewModelBase> Tasks { get; } = new();
@@ -28,6 +30,7 @@ public partial class TaskPageViewModel : ObservableObject
 
     public TaskPageViewModel()
     {
+        WeakReferenceMessenger.Default.RegisterAll(this);
         var ms = MissionSchedule.Missions;
 
         foreach (var m in ms)
@@ -52,8 +55,21 @@ public partial class TaskPageViewModel : ObservableObject
         if (!Tasks.Any(x => x is SendDailyReportToWebhookViewModel))
             Tasks.Add(new SendDailyReportToWebhookViewModel(new()));
 
-        if (!Tasks.Any(x => x is MailCacheViewModel))
-            Tasks.Add(new MailCacheViewModel(new()));
+        //if (!Tasks.Any(x => x is MailCacheViewModel))
+        //    Tasks.Add(new MailCacheViewModel(new()));
+    }
+
+
+    [RelayCommand]
+    public void AddMailCache()
+    {
+        Tasks.Add(new MailCacheViewModel(new()));
+    }
+
+    public void Receive(RemoveMissionMessage message)
+    {
+        Tasks.Remove(message.ViewModel);
+        MissionSchedule.Unregister(message.ViewModel.Id);
     }
 }
 

@@ -95,7 +95,8 @@
                 <Button
                     Margin="10,0"
                     Command="{Binding RebuildDataCommand}"
-                    Content="重建" />
+                    Content="重建"
+                    IsEnabled="{Binding IsAccountVerified}" />
             </DockPanel>
         </DockPanel>
 

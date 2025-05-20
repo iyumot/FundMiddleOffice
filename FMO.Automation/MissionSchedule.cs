@@ -1,6 +1,4 @@
-﻿using static System.Net.Mime.MediaTypeNames;
-
-namespace FMO.Schedule;
+﻿namespace FMO.Schedule;
 
 
 public static class MissionSchedule
@@ -70,5 +68,17 @@ public static class MissionSchedule
     {
         using var db = new MissionDatabase();
         db.GetCollection<Mission>().Upsert(m);
+        if (!missions.Contains(m)) missions.Add(m);
+    }
+
+    public static void Unregister(int id)
+    {
+        var m = missions.FirstOrDefault(x => x.Id == id);
+        if (m is not null)
+        {
+            missions.Remove(m);
+            using var db = new MissionDatabase();
+            db.GetCollection<Mission>().Delete(id);
+        }
     }
 }

@@ -6,6 +6,9 @@ using System.ComponentModel;
 
 namespace FMO.Schedule;
 
+
+public record RemoveMissionMessage(AutomationViewModelBase ViewModel);
+
 public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<MissionMessage>, IRecipient<MissionProgressMessage>
 {
 
@@ -84,6 +87,12 @@ public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<M
         }
 
         ManualSetNextRun = false;
+    }
+
+    [RelayCommand]
+    public void DeleteMission(AutomationViewModelBase mission)
+    {
+        WeakReferenceMessenger.Default.Send(new RemoveMissionMessage(mission));
     }
 
 
