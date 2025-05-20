@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Serilog;
 using System.ComponentModel;
+using System.Reflection;
 
 namespace FMO.Schedule;
 
@@ -162,17 +163,30 @@ public partial class MissionViewModel<T> : AutomationViewModelBase where T : Mis
                     }
                     break;
 
-                //case nameof(NextRunTime):
-                //    if (NextRunTime != Mission.NextRun)
-                //    {
-                //        Mission.NextRun = NextRunTime;
-                //        using var db = new MissionDatabase();
-                //        db.GetCollection<Mission>().Upsert(Mission);
-                //    }
-                //    break;
                 default:
                     break;
             }
+
+
+            try
+            {
+                if (e.PropertyName is not null && Mission.GetType().GetProperty(e.PropertyName) is PropertyInfo p)
+                {
+                    var v = p.GetValue(Mission);
+                    var vm = GetType().GetProperty(e.PropertyName)!.GetValue(this);
+                    if (v != vm)
+                    {
+                        p.SetValue(Mission, vm);
+                        MissionSchedule.SaveChanges(Mission);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Save Mission {ex}");
+            }
+
+        
         }
     }
 }

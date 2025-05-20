@@ -57,6 +57,9 @@ public partial class TaskPageViewModel : ObservableObject,IRecipient<RemoveMissi
 
         //if (!Tasks.Any(x => x is MailCacheViewModel))
         //    Tasks.Add(new MailCacheViewModel(new()));
+
+        if(!Tasks.Any(x=>x is TAFromMailViewModel))
+            Tasks.Add(new TAFromMailViewModel(new()));
     }
 
 
