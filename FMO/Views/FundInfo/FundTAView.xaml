@@ -19,6 +19,7 @@
         <Style x:Key="RightAlign" TargetType="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="Foreground" Value="Black" />
         </Style>
 
 
@@ -278,6 +279,7 @@
                                 <DataGridTextColumn Binding="{Binding ConfirmedShare, Converter={StaticResource ZeroToBlankConverter}}" Header="确认份额" />
                                 <DataGridTextColumn Binding="{Binding ConfirmedAmount, Converter={StaticResource ZeroToBlankConverter}}" Header="确认金额" />
                                 <DataGridTextColumn Binding="{Binding ConfirmedNetAmount, Converter={StaticResource ZeroToBlankConverter}}" Header="确认净额" />
+                                <DataGridTextColumn Binding="{Binding ExternalId}" Header="流水号" />
                             </DataGrid.Columns>
                         </DataGrid>
                     </Border>
