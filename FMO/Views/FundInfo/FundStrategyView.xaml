@@ -32,12 +32,8 @@
 
         <!--  策略  -->
         <DockPanel>
-            <Border
-                Height="80"
-                VerticalAlignment="Top"
-                Background="Green"
-                CornerRadius="4">
-                <StackPanel>
+            <Border Background="Green" CornerRadius="4">
+                <StackPanel VerticalAlignment="Center">
                     <TextBlock
                         Margin="5,10"
                         FontSize="16"
@@ -152,12 +148,8 @@
 
         <!--  投资经理  -->
         <DockPanel Margin="0,10,0,0">
-            <Border
-                Height="100"
-                VerticalAlignment="Top"
-                Background="Green"
-                CornerRadius="4">
-                <StackPanel>
+            <Border Background="Green" CornerRadius="4">
+                <StackPanel VerticalAlignment="Center">
                     <TextBlock
                         Width="35"
                         Margin="5,10"
