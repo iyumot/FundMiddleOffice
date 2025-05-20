@@ -154,7 +154,7 @@ public partial class SecurityCardViewModel : ObservableObject, ISecurityCard
 
 
 
-public partial class SecurityCardChangeViewModel : ObservableObject,ISecurityCard
+public partial class SecurityCardChangeViewModel : ObservableObject, ISecurityCard
 {
     public SecurityCardChangeViewModel(SecurityCardChange x)
     {
@@ -177,8 +177,11 @@ public partial class SecurityCardChangeViewModel : ObservableObject,ISecurityCar
     /// <summary>
     /// 流水号
     /// </summary>
-    public string? SerialNo { get; set; }
+    public string SerialNo { get; set; }
+
     public DateOnly Date { get; }
+
+    [ObservableProperty] public partial bool IsDeregistered { get; set; }
 
     [RelayCommand]
     public void View()
@@ -208,6 +211,15 @@ public partial class SecurityCardChangeViewModel : ObservableObject,ISecurityCar
             Log.Error($"文件另存为失败: {ex.Message}");
         }
     }
-     
+
+    [RelayCommand]
+    public void Deregister()
+    {
+        using var db = DbHelper.Base();
+        var card = db.GetCollection<SecurityCardChange>().FindById(Id);
+        IsDeregistered = true;
+        if (card is not null)
+            db.GetCollection<SecurityCardChange>().Delete(card.Id);
+    }
 }
 

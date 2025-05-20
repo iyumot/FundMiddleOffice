@@ -196,6 +196,12 @@
                 </Border>
 
             </hc:SimplePanel>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsDeregistered}" Value="True">
+                    <Setter TargetName="card" Property="TextDecorations" Value="Strikethrough" />
+                    <Setter TargetName="card" Property="Foreground" Value="Gray" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
         </DataTemplate>
 
 
