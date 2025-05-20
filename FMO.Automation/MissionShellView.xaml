@@ -31,7 +31,7 @@
                     <Path
                         x:Name="lb"
                         Data="{StaticResource f.angle-right}"
-                        Fill="Black" />
+                        Fill="White" />
                 </Viewbox>
 
                 <Grid
@@ -68,7 +68,7 @@
             <DockPanel Margin="0,8" Background="Transparent">
                 <Border x:Name="borderHead" DockPanel.Dock="Top">
                     <DockPanel>
-                        <Border MinWidth="100" Background="Blue">
+                        <Border MinWidth="100" Background="RoyalBlue">
                             <TextBlock
                                 Margin="8,6"
                                 HorizontalAlignment="Center"
@@ -122,8 +122,9 @@
                 <Border
                     x:Name="borderTime"
                     Width="100"
-                    Background="Red"
-                    IsEnabled="{Binding IsActivated}">
+                    Background="LightGray"
+                    IsEnabled="{Binding IsActivated}"
+                    TextElement.Foreground="#666666">
                     <Border.Resources>
                         <Style TargetType="TextBlock">
                             <Setter Property="VerticalAlignment" Value="Center" />
@@ -136,13 +137,10 @@
                             <Setter Property="Background" Value="Gray" />
                         </Style>
                     </Border.Resources>
-                    <StackPanel
-                        Margin="4,0"
-                        VerticalAlignment="Center"
-                        TextElement.Foreground="White">
+                    <StackPanel Margin="4,0" VerticalAlignment="Center">
                         <DockPanel Margin="0,2">
                             <Viewbox Width="{StaticResource TaskButtonSize}" Height="{StaticResource TaskButtonSize}">
-                                <Path Data="{StaticResource f.clock-rotate-left}" Fill="Black" />
+                                <Path Data="{StaticResource f.clock-rotate-left}" Fill="White" />
                             </Viewbox>
                             <TextBlock DockPanel.Dock="Top" Text="{Binding LastRunTime, StringFormat=yyyy-M-d}" />
                             <TextBlock Text="{Binding LastRunTime, StringFormat=HH:mm}" />
@@ -210,6 +208,7 @@
                 </DataTrigger>
                 <DataTrigger Binding="{Binding IsActivated}" Value="True">
                     <Setter TargetName="borderTime" Property="Background" Value="Green" />
+                    <Setter TargetName="borderTime" Property="TextElement.Foreground" Value="White" />
                 </DataTrigger>
                 <Trigger Property="IsMouseOver" Value="True" />
                 <DataTrigger Binding="{Binding ManualSetNextRun}" Value="True">
