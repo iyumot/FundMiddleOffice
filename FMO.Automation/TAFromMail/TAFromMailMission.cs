@@ -79,14 +79,14 @@ public class TAFromMailMission : Mission
                         using var ss = ent.Open();
                         var mss = new MemoryStream();
                         ss.CopyTo(mss);
-                        WorkOnSheet(mss);
+                        WorkOnSheet(mss, mime.Sender.Domain);
                     }
                     else if (Regex.IsMatch(ent.Name, ".pdf", RegexOptions.IgnoreCase))
                     {
                         using var ss = ent.Open();
                         var mss = new MemoryStream();
                         ss.CopyTo(mss);
-                        WorkOnPdf(mss);
+                        WorkOnPdf(mss, mime.Sender.Domain);
                     }
                 }
             }
@@ -95,14 +95,14 @@ public class TAFromMailMission : Mission
                 var ms = new MemoryStream();
                 item.Content.DecodeTo(ms);
 
-                WorkOnSheet(ms);
+                WorkOnSheet(ms, mime.Sender.Domain);
             }
             else if (Regex.IsMatch(filepath, ".pdf", RegexOptions.IgnoreCase))
             {
                 var ms = new MemoryStream();
                 item.Content.DecodeTo(ms);
 
-                WorkOnSheet(ms);
+                WorkOnSheet(ms, mime.Sender.Domain);
             }
         }
 
@@ -112,19 +112,91 @@ public class TAFromMailMission : Mission
 
     }
 
-    private void WorkOnPdf(MemoryStream mss)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="mss"></param>
+    /// <param name="domain">识别托管</param>
+    private void WorkOnPdf(MemoryStream mss, string domain)
     {
 
     }
 
-    private void WorkOnSheet(MemoryStream stream)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <param name="domain">识别托管</param>
+    private void WorkOnSheet(MemoryStream stream, string domain)
     {
-        if (stream is null || stream.Length == 0) return ;
+        if (stream is null || stream.Length == 0) return;
 
         if (stream.CanSeek)
-            stream.Seek(0, SeekOrigin.Begin); 
+            stream.Seek(0, SeekOrigin.Begin);
 
         var reader = ExcelReaderFactory.CreateReader(stream);
+
+        reader.Read();
+        var head = new object[reader.FieldCount];
+        reader.GetValues(head);
+
+        // 列表、确认函
+        if (head.Length > 6)
+        {
+            //列表
+           // GetField(head);
+
+
+             
+
+
+
+        }
+        else
+        {
+            //确认函
+        }
+    }
+
+
+
+    internal struct FieldIndex
+    {
+        public int Code { get; set; }
+
+        public int Name { get; set; }
+
+        public int MainCode { get; set; }
+
+        public int MainName { get; set; }
+
+        public int Type { get; set; }
+
+        public int RequestDate { get; set; }
+
+        public int ConfirmDate { get; set; }
+
+        public int RequestShare { get; set; }
+
+        public int RequestAmount { get; set; }
+
+        public int ConfirmShare { get; set; }
+
+        public int ConfirmAmount { get; set; }
         
+        public int ConfirmNetAmount { get; set; }
+
+        public int Fee { get; set; }
+
+        public int PerformanceFee { get; set; }
+
+        public int Saler { get; set; }
+
+        public int Identity { get; set; }
+
+        public int RequestId { get; set; }
+
+        public int ConfirmId { get; set; }
+
     }
 }
