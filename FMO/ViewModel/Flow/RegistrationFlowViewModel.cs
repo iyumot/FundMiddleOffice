@@ -226,7 +226,7 @@ public partial class RegistrationFlowViewModel : FlowViewModel
                 var fi = new FileInfo(path);
                 if (!fi.Directory!.Exists) fi.Directory.Create();
 
-                if (WordTpl.GenerateRegisterAnounce(fund, path))
+                if (Tpl.GenerateRegisterAnounce(fund, path))
                 {
                     if (CommitmentLetter.File?.Exists ?? false)
                         CommitmentLetter.File.Delete();

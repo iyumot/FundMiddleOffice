@@ -46,7 +46,8 @@ public partial class StatementPageViewModel : ObservableObject
                 })
             };
 
-            ExcelTpl.GenerateFromTemplate(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "summary.xlsx"), "nv_summary.xlsx", obj);
+            Tpl.Generate(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "summary.xlsx"), Tpl.GetPath("nv_summary.xlsx"), obj);
+            //ExcelTpl.GenerateFromTemplate(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "summary.xlsx"), "nv_summary.xlsx", obj);
         }
         catch (Exception e)
         { 

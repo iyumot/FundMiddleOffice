@@ -283,7 +283,7 @@ public partial class FutureAccountViewModel : ObservableObject
 
 
 
-                WordTpl.GenerateFromTemplate(Path.Combine(folder, "开户材料.docx"), tplPath, obj);
+                Tpl.GenerateByPredefined(Path.Combine(folder, "开户材料.docx"), tplPath, obj);
             }
             catch (Exception e)
             {

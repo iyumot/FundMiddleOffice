@@ -225,7 +225,7 @@ namespace FMO
                             {"Capital", Capital },
                             { "Share", InitialAsset.OldValue }
                         };
-                    if (WordTpl.GenerateFromTemplate(path, "产品成立公告.docx", data))
+                    if (Tpl.GenerateByPredefined(path, "产品成立公告.docx", data))
                     {
                         if (v.File?.Exists ?? false)
                             v.File.Delete();
