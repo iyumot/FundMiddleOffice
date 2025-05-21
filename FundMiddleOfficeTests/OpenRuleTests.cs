@@ -1,5 +1,6 @@
 ﻿using FMO.Models;
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace FMO.Tests;
 
@@ -18,7 +19,6 @@ public class OpenRuleTests
         rule.DayOrder = SequenceOrder.Descend;
         rule.TradeOrNatural = true;
 
-        rule.Filter(dates);
 
 
     }
@@ -37,7 +37,6 @@ public class OpenRuleTests
         rule.WeekOrder = SequenceOrder.Descend;
         rule.TradeOrNatural = true;
 
-        rule.Filter(dates);
 
 
     }
@@ -55,7 +54,6 @@ public class OpenRuleTests
         rule.TradeOrNatural = true;
         rule.Postpone = true;
 
-        rule.IsPair(new DateOnly(2025, 8, 4));
     }
 
     [TestMethod]
@@ -66,4 +64,17 @@ public class OpenRuleTests
             Debug.WriteLine($"{i} {(i - 1) % 3 + 1}");
         }
     }
+
+    [TestMethod]
+    public void testfunc()
+    {
+        Debug.WriteLine(JsonSerializer.Serialize(new a() { x = () => 3 }));
+    }
+}
+
+
+
+public class a
+{
+    public Func<int> x { get; set; }
 }

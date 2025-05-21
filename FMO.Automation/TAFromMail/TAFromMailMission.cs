@@ -1,9 +1,11 @@
-﻿using System.IO;
-using System.IO.Compression;
-using System.Text.RegularExpressions;
-using ExcelDataReader;
+﻿using ExcelDataReader;
+using FMO.Models;
 using MimeKit;
 using Serilog;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.IO.Compression;
+using System.Text.RegularExpressions;
 
 namespace FMO.Schedule;
 
@@ -144,10 +146,10 @@ public class TAFromMailMission : Mission
         if (head.Length > 6)
         {
             //列表
-           // GetField(head);
+            GetField(head, domain);
 
 
-             
+
 
 
 
@@ -158,45 +160,175 @@ public class TAFromMailMission : Mission
         }
     }
 
+    private void GetField(object[] head, string domain)
+    {
+        var r = GetField(head.Select(x => x?.ToString() ?? "").ToList());
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="head"></param>
+    /// <returns></returns>
+    private bool GetField(List<string> head)
+    {
+        ///产品代码	产品名称	客户名称	业务类型	申请日期	确认日期	确认金额	确认净额	确认份额	确认结果	单位净值	累计净值	手续费	业绩报酬	
+        ///归管理人费用	归基金资产费用	归销售机构费用	手续费折扣率	确认总金额（含费）	申请金额	申请份额	剩余份额	销售机构代码	销售机构名称	直销渠道名称
+        ///基金账号	交易账号	证件类型	证件号码	客户类型	分红方式	返回信息	账户利息	主产品名称	主产品代码	申请单号	确认流水号
+
+        FieldIndex idx = new();
+        bool failed = false;
+        // 主产品
+        idx.MainName = GetFieldByRegex(head, "主产品名称", ref failed);
+        idx.MainCode = GetFieldByRegex(head, "主产品代码", ref failed);
+        failed = false;
+
+        idx.Name = GetFieldByRegex(head, "产品名称", ref failed);
+        idx.Code = GetFieldByRegex(head, "产品代码", ref failed);
+
+        idx.Type = GetFieldByRegex(head, "业务类型", ref failed);
+
+        idx.RequestDate = GetFieldByRegex(head, "申请日期", ref failed);
+        idx.RequestAmount = GetFieldByRegex(head, "申请金额", ref failed);
+        idx.RequestShare = GetFieldByRegex(head, "申请份额", ref failed);
+
+        idx.ConfirmDate = GetFieldByRegex(head, "确认日期", ref failed);
+        idx.ConfirmShare = GetFieldByRegex(head, "确认份额", ref failed);
+        idx.ConfirmNetAmount = GetFieldByRegex(head, "确认净额", ref failed);
+        idx.ConfirmAmount = GetFieldByRegex(head, "确认金额", ref failed);
+
+        idx.Type = GetFieldByRegex(head, "手续费", ref failed);
+        idx.Type = GetFieldByRegex(head, "业绩报酬", ref failed);
+
+        idx.Type = GetFieldByRegex(head, "证件号码", ref failed);
+        idx.Type = GetFieldByRegex(head, "客户名称", ref failed);
+
+        idx.Type = GetFieldByRegex(head, "申请单号", ref failed);
+        idx.Type = GetFieldByRegex(head, "确认流水号", ref failed);
+
+
+
+
+        return !failed;
+    }
+
+    private int GetFieldByRegex(List<string> head, string regex, ref bool failed)
+    {
+        var id = -1;
+        var sel = head.Where(x => Regex.IsMatch(x, regex)).ToArray();
+        if (sel.Length == 1)
+        {
+            id = head.IndexOf(sel[0]);
+            head.RemoveAt(id);
+        }
+        else
+        {
+            Log.Error($"TA 表头解析异常，多个匹配 {regex} {string.Join(',', head)}");
+            failed = true;
+        }
+        return id;
+    }
 
 
     internal struct FieldIndex
     {
-        public int Code { get; set; }
+        public FieldIndex()
+        {
+        }
 
-        public int Name { get; set; }
+        public int Code { get; set; } = -1;
 
-        public int MainCode { get; set; }
+        public int Name { get; set; } = -1;
 
-        public int MainName { get; set; }
+        public int MainCode { get; set; } = -1;
 
-        public int Type { get; set; }
+        public int MainName { get; set; } = -1;
 
-        public int RequestDate { get; set; }
+        public int Type { get; set; } = -1;
 
-        public int ConfirmDate { get; set; }
+        public int RequestDate { get; set; } = -1;
 
-        public int RequestShare { get; set; }
+        public int ConfirmDate { get; set; } = -1;
 
-        public int RequestAmount { get; set; }
+        public int RequestShare { get; set; } = -1;
 
-        public int ConfirmShare { get; set; }
+        public int RequestAmount { get; set; } = -1;
 
-        public int ConfirmAmount { get; set; }
-        
-        public int ConfirmNetAmount { get; set; }
+        public int ConfirmShare { get; set; } = -1;
 
-        public int Fee { get; set; }
+        public int ConfirmAmount { get; set; } = -1;
 
-        public int PerformanceFee { get; set; }
+        public int ConfirmNetAmount { get; set; } = -1;
 
-        public int Saler { get; set; }
+        public int Fee { get; set; } = -1;
 
-        public int Identity { get; set; }
+        public int PerformanceFee { get; set; } = -1;
 
-        public int RequestId { get; set; }
+        public int Saler { get; set; } = -1;
 
-        public int ConfirmId { get; set; }
+        public int Identity { get; set; } = -1;
+
+        public int RequestId { get; set; } = -1;
+
+        public int ConfirmId { get; set; } = -1;
 
     }
+}
+
+
+public class FieldInfo<TE, TP>
+{
+
+    public required string Header { get; set; }
+
+    public int Index { get; set; } = -1;
+
+    public required Func<object, TP> GetValue { get; set; }
+
+    public required Action<TE, TP> SetValue { get; set; }
+
+    public FieldInfo()
+    {
+    }
+
+    [SetsRequiredMembers]
+    public FieldInfo(string header, Func<object, TP> getValue, Action<TE, TP> setValue)
+    {
+        Header = header;
+        GetValue = getValue;
+        SetValue = setValue;
+    }
+}
+
+public class FieldGather<T>
+{
+
+
+
+}
+
+
+
+public class TAFieldGather : FieldGather<TransferRecord>
+{
+    public FieldInfo<TransferRecord, string?> FundName { get; } = new("主产品名称", o => o switch { string s => s, _ => o.ToString() }, (x, y) => x.FundName = y);
+
+
+
+
+
+
+
+
+
+    public bool CheckField(List<string> fields)
+    {
+        FundName.Index = fields.IndexOf(FundName.Header);
+
+
+
+
+
+    }
+
 }
