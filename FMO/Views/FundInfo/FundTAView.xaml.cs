@@ -1,8 +1,11 @@
-﻿using System.Windows.Controls;
+﻿using System.IO;
+using System.Windows.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
+using FMO.TPL;
 using FMO.Utilities;
+using Microsoft.Win32;
 
 namespace FMO;
 
@@ -26,23 +29,43 @@ public partial class FundTAViewModel : ObservableObject
         FundId = fundId;
 
         using var db = DbHelper.Base();
-        IsCleared = db.GetCollection<Fund>().FindById(fundId).Status > FundStatus.StartLiquidation;
+        Fund fund = db.GetCollection<Fund>().FindById(fundId);
+        FundName = fund.Name;
+
+        IsCleared = fund.Status > FundStatus.StartLiquidation;
         var ta = db.GetCollection<TransferRecord>().Find(x => x.FundId == fundId).ToList();
         var ts = db.GetCollection<FundShareRecord>().Find(x => x.FundId == fundId).OrderBy(x => x.Date).ToList();
-        Records = ta; 
+        Records = ta;
+
+        // customeid = 0
+        foreach (var item in ta.Where(x=>x.CustomerId == 0)) 
+            item.CustomerId = item.CustomerIdentity.GetHashCode(); 
+
+
+
 
         var daily = db.GetDailyCollection(fundId).FindAll().OrderByDescending(x => x.Date).FirstOrDefault(x => x.NetValue > 0);
         var nv = daily?.NetValue ?? 0;
         NetValueDate = daily?.Date;
+        Daily = daily;
 
         if (ta.Count > 0)
         {
             // 按投资人分
             var cur = ta.GroupBy(x => x.CustomerId).Select(x => new { Id = x.Key, Name = x.First().CustomerName, Record = x, Share = x.Sum(y => y.ShareChange()) }).OrderByDescending(x => x.Share);
-            InvestorCount = cur.Count(x=>x.Share > 0);
+            InvestorCount = cur.Count(x => x.Share > 0);
             CurrentTotalShare = cur.Sum(x => x.Share);
             CurrentShareDate = ta.Max(x => x.ConfirmedDate);
-            CurrentShares = cur.Select(x => new InvestorShareViewModel { Id = x.Id, Name = x.Name, Share = x.Share, Asset = x.Share * nv, Profit = x.Record.Sum(y => y.AmountChange()) + x.Share * nv  }).ToList();
+            CurrentShares = cur.Select(x => new InvestorShareViewModel
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Share = x.Share,
+                Asset = x.Share * nv,
+                Deposit = x.Record.Where(x => x.Type switch { TARecordType.Subscription or TARecordType.Purchase or TARecordType.MoveIn => true, _ => false }).Sum(x => x.ConfirmedNetAmount),
+                Withdraw = x.Record.Where(x => x.Type switch { TARecordType.Redemption or TARecordType.Redemption or TARecordType.MoveOut or TARecordType.Distribution => true, _ => false }).Sum(x => x.ConfirmedNetAmount),
+                Profit = x.Record.Sum(y => y.AmountChange()) + x.Share * nv
+            }).ToList();
             CurrentTotalProfit = CurrentShares.Sum(x => x.Profit ?? 0);
         }
 
@@ -58,6 +81,8 @@ public partial class FundTAViewModel : ObservableObject
     public int FundId { get; }
 
     public IList<TransferRecord> Records { get; set; }
+
+    public string FundName { get; }
 
     /// <summary>
     /// 清盘
@@ -87,6 +112,8 @@ public partial class FundTAViewModel : ObservableObject
     [ObservableProperty]
     public partial DateOnly? NetValueDate { get; set; }
 
+    public DailyValue? Daily { get; set; }
+
 
     [ObservableProperty]
     public partial List<InvestorShareViewModel>? InitialShares { get; set; }
@@ -108,6 +135,40 @@ public partial class FundTAViewModel : ObservableObject
         InvestorDetailIsOpen = true;
         InvestorDetail = Records.Where(x => x.CustomerId == v.Id);
     }
+
+
+    [RelayCommand]
+    public void Export()
+    {
+        if (CurrentShares is null || Daily is null) return;
+
+
+        // 默认模板
+        var tplfile = "invester_share.xlsx";
+        if (Tpl.IsExists(tplfile))
+        {
+            tplfile = Tpl.GetPath(tplfile);
+        }
+        else
+        {
+            var dlg = new OpenFileDialog();
+            dlg.Title = "选择表格模板";
+            dlg.Filter = "Excel|*.xlsx";
+            if (dlg.ShowDialog() switch { false or null => true, _ => false })
+                return;
+
+            tplfile = dlg.FileName;
+        }
+        try
+        {
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), $"{FundName}-份额.xlsx");
+            Tpl.Generate(path, tplfile, new { ii = CurrentShares.Where(x => x.Share > 0), Date = NetValueDate, NetValue = Daily.NetValue, Share = Daily.Share });
+
+        }
+        catch (Exception)
+        {
+        }
+    }
 }
 
 public class InvestorShareViewModel
@@ -115,7 +176,7 @@ public class InvestorShareViewModel
     public int Id { get; set; }
 
     public string? Name { get; set; }
-     
+
     public decimal Share { get; set; }
 
     /// <summary>
@@ -124,5 +185,9 @@ public class InvestorShareViewModel
     public decimal Asset { get; set; }
 
 
-    public decimal? Profit { get; set; } 
+    public decimal Deposit { get; set; }
+
+    public decimal Withdraw { get; set; }
+
+    public decimal? Profit { get; set; }
 }

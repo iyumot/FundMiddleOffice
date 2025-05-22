@@ -32,8 +32,16 @@ public static class DatabaseAssist
                 var cc = db.GetCollection<Investor>().FindAll().ToArray();
                 foreach (var item in d)
                 {
-                    var tmp = cc.Where(x => x.Identity.Id == item.CustomerIdentity);
-                    if (tmp.Count() == 1)
+                    var tmp = cc.Where(x => x.Identity.Id == item.CustomerIdentity).ToArray();
+
+                    // 没有找到investor
+                    if (tmp.Length == 0)
+                    {
+                        var c = new Investor { Name = item.CustomerName, Identity = new Identity { Id = item.CustomerIdentity } };
+                        db.GetCollection<Investor>().Insert(c);
+                        item.CustomerId = c.Id;
+                    }
+                    else if (tmp.Count() == 1)
                         item.CustomerId = tmp.First().Id;
                     else Log.Error($"TransferRecord {item.Id} {item.FundName} {item.CustomerName} 与多个Inverstor对应");
                 }
@@ -90,6 +98,23 @@ public class BaseDatabase : LiteDatabase
     }
 
     public BaseDatabase(string con) : base(con, null) { }
+
+    public Fund? FindFund(string? fundCode)
+    {
+        var c = GetCollection<Fund>();
+
+        if (fundCode?.Length > 0)
+        {
+            // code匹配
+            var f = c.FindOne(x => x.Code != null && fundCode.Contains(x.Code!));
+            if (f is not null) return f;
+
+            // SNN111 NN111A/B SNN111A/B 这类
+            f = c.FindAll().Where(x => x.Code is not null && fundCode.Contains(x.Code![1..])).FirstOrDefault();
+            if (f is not null) return f;
+        }
+        return null;
+    }
 
     public ILiteCollection<DailyValue> GetDailyCollection(int fid)
     {

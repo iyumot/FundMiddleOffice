@@ -20,6 +20,7 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextAlignment" Value="Right" />
             <Setter Property="Foreground" Value="Black" />
+
         </Style>
 
 
@@ -32,13 +33,13 @@
 
         <DataTemplate x:Key="DT.ShareCell">
             <local:CopyableControl HorizontalAlignment="Right">
-                <TextBlock Foreground="Black" Text="{Binding Share, StringFormat=N2}" />
+                <TextBlock Foreground="Black" Text="{Binding Share, StringFormat='###,###,###,###.##'}" />
             </local:CopyableControl>
         </DataTemplate>
 
         <DataTemplate x:Key="DT.ProfitCell">
             <local:CopyableControl HorizontalAlignment="Right">
-                <TextBlock Foreground="Black" Text="{Binding Profit, StringFormat=N2}" />
+                <TextBlock Foreground="Black" Text="{Binding Profit, StringFormat='###,###,###,###.##'}" />
             </local:CopyableControl>
         </DataTemplate>
 
@@ -188,6 +189,16 @@
         <!--  当前份额  -->
         <DockPanel Visibility="{Binding IsCleared, Converter={StaticResource Boolean2VisibilityReConverter}}">
             <DockPanel DockPanel.Dock="Top">
+                <DockPanel DockPanel.Dock="Right">
+                    <DockPanel.Resources>
+                        <Style BasedOn="{StaticResource ButtonIcon.Small}" TargetType="Button" />
+                    </DockPanel.Resources>
+                    <Button
+                        hc:IconElement.Geometry="{StaticResource f.expand}"
+                        Command="{Binding ExportCommand}"
+                        ToolTip="导出" />
+                </DockPanel>
+
                 <Border
                     VerticalAlignment="Top"
                     Background="Green"
@@ -223,9 +234,19 @@
                         <DataGridTemplateColumn CellTemplate="{StaticResource DT.ShareCell}" Header="持有份额" />
 
                         <DataGridTextColumn
-                            Binding="{Binding Asset, StringFormat=N2}"
+                            Binding="{Binding Asset, StringFormat='###,###,###,###.##'}"
                             ElementStyle="{StaticResource RightAlign}"
                             Header="市值" />
+
+                        <DataGridTextColumn
+                            Binding="{Binding Deposit, StringFormat='###,###,###,###.##'}"
+                            ElementStyle="{StaticResource RightAlign}"
+                            Header="累计入金" />
+                        <DataGridTextColumn
+                            Binding="{Binding Withdraw, StringFormat='###,###,###,###.##'}"
+                            ElementStyle="{StaticResource RightAlign}"
+                            Header="累计出金" />
+
                         <DataGridTemplateColumn CellTemplate="{StaticResource DT.ProfitCell}">
                             <DataGridTemplateColumn.Header>
                                 <DockPanel LastChildFill="False">

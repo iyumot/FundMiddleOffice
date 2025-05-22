@@ -13,7 +13,7 @@ public static class DateTimeHelper
     }
 
 
-    public static bool TryParse(string s, out DateOnly d)
+    public static bool TryParse(string? s, out DateOnly d)
     {
         if (DateOnly.TryParse(s, out d))
             return true;

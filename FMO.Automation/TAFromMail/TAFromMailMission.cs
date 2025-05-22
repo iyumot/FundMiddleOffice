@@ -1,11 +1,11 @@
-﻿using ExcelDataReader;
-using FMO.Models;
-using MimeKit;
-using Serilog;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
+﻿using System.IO;
 using System.IO.Compression;
 using System.Text.RegularExpressions;
+using ExcelDataReader;
+using FMO.Models;
+using FMO.Utilities;
+using MimeKit;
+using Serilog;
 
 namespace FMO.Schedule;
 
@@ -129,9 +129,9 @@ public class TAFromMailMission : Mission
     /// </summary>
     /// <param name="stream"></param>
     /// <param name="domain">识别托管</param>
-    private void WorkOnSheet(MemoryStream stream, string domain)
+    public static bool WorkOnSheet(Stream stream, string domain)
     {
-        if (stream is null || stream.Length == 0) return;
+        if (stream is null || stream.Length == 0) return false;
 
         if (stream.CanSeek)
             stream.Seek(0, SeekOrigin.Begin);
@@ -142,193 +142,97 @@ public class TAFromMailMission : Mission
         var head = new object[reader.FieldCount];
         reader.GetValues(head);
 
+        List<TransferRecord> records = new List<TransferRecord>();
+
         // 列表、确认函
         if (head.Length > 6)
         {
-            //列表
-            GetField(head, domain);
+            //列表 
+            SheetParser parser = SheetParser.Create(domain);
+            var ta = parser.ParseTASheet(reader);
 
-
-
-
-
-
+            foreach (var item in ta)
+            {
+                PostHandle(item);
+            }
+            records.AddRange(ta);
         }
         else
         {
             //确认函
         }
-    }
 
-    private void GetField(object[] head, string domain)
-    {
-        var r = GetField(head.Select(x => x?.ToString() ?? "").ToList());
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="head"></param>
-    /// <returns></returns>
-    private bool GetField(List<string> head)
-    {
-        ///产品代码	产品名称	客户名称	业务类型	申请日期	确认日期	确认金额	确认净额	确认份额	确认结果	单位净值	累计净值	手续费	业绩报酬	
-        ///归管理人费用	归基金资产费用	归销售机构费用	手续费折扣率	确认总金额（含费）	申请金额	申请份额	剩余份额	销售机构代码	销售机构名称	直销渠道名称
-        ///基金账号	交易账号	证件类型	证件号码	客户类型	分红方式	返回信息	账户利息	主产品名称	主产品代码	申请单号	确认流水号
-
-        FieldIndex idx = new();
-        bool failed = false;
-        // 主产品
-        idx.MainName = GetFieldByRegex(head, "主产品名称", ref failed);
-        idx.MainCode = GetFieldByRegex(head, "主产品代码", ref failed);
-        failed = false;
-
-        idx.Name = GetFieldByRegex(head, "产品名称", ref failed);
-        idx.Code = GetFieldByRegex(head, "产品代码", ref failed);
-
-        idx.Type = GetFieldByRegex(head, "业务类型", ref failed);
-
-        idx.RequestDate = GetFieldByRegex(head, "申请日期", ref failed);
-        idx.RequestAmount = GetFieldByRegex(head, "申请金额", ref failed);
-        idx.RequestShare = GetFieldByRegex(head, "申请份额", ref failed);
-
-        idx.ConfirmDate = GetFieldByRegex(head, "确认日期", ref failed);
-        idx.ConfirmShare = GetFieldByRegex(head, "确认份额", ref failed);
-        idx.ConfirmNetAmount = GetFieldByRegex(head, "确认净额", ref failed);
-        idx.ConfirmAmount = GetFieldByRegex(head, "确认金额", ref failed);
-
-        idx.Type = GetFieldByRegex(head, "手续费", ref failed);
-        idx.Type = GetFieldByRegex(head, "业绩报酬", ref failed);
-
-        idx.Type = GetFieldByRegex(head, "证件号码", ref failed);
-        idx.Type = GetFieldByRegex(head, "客户名称", ref failed);
-
-        idx.Type = GetFieldByRegex(head, "申请单号", ref failed);
-        idx.Type = GetFieldByRegex(head, "确认流水号", ref failed);
-
-
-
-
-        return !failed;
-    }
-
-    private int GetFieldByRegex(List<string> head, string regex, ref bool failed)
-    {
-        var id = -1;
-        var sel = head.Where(x => Regex.IsMatch(x, regex)).ToArray();
-        if (sel.Length == 1)
+        // 更新
+        using var db = DbHelper.Base();
+        foreach (var rec in records)
         {
-            id = head.IndexOf(sel[0]);
-            head.RemoveAt(id);
-        }
-        else
-        {
-            Log.Error($"TA 表头解析异常，多个匹配 {regex} {string.Join(',', head)}");
-            failed = true;
-        }
-        return id;
-    }
+            // 通过平台获取的不会被更新
+            var old = db.GetCollection<TransferRecord>().FindOne(x => x.ExternalId == rec.ExternalId);
 
+            if (old is null)
+                old = db.GetCollection<TransferRecord>().FindOne(x => x.CustomerIdentity == rec.CustomerIdentity && x.ConfirmedDate == rec.ConfirmedDate &&
+                            x.FundCode == rec.FundCode && x.ConfirmedShare == rec.ConfirmedShare && x.ConfirmedAmount == rec.ConfirmedAmount);
 
-    internal struct FieldIndex
-    {
-        public FieldIndex()
-        {
+            if (old is not null && (old.Source != "manual" && !string.IsNullOrWhiteSpace(old.Source)))
+                continue;
+
+            rec.Id = old?.Id ?? 0;
+            db.GetCollection<TransferRecord>().Upsert(rec);
         }
 
-        public int Code { get; set; } = -1;
 
-        public int Name { get; set; } = -1;
-
-        public int MainCode { get; set; } = -1;
-
-        public int MainName { get; set; } = -1;
-
-        public int Type { get; set; } = -1;
-
-        public int RequestDate { get; set; } = -1;
-
-        public int ConfirmDate { get; set; } = -1;
-
-        public int RequestShare { get; set; } = -1;
-
-        public int RequestAmount { get; set; } = -1;
-
-        public int ConfirmShare { get; set; } = -1;
-
-        public int ConfirmAmount { get; set; } = -1;
-
-        public int ConfirmNetAmount { get; set; } = -1;
-
-        public int Fee { get; set; } = -1;
-
-        public int PerformanceFee { get; set; } = -1;
-
-        public int Saler { get; set; } = -1;
-
-        public int Identity { get; set; } = -1;
-
-        public int RequestId { get; set; } = -1;
-
-        public int ConfirmId { get; set; } = -1;
-
+        return true;
     }
-}
 
 
-public class FieldInfo<TE, TP>
-{
 
-    public required string Header { get; set; }
-
-    public int Index { get; set; } = -1;
-
-    public required Func<object, TP> GetValue { get; set; }
-
-    public required Action<TE, TP> SetValue { get; set; }
-
-    public FieldInfo()
+    private static void PostHandle(TransferRecord r)
     {
+        // 后处理
+        // 对应fund id
+        using var db = DbHelper.Base();
+        var fund = db.FindFund(r.FundCode);
+
+        // 没找到对应的fund
+        if (fund is null)
+        {
+            Log.Error($"{r.FundName}({r.FundCode}) {r.CustomerName} {r.ConfirmedDate} 未找到对应基金");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(r.FundName))
+        {
+            Log.Error($"{r.FundName}({r.FundCode}) {r.CustomerName} {r.ConfirmedDate} 数据异常");
+            return;
+        }
+        r.FundId = fund.Id;
+
+        // 有子份额的
+        var m = Regex.Match(r.FundName, @$"{fund.Name}(\w+)");
+        if (m.Success)
+            r.ShareClass = m.Groups[1].Value;
+
+        r.Source = "Mail";
     }
 
-    [SetsRequiredMembers]
-    public FieldInfo(string header, Func<object, TP> getValue, Action<TE, TP> setValue)
+
+
+    public static TAFieldGather[] GetFieldGather(string domain)
     {
-        Header = header;
-        GetValue = getValue;
-        SetValue = setValue;
-    }
-}
-
-public class FieldGather<T>
-{
+        switch (domain)
+        {
+            case "cstisc.com":
+                return [new() { Fee = new("总费用", x => FieldGather.DecimalValue(x), (x, y) => x.Fee = y), ExternalId = new("TA确认号", o => FieldGather.StringValue(o), (x, y) => x.ExternalId = y) }];
 
 
+        }
 
-}
-
-
-
-public class TAFieldGather : FieldGather<TransferRecord>
-{
-    public FieldInfo<TransferRecord, string?> FundName { get; } = new("主产品名称", o => o switch { string s => s, _ => o.ToString() }, (x, y) => x.FundName = y);
-
-
-
-
-
-
-
-
-
-    public bool CheckField(List<string> fields)
-    {
-        FundName.Index = fields.IndexOf(FundName.Header);
-
-
-
-
-
+        return [new()];
     }
 
+
+
+
+
 }
+
