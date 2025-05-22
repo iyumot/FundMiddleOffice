@@ -137,7 +137,10 @@ public partial class FileViewModelBase : ObservableObject, IFileViewModel
     {
         if (File is null || !File.Exists) return;
 
-        Clipboard.SetDataObject(new DataObject(DataFormats.FileDrop, new string[] { File.FullName }));
+
+        var obj = new DataObject(DataFormats.FileDrop, new string[] { File.FullName });
+        obj.SetText(File.FullName);
+        Clipboard.SetDataObject(obj);
     }
 
 

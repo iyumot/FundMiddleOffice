@@ -23,6 +23,10 @@ public partial class MainWindow : HandyControl.Controls.Window
     {
         InitializeComponent();
 
+#if DEBUG
+        Title = "调试模式";
+#endif
+
         Width = SystemParameters.FullPrimaryScreenWidth * 0.9;
         Height = SystemParameters.FullPrimaryScreenHeight * 0.85;
 
