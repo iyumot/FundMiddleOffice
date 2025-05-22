@@ -12,11 +12,12 @@ namespace FMO.Schedule;
 /// <summary>
 /// 
 /// </summary>
-public class TAMissionRecord
+public class MailMissionRecord
 {
     public required string Id { get; set; }
 
     public DateTime Time { get; set; }
+    public bool HasError { get; internal set; }
 }
 
 public class TAFromMailMission : Mission
@@ -47,12 +48,23 @@ public class TAFromMailMission : Mission
         // 获取所有文件
         var files = di.GetFiles();
         using var db = new MissionDatabase();
-        var worked = db.GetCollection<TAMissionRecord>().FindAll();
+        var coll = db.GetCollection<MailMissionRecord>(nameof(TAFromMailMission));
+        var worked = coll.FindAll().ToArray();
 
         var work = IgnoreHistory ? files : files.ExceptBy(worked.Select(x => x.Id), x => x.Name);
 
         foreach (var f in work)
-            WorkOne(f);
+        {
+            try
+            {
+                WorkOne(f);
+                coll.Insert(new MailMissionRecord { Id = f.Name, Time = DateTime.Now });
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"TA From Mail {ex}");
+            }
+        }
 
         return true;
     }

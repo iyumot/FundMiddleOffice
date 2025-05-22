@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -27,8 +28,7 @@ public partial class TAFromMailView : UserControl
     }
 }
 
-
-
+[MissionTitle("TA更新")]
 public partial class TAFromMailViewModel : MissionViewModel<TAFromMailMission>
 {
     [ObservableProperty]

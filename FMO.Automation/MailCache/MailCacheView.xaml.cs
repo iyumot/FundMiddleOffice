@@ -31,6 +31,7 @@ public partial class MailCacheView : UserControl
 }
 
 
+[MissionTitle("邮件缓存")]
 public partial class MailCacheViewModel : MissionViewModel<MailCacheMission>
 {
     [ObservableProperty]

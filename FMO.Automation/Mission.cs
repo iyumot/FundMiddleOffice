@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
+﻿using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace FMO.Schedule;
 
@@ -76,3 +77,13 @@ public abstract class Mission
 
 }
 
+public class MissionTitleAttribute:Attribute
+{
+    [SetsRequiredMembers]
+    public MissionTitleAttribute(string v)
+    {
+        Title = v;
+    }
+
+    public required string Title { get; set; }
+}
