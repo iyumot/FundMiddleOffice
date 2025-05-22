@@ -31,4 +31,21 @@ public class TAFromMailMissionTests
 
 
     }
+
+
+    [TestMethod]
+    public void TestConfirm()
+    {
+        Directory.SetCurrentDirectory("D:\\fmo");
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+        using var fs = new FileStream(@"E:\share\交易确认函_20250402.xlsx", FileMode.Open);
+
+
+        var sp = SheetParser.Create("csc.com.cn");
+        var reader = ExcelReaderFactory.CreateReader(fs);
+        var d= sp.ParseTAConfirm(reader);
+        
+
+    }
 }

@@ -206,3 +206,21 @@ public class TAFieldGather : FieldGather<TransferRecord>
     }
 
 }
+
+
+
+/// <summary>
+/// string -> property
+/// string[]
+/// object[]
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public class FieldParser<T>
+{
+
+
+
+
+}
+
+ 

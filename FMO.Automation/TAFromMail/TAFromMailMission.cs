@@ -150,22 +150,27 @@ public class TAFromMailMission : Mission
             //列表 
             SheetParser parser = SheetParser.Create(domain);
             var ta = parser.ParseTASheet(reader);
-
-            foreach (var item in ta)
-            {
-                PostHandle(item);
-            }
             records.AddRange(ta);
         }
         else
         {
             //确认函
+            SheetParser parser = SheetParser.Create(domain);
+            var ta = parser.ParseTAConfirm(reader);
+            records.AddRange(ta);
         }
 
         // 更新
         using var db = DbHelper.Base();
         foreach (var rec in records)
         {
+            // 校验
+            if (rec.Type == TARecordType.UNK || (rec.ConfirmedShare == 0 && rec.ConfirmedAmount == 0))
+            {
+                Log.Error($"TA Bad Data {rec.PrintProperties()}");
+                continue;
+            }
+
             // 通过平台获取的不会被更新
             var old = db.GetCollection<TransferRecord>().FindOne(x => x.ExternalId == rec.ExternalId);
 
