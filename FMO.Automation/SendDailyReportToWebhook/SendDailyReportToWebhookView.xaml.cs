@@ -20,6 +20,7 @@ public partial class SendDailyReportToWebhookView : UserControl
 }
 
 
+[MissionTitle("发送日报")]
 public partial class SendDailyReportToWebhookViewModel : MissionViewModel<SendDailyReportToWebhookMission>
 {
     [ObservableProperty]
