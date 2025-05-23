@@ -183,7 +183,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                     var page = Pages.FirstOrDefault(x => x.Content is TaskPage);
                     if (page is null)
                     {
-                        page = new TabItemInfo { Header =  "任务", HeaderBrush = Brushes.White, Background = Brushes.CadetBlue, Content = new TaskPage() };
+                        page = new TabItemInfo { Header =  "任务", HeaderBrush = Brushes.White, Background = Brushes.DarkOrchid, Content = new TaskPage() };
                         Pages.Add(page);
                     }
 
