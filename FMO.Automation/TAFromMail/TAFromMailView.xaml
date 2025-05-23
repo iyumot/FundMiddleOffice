@@ -19,8 +19,16 @@
         Margin="8,0"
         VerticalAlignment="Center"
         DockPanel.Dock="Top"
-        IsEnabled="{Binding IsWorking, Converter={StaticResource Boolean2VisibilityReConverter}}"
+        IsEnabled="{Binding IsWorking, Converter={StaticResource Boolean2BooleanReConverter}}"
         LastChildFill="False">
+
+
+        <ProgressBar
+            Margin="0,6,0,0"
+            DockPanel.Dock="Bottom"
+            Visibility="{Binding IsWorking, Converter={StaticResource Boolean2VisibilityConverter}}"
+            Value="{Binding ProgressValue}" />
+
         <hc:TextBox
             Width="200"
             hc:InfoElement.Placeholder="邮箱 user@mail.com"
@@ -35,6 +43,6 @@
             Margin="10,0"
             Command="{Binding RebuildDataCommand}"
             Content="重建"
-            IsEnabled="{Binding IsAccountVerified}" />
+            IsEnabled="{Binding IsAvailable}" />
     </DockPanel>
 </UserControl>

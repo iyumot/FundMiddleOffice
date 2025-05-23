@@ -1,9 +1,9 @@
-﻿using System.Text.RegularExpressions;
-using ExcelDataReader;
+﻿using ExcelDataReader;
 using FMO.Models;
 using FMO.Utilities;
 using LiteDB;
 using Serilog;
+using System.Text.RegularExpressions;
 
 namespace FMO.Schedule;
 
@@ -54,7 +54,7 @@ public class SheetParser
                 return (decimal)s;
 
             case string s:
-                if (Regex.Match(s, @"[\d,\.]+") is Match m)
+                if (Regex.Match(s, @"[\d,\.]+") is Match m && m.Success)
                     return decimal.Parse(m.Value);
                 return -1;
 
@@ -122,7 +122,7 @@ public class SheetParser
         {
             case "cmschina.com.cn":
                 return new CMSParser();
-            case "cstisc.com":
+            case "citics.com":
                 return new CSTISCParser();
             case "csc.com.cn":
             case "csc108.com":
@@ -163,14 +163,14 @@ public class CMSParser : SheetParser
         FieldInfo<TransferRecord, string> ExternalRequestId = new FieldInfo<TransferRecord, string>("申请单号", o => StringValue(o), (x, y) => x.ExternalRequestId = y, false);
         FieldInfo<TransferRecord, string> ExternalId = new FieldInfo<TransferRecord, string>("确认流水号", o => StringValue(o), (x, y) => x.ExternalId = y);
 
-
+        reader.Reset();
         reader.Read();
         var head = new object[reader.FieldCount];
         reader.GetValues(head);
 
         List<TransferRecord> records = new List<TransferRecord>();
 
-        var fields = head.Select(x => x.ToString() ?? "").ToList();
+        var fields = head.Select(x => x?.ToString() ?? "").ToList();
         Check(FundName, fields);
         Check(FundCode, fields);
         Check(Type, fields);
@@ -188,13 +188,65 @@ public class CMSParser : SheetParser
         Check(ExternalRequestId, fields);
         Check(ExternalId, fields);
 
+         
+
+        List<string> errors = new List<string>();
+        if (FundName.Index == -1) errors.Add("FundName");
+        if (FundCode.Index == -1) errors.Add("FundCode");
+        if (Type.Index == -1) errors.Add("Type");
+        if (RequestDate.Index == -1) errors.Add("RequestDate");
+        if (RequestAmount.Index == -1) errors.Add("RequestAmount");
+        if (RequestShare.Index == -1) errors.Add("RequestShare");
+        if (ConfirmedDate.Index == -1) errors.Add("ConfirmedDate");
+        if (ConfirmedShare.Index == -1) errors.Add("ConfirmedShare");
+        if (ConfirmedAmount.Index == -1) errors.Add("ConfirmedAmount");
+        if (ConfirmedNetAmount.Index == -1) errors.Add("ConfirmedNetAmount");
+        if (Fee.Index == -1) errors.Add("Fee");
+        if (PerformanceFee.Index == -1) errors.Add("PerformanceFee");
+        if (CustomerIdentity.Index == -1) errors.Add("CustomerIdentity");
+        if (CustomerName.Index == -1) errors.Add("CustomerName");
+        if (ExternalId.Index == -1) errors.Add("ExternalId");
 
 
+        if (errors.Count > 0)
+        {
+            Log.Error($"TA表头无法解析 {string.Join(',', fields)}");
+            return Array.Empty<TransferRecord>();
+        }
+
+        for (int i = 0; i < reader.RowCount - 1; i++)
+        {
+            reader.Read();
+            var values = new object[reader.FieldCount];
+            reader.GetValues(values);
+
+            var r = new TransferRecord { CustomerIdentity = "", CustomerName = "" };
+
+            Fill(FundName, r, values);
+            Fill(FundCode, r, values);
+            Fill(Type, r, values);
+            Fill(RequestDate, r, values);
+            Fill(RequestAmount, r, values);
+            Fill(RequestShare, r, values);
+            Fill(ConfirmedDate, r, values);
+            Fill(ConfirmedShare, r, values);
+            Fill(ConfirmedAmount, r, values);
+            Fill(ConfirmedNetAmount, r, values);
+            Fill(Fee, r, values);
+            Fill(PerformanceFee, r, values);
+            Fill(CustomerIdentity, r, values);
+            Fill(CustomerName, r, values);
+            Fill(ExternalId, r, values);
+              
+            records.Add(r);
+        }
 
 
+        using var db = DbHelper.Base();
+        foreach (var r in records)
+            PostHandle(r, db);
 
-
-        return Array.Empty<TransferRecord>();
+        return records.ToArray();
     }
 
 
@@ -233,7 +285,7 @@ public class CSTISCParser : SheetParser
 
         List<TransferRecord> records = new List<TransferRecord>();
 
-        var fields = head.Select(x => x.ToString() ?? "").ToList();
+        var fields = head.Select(x => x?.ToString() ?? "").ToList();
         Check(FundName, fields);
         Check(FundCode, fields);
         Check(Type, fields);
@@ -341,14 +393,13 @@ public class CSCParser : SheetParser
 
         FieldInfo<TransferRecord, string> ExternalId = new FieldInfo<TransferRecord, string>("TA确认号", o => StringValue(o), (x, y) => x.ExternalId = y);
 
-
         reader.Read();
         var head = new object[reader.FieldCount];
         reader.GetValues(head);
 
         List<TransferRecord> records = new List<TransferRecord>();
 
-        var fields = head.Select(x => x.ToString() ?? "").ToList();
+        var fields = head.Select(x => x?.ToString() ?? "").ToList();
         Check(FundName, fields);
         Check(FundCode, fields);
         Check(Type, fields);
@@ -513,11 +564,11 @@ public class CSCParser : SheetParser
             Fill(Fee, r, values);
             Fill(PerformanceFee, r, values);
             Fill(CustomerIdentity, r, values);
-            if(!Regex.IsMatch(r.CustomerIdentity, @"\d+"))
+            if (!Regex.IsMatch(r.CustomerIdentity, @"\d+"))
                 Fill(CustomerIdType, r, values);
             Fill(CustomerName, r, values);
             Fill(ExternalId, r, values);
-             
+
 
             records.Add(r);
         }

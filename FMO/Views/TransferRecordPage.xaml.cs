@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
@@ -23,7 +24,7 @@ public partial class TransferRecordPage : UserControl
 }
 
 
-public partial class TransferRecordPageViewModel : ObservableObject
+public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<TransferRecord>
 {
     [ObservableProperty]
     public partial ObservableCollection<TransferRecordViewModel>? Records { get; set; }
@@ -144,6 +145,16 @@ public partial class TransferRecordPageViewModel : ObservableObject
         var wnd = new AddTAWindow();
         wnd.Owner = App.Current.MainWindow;
         wnd.ShowDialog();
+    }
+
+    public void Receive(TransferRecord message)
+    {
+        var old = Records!.FirstOrDefault(x => x.Id == message.Id);
+        if(old is not null)
+            old.UpdateFrom(message);
+        else Records!.Add(new TransferRecordViewModel(message) { File = new FileInfo(@$"files\tac\{message.Id}.pdf") });
+
+
     }
 }
 

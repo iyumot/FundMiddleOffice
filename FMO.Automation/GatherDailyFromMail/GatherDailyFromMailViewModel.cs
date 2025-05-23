@@ -45,11 +45,6 @@ public partial class GatherDailyFromMailViewModel : MissionViewModel<GatherDaily
         Interval = m.Interval;
     }
 
-    protected override void OnActivated()
-    {
-        WeakReferenceMessenger.Default.RegisterAll<string>(this, nameof(Mission));
-    }
-
     partial void OnMailPop3Changed(string? value)
     {
         IsServerAvailable = CheckPop3();

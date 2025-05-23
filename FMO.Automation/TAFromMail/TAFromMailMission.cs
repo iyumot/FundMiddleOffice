@@ -1,11 +1,12 @@
-﻿using System.IO;
-using System.IO.Compression;
-using System.Text.RegularExpressions;
+﻿using CommunityToolkit.Mvvm.Messaging;
 using ExcelDataReader;
 using FMO.Models;
 using FMO.Utilities;
 using MimeKit;
 using Serilog;
+using System.IO;
+using System.IO.Compression;
+using System.Text.RegularExpressions;
 
 namespace FMO.Schedule;
 
@@ -20,9 +21,8 @@ public class MailMissionRecord
     public bool HasError { get; internal set; }
 }
 
-public class TAFromMailMission : Mission
+public class TAFromMailMission : MailMission
 {
-    public string? Mail { get; set; }
 
     public int Interval { get; set; } = 15;
 
@@ -37,10 +37,11 @@ public class TAFromMailMission : Mission
 
     protected override bool WorkOverride()
     {
-        // 获取所有缓存 
+        // 获取所有缓存  
         var di = new DirectoryInfo(@$"files\mailcache\{Mail}");
         if (!di.Exists)
         {
+            WeakReferenceMessenger.Default.Send(new MissionWorkMessage(Id, "邮件缓存文件夹不存在"));
             Log.Error($"Mission[{Id}] 邮件缓存文件夹不存在");
             return false;
         }
@@ -48,34 +49,50 @@ public class TAFromMailMission : Mission
         // 获取所有文件
         var files = di.GetFiles();
         using var db = new MissionDatabase();
-        var coll = db.GetCollection<MailMissionRecord>(nameof(TAFromMailMission));
-        var worked = coll.FindAll().ToArray();
+        var cat = db.GetCollection<MailCategoryInfo>(_collection).Find(x => x.Category != MailCategory.Unk && x.Category != MailCategory.TA).Select(x => x.Id).ToArray();
 
-        var work = IgnoreHistory ? files : files.ExceptBy(worked.Select(x => x.Id), x => x.Name);
+        var coll = db.GetCollection<MailMissionRecord>($"mm_{Id}");
+        var worked = coll.FindAll().ExceptBy(cat, x => x.Id).ToArray();
 
+        var work = IgnoreHistory ? files : files.ExceptBy(worked.Select(x => x.Id), x => x.Name).ToArray();
+
+        WorkLog = $"待处理邮件 {work.Length} 个";
+
+        double unit = 100.0 / work.Length;
+        double progress = 0;
         foreach (var f in work)
         {
             try
             {
                 WorkOne(f);
-                coll.Insert(new MailMissionRecord { Id = f.Name, Time = DateTime.Now });
+                coll.Upsert(new MailMissionRecord { Id = f.Name, Time = DateTime.Now });
             }
             catch (Exception ex)
             {
                 Log.Error($"TA From Mail {ex}");
             }
+
+            progress += unit;
+            WeakReferenceMessenger.Default.Send(new MissionProgressMessage { Id = Id, Progress = progress });
         }
 
+        WorkLog += $"完成";
         return true;
     }
 
     private void WorkOne(FileInfo f)
     {
-        using var fs = f.OpenRead();
-        MimeMessage mime = new MimeMessage(fs);
+        using MimeMessage mime = MimeMessage.Load(f.FullName);
+
+        if (DetermineCategory(mime) switch { MailCategory.Unk or MailCategory.TA => false, _ => true })
+            return;
+
 
         // 没有附件
         if (!mime.Attachments.Any()) return;
+
+        var sss = mime.Subject;
+        var sender = (mime.From[0] as MailboxAddress)?.Domain ?? "";
 
         foreach (MimePart item in mime.Attachments)
         {
@@ -90,33 +107,43 @@ public class TAFromMailMission : Mission
                 {
                     if (Regex.IsMatch(ent.Name, ".xls|.xlsx", RegexOptions.IgnoreCase))
                     {
+                        if (ent.Name.Contains("交易"))
+                        {
+                            WorkLog += $"\n{ent.Name}";
+                        }
+
                         using var ss = ent.Open();
                         var mss = new MemoryStream();
                         ss.CopyTo(mss);
-                        WorkOnSheet(mss, mime.Sender.Domain);
+                        WorkOnSheet(mss, sender);
                     }
                     else if (Regex.IsMatch(ent.Name, ".pdf", RegexOptions.IgnoreCase))
                     {
                         using var ss = ent.Open();
                         var mss = new MemoryStream();
                         ss.CopyTo(mss);
-                        WorkOnPdf(mss, mime.Sender.Domain);
+                        WorkOnPdf(mss, sender);
                     }
                 }
             }
             else if (Regex.IsMatch(filepath, ".xls|.xlsx", RegexOptions.IgnoreCase))
             {
+                if (filepath.Contains("交易确认"))
+                {
+                    WorkLog += $"\n{filepath}";
+                }
+
                 var ms = new MemoryStream();
                 item.Content.DecodeTo(ms);
 
-                WorkOnSheet(ms, mime.Sender.Domain);
+                WorkOnSheet(ms, sender);
             }
             else if (Regex.IsMatch(filepath, ".pdf", RegexOptions.IgnoreCase))
             {
                 var ms = new MemoryStream();
                 item.Content.DecodeTo(ms);
 
-                WorkOnSheet(ms, mime.Sender.Domain);
+                WorkOnPdf(ms, sender);
             }
         }
 
@@ -141,18 +168,22 @@ public class TAFromMailMission : Mission
     /// </summary>
     /// <param name="stream"></param>
     /// <param name="domain">识别托管</param>
-    public static bool WorkOnSheet(Stream stream, string domain)
+    private bool WorkOnSheet(Stream stream, string domain)
     {
         if (stream is null || stream.Length == 0) return false;
 
         if (stream.CanSeek)
             stream.Seek(0, SeekOrigin.Begin);
 
-        var reader = ExcelReaderFactory.CreateReader(stream);
+        using var reader = ExcelReaderFactory.CreateReader(stream);
 
+        if (!IsTASheet(reader)) return false;
+
+        reader.Reset();
         reader.Read();
         var head = new object[reader.FieldCount];
         reader.GetValues(head);
+
 
         List<TransferRecord> records = new List<TransferRecord>();
 
@@ -160,6 +191,7 @@ public class TAFromMailMission : Mission
         if (head.Length > 6)
         {
             //列表 
+            reader.Reset();
             SheetParser parser = SheetParser.Create(domain);
             var ta = parser.ParseTASheet(reader);
             records.AddRange(ta);
@@ -167,38 +199,45 @@ public class TAFromMailMission : Mission
         else
         {
             //确认函
+            reader.Reset();
             SheetParser parser = SheetParser.Create(domain);
             var ta = parser.ParseTAConfirm(reader);
             records.AddRange(ta);
         }
 
         // 更新
-        using var db = DbHelper.Base();
-        foreach (var rec in records)
+        if (records.Count > 0)
         {
-            // 校验
-            if (rec.Type == TARecordType.UNK || (rec.ConfirmedShare == 0 && rec.ConfirmedAmount == 0))
+            WorkLog += $"\n {string.Join('\n', records.Select(x => $"{x.CustomerName}-{x.ConfirmedDate}-{x.FundName}"))}\n";
+            using var db = DbHelper.Base();
+            foreach (var rec in records)
             {
-                Log.Error($"TA Bad Data {rec.PrintProperties()}");
-                continue;
+                // 校验
+                if (rec.Type == TARecordType.UNK || (rec.ConfirmedShare == 0 && rec.ConfirmedAmount == 0))
+                {
+                    Log.Error($"TA Bad Data {rec.PrintProperties()}");
+                    continue;
+                }
+
+                // 通过平台获取的不会被更新
+                var old = db.GetCollection<TransferRecord>().FindOne(x => x.ExternalId == rec.ExternalId);
+
+                if (old is null)
+                    old = db.GetCollection<TransferRecord>().FindOne(x => x.CustomerIdentity == rec.CustomerIdentity && x.ConfirmedDate == rec.ConfirmedDate &&
+                                x.FundCode == rec.FundCode && x.ConfirmedShare == rec.ConfirmedShare && x.ConfirmedAmount == rec.ConfirmedAmount);
+
+                if (old is not null && (old.Source != "manual" && !string.IsNullOrWhiteSpace(old.Source)))
+                    continue;
+
+                rec.Id = old?.Id ?? 0;
+                db.GetCollection<TransferRecord>().Upsert(rec);
+
+                WeakReferenceMessenger.Default.Send(rec);
+                DataTracker.CheckShareIsPair(rec.FundId);
             }
-
-            // 通过平台获取的不会被更新
-            var old = db.GetCollection<TransferRecord>().FindOne(x => x.ExternalId == rec.ExternalId);
-
-            if (old is null)
-                old = db.GetCollection<TransferRecord>().FindOne(x => x.CustomerIdentity == rec.CustomerIdentity && x.ConfirmedDate == rec.ConfirmedDate &&
-                            x.FundCode == rec.FundCode && x.ConfirmedShare == rec.ConfirmedShare && x.ConfirmedAmount == rec.ConfirmedAmount);
-
-            if (old is not null && (old.Source != "manual" && !string.IsNullOrWhiteSpace(old.Source)))
-                continue;
-
-            rec.Id = old?.Id ?? 0;
-            db.GetCollection<TransferRecord>().Upsert(rec);
         }
 
-
-        return true;
+        return records.Count > 0;
     }
 
 
@@ -249,7 +288,25 @@ public class TAFromMailMission : Mission
 
 
 
+    public bool IsTASheet(IExcelDataReader reader)
+    {
+        reader.Reset();
 
+        for (int j = 0; j < Math.Min(4, reader.RowCount); j++)
+        {
+            if (!reader.Read()) return false;
+
+            for (int i = 0; i < reader.FieldCount; i++)
+            {
+                var s = reader.GetString(i);
+                if (s is null) continue;
+                if (s.Contains("交易确认") || s.Contains("确认日期"))
+                    return true;
+            }
+        }
+
+        return false;
+    }
 
 }
 

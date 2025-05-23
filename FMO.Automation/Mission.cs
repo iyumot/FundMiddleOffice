@@ -1,5 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using CommunityToolkit.Mvvm.Messaging;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace FMO.Schedule;
 
@@ -14,11 +15,16 @@ public abstract class Mission
 
     public DateTime? NextRun { get; set; }
 
+
     bool _isEnabled;
     public bool IsEnabled { get => _isEnabled; set { _isEnabled = value; if (value) SetNextRun(); } }
 
     public bool IsWorking { get; private set; }
-     
+
+
+    private string? _log;
+    public string? WorkLog { get => _log; protected set { _log = value; WeakReferenceMessenger.Default.Send(new MissionWorkMessage(Id, value ?? "")); } }
+
     public void OnTime(DateTime time)
     {
         if (!IsEnabled || IsWorking || NextRun is null) return;
@@ -44,16 +50,21 @@ public abstract class Mission
     public bool Work()
     {
         IsWorking = true;
-        WeakReferenceMessenger.Default.Send(new MissionMessage { Id = Id, IsWorking = true }, nameof(Mission));
+        WeakReferenceMessenger.Default.Send(new MissionMessage { Id = Id, IsWorking = true });
         var r = false;
+        try
+        {
+            WorkLog = "";
+            try { r = WorkOverride(); LastRun = DateTime.Now; if (r) SetNextRun(); } catch (Exception e) { }
 
-        try { r = WorkOverride(); LastRun = DateTime.Now; if (r) SetNextRun(); } catch { }
+            using (var db = new MissionDatabase())
+                db.GetCollection<Mission>().Upsert(this);
 
-        using (var db = new MissionDatabase())
-            db.GetCollection<Mission>().Upsert(this);
+        }
+        catch (Exception e) { }
 
         IsWorking = false;
-        WeakReferenceMessenger.Default.Send(new MissionMessage { Id = Id, IsWorking = false, LastRun = LastRun, NextRun = NextRun }, nameof(Mission));
+        WeakReferenceMessenger.Default.Send(new MissionMessage { Id = Id, IsWorking = false, LastRun = LastRun, NextRun = NextRun });
         return r;
     }
 
@@ -74,10 +85,11 @@ public abstract class Mission
     }
 
 
+    protected void SendLog(string log) { Debug.WriteLine(log); WeakReferenceMessenger.Default.Send(new MissionWorkMessage(Id, log)); }
 
 }
 
-public class MissionTitleAttribute:Attribute
+public class MissionTitleAttribute : Attribute
 {
     [SetsRequiredMembers]
     public MissionTitleAttribute(string v)

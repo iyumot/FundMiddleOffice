@@ -1,4 +1,6 @@
-﻿namespace FMO.Utilities;
+﻿using System.Text.RegularExpressions;
+
+namespace FMO.Utilities;
 
 public static class ObjectExtension
 {
@@ -48,3 +50,18 @@ public static class ObjectExtension
     }
 }
 
+
+
+public static class StringHelper
+{
+    private static readonly Regex BasicEmailRegex = new Regex(
+        @"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+
+    public static bool IsMail(this string? mail )
+    {
+        if (mail is null) return false;
+        return BasicEmailRegex.IsMatch(mail);
+    }
+}

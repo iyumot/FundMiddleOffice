@@ -8,6 +8,30 @@ namespace FMO.Schedule;
 
 
 
+public enum MailCategory
+{
+    Unk,
+
+    /// <summary>
+    /// 估值表
+    /// </summary>
+    ValueSheet,
+
+    /// <summary>
+    /// TA
+    /// </summary>
+    TA,
+
+    /// <summary>
+    /// 结算单
+    /// </summary>
+    Statement
+}
+
+public record MailCategoryInfo(string Id, MailCategory Category);
+
+
+
 public class MailCacheMission : Mission
 {
     public string? MailName { get; set; }
@@ -139,7 +163,7 @@ public class MailCacheMission : Mission
                 }
                 log += "\n";
                 progress += unit;
-                WeakReferenceMessenger.Default.Send(new MissionProgressMessage { Id = Id, Progress = progress }, nameof(Mission));
+                WeakReferenceMessenger.Default.Send(new MissionProgressMessage { Id = Id, Progress = progress });
             }
 
         }

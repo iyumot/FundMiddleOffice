@@ -10,7 +10,7 @@ namespace FMO.Schedule;
 
 public record RemoveMissionMessage(AutomationViewModelBase ViewModel);
 
-public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<MissionMessage>, IRecipient<MissionProgressMessage>
+public partial class AutomationViewModelBase : ObservableObject, IRecipient<MissionMessage>, IRecipient<MissionProgressMessage>, IRecipient<MissionWorkMessage>
 {
 
 
@@ -23,7 +23,7 @@ public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<M
     [ObservableProperty]
     public partial DateTime? LastRunTime { get; set; }
 
-     
+
     [ObservableProperty]
     public partial DateTime? NextRunDate { get; set; }
 
@@ -43,11 +43,18 @@ public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<M
     [ObservableProperty]
     public partial double ProgressValue { get; set; }
 
+
+    [ObservableProperty]
+    public partial bool IsLogVisible { get; set; }
+
+    [ObservableProperty]
+    public partial string? WorkLog { get; set; }
+
     public int Id { get; }
 
     public AutomationViewModelBase(Mission mission)
     {
-        IsActive = true;
+        WeakReferenceMessenger.Default.RegisterAll(this);
 
         try
         {
@@ -61,18 +68,12 @@ public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<M
         Id = mission.Id;
     }
 
-    protected override void OnActivated()
-    {
-        WeakReferenceMessenger.Default.Register<MissionMessage, string>(this, nameof(Mission));
-        WeakReferenceMessenger.Default.Register<MissionProgressMessage, string>(this, nameof(Mission));
-    }
-
 
 
     [RelayCommand]
     public void DoManualSetNextRunTime(bool set)
     {
-        if (set && NextRunDate is not null && NextRunTime is not null &&  NextRunDate.Value.Date.Add(NextRunTime.Value.TimeOfDay) is DateTime t && t > DateTime.Now)
+        if (set && NextRunDate is not null && NextRunTime is not null && NextRunDate.Value.Date.Add(NextRunTime.Value.TimeOfDay) is DateTime t && t > DateTime.Now)
         {
             using var db = new MissionDatabase();
             var mission = db.GetCollection<Mission>().FindById(Id);
@@ -96,6 +97,9 @@ public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<M
         WeakReferenceMessenger.Default.Send(new RemoveMissionMessage(mission));
     }
 
+
+    [RelayCommand]
+    public void ShowLog() => IsLogVisible = true;
 
     partial void OnNextRunTimeChanged(DateTime? value)
     {
@@ -123,6 +127,11 @@ public partial class AutomationViewModelBase : ObservableRecipient, IRecipient<M
     {
         if (message.Id == Id) ProgressValue = message.Progress;
     }
+
+    public void Receive(MissionWorkMessage message)
+    {
+        if (Id == message.Id) WorkLog = message.Log;
+    }
 }
 
 
@@ -131,16 +140,26 @@ public partial class MissionViewModel<T> : AutomationViewModelBase where T : Mis
     protected T Mission { get; set; }
 
 
+    public virtual bool IsAvailable => true;
+
+
     public MissionViewModel(T mission) : base(mission)
     {
         Mission = mission;
     }
 
 
-    [RelayCommand]
-    public void RunOnce()
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RunOnceCommand))]
+    public partial bool CanRunOnce { get; set; } = true;
+
+
+    [RelayCommand(CanExecute = nameof(CanRunOnce))]
+    public async Task RunOnce()
     {
-        Task.Run(() => Mission.Work());
+        CanRunOnce = false;
+        await Task.Run(() => Mission.Work());
+        CanRunOnce = true;
     }
 
 
@@ -170,11 +189,12 @@ public partial class MissionViewModel<T> : AutomationViewModelBase where T : Mis
 
             try
             {
-                if (e.PropertyName is not null && Mission.GetType().GetProperty(e.PropertyName) is PropertyInfo p)
+                if (e.PropertyName is not null && Mission.GetType().GetProperty(e.PropertyName) is PropertyInfo p && p.CanWrite)
                 {
                     var v = p.GetValue(Mission);
-                    var vm = GetType().GetProperty(e.PropertyName)!.GetValue(this);
-                    if (v != vm)
+                    PropertyInfo vmp = GetType().GetProperty(e.PropertyName)!;
+                    var vm = vmp.GetValue(this);
+                    if (v != vm && vmp.PropertyType.IsAssignableTo(p.PropertyType))
                     {
                         p.SetValue(Mission, vm);
                         MissionSchedule.SaveChanges(Mission);
@@ -186,7 +206,7 @@ public partial class MissionViewModel<T> : AutomationViewModelBase where T : Mis
                 Log.Error($"Save Mission {ex}");
             }
 
-        
+
         }
     }
 }

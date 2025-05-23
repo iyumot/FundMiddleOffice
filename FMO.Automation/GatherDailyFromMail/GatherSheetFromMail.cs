@@ -156,7 +156,7 @@ public class GatherDailyFromMailMission : Mission
                 }
                 log += "\n";
                 progress += unit;
-                WeakReferenceMessenger.Default.Send(new MissionProgressMessage { Id = Id, Progress = progress }, nameof(Mission));
+                WeakReferenceMessenger.Default.Send(new MissionProgressMessage { Id = Id, Progress = progress });
             }
 
         }

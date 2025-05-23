@@ -1,21 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FMO.Utilities;
+using System.Net.NetworkInformation;
+using System.Text.RegularExpressions;
+using System.Windows.Controls;
 
 namespace FMO.Schedule;
 
@@ -35,14 +23,17 @@ public partial class MailCacheView : UserControl
 public partial class MailCacheViewModel : MissionViewModel<MailCacheMission>
 {
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsAvailable))]
     [NotifyCanExecuteChangedFor(nameof(VerifyAccountCommand))]
     public partial string? MailName { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsAvailable))]
     [NotifyCanExecuteChangedFor(nameof(VerifyAccountCommand))]
     public partial string? MailPassword { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsAvailable))]
     public partial string? MailPop3 { get; set; }
 
     [ObservableProperty]
@@ -57,6 +48,9 @@ public partial class MailCacheViewModel : MissionViewModel<MailCacheMission>
 
     [ObservableProperty]
     public partial string? _log { get; set; }
+
+
+    public override bool IsAvailable => IsAccountVerified && IsServerAvailable;
 
     public MailCacheViewModel(MailCacheMission m) : base(m)
     {

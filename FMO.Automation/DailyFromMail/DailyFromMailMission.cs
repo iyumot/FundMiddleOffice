@@ -1,18 +1,50 @@
-﻿using System.IO;
-using System.IO.Compression;
-using CommunityToolkit.Mvvm.Messaging;
+﻿using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
 using MimeKit;
 using Serilog;
+using System.IO;
+using System.IO.Compression;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace FMO.Schedule;
 
-public class DailyFromMailMission : Mission
+
+public class MailMission : Mission
 {
 
-    public string? Mail { get; set; }
+    public string? Mail { get => field; set { field = value; _collection = value is null ? null : BitConverter.ToString(SHA256.HashData(Encoding.Default.GetBytes(value))).Replace("-", "").ToLowerInvariant(); } }
 
+
+    protected string? _collection;
+
+    public virtual MailCategory DetermineCategory(MimeMessage? message)
+    {
+        if (message is null) return MailCategory.Unk;
+
+        if (message.Subject.Contains("估值表"))
+        {
+            using var db = new MissionDatabase();
+            db.GetCollection<MailCategoryInfo>(_collection).Upsert(new MailCategoryInfo(message.MessageId, MailCategory.ValueSheet));
+
+            return MailCategory.ValueSheet;
+        }
+        if (message.Subject.Contains("对账单"))
+        {
+            using var db = new MissionDatabase();
+            db.GetCollection<MailCategoryInfo>(_collection).Upsert(new MailCategoryInfo(message.MessageId, MailCategory.Statement));
+
+            return MailCategory.Statement;
+        }
+
+        return MailCategory.Unk;
+    }
+}
+
+
+public class DailyFromMailMission : MailMission
+{
     public int Interval { get; set; } = 15;
 
     public bool IgnoreHistory { get; set; }
@@ -26,6 +58,11 @@ public class DailyFromMailMission : Mission
 
     protected override bool WorkOverride()
     {
+        if (Mail is null)
+        {
+            IsEnabled = false;
+            return false;
+        }
         // 获取所有缓存 
         var di = new DirectoryInfo(@$"files\mailcache\{Mail}");
         if (!di.Exists)
@@ -37,20 +74,39 @@ public class DailyFromMailMission : Mission
         // 获取所有文件
         var files = di.GetFiles();
         using var db = new MissionDatabase();
-        var worked = db.GetCollection<MailMissionRecord>(nameof(DailyFromMailMission)).FindAll();
+        LiteDB.ILiteCollection<MailMissionRecord> coll = db.GetCollection<MailMissionRecord>($"mm_{Id}");
+        var cat = db.GetCollection<MailCategoryInfo>(_collection).Find(x => x.Category != MailCategory.Unk && x.Category != MailCategory.TA).Select(x => x.Id).ToArray();
 
-        var work = IgnoreHistory ? files : files.ExceptBy(worked.Select(x => x.Id), x => x.Name);
+        var worked = coll.FindAll().ExceptBy(cat, x=>x.Id).ToArray();
 
+        var work = IgnoreHistory ? files : files.ExceptBy(worked.Select(x => x.Id), x => x.Name).ToArray();
+
+        double unit = 100.0 / work.Length;
+        double progress = 0;
         foreach (var f in work)
-            WorkOne(f);
+        {
+            try
+            {
+                bool err = WorkOne(f);
+                coll.Upsert(new MailMissionRecord { Id = f.Name, Time = DateTime.Now, HasError = err });
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Daily From Mail {ex}");
+            }
 
+            progress += unit;
+            WeakReferenceMessenger.Default.Send(new MissionProgressMessage { Id = Id, Progress = progress });
+        }
+        WeakReferenceMessenger.Default.Send(new MissionProgressMessage { Id = Id, Progress = 100 });
         return true;
     }
 
-    private void WorkOne(FileInfo file)
+    private bool WorkOne(FileInfo file)
     {
-        using var fs = file.OpenRead();
-        MimeMessage msg = new MimeMessage(fs);
+        using MimeMessage msg = MimeMessage.Load(file.FullName);
+
+        DetermineCategory(msg);
 
         using var db = DbHelper.Base();
         var funds = db.GetCollection<Fund>().FindAll().ToArray();
@@ -61,10 +117,7 @@ public class DailyFromMailMission : Mission
         if (msg.Attachments.Any())
             Extract(msg, funds, ref haserror, ref log);
 
-        ///记录
-        using (var mdb = new MissionDatabase())
-            mdb.GetCollection<MailMissionRecord>().Insert(new MailMissionRecord { Id = file.Name, Time = DateTime.Now, HasError = haserror });
-
+        return haserror;
     }
 
 
@@ -108,7 +161,8 @@ public class DailyFromMailMission : Mission
 
                         var (fn, co, dy) = ValuationSheetHelper.ParseExcel(ms);
                         log += $"\n         ↳{fn} {dy?.Date}";
-                        ds.Add((fn, funds.FirstOrDefault(x => x.Name == fn || x.Code == co), filepath, dy, ms));
+                        if (dy is not null)
+                            ds.Add((fn, funds.FirstOrDefault(x => x.Name == fn || x.Code == co), filepath, dy, ms));
                     }
                     //else
                     //    ds.Add((null, null, filepath, null, null));
@@ -120,12 +174,10 @@ public class DailyFromMailMission : Mission
                 }
             }
 
-            List<GzMailAttachInfo> attachments = new();
             List<DailyValue> days = new();
             foreach (var x in ds)
             {
                 var info = new GzMailAttachInfo { Name = x.File };
-                attachments.Add(info);
                 if (x.Daily is null)
                     continue;
 
