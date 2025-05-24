@@ -28,7 +28,7 @@ public enum MailCategory
     Statement
 }
 
-public record MailCategoryInfo(string Id, MailCategory Category);
+public record MailCategoryInfo(string Id, string Subject, MailCategory Category);
 
 
 

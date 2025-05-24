@@ -26,14 +26,14 @@ public class MailMission : Mission
         if (message.Subject.Contains("估值表"))
         {
             using var db = new MissionDatabase();
-            db.GetCollection<MailCategoryInfo>(_collection).Upsert(new MailCategoryInfo(message.MessageId, MailCategory.ValueSheet));
+            db.GetCollection<MailCategoryInfo>(_collection).Upsert(new MailCategoryInfo(message.MessageId, message.Subject, MailCategory.ValueSheet));
 
             return MailCategory.ValueSheet;
         }
-        if (message.Subject.Contains("对账单"))
+        if (message.Subject.Contains("对账单") || message.TextBody.Contains("对账单"))
         {
             using var db = new MissionDatabase();
-            db.GetCollection<MailCategoryInfo>(_collection).Upsert(new MailCategoryInfo(message.MessageId, MailCategory.Statement));
+            db.GetCollection<MailCategoryInfo>(_collection).Upsert(new MailCategoryInfo(message.MessageId, message.Subject, MailCategory.Statement));
 
             return MailCategory.Statement;
         }
@@ -77,7 +77,7 @@ public class DailyFromMailMission : MailMission
         LiteDB.ILiteCollection<MailMissionRecord> coll = db.GetCollection<MailMissionRecord>($"mm_{Id}");
         var cat = db.GetCollection<MailCategoryInfo>(_collection).Find(x => x.Category != MailCategory.Unk && x.Category != MailCategory.TA).Select(x => x.Id).ToArray();
 
-        var worked = coll.FindAll().ExceptBy(cat, x=>x.Id).ToArray();
+        var worked = coll.FindAll().ExceptBy(cat, x => x.Id).ToArray();
 
         var work = IgnoreHistory ? files : files.ExceptBy(worked.Select(x => x.Id), x => x.Name).ToArray();
 
