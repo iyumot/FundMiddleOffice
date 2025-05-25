@@ -25,20 +25,20 @@ public partial class DailyFromMailViewModel : MissionViewModel<DailyFromMailMiss
 {
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsAvailable))]
-    public partial string? Mail { get; set; }
+    public partial string? MailName { get; set; }
 
 
     [ObservableProperty]
     public partial int? Interval { get; set; }
 
 
-    public override bool IsAvailable => Mail?.Length > 5 && Mail.IsMail();
+    public override bool IsAvailable => MailName?.Length > 5 && MailName.IsMail();
 
     public DailyFromMailViewModel(DailyFromMailMission m) : base(m)
     {
         Title = "净值更新";
 
-        Mail = m.Mail;
+        MailName = m.MailName;
         Interval = m.Interval == 0 ? null : m.Interval;
     }
 

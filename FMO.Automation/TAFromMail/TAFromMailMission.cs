@@ -38,7 +38,7 @@ public class TAFromMailMission : MailMission
     protected override bool WorkOverride()
     {
         // 获取所有缓存  
-        var di = new DirectoryInfo(@$"files\mailcache\{Mail}");
+        var di = new DirectoryInfo(@$"files\mailcache\{MailName}");
         if (!di.Exists)
         {
             WeakReferenceMessenger.Default.Send(new MissionWorkMessage(Id, "邮件缓存文件夹不存在"));
@@ -49,7 +49,7 @@ public class TAFromMailMission : MailMission
         // 获取所有文件
         var files = di.GetFiles();
         using var db = new MissionDatabase();
-        var cat = db.GetCollection<MailCategoryInfo>(_collection).Find(x => x.Category != MailCategory.Unk && x.Category != MailCategory.TA).Select(x => x.Id).ToArray();
+        var cat = db.GetCollection<MailCategoryInfo>(_collection).Find(x => x.Category != MailCategory.Unk && (x.Category & MailCategory.TA) > 0).Select(x => x.Id).ToArray();
 
         var coll = db.GetCollection<MailMissionRecord>($"mm_{Id}");
         var worked = coll.FindAll().ExceptBy(cat, x => x.Id).ToArray();

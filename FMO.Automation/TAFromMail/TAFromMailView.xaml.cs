@@ -29,7 +29,7 @@ public partial class TAFromMailViewModel : MissionViewModel<TAFromMailMission>
     {
         Title = "TA更新";
 
-        Mail = m.Mail;
+        Mail = m.MailName;
         Interval = m.Interval == 0 ? null : m.Interval;
     }
 

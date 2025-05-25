@@ -5,42 +5,9 @@ using MimeKit;
 using Serilog;
 using System.IO;
 using System.IO.Compression;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace FMO.Schedule;
 
-
-public class MailMission : Mission
-{
-
-    public string? Mail { get => field; set { field = value; _collection = value is null ? null : BitConverter.ToString(SHA256.HashData(Encoding.Default.GetBytes(value))).Replace("-", "").ToLowerInvariant(); } }
-
-
-    protected string? _collection;
-
-    public virtual MailCategory DetermineCategory(MimeMessage? message)
-    {
-        if (message is null) return MailCategory.Unk;
-
-        if (message.Subject.Contains("估值表"))
-        {
-            using var db = new MissionDatabase();
-            db.GetCollection<MailCategoryInfo>(_collection).Upsert(new MailCategoryInfo(message.MessageId, message.Subject, MailCategory.ValueSheet));
-
-            return MailCategory.ValueSheet;
-        }
-        if (message.Subject.Contains("对账单") || message.TextBody.Contains("对账单"))
-        {
-            using var db = new MissionDatabase();
-            db.GetCollection<MailCategoryInfo>(_collection).Upsert(new MailCategoryInfo(message.MessageId, message.Subject, MailCategory.Statement));
-
-            return MailCategory.Statement;
-        }
-
-        return MailCategory.Unk;
-    }
-}
 
 
 public class DailyFromMailMission : MailMission
@@ -58,13 +25,13 @@ public class DailyFromMailMission : MailMission
 
     protected override bool WorkOverride()
     {
-        if (Mail is null)
+        if (MailName is null)
         {
             IsEnabled = false;
             return false;
         }
         // 获取所有缓存 
-        var di = new DirectoryInfo(@$"files\mailcache\{Mail}");
+        var di = new DirectoryInfo(@$"files\mailcache\{MailName}");
         if (!di.Exists)
         {
             Log.Error($"Mission[{Id}] 邮件缓存文件夹不存在");
@@ -75,7 +42,7 @@ public class DailyFromMailMission : MailMission
         var files = di.GetFiles();
         using var db = new MissionDatabase();
         LiteDB.ILiteCollection<MailMissionRecord> coll = db.GetCollection<MailMissionRecord>($"mm_{Id}");
-        var cat = db.GetCollection<MailCategoryInfo>(_collection).Find(x => x.Category != MailCategory.Unk && x.Category != MailCategory.TA).Select(x => x.Id).ToArray();
+        var cat = db.GetCollection<MailCategoryInfo>(_collection).Find(x => x.Category != MailCategory.Unk && (x.Category & MailCategory.ValueSheet) > 0).Select(x => x.Id).ToArray();
 
         var worked = coll.FindAll().ExceptBy(cat, x => x.Id).ToArray();
 

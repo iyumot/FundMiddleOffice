@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using FMO.Utilities;
 using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Controls;
 
 namespace FMO.Schedule;
@@ -125,9 +126,9 @@ public partial class MailCacheViewModel : MissionViewModel<MailCacheMission>
     bool CanVerify() => IsServerAvailable && !string.IsNullOrWhiteSpace(MailName) && !string.IsNullOrWhiteSpace(MailPassword);
 
     [RelayCommand(CanExecute = nameof(CanVerify))]
-    public void VerifyAccount()
+    public async Task VerifyAccount()
     {
-        IsAccountVerified = Verify();
+        IsAccountVerified = await Verify();
 
         if (IsAccountVerified)
         {
@@ -138,17 +139,17 @@ public partial class MailCacheViewModel : MissionViewModel<MailCacheMission>
         }
     }
 
-    bool Verify()
+    async Task<bool> Verify()
     {
         try
         {
             var pop3Client = new MailKit.Net.Pop3.Pop3Client();
-            pop3Client.Connect(MailPop3, 995, true);
+            await pop3Client.ConnectAsync(MailPop3, 995, true);
 
             if (!pop3Client.IsConnected)
                 return false;
 
-            pop3Client.Authenticate(MailName, MailPassword);
+            await pop3Client.AuthenticateAsync(MailName, MailPassword);
 
             return pop3Client.IsAuthenticated;
         }

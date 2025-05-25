@@ -1,13 +1,13 @@
-﻿using System.IO;
-using System.Net.NetworkInformation;
-using CommunityToolkit.Mvvm.Messaging;
+﻿using CommunityToolkit.Mvvm.Messaging;
 using MimeKit;
 using Serilog;
+using System.IO;
+using System.Net.NetworkInformation;
 
 namespace FMO.Schedule;
 
 
-
+[Flags]
 public enum MailCategory
 {
     Unk,
@@ -20,21 +20,20 @@ public enum MailCategory
     /// <summary>
     /// TA
     /// </summary>
-    TA,
+    TA = 0x2,
 
     /// <summary>
     /// 结算单
     /// </summary>
-    Statement
+    Statement = 0x4
 }
 
 public record MailCategoryInfo(string Id, string Subject, MailCategory Category);
 
 
 
-public class MailCacheMission : Mission
+public class MailCacheMission : MailMission
 {
-    public string? MailName { get; set; }
 
     public string? MailPassword { get; set; }
 
@@ -46,6 +45,8 @@ public class MailCacheMission : Mission
     public int Interval { get; set; } = 15;
 
     public bool IgnoreCache { get; set; }
+
+
 
 
     protected override void SetNextRun()
@@ -144,12 +145,16 @@ public class MailCacheMission : Mission
 
             double unit = 100.0 / needload.Count();
 
+
             foreach (var (i, v) in needload)
             {
+                log += $"\n缓存邮件";
+                using MimeMessage msg = pop3Client.GetMessage(i);
+
                 try
                 {
-                    log += $"\n缓存邮件";
-                    using MimeMessage msg = pop3Client.GetMessage(i);
+                    DetermineCategory(msg);
+
                     using var fs = new FileStream(Path.Combine(di.FullName, v), FileMode.Create);
                     msg.WriteTo(fs);
                     fs.Flush();
@@ -166,6 +171,7 @@ public class MailCacheMission : Mission
                 WeakReferenceMessenger.Default.Send(new MissionProgressMessage { Id = Id, Progress = progress });
             }
 
+            WeakReferenceMessenger.Default.Send(new MissionProgressMessage { Id = Id, Progress = 100 });
         }
         catch (Exception er)
         {

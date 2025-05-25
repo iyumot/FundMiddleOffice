@@ -33,7 +33,7 @@
         <hc:TextBox
             Width="200"
             hc:InfoElement.Placeholder="邮箱 user@mail.com"
-            Text="{Binding Mail, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+            Text="{Binding MailName, UpdateSourceTrigger=PropertyChanged, Delay=300}"
             TextAlignment="Center" />
 
         <TextBlock Margin="10,0,0,0" Text="运行时间间隔" />
