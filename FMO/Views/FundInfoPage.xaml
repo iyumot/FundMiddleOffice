@@ -301,6 +301,18 @@
                     DockPanel.Dock="Right"
                     Style="{StaticResource ButtonIcon.Small}" />
 
+
+                <Button
+                    hc:IconElement.Geometry="{StaticResource f.file-signature}"
+                    hc:IconElement.Height="14"
+                    hc:IconElement.Width="16"
+                    Command="{Binding GenerateAttachCommand}"
+                    DockPanel.Dock="Right"
+                    Foreground="DarkOrchid"
+                    Style="{StaticResource ButtonIcon.Small}"
+                    ToolTip="生成合同附件" />
+
+
                 <local:CopyableControl>
                     <TextBlock FontWeight="Bold" Text="{Binding FundCode}" />
                 </local:CopyableControl>

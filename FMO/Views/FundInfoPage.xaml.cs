@@ -1,10 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Windows.Controls;
-using System.Windows.Data;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
@@ -12,6 +6,12 @@ using FMO.TPL;
 using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
+using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace FMO;
 
@@ -617,6 +617,46 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
             try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true }); } catch { }
     }
 
+
+    [RelayCommand]
+    public void GenerateAttach()
+    {
+        // 找模板
+        try
+        {
+            var di = new DirectoryInfo(@"files\tpl\fund_attach");
+            if (!di.Exists)
+            {
+                HandyControl.Controls.Growl.Warning("未找到附件模板");
+                return;
+            }
+
+
+            using var db = DbHelper.Base();
+            var m = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
+            var e = db.GetCollection<FundElements>().FindById(FundId);
+            var obj = new
+            {
+                ManagerName = m!.Name,
+                FundName = Fund.Name,
+                RiskLevel = RiskLevel ?? null,
+                StopLine = e.StopLine.Value switch { 0=> "-", var n => n.ToString()}
+            };
+
+            var folder = FundHelper.GetFolder(FundId, "Contract\\Attach");
+            var files = di.GetFiles("*.docx");
+            foreach (var file in files)
+            {
+                var tar = Path.Combine(folder, file.Name);
+                Tpl.Generate(tar, file.FullName, obj);
+            }
+        }
+        catch (Exception e)
+        {
+            Log.Error($"生成基金合同附件失败{e}");
+            HandyControl.Controls.Growl.Warning("生成基金合同附件失败");
+        }
+    }
 
 
     partial void OnInitiateFundContractFileChanged(FileInfo? oldValue, FileInfo? newValue)
