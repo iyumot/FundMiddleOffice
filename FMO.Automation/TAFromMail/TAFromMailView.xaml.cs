@@ -19,7 +19,7 @@ public partial class TAFromMailView : UserControl
 public partial class TAFromMailViewModel : MissionViewModel<TAFromMailMission>
 {
     [ObservableProperty]
-    public partial string? Mail { get; set; }
+    public partial string? MailName { get; set; }
 
 
     [ObservableProperty]
@@ -29,7 +29,7 @@ public partial class TAFromMailViewModel : MissionViewModel<TAFromMailMission>
     {
         Title = "TA更新";
 
-        Mail = m.MailName;
+        MailName = m.MailName;
         Interval = m.Interval == 0 ? null : m.Interval;
     }
 
