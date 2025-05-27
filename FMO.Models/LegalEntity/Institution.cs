@@ -97,13 +97,15 @@ public class ShareHolder
     /// <summary>
     /// 实体ID，身份证等
     /// </summary>
-    public required string EntityId { get; set; }
+    public int Id { get; set; }
+
+    public required string Name { get; set; }
 
     /// <summary>
     /// 实体类型
     /// </summary>
     public EntityType Type { get; set; }
-
+    
 
     // 持股的机构、公司
     public required string InstitutionId { get; set; }
