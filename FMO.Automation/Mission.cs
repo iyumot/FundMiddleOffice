@@ -123,12 +123,12 @@ public class MailMission : Mission
         if (message.Subject.Contains("估值表"))
             category |= MailCategory.ValueSheet;
 
-        if (message.Subject.Contains("对账单") || message.TextBody.Contains("对账单"))        
+        if (message.Subject.Contains("对账单") || (message.TextBody?.Contains("对账单") ?? false))
             category |= MailCategory.Statement;
-        
-        if (message.Subject.Contains("交易确认") || message.TextBody.Contains("交易确认"))        
+
+        if (message.Subject.Contains("交易确认") || (message.TextBody?.Contains("交易确认") ?? false))
             category |= MailCategory.TA;
-         
+
         using var db = new MissionDatabase();
         db.GetCollection<MailCategoryInfo>(_collection).Upsert(new MailCategoryInfo(message.MessageId, message.Subject, MailCategory.ValueSheet));
         return category;

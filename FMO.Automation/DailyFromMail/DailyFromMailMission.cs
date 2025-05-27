@@ -42,7 +42,7 @@ public class DailyFromMailMission : MailMission
         var files = di.GetFiles();
         using var db = new MissionDatabase();
         LiteDB.ILiteCollection<MailMissionRecord> coll = db.GetCollection<MailMissionRecord>($"mm_{Id}");
-        var cat = db.GetCollection<MailCategoryInfo>(_collection).Find(x => x.Category != MailCategory.Unk && (x.Category & MailCategory.ValueSheet) > 0).Select(x => x.Id).ToArray();
+        var cat = db.GetCollection<MailCategoryInfo>(_collection).FindAll().Where(x => x.Category != MailCategory.Unk && x.Category.HasFlag(MailCategory.ValueSheet)).Select(x => x.Id).ToArray();
 
         var worked = coll.FindAll().ExceptBy(cat, x => x.Id).ToArray();
 

@@ -49,7 +49,8 @@ public class TAFromMailMission : MailMission
         // 获取所有文件
         var files = di.GetFiles();
         using var db = new MissionDatabase();
-        var cat = db.GetCollection<MailCategoryInfo>(_collection).Find(x => x.Category != MailCategory.Unk && (x.Category & MailCategory.TA) > 0).Select(x => x.Id).ToArray();
+        var cat = db.GetCollection<MailCategoryInfo>(_collection).FindAll().Where(x => x.Category != MailCategory.Unk && x.Category.HasFlag(MailCategory.TA)).Select(x => x.Id).ToArray();
+        //var cat = db.GetCollection<MailCategoryInfo>(_collection).Find(x => x.Category != MailCategory.Unk && (x.Category & MailCategory.TA) > 0).Select(x => x.Id).ToArray();
 
         var coll = db.GetCollection<MailMissionRecord>($"mm_{Id}");
         var worked = coll.FindAll().ExceptBy(cat, x => x.Id).ToArray();
