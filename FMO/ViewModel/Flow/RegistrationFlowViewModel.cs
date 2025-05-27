@@ -209,6 +209,8 @@ public partial class RegistrationFlowViewModel : FlowViewModel
             SetProperty = (x, y) => { if (x is RegistrationFlow f) f.RegistrationLetter = y; },
         }; RegistrationLetter.Init(flow);
         RegistrationLetter.Init(flow);
+
+        Initialized = true;
     }
 
 

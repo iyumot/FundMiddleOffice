@@ -144,6 +144,8 @@ public partial class DividendFlowViewModel : FlowViewModel, IChangeableEntityVie
             Filter = "文档|*.pdf"
         };
         SealedAnnouncement.Init(flow);
+
+        Initialized = true;
     }
 
 
@@ -254,7 +256,7 @@ public partial class DividendFlowViewModel : FlowViewModel, IChangeableEntityVie
     {
         base.OnPropertyChanged(e);
 
-        if (e.PropertyName == nameof(Date) && Date is not null)
+        if (e.PropertyName == nameof(Date) && Date is not null && Initialized)
         {
             if (DividendReferenceDate.NewValue is null)
                 DividendReferenceDate.NewValue = Date;
