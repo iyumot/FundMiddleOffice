@@ -1,16 +1,14 @@
-﻿using System.Collections.ObjectModel;
-using System.IO;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
 using Serilog;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace FMO;
 
@@ -50,7 +48,7 @@ public partial class MainWindow : HandyControl.Controls.Window
 }
 
 
-public partial class TabItemInfo:ObservableObject
+public partial class TabItemInfo : ObservableObject
 {
     public required string Header { get; set; }
 
@@ -67,7 +65,7 @@ public partial class TabItemInfo:ObservableObject
 
 }
 
-public partial class MainWindowViewModel : ObservableRecipient, IRecipient<string>, IRecipient<OpenFundMessage>
+public partial class MainWindowViewModel : ObservableRecipient, IRecipient<string>, IRecipient<OpenFundMessage>, IRecipient<ToastMessage>
 {
 
     private PlatformPageViewModel? PlatformDataContext { get; set; }
@@ -133,7 +131,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
         page.IsSelected = true;
     }
 
- 
+
     [RelayCommand]
     public void OpenPage(string id)
     {
@@ -183,7 +181,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                     var page = Pages.FirstOrDefault(x => x.Content is TaskPage);
                     if (page is null)
                     {
-                        page = new TabItemInfo { Header =  "任务", HeaderBrush = Brushes.White, Background = Brushes.DarkOrchid, Content = new TaskPage() };
+                        page = new TabItemInfo { Header = "任务", HeaderBrush = Brushes.White, Background = Brushes.DarkOrchid, Content = new TaskPage() };
                         Pages.Add(page);
                     }
 
@@ -196,7 +194,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                     var page = Pages.FirstOrDefault(x => x.Content is StatementPage);
                     if (page is null)
                     {
-                        page = new TabItemInfo { Header =  "报表", Background =  Brushes.RoyalBlue, HeaderBrush=Brushes.White, Content = new StatementPage() };
+                        page = new TabItemInfo { Header = "报表", Background = Brushes.RoyalBlue, HeaderBrush = Brushes.White, Content = new StatementPage() };
                         Pages.Add(page);
                     }
 
@@ -211,7 +209,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                     {
                         page = new TabItemInfo
                         {
-                            Header =  ("投资人"),
+                            Header = ("投资人"),
                             Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#49bc69")),
                             Content = new CustomerPage()
                         };
@@ -280,5 +278,25 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
         Log.Warning(DateTime.Now.ToString());
     }
 
+    public void Receive(ToastMessage message)
+    {
+        switch (message.Level)
+        {
+            case LogLevel.Info:
+                HandyControl.Controls.Growl.Info(message.Message);
+                break;
+            case LogLevel.Warning:
+                HandyControl.Controls.Growl.Warning(message.Message);
+                break;
+            case LogLevel.Error:
+                HandyControl.Controls.Growl.Error(message.Message);
+                break;
+            case LogLevel.Success:
+                HandyControl.Controls.Growl.Success(message.Message);
+                break;
+            default:
+                break;
+        }
+    }
 }
 

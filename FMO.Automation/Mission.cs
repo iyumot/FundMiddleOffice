@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
+using FMO.Models;
 using MimeKit;
+using Serilog;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
@@ -58,7 +60,17 @@ public abstract class Mission
         try
         {
             WorkLog = "";
-            try { r = WorkOverride(); LastRun = DateTime.Now; if (r) SetNextRun(); } catch (Exception e) { }
+            try
+            {
+                r = WorkOverride();
+                LastRun = DateTime.Now;
+                if (r) SetNextRun();
+            }
+            catch (Exception e)
+            {
+                Log.Error($"Mission Error {Id} {e}");
+                WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Error, $"[{Id}]任务执行出错，请查看log"));
+            }
 
             using (var db = new MissionDatabase())
                 db.GetCollection<Mission>().Upsert(this);

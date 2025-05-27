@@ -20,3 +20,17 @@ public record FundAccountChangedMessage(int FundId, FundAccountType Type);
 /// <param name="FundId"></param>
 /// <param name="FlowId"></param>
 public record ElementChangedBackgroundMessage(int FundId, int FlowId);
+
+
+public enum LogLevel
+{
+    Info,
+    Warning, 
+    Error,
+    Success
+}
+
+/// <summary>
+/// 
+/// </summary>
+public record ToastMessage(LogLevel Level, string Message);
