@@ -435,7 +435,19 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         MemberContext = value is null ? null : new ManagerMemberViewModel(value);
     }
 
+
+    [RelayCommand]
+    public void AddShareHolder()
+    {
+
+    }
+
+
     #region MyRegion
+
+
+
+
 
     private void BusinessLicense_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {

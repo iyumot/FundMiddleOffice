@@ -264,136 +264,136 @@
         </Grid>
 
         <StackPanel Margin="5,0">
-            <!--<UniformGrid Margin="5,0" Rows="1">
-                <shared:ChangeableControl
-                    Width="240"
-                    HorizontalContentAlignment="Stretch"
-                    Binding="{Binding LegalPerson}"
-                    ContentTemplate="{StaticResource DT.Person}"
-                    EditTemplate="{StaticResource DT.Person.Edit}"
-                    Entity="{Binding .}"
-                    IsReadOnly="{Binding IsReadOnly}"
-                    Template="{StaticResource Tpl.ChangeableControl.Complex}" />
-                <shared:ChangeableControl
-                    Width="240"
-                    HorizontalContentAlignment="Stretch"
-                    Binding="{Binding ActualController}"
-                    ContentTemplate="{StaticResource DT.Person}"
-                    EditTemplate="{StaticResource DT.Person.Edit}"
-                    Entity="{Binding .}"
-                    IsReadOnly="{Binding IsReadOnly}"
-                    Template="{StaticResource Tpl.ChangeableControl.Complex}" />
-            </UniformGrid>-->
 
-            <Border>
-                <DockPanel LastChildFill="False">
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        FontSize="18"
-                        Text="成员" />
-                    <Button
-                        hc:IconElement.Geometry="{StaticResource f.circle-plus}"
-                        Command="{Binding AddMemberCommand}"
-                        Foreground="Green"
-                        Style="{StaticResource ButtonIcon}" />
-                </DockPanel>
-            </Border>
-
-            <DataGrid
-                Name="memberList"
-                d:ItemsSource="{d:SampleData}"
-                AutoGenerateColumns="False"
-                IsReadOnly="True"
-                ItemsSource="{Binding MemberSource.View}"
-                Style="{StaticResource DataGrid.NoSelect}">
-                <DataGrid.Columns>
-                    <DataGridTemplateColumn Header="姓名">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <shared:CopyableTextBlock Text="{Binding Name}" />
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="证件号">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <shared:CopyableTextBlock IsMasked="True" Text="{Binding Identity.Id}" />
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="电话">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <shared:CopyableTextBlock Text="{Binding Phone}" />
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-
-
-                    <DataGridTemplateColumn Header="证件">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <DockPanel LastChildFill="False">
-                                    <Button
-                                        Margin="-5"
-                                        hc:IconElement.Geometry="{DynamicResource f.book-open-reader}"
-                                        Command="{Binding ViewCommand}"
-                                        Foreground="Lime"
-                                        Style="{DynamicResource ButtonIcon.Small}"
-                                        ToolTip="查看"
-                                        Visibility="{Binding IdFile, TargetNullValue=Collapsed, Converter={StaticResource FileExistsToVisibilityConverter}}" />
-
-                                    <Button
-                                        Margin="-5"
-                                        hc:IconElement.Geometry="{DynamicResource f.gear}"
-                                        Command="{Binding SetFileCommand}"
-                                        CommandParameter="{Binding .}"
-                                        Style="{DynamicResource ButtonIcon.Small}"
-                                        ToolTip="更换" />
-
-                                </DockPanel>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-
-
-
-                    <!--  编辑/删除  -->
-                    <DataGridTemplateColumn>
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <DockPanel LastChildFill="False">
-                                    <Button
-                                        hc:IconElement.Geometry="{StaticResource f.circle-minus}"
-                                        Command="{Binding DataContext.RemoveMemberCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                        CommandParameter="{Binding .}"
-                                        Foreground="Red"
-                                        Style="{StaticResource ButtonIcon.Small}" />
-
-
-                                    <Button
-                                        hc:IconElement.Geometry="{StaticResource f.pen}"
-                                        Command="{Binding DataContext.EditMemberCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                        CommandParameter="{Binding .}"
-                                        Style="{StaticResource ButtonIcon.Small}" />
-                                </DockPanel>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-
-                </DataGrid.Columns>
-            </DataGrid>
-
-
-            <Popup
-                IsOpen="{Binding ShowMemberPopup}"
-                Placement="Bottom"
-                PlacementTarget="{Binding ElementName=memberList}"
-                StaysOpen="False">
-                <Border MaxWidth="600" Background="WhiteSmoke">
-                    <local:ManagerMemberView Margin="0,5" DataContext="{Binding MemberContext}" />
+            <StackPanel>
+                <Border>
+                    <DockPanel LastChildFill="False">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="18"
+                            Text="成员" />
+                        <Button
+                            hc:IconElement.Geometry="{StaticResource f.circle-plus}"
+                            Command="{Binding AddMemberCommand}"
+                            Foreground="Green"
+                            Style="{StaticResource ButtonIcon}" />
+                    </DockPanel>
                 </Border>
-            </Popup>
+
+                <DataGrid
+                    Name="memberList"
+                    d:ItemsSource="{d:SampleData}"
+                    AutoGenerateColumns="False"
+                    IsReadOnly="True"
+                    ItemsSource="{Binding MemberSource.View}"
+                    Style="{StaticResource DataGrid.NoSelect}">
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="姓名">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <shared:CopyableTextBlock Text="{Binding Name}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="证件号">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <shared:CopyableTextBlock IsMasked="True" Text="{Binding Identity.Id}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="电话">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <shared:CopyableTextBlock Text="{Binding Phone}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+
+                        <DataGridTemplateColumn Header="证件">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <DockPanel LastChildFill="False">
+                                        <Button
+                                            Margin="-5"
+                                            hc:IconElement.Geometry="{DynamicResource f.book-open-reader}"
+                                            Command="{Binding ViewCommand}"
+                                            Foreground="Lime"
+                                            Style="{DynamicResource ButtonIcon.Small}"
+                                            ToolTip="查看"
+                                            Visibility="{Binding IdFile, TargetNullValue=Collapsed, Converter={StaticResource FileExistsToVisibilityConverter}}" />
+
+                                        <Button
+                                            Margin="-5"
+                                            hc:IconElement.Geometry="{DynamicResource f.gear}"
+                                            Command="{Binding SetFileCommand}"
+                                            CommandParameter="{Binding .}"
+                                            Style="{DynamicResource ButtonIcon.Small}"
+                                            ToolTip="更换" />
+
+                                    </DockPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+
+
+                        <!--  编辑/删除  -->
+                        <DataGridTemplateColumn>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <DockPanel LastChildFill="False">
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.circle-minus}"
+                                            Command="{Binding DataContext.RemoveMemberCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding .}"
+                                            Foreground="Red"
+                                            Style="{StaticResource ButtonIcon.Small}" />
+
+
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.pen}"
+                                            Command="{Binding DataContext.EditMemberCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding .}"
+                                            Style="{StaticResource ButtonIcon.Small}" />
+                                    </DockPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                    </DataGrid.Columns>
+                </DataGrid>
+
+
+                <Popup
+                    IsOpen="{Binding ShowMemberPopup}"
+                    Placement="Bottom"
+                    PlacementTarget="{Binding ElementName=memberList}"
+                    StaysOpen="False">
+                    <Border MaxWidth="600" Background="WhiteSmoke">
+                        <local:ManagerMemberView Margin="0,5" DataContext="{Binding MemberContext}" />
+                    </Border>
+                </Popup>
+            </StackPanel>
+
+
+
+            <StackPanel>
+                <Border>
+                    <DockPanel LastChildFill="False">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="18"
+                            Text="股东" />
+                        <Button
+                            hc:IconElement.Geometry="{StaticResource f.circle-plus}"
+                            Command="{Binding AddShareHolderCommand}"
+                            Foreground="Green"
+                            Style="{StaticResource ButtonIcon}" />
+                    </DockPanel>
+                </Border>
+            </StackPanel>
         </StackPanel>
 
 
