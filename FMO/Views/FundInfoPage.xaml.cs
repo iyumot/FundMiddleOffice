@@ -211,6 +211,10 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
                     Flows.Add(new LiquidationFlowViewModel(d));
                     break;
 
+                case DividendFlow d:
+                    Flows.Add(new DividendFlowViewModel(d));
+                    break;
+
                 default:
                     break;
             }
@@ -451,6 +455,16 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         using var db = DbHelper.Base();
         db.GetCollection<FundFlow>().Insert(flow);
         Flows.Add(new ModifyByAnnounceFlowViewModel(flow));
+    }
+
+
+    [RelayCommand]
+    public void CreateDividendFlow()
+    {
+        var flow = new DividendFlow { FundId = Fund.Id };
+        using var db = DbHelper.Base();
+        db.GetCollection<FundFlow>().Insert(flow);
+        Flows.Add(new DividendFlowViewModel(flow));
     }
 
     [RelayCommand]

@@ -14,6 +14,7 @@
 
     <UserControl.Resources>
         <local:FlowTemplateSelector x:Key="FlowTemplateSelector" />
+        <SolidColorBrush x:Key="LabelBrush">gray</SolidColorBrush>
 
         <Style
             x:Key="GeneratorButton"
@@ -218,6 +219,10 @@
             </Setter>
         </Style>
 
+
+        <DataTemplate x:Key="DT.DateTime">
+            <DatePicker SelectedDate="{Binding NewValue}" />
+        </DataTemplate>
 
         <DataTemplate x:Key="DT.InitiateFlow">
             <UserControl Template="{StaticResource FlowShell}">
@@ -539,7 +544,97 @@
 
         </DataTemplate>
 
+        <DataTemplate x:Key="DT.DividendFlow" DataType="local:DividendFlowViewModel">
+            <UserControl Template="{StaticResource FlowShell}">
+                <DockPanel>
+                    <Button
+                        Command="{Binding DataContext.DeleteFlowCommand, RelativeSource={RelativeSource AncestorType=local:FundLifeTimeView}}"
+                        CommandParameter="{Binding .}"
+                        Content="废除"
+                        DockPanel.Dock="Right"
+                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
 
+
+                    <StackPanel MinWidth="500" VerticalAlignment="Center">
+                        <StackPanel.Resources>
+                            <Style BasedOn="{StaticResource {x:Type shared:ChangeableControl}}" TargetType="shared:ChangeableControl">
+                                <Setter Property="Entity" Value="{Binding .}" />
+                                <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}" />
+                            </Style>
+                        </StackPanel.Resources>
+                        <DockPanel LastChildFill="False">
+                            <shared:ChangeableControl Binding="{Binding Type}">
+                                <shared:ChangeableControl.EditTemplate>
+                                    <DataTemplate>
+                                        <ListBox
+                                            ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus.Small}"
+                                            ItemsPanel="{StaticResource ButtonGroupHorizontalStackItemsPanelTemplate}"
+                                            ItemsSource="{x:Static local:DividendFlowViewModel.Types}"
+                                            SelectedItem="{Binding NewValue}"
+                                            Style="{StaticResource ListBox.Small}" />
+                                    </DataTemplate>
+                                </shared:ChangeableControl.EditTemplate>
+                            </shared:ChangeableControl>
+
+                            <shared:ChangeableControl
+                                Width="120"
+                                HorizontalContentAlignment="Stretch"
+                                Binding="{Binding Target}" />
+
+                            <shared:ChangeableControl Binding="{Binding Method}">
+                                <shared:ChangeableControl.EditTemplate>
+                                    <DataTemplate>
+                                        <ListBox
+                                            ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus.Small}"
+                                            ItemsPanel="{StaticResource ButtonGroupHorizontalStackItemsPanelTemplate}"
+                                            ItemsSource="{x:Static local:DividendFlowViewModel.Methods}"
+                                            SelectedItem="{Binding NewValue}"
+                                            Style="{StaticResource ListBox.Small}" />
+                                    </DataTemplate>
+                                </shared:ChangeableControl.EditTemplate>
+                            </shared:ChangeableControl>
+                        </DockPanel>
+
+                        <WrapPanel>
+                            <shared:ChangeableControl
+                                HorizontalContentAlignment="Stretch"
+                                Binding="{Binding DividendReferenceDate}"
+                                EditTemplate="{StaticResource DT.DateTime}" />
+                            <shared:ChangeableControl
+                                HorizontalContentAlignment="Stretch"
+                                Binding="{Binding RecordDate}"
+                                EditTemplate="{StaticResource DT.DateTime}" />
+                            <shared:ChangeableControl
+                                HorizontalContentAlignment="Stretch"
+                                Binding="{Binding ExDividendDate}"
+                                EditTemplate="{StaticResource DT.DateTime}" />
+                            <shared:ChangeableControl
+                                HorizontalContentAlignment="Stretch"
+                                Binding="{Binding CashPaymentDate}"
+                                EditTemplate="{StaticResource DT.DateTime}" />
+                        </WrapPanel>
+
+
+
+                        <WrapPanel>
+                            <Button CommandParameter="{Binding Announcement}" Style="{StaticResource GeneratorButton}" />
+                            <shared:FileControl Binding="{Binding Announcement}" />
+                            <shared:FileControl Binding="{Binding SealedAnnouncement}" Style="{StaticResource SealedFile}" />
+                        </WrapPanel>
+
+
+                        <ListBox
+                            BorderThickness="0"
+                            ItemTemplate="{StaticResource DT.CustomFile}"
+                            ItemsSource="{Binding CustomFiles}"
+                            Style="{StaticResource ListBoxCustom}" />
+
+                    </StackPanel>
+
+                </DockPanel>
+            </UserControl>
+
+        </DataTemplate>
 
         <DataTemplate x:Key="DT.Liquidation">
             <UserControl Template="{StaticResource FlowShell}">
@@ -582,6 +677,9 @@
             <Button Command="{Binding CreateContractModifyCommand}" Content="合同变更" />
 
             <!--<Button Command="{Binding CreateModifyByAnnounceCommand}" Content="公告变更" />-->
+
+            <Button Command="{Binding CreateDividendFlowCommand}" Content="发起分红" />
+
 
             <Button Command="{Binding CreateClearFlowCommand}" Content="发起清盘" />
         </DockPanel>

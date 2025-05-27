@@ -1,4 +1,6 @@
-﻿namespace FMO.Models;
+﻿using System.ComponentModel;
+
+namespace FMO.Models;
 
 
 public interface IElementChangable
@@ -321,9 +323,96 @@ public class ModifyByAnnounceFlow : FundFlow
     public override string Name { get => "合同变更"; set { } }
 }
 
+/// <summary>
+/// 方案
+/// ①按每单位红利分红：按照产品分红基准日的单位净值进行扣减，例如基准日单位净值为1.2513，可以选择每单位红利为 0.1，分红后单位净值为 1.1513。
+///本模式下【可分单位红利上限】将按净值保留位数截位计算（例如: 公式计算出的可分单位红利上限=1.12345，单位净值保留位数=4 位，则【可分单位红利上限】=1.1234) ，
+///以保证分红总金额不超过基金可供分配利润，如需将基金可供分配利润全部分配，可选择“按指定金额分红"或“按单位净值归目标净值分红”。
+///②按指定金额分红：指定本次分红的总金额，系统会根据权益进行计算本次分红应该扣减的净值。
+///③按单位净值归目标净值分配：系统自动计算本次分红金额，使分红结果尽可能为设定的目标净值。 
+/// </summary>
+[TypeConverter(typeof(EnumDescriptionTypeConverter))]
+public enum DividendType
+{
+    /// <summary>
+    /// 按每单位红利分红：按照产品分红基准日的单位净值进行扣减
+    /// </summary>
+    [Description("按每单位红利分红")]
+    PerUnitDividend = 1,
+
+    /// <summary>
+    /// 按指定金额分红：指定本次分红的总金额，系统会根据权益进行计算本次分红应该扣减的净值
+    /// </summary>
+    [Description("按指定金额分红")]
+    SpecifiedAmount = 2,
+
+    /// <summary>
+    /// 按单位净值归目标净值分配：系统自动计算本次分红金额，使分红结果尽可能为设定的目标净值
+    /// </summary>
+    [Description("按单位净值归目标净值分红")]
+    TargetNetValue = 3
+}
+
+[TypeConverter(typeof(EnumDescriptionTypeConverter))]
+public enum DividendMethod
+{
+    /// <summary>
+    /// 现金分红：将红利以现金形式发放给投资人
+    /// </summary>
+    [Description("现金分红")]
+    Cash = 1,
+
+    /// <summary>
+    /// 红利再投资：将红利自动转为基金份额进行再投资
+    /// </summary>
+    [Description("红利再投资")]
+    Reinvestment,
+
+
+    [Description("按投资人意愿")]
+    Manual,
+}
+
+public class DividendFlow : FundFlow
+{
+    public DividendType Type { get; set; }
+
+    public decimal Target { get; set; }
+
+
+    public DividendMethod Method { get; set; }
+
+    /// <summary>
+    /// 分红基准日：计算红利的参考净值日期
+    /// </summary>
+    public DateOnly DividendReferenceDate { get; set; }
+
+    /// <summary>
+    /// 权益登记日：确认投资者享有分红权益的日期
+    /// </summary>
+    public DateOnly RecordDate { get; set; }
+
+    /// <summary>
+    /// 除息日：基金净值扣除分红金额的日期
+    /// </summary>
+    public DateOnly ExDividendDate { get; set; }
+
+    /// <summary>
+    /// 现金红利发放日：投资者实际收到现金红利的日期
+    /// </summary>
+    public DateOnly CashPaymentDate { get; set; }
 
 
 
+    /// <summary>
+    /// 公告
+    /// </summary>
+    public FileStorageInfo? Announcement { get; set; }
+
+    public FileStorageInfo? SealedAnnouncement { get; set; }
+
+    public override string Name { get => "基金分红"; set { } }
+}
 
 
 
