@@ -9,7 +9,7 @@ public enum PersonRole
     // 无角色
     None = 0x0,
     // 法定代表人
-    [Description("法定代表人")]Legal = 0x1,
+    [Description("法定代表人")] Legal = 0x1,
     // 实际控制人
     [Description("实际控制人")] ActualController = 0x2,
     // 投资经理
@@ -29,8 +29,6 @@ public enum PersonRole
 /// </summary>
 public class Person : LegalEntity
 {
-    public PersonRole Role { get; set; }
-
     public IDType IDType { get; set; }
 
     /// <summary>
