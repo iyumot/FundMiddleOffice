@@ -19,6 +19,13 @@
             <Setter Property="IsReadOnly" Value="{Binding RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Path=DataContext.IsReadOnly}" />
         </Style>
 
+        <SolidColorBrush x:Key="LabelBrush">Gray</SolidColorBrush>
+
+        <Style BasedOn="{StaticResource {x:Type shared:ChangeableControl}}" TargetType="shared:ChangeableControl">
+            <Setter Property="Entity" Value="{Binding RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Path=DataContext}" />
+            <Setter Property="IsReadOnly" Value="{Binding RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Path=DataContext.IsReadOnly}" />
+        </Style>
+
         <DataTemplate x:Key="DT.Text.Cap">
             <TextBox MinWidth="80" Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
         </DataTemplate>
@@ -129,30 +136,30 @@
                     </Style>
                 </StackPanel.Resources>
 
-                <shared:ChangeableContainer Binding="{Binding ManagerName}" />
+                <shared:ChangeableControl Binding="{Binding ManagerName}" />
 
 
 
                 <UniformGrid Margin="0,0,30,0" Columns="2">
-                    <shared:ChangeableContainer Binding="{Binding ArtificialPerson}" />
-                    <shared:ChangeableContainer Binding="{Binding RegisterNo}" IsReadOnly="True" />
+                    <shared:ChangeableControl Binding="{Binding ArtificialPerson}" />
+                    <shared:ChangeableControl Binding="{Binding RegisterNo}" IsReadOnly="True" />
 
 
-                    <shared:ChangeableContainer Binding="{Binding RegisterCapital}" ContentTemplate="{StaticResource DT.Text.Cap}" />
-                    <shared:ChangeableContainer Binding="{Binding RealCapital}" ContentTemplate="{StaticResource DT.Text.Cap}" />
+                    <shared:ChangeableControl Binding="{Binding RegisterCapital}" ContentTemplate="{StaticResource DT.Text.Cap}" />
+                    <shared:ChangeableControl Binding="{Binding RealCapital}" ContentTemplate="{StaticResource DT.Text.Cap}" />
 
 
-                    <shared:ChangeableContainer Binding="{Binding SetupDate}">
-                        <shared:ChangeableContainer.ContentTemplate>
+                    <shared:ChangeableControl Binding="{Binding SetupDate}">
+                        <shared:ChangeableControl.ContentTemplate>
                             <DataTemplate>
                                 <DatePicker SelectedDate="{Binding NewValue}" />
                             </DataTemplate>
-                        </shared:ChangeableContainer.ContentTemplate>
-                    </shared:ChangeableContainer>
+                        </shared:ChangeableControl.ContentTemplate>
+                    </shared:ChangeableControl>
 
 
-                    <shared:ChangeableContainer Binding="{Binding ExpireDate}">
-                        <shared:ChangeableContainer.ContentTemplate>
+                    <shared:ChangeableControl Binding="{Binding ExpireDate}">
+                        <shared:ChangeableControl.ContentTemplate>
                             <DataTemplate>
                                 <DockPanel>
                                     <DatePicker
@@ -165,28 +172,28 @@
                                         IsChecked="{Binding NewValue.IsLongTerm}" />
                                 </DockPanel>
                             </DataTemplate>
-                        </shared:ChangeableContainer.ContentTemplate>
-                    </shared:ChangeableContainer>
+                        </shared:ChangeableControl.ContentTemplate>
+                    </shared:ChangeableControl>
 
-                    <shared:ChangeableContainer Binding="{Binding RegisterDate}">
-                        <shared:ChangeableContainer.ContentTemplate>
+                    <shared:ChangeableControl Binding="{Binding RegisterDate}">
+                        <shared:ChangeableControl.ContentTemplate>
                             <DataTemplate>
                                 <DatePicker SelectedDate="{Binding NewValue}" />
                             </DataTemplate>
-                        </shared:ChangeableContainer.ContentTemplate>
-                    </shared:ChangeableContainer>
+                        </shared:ChangeableControl.ContentTemplate>
+                    </shared:ChangeableControl>
                     <TextBlock />
 
 
-                    <shared:ChangeableContainer Binding="{Binding Telephone}" ContentTemplate="{StaticResource DT.Text.Cap}" />
-                    <shared:ChangeableContainer Binding="{Binding Fax}" ContentTemplate="{StaticResource DT.Text.Cap}" />
+                    <shared:ChangeableControl Binding="{Binding Telephone}" ContentTemplate="{StaticResource DT.Text.Cap}" />
+                    <shared:ChangeableControl Binding="{Binding Fax}" ContentTemplate="{StaticResource DT.Text.Cap}" />
 
 
                 </UniformGrid>
 
                 <DockPanel>
 
-                    <shared:ChangeableContainer Binding="{Binding WebSite}" />
+                    <shared:ChangeableControl Binding="{Binding WebSite}" />
 
                     <Button
                         hc:IconElement.Geometry="{StaticResource f.arrow-up-right-from-square}"
@@ -195,13 +202,13 @@
                         Style="{StaticResource ButtonIcon.Small}" />
                 </DockPanel>
 
-                <shared:ChangeableContainer Binding="{Binding InstitutionCode}" IsReadOnly="True" />
+                <shared:ChangeableControl Binding="{Binding InstitutionCode}" IsReadOnly="True" />
 
 
-                <shared:ChangeableContainer HorizontalContentAlignment="Stretch" Binding="{Binding RegisterAddress}" />
-                <shared:ChangeableContainer HorizontalContentAlignment="Stretch" Binding="{Binding OfficeAddress}" />
-                <shared:ChangeableContainer HorizontalContentAlignment="Stretch" Binding="{Binding BusinessScope}">
-                    <shared:ChangeableContainer.ContentTemplate>
+                <shared:ChangeableControl HorizontalContentAlignment="Stretch" Binding="{Binding RegisterAddress}" />
+                <shared:ChangeableControl HorizontalContentAlignment="Stretch" Binding="{Binding OfficeAddress}" />
+                <shared:ChangeableControl HorizontalContentAlignment="Stretch" Binding="{Binding BusinessScope}">
+                    <shared:ChangeableControl.ContentTemplate>
                         <DataTemplate>
                             <TextBox
                                 MinHeight="100"
@@ -209,8 +216,8 @@
                                 Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}"
                                 TextWrapping="Wrap" />
                         </DataTemplate>
-                    </shared:ChangeableContainer.ContentTemplate>
-                </shared:ChangeableContainer>
+                    </shared:ChangeableControl.ContentTemplate>
+                </shared:ChangeableControl>
 
 
                 <!--  logo  -->
