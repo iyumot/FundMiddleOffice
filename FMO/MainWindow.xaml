@@ -73,11 +73,11 @@
                                     Focusable="False"
                                     RecognizesAccessKey="True"
                                     SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-                                <Path
+                                <!--<Path
                                     x:Name="sel"
                                     Data="M0,0 L15,0 L0,15 Z"
                                     Fill="Transparent"
-                                    StrokeThickness="1" />
+                                    StrokeThickness="1" />-->
                             </hc:SimplePanel>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -88,9 +88,9 @@
                                 <Setter TargetName="contentPresenter" Property="UIElement.Opacity" Value="0.4" />
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="sel" Property="Fill" Value="Black" />
+                                <!--<Setter TargetName="sel" Property="Fill" Value="Black" />-->
                                 <Setter TargetName="border" Property="Height" Value="34" />
-                                <!--<Setter TargetName="border" Property="CornerRadius" Value="6,6,0,0" />-->
+                                <Setter Property="TextElement.FontWeight" Value="Black" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
