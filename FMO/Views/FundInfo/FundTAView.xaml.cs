@@ -39,12 +39,16 @@ public partial class FundTAViewModel : ObservableObject
 
         // customeid = 0
         foreach (var item in ta.Where(x=>x.CustomerId == 0)) 
-            item.CustomerId = item.CustomerIdentity.GetHashCode(); 
+            item.CustomerId = item.CustomerIdentity.GetHashCode();
 
+        // 对齐开放日净值
+        //var ds = db.GetDailyCollection(fundId).FindAll().OrderByDescending(x => x.Date);
+        //foreach (var item in ta)
+        //{
+        //    var d = ds.FirstOrDefault(x => x.Date < item.ConfirmedDate);
+        //}
 
-
-
-        var daily = db.GetDailyCollection(fundId).FindAll().OrderByDescending(x => x.Date).FirstOrDefault(x => x.NetValue > 0);
+        var daily = ds.FirstOrDefault(x => x.NetValue > 0);
         var nv = daily?.NetValue ?? 0;
         NetValueDate = daily?.Date;
         Daily = daily;
