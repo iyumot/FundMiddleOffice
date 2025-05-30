@@ -14,7 +14,7 @@
     mc:Ignorable="d">
     <UserControl.Resources>
         <Style BasedOn="{StaticResource {x:Type shared:ChangeableContainer}}" TargetType="shared:ChangeableContainer">
-            <Setter Property="Margin" Value="0,3" />
+            <Setter Property="Margin" Value="0,6" />
             <Setter Property="Entity" Value="{Binding RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Path=DataContext}" />
             <Setter Property="IsReadOnly" Value="{Binding RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Path=DataContext.IsReadOnly}" />
         </Style>
@@ -145,21 +145,21 @@
                     <shared:ChangeableControl Binding="{Binding RegisterNo}" IsReadOnly="True" />
 
 
-                    <shared:ChangeableControl Binding="{Binding RegisterCapital}" ContentTemplate="{StaticResource DT.Text.Cap}" />
-                    <shared:ChangeableControl Binding="{Binding RealCapital}" ContentTemplate="{StaticResource DT.Text.Cap}" />
+                    <shared:ChangeableControl Binding="{Binding RegisterCapital}" EditTemplate="{StaticResource DT.Text.Cap}" />
+                    <shared:ChangeableControl Binding="{Binding RealCapital}" EditTemplate="{StaticResource DT.Text.Cap}" />
 
 
                     <shared:ChangeableControl Binding="{Binding SetupDate}">
-                        <shared:ChangeableControl.ContentTemplate>
+                        <shared:ChangeableControl.EditTemplate>
                             <DataTemplate>
                                 <DatePicker SelectedDate="{Binding NewValue}" />
                             </DataTemplate>
-                        </shared:ChangeableControl.ContentTemplate>
+                        </shared:ChangeableControl.EditTemplate>
                     </shared:ChangeableControl>
 
 
                     <shared:ChangeableControl Binding="{Binding ExpireDate}">
-                        <shared:ChangeableControl.ContentTemplate>
+                        <shared:ChangeableControl.EditTemplate>
                             <DataTemplate>
                                 <DockPanel>
                                     <DatePicker
@@ -172,21 +172,21 @@
                                         IsChecked="{Binding NewValue.IsLongTerm}" />
                                 </DockPanel>
                             </DataTemplate>
-                        </shared:ChangeableControl.ContentTemplate>
+                        </shared:ChangeableControl.EditTemplate>
                     </shared:ChangeableControl>
 
                     <shared:ChangeableControl Binding="{Binding RegisterDate}">
-                        <shared:ChangeableControl.ContentTemplate>
+                        <shared:ChangeableControl.EditTemplate>
                             <DataTemplate>
                                 <DatePicker SelectedDate="{Binding NewValue}" />
                             </DataTemplate>
-                        </shared:ChangeableControl.ContentTemplate>
+                        </shared:ChangeableControl.EditTemplate>
                     </shared:ChangeableControl>
                     <TextBlock />
 
 
-                    <shared:ChangeableControl Binding="{Binding Telephone}" ContentTemplate="{StaticResource DT.Text.Cap}" />
-                    <shared:ChangeableControl Binding="{Binding Fax}" ContentTemplate="{StaticResource DT.Text.Cap}" />
+                    <shared:ChangeableControl Binding="{Binding Telephone}" EditTemplate="{StaticResource DT.Text.Cap}" />
+                    <shared:ChangeableControl Binding="{Binding Fax}" EditTemplate="{StaticResource DT.Text.Cap}" />
 
 
                 </UniformGrid>
@@ -208,7 +208,7 @@
                 <shared:ChangeableControl HorizontalContentAlignment="Stretch" Binding="{Binding RegisterAddress}" />
                 <shared:ChangeableControl HorizontalContentAlignment="Stretch" Binding="{Binding OfficeAddress}" />
                 <shared:ChangeableControl HorizontalContentAlignment="Stretch" Binding="{Binding BusinessScope}">
-                    <shared:ChangeableControl.ContentTemplate>
+                    <shared:ChangeableControl.EditTemplate>
                         <DataTemplate>
                             <TextBox
                                 MinHeight="100"
@@ -216,7 +216,7 @@
                                 Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}"
                                 TextWrapping="Wrap" />
                         </DataTemplate>
-                    </shared:ChangeableControl.ContentTemplate>
+                    </shared:ChangeableControl.EditTemplate>
                 </shared:ChangeableControl>
 
 

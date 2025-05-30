@@ -106,6 +106,7 @@
 
     <ControlTemplate x:Key="Tpl.ChangeableControl" TargetType="local:ChangeableControl">
         <DockPanel
+            Margin="{TemplateBinding Margin}"
             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
             Background="Transparent"
             LastChildFill="True">
@@ -132,7 +133,7 @@
 
                     <ContentPresenter
                         x:Name="PART_Content"
-                        Margin="4,0"
+                        Margin="4,1"
                         HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                         VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                         Content="{TemplateBinding Binding}"
@@ -151,7 +152,10 @@
     </ControlTemplate>
 
     <ControlTemplate x:Key="Tpl.ChangeableControl.Complex" TargetType="local:ChangeableControl">
-        <StackPanel VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Background="Transparent">
+        <StackPanel
+            Margin="{TemplateBinding Margin}"
+            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+            Background="Transparent">
             <DockPanel LastChildFill="False">
                 <Grid>
                     <TextBlock
@@ -176,7 +180,7 @@
 
             <ContentPresenter
                 x:Name="PART_Content"
-                Margin="4,0"
+                Margin="4,1"
                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                 Content="{Binding Binding, RelativeSource={RelativeSource TemplatedParent}}"
@@ -516,7 +520,10 @@
                                 <ColumnDefinition />
                                 <ColumnDefinition Width="24" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock VerticalAlignment="Center" Text="{TemplateBinding MaskedText}" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Text="{TemplateBinding MaskedText}"
+                                TextWrapping="WrapWithOverflow" />
                             <Button
                                 x:Name="PART_Copy"
                                 Grid.Column="1"
