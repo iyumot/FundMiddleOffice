@@ -497,9 +497,9 @@
     </Style>
 
     <Style
-     x:Key="ListBoxItem.AllaysFocus.Small"
-     BasedOn="{StaticResource ListBoxItem.AllaysFocus}"
-     TargetType="ListBoxItem">
+        x:Key="ListBoxItem.AllaysFocus.Small"
+        BasedOn="{StaticResource ListBoxItem.AllaysFocus}"
+        TargetType="ListBoxItem">
         <Setter Property="Padding" Value="6,0" />
         <Setter Property="MinHeight" Value="24" />
     </Style>

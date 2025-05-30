@@ -12,6 +12,11 @@ public record FundStatusChangedMessage(int FundId, FundStatus Status);
 
 public record OpenFundMessage(int Id);
 
+public record OpenPageMessage(string Page);
+
+public record PageTAMessage(int TabIndex, string Search);
+
+
 public record FundAccountChangedMessage(int FundId, FundAccountType Type);
 
 /// <summary>

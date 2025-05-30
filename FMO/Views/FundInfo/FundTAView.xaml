@@ -193,6 +193,12 @@
                     <DockPanel.Resources>
                         <Style BasedOn="{StaticResource ButtonIcon.Small}" TargetType="Button" />
                     </DockPanel.Resources>
+
+                    <Button
+                        hc:IconElement.Geometry="{StaticResource f.tents}"
+                        Command="{Binding GoToTACommand}"
+                        ToolTip="跳转到TA" />
+
                     <Button
                         hc:IconElement.Geometry="{StaticResource f.expand}"
                         Command="{Binding ExportCommand}"

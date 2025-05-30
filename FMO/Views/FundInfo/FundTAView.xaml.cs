@@ -2,6 +2,7 @@
 using System.Windows.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.TPL;
 using FMO.Utilities;
@@ -42,7 +43,7 @@ public partial class FundTAViewModel : ObservableObject
             item.CustomerId = item.CustomerIdentity.GetHashCode();
 
         // 对齐开放日净值
-        //var ds = db.GetDailyCollection(fundId).FindAll().OrderByDescending(x => x.Date);
+        var ds = db.GetDailyCollection(fundId).FindAll().OrderByDescending(x => x.Date);
         //foreach (var item in ta)
         //{
         //    var d = ds.FirstOrDefault(x => x.Date < item.ConfirmedDate);
@@ -172,6 +173,14 @@ public partial class FundTAViewModel : ObservableObject
         catch (Exception)
         {
         }
+    }
+
+
+    [RelayCommand]
+    public void GoToTA()
+    {
+        WeakReferenceMessenger.Default.Send(new OpenPageMessage("TA"));
+        WeakReferenceMessenger.Default.Send(new PageTAMessage(2, FundName));
     }
 }
 

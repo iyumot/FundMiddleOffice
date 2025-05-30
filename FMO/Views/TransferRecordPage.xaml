@@ -37,7 +37,7 @@
             <!--  搜索  -->
             <hc:SimplePanel Margin="10,0">
                 <TextBox
-                    MinWidth="220"
+                    MinWidth="260"
                     Padding="4"
                     HorizontalContentAlignment="Center"
                     Style="{StaticResource TextBox.Small}"
@@ -51,7 +51,10 @@
             </hc:SimplePanel>
         </DockPanel>
 
-        <TabControl Margin="0,8" Style="{StaticResource TabControlCapsule}">
+        <TabControl
+            Margin="0,8"
+            SelectedIndex="{Binding TabIndex}"
+            Style="{StaticResource TabControlCapsule}">
             <TabControl.Template>
                 <ControlTemplate TargetType="{x:Type TabControl}">
 

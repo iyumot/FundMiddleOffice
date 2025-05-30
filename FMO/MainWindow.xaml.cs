@@ -65,7 +65,7 @@ public partial class TabItemInfo : ObservableObject
 
 }
 
-public partial class MainWindowViewModel : ObservableRecipient, IRecipient<string>, IRecipient<OpenFundMessage>, IRecipient<ToastMessage>
+public partial class MainWindowViewModel : ObservableRecipient, IRecipient<string>, IRecipient<OpenFundMessage>,IRecipient<OpenPageMessage>, IRecipient<ToastMessage>
 {
 
     private PlatformPageViewModel? PlatformDataContext { get; set; }
@@ -97,8 +97,8 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
 
     protected override void OnActivated()
     {
-        WeakReferenceMessenger.Default.Register<OpenFundMessage>(this);
-        WeakReferenceMessenger.Default.Register<string, string>(this, "toast");
+        WeakReferenceMessenger.Default.RegisterAll(this);
+        //WeakReferenceMessenger.Default.Register<string, string>(this, "toast");
     }
 
     public void Receive(OpenFundMessage message)
@@ -129,6 +129,11 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
         }
 
         page.IsSelected = true;
+    }
+
+    public void Receive(OpenPageMessage message)
+    {
+        OpenPage(message.Page);
     }
 
 

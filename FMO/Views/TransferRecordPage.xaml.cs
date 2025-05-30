@@ -24,7 +24,7 @@ public partial class TransferRecordPage : UserControl
 }
 
 
-public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<TransferRecord>
+public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<TransferRecord>,IRecipient<PageTAMessage>
 {
     [ObservableProperty]
     public partial ObservableCollection<TransferRecordViewModel>? Records { get; set; }
@@ -35,6 +35,8 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     [ObservableProperty]
     public partial string? SearchKeyword { get; set; }
 
+    [ObservableProperty]
+    public partial int TabIndex { get; set; }
 
     [ObservableProperty]
     public partial ObservableCollection<TransferRequest>? Requests { get; set; }
@@ -45,6 +47,8 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
     public TransferRecordPageViewModel()
     {
+        WeakReferenceMessenger.Default.RegisterAll(this);
+
         RequestsSource.Filter += (s, e) => e.Accepted = string.IsNullOrWhiteSpace(SearchKeyword) ? true :
         e.Item switch { TransferRequest r => r.CustomerName.Contains(SearchKeyword) || r.FundName.Contains(SearchKeyword) || r.CustomerIdentity.Contains(SearchKeyword), _ => true };
         RecordsSource.Filter += (s, e) => e.Accepted = string.IsNullOrWhiteSpace(SearchKeyword) ? true :
@@ -107,13 +111,17 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
     partial void OnSearchKeywordChanged(string? value)
     {
-
-        {
-            RequestsSource.View.Refresh();
-            RecordsSource.View.Refresh();
-        }
+        if (RequestsSource.View is null)
+            Task.Run(() => App.Current.Dispatcher.BeginInvoke(() => Refresh()));
+        else Refresh();
     }
 
+
+    private void Refresh()
+    {
+        RequestsSource.View?.Refresh();
+        RecordsSource.View?.Refresh();
+    }
 
     [RelayCommand]
     public void CalcFee()
@@ -155,6 +163,12 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         else Records!.Add(new TransferRecordViewModel(message) { File = new FileInfo(@$"files\tac\{message.Id}.pdf") });
 
 
+    }
+
+    public void Receive(PageTAMessage message)
+    {        
+        TabIndex = message.TabIndex;
+        SearchKeyword = message.Search;
     }
 }
 
