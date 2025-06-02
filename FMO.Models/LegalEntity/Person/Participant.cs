@@ -8,7 +8,9 @@ public class Participant
 
     public PersonRole Role { get; set; }
 
-    public Identity Identity { get; set; }
+    public Identity? Identity { get; set; }
+
+    public DateEfficient Efficient { get; set; }
 
     /// <summary>
     /// 称谓

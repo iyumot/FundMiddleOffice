@@ -1,8 +1,8 @@
-﻿using System.Windows.Controls;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
+using System.Windows.Controls;
 
 namespace FMO;
 
@@ -69,8 +69,8 @@ public partial class ManagerMemberViewModel : EditableControlViewModelBase<Parti
         IdType = new()
         {
             Label = "证件类型",
-            InitFunc = x => x.Identity.Type,
-            UpdateFunc = (x, y) => x.Identity = x.Identity with { Type = y ?? default },
+            InitFunc = x => x.Identity?.Type,
+            UpdateFunc = (x, y) => x.Identity = x.Identity is null ? new Identity { Id = "", Type = y ?? default } : x.Identity with { Type = y ?? default },
             ClearFunc = x => x.Identity = x.Identity with { Type = default }
         };
         IdType.Init(person);
@@ -78,7 +78,7 @@ public partial class ManagerMemberViewModel : EditableControlViewModelBase<Parti
         IdNumber = new()
         {
             Label = "证件号码",
-            InitFunc = x => x.Identity.Id,
+            InitFunc = x => x.Identity?.Id,
             UpdateFunc = (x, y) => x.Identity = x.Identity with { Id = y ?? "" },
             ClearFunc = x => x.Identity = x.Identity with { Id = "" }
         };
@@ -87,9 +87,9 @@ public partial class ManagerMemberViewModel : EditableControlViewModelBase<Parti
         Efficient = new()
         {
             Label = "有效期",
-            InitFunc = x => new(x.Identity.Efficient),
-            UpdateFunc = (x, y) => x.Identity = x.Identity with { Efficient = y!.Build() },
-            ClearFunc = x => x.Identity = x.Identity with { Efficient = default }
+            InitFunc = x => new(x.Efficient),
+            UpdateFunc = (x, y) => x.Efficient = y!.Build(),
+            ClearFunc = x => x.Efficient = default
         };
         Efficient.Init(person);
 

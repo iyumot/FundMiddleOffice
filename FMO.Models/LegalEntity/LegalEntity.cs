@@ -25,3 +25,4 @@ public abstract class LegalEntity
     public string _uid => $"{Type}.{Id}";
 
 }
+

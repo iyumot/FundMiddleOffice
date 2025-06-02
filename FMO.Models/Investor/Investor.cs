@@ -9,7 +9,7 @@ public class Investor
     /// <summary>
     /// 证件号
     /// </summary>
-    public Identity Identity { get; set; }
+    public Identity? Identity { get; set; }
 
     /// <summary>
     /// 证件有效限

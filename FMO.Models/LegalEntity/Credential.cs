@@ -99,7 +99,7 @@ public enum IDType
     ProductFilingCode,
 
     [Description("证券业务许可证")]
-    SecuritiesBusinessLicense, 
+    SecuritiesBusinessLicense,
 
 
     [Description("产品登记编码")]
@@ -123,31 +123,26 @@ public enum IDType
 /// <summary>
 /// 证件
 /// </summary>
-public record struct Identity
+public record class Identity 
 {
     /// <summary>
     /// 证件号码
     /// </summary>
     public required string Id { get; set; }
 
-
     /// <summary>
     /// 证件类型
     /// </summary>
     public IDType Type { get; set; }
-     
+
 
     public string? Other { get; set; }
 
-    /// <summary>
-    /// 有效期
-    /// </summary>
-    public DateEfficient Efficient { get; set; }
-
+     
 
     public override int GetHashCode()
     {
-        return Type.GetHashCode() ^ (Id??"").GetHashCode();
+        return Type.GetHashCode() ^ (Id ?? "").GetHashCode();
     }
 }
 
