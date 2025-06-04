@@ -259,8 +259,12 @@ public partial class MainWindowViewModel : ObservableObject
             var datestr = read.GetValue(iDate).ToString();
             if (!DateTimeHelper.TryParse(datestr, out var date))
             {
-                MessageBox.Show($"无法识别的日期格式：{datestr}");
-                return;
+                if (fees.Count < 2)
+                {
+                    MessageBox.Show($"无法识别的日期格式：{datestr}");
+                    return;
+                }
+                else continue;
             }
 
             var v = read.GetValue(iFee);
