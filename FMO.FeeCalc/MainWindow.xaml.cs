@@ -5,10 +5,13 @@ using FMO.IO.Trustee;
 using FMO.Models;
 using FMO.Utilities;
 using LiteDB;
+using Microsoft.Win32;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 
 namespace FMO.FeeCalc;
@@ -74,21 +77,21 @@ public partial class MainWindowViewModel : ObservableObject
         debouncer = new Debouncer(() => Update());
 
 
-        var files = new DirectoryInfo("plugins").GetFiles("*.dll");
+        //var files = new DirectoryInfo("plugins").GetFiles("*.dll");
 
 
-        foreach (var file in files)
-        {
-            try
-            {
-                var assembly = Assembly.LoadFile(file.FullName);
-                TryAddTrustee(assembly);
-            }
-            catch (Exception e)
-            {
+        //foreach (var file in files)
+        //{
+        //    try
+        //    {
+        //        var assembly = Assembly.LoadFile(file.FullName);
+        //        TryAddTrustee(assembly);
+        //    }
+        //    catch (Exception e)
+        //    {
 
-            }
-        }
+        //    }
+        //}
     }
     void TryAddTrustee(Assembly assembly)
     {
@@ -116,9 +119,18 @@ public partial class MainWindowViewModel : ObservableObject
         using var db = DbHelper.Base();
         Funds = db.GetCollection<Fund>().FindAll().Where(x => x.Status <= FundStatus.StartLiquidation || Begin switch { DateTime d => x.ClearDate > DateOnly.FromDateTime(d), _ => true }).Select(x => new FundInfo { Fund = x }).ToArray();
 
-        foreach (var f in Funds)
-            f.PropertyChanged += (s, e) => Application.Current.Dispatcher.BeginInvoke(() => CalcCommand.NotifyCanExecuteChanged());// OnPropertyChanged(nameof(CanCalc));
 
+        var end = DateOnly.FromDateTime(End!.Value);
+        List<DateOnly> dates = new List<DateOnly>();
+        dates.Add(DateOnly.FromDateTime(Begin!.Value));
+        while (dates[^1] < end)
+            dates.Add(dates[^1].AddDays(1));
+
+        foreach (var f in Funds)
+        {
+            f.CheckData(dates, DateOnly.FromDateTime(Begin!.Value), DateOnly.FromDateTime(End!.Value));
+            f.PropertyChanged += (s, e) => Application.Current.Dispatcher.BeginInvoke(() => CalcCommand.NotifyCanExecuteChanged());// OnPropertyChanged(nameof(CanCalc));
+        }
     }
 
     [RelayCommand]
@@ -200,6 +212,104 @@ public partial class MainWindowViewModel : ObservableObject
 
     }
 
+
+    [RelayCommand]
+    public void ImportFeeData()
+    {
+        Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+
+        var dlg = new OpenFileDialog();
+        dlg.Title = "请选择每日费用明细";
+        dlg.Filter = "Excel|*.xls;*.xlsx";
+        if (dlg.ShowDialog() switch { false or null => true, _ => false }) return;
+
+        var file = dlg.FileName;
+        using var fs = new FileStream(file, FileMode.Open);
+        var read = ExcelDataReader.ExcelReaderFactory.CreateReader(fs);
+
+        // 获取表头
+        read.Read();
+        int iCode = -1, iDate = -1, iFee = -1, iShare = -1;
+        for (int i = 0; i < read.FieldCount; i++)
+        {
+            var head = read.GetString(i);
+
+            if (iCode == -1 && Regex.IsMatch(head, "产品代码"))
+                iCode = i;
+
+            if (iDate == -1 && Regex.IsMatch(head, "费用日期|业务日期"))
+                iDate = i;
+
+            if (iFee == -1 && Regex.IsMatch(head, "管理费.*?计提"))
+                iFee = i;
+
+            if (iShare == -1 && Regex.IsMatch(head, "总.*?份额"))
+                iShare = i;
+        }
+
+        if (iCode == -1 || iDate == -1 || iFee == -1)
+        {
+            MessageBox.Show("无法识别表格，请设置表头为 费用日期 产品代码 管理费计提 总份额");
+            return;
+        }
+
+        List<(string Code, ManageFeeDetail Fee)> fees = new(read.RowCount);
+        while (read.Read())
+        {
+            var datestr = read.GetValue(iDate).ToString();
+            if (!DateTimeHelper.TryParse(datestr, out var date))
+            {
+                MessageBox.Show($"无法识别的日期格式：{datestr}");
+                return;
+            }
+
+            var v = read.GetValue(iFee);
+            var fee = v switch { double d => (decimal)d, decimal d => d, string s => decimal.TryParse(s, out var d) ? d : -1, _ => -1 };
+            if (fee < 0)
+            {
+                MessageBox.Show($"无法识别的费用：{v}");
+                return;
+            }
+
+            v = iShare > -1 ? read.GetValue(iShare) : -1;
+            var share = v switch { double d => (decimal)d, decimal d => d, string s => decimal.TryParse(s, out var d) ? d : -1, _ => -1 };
+
+            fees.Add((read.GetString(iCode).Trim(), new ManageFeeDetail(0, date, fee, share)));
+        }
+
+        // 保存
+        using var fdb = DbHelper.Base();
+        var funds = fdb.GetCollection<Fund>().FindAll().ToArray();
+
+        using var db = new LiteDatabase(@"FileName=data\feecalc.db;Connection=Shared");
+        foreach (var f in fees.GroupBy(x => x.Code))
+        {
+            var fund = funds.FirstOrDefault(x => x.Code == f.Key);
+            if (fund is null) continue;
+
+            var old = db.GetCollection<ManageFeeDetail>($"f{fund.Id}").FindAll().OrderBy(x => x.Date).ToList();
+            foreach (var n in f.Select(x => x.Fee))
+            {
+                var v = old.FirstOrDefault(x => x.Date == n.Date);
+                if (v is not null) v = v with { Fee = n.Fee, Share = n.Share};
+                else old.Add(n);
+            }
+
+            db.GetCollection<ManageFeeDetail>($"f{fund.Id}").EnsureIndex(x => x.Date, true);
+            db.GetCollection<ManageFeeDetail>($"f{fund.Id}").Upsert(old);
+        }
+
+
+        HandyControl.Controls.Growl.Success("导入成功");
+    }
+
+
+
+
+
+
+
+
     private async Task Calc(IGrouping<string, FundInfo> col, List<DateOnly> dates)
     {
         foreach (var f in col)
@@ -211,55 +321,55 @@ public partial class MainWindowViewModel : ObservableObject
             var fees = db.GetCollection<ManageFeeDetail>($"f{f.Fund.Id}").Find(x => x.Date >= begin && x.Date <= end).OrderBy(x => x.Date).ToList();
             var fdate = fees.Select(x => x.Date).ToArray();
 
-            // 核验日期
-            if (!dates.SequenceEqual(fdate))
-            {
-                // 重新下载数据
-                if (col.Key is null)
-                {
-                    f.Error = "托管未设置";
-                    f.IsWorking = false;
-                    continue;
-                }
+            //// 核验日期
+            //if (!dates.SequenceEqual(fdate))
+            //{
+            //    // 重新下载数据
+            //    if (col.Key is null)
+            //    {
+            //        f.Error = "托管未设置";
+            //        f.IsWorking = false;
+            //        continue;
+            //    }
 
-                var assist = Trustees.FirstOrDefault(x => x.Name == col.Key);
+            //    var assist = Trustees.FirstOrDefault(x => x.Name == col.Key);
 
-                if (assist is null)
-                {
-                    f.Error = $"未找到{col.Key}托管平台插件";
-                    f.IsWorking = false;
-                    continue;
-                }
+            //    if (assist is null)
+            //    {
+            //        f.Error = $"未找到{col.Key}托管平台插件";
+            //        f.IsWorking = false;
+            //        continue;
+            //    }
 
-                //获取数据
-                var mfd = await assist.GetManageFeeDetails(begin, end);
-                if (mfd.Count() == 0)
-                {
-                    f.IsWorking = false;
-                    continue;
-                }
+            //    //获取数据
+            //    var mfd = await assist.GetManageFeeDetails(begin, end);
+            //    if (mfd.Count() == 0)
+            //    {
+            //        f.IsWorking = false;
+            //        continue;
+            //    }
 
-                using var db2 = DbHelper.Base();
-                var dict = db2.GetCollection<Fund>().FindAll().Select(x => new { x.Id, x.Code });
+            //    using var db2 = DbHelper.Base();
+            //    var dict = db2.GetCollection<Fund>().FindAll().Select(x => new { x.Id, x.Code });
 
-                // 保存数据
-                foreach (var item in mfd)
-                {
-                    var id = dict.FirstOrDefault(x => x.Code == item.Code);
-                    if (id is null)
-                    {
-                        f.Error = $"未找到{col.Key}托管平台插件";
-                        continue;
-                    }
+            //    // 保存数据
+            //    foreach (var item in mfd)
+            //    {
+            //        var id = dict.FirstOrDefault(x => x.Code == item.Code);
+            //        if (id is null)
+            //        {
+            //            f.Error = $"未找到{col.Key}托管平台插件";
+            //            continue;
+            //        }
 
-                    db.GetCollection<ManageFeeDetail>($"f{id.Id}").EnsureIndex(x => x.Date, true);
-                    db.GetCollection<ManageFeeDetail>($"f{id.Id}").Upsert(item.Fee);
-                }
+            //        db.GetCollection<ManageFeeDetail>($"f{id.Id}").EnsureIndex(x => x.Date, true);
+            //        db.GetCollection<ManageFeeDetail>($"f{id.Id}").Upsert(item.Fee);
+            //    }
 
-                // 重新加载
-                fees = db.GetCollection<ManageFeeDetail>($"f{f.Fund.Id}").Find(x => x.Date >= begin && x.Date <= end).OrderBy(x => x.Date).ToList();
-                fdate = fees.Select(x => x.Date).ToArray();
-            }
+            //    // 重新加载
+            //    fees = db.GetCollection<ManageFeeDetail>($"f{f.Fund.Id}").Find(x => x.Date >= begin && x.Date <= end).OrderBy(x => x.Date).ToList();
+            //    fdate = fees.Select(x => x.Date).ToArray();
+            //}
 
             // 再次核验日期
             if (!dates.SequenceEqual(fdate))
@@ -302,7 +412,7 @@ public partial class MainWindowViewModel : ObservableObject
 
                     // 客户每日份额
                     for (var j = 0; j < ids.Count; j++)
-                        sheet.Cell(i + 2, j + joff).Value = array[i, j];
+                        sheet.Cell(i + 2, j + joff).Value = array[i, j] switch { 0 => 0, var d => d };
 
                     sheet.Cell(i + 2, 4).FormulaR1C1 = $"=sum(R{i + 2}C{joff}:R{i + 2}C{ids.Count + joff - 1})";
                 }
@@ -315,10 +425,17 @@ public partial class MainWindowViewModel : ObservableObject
                 row.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
                 row.Style.Alignment.WrapText = true;
 
+                // 数字格式
+                sheet.Range(2, 5, dates.Count + 2, ids.Count + joff).Style.Font.FontSize = 9;
+                sheet.Range(2, 5, dates.Count + 2, ids.Count + joff).Style.NumberFormat.Format = "#,##0.00;-#,##0.00;";
+
                 sheet.Column(1).Width = 14;
                 sheet.Column(2).Width = 12;
                 sheet.Column(3).Width = 14;
                 sheet.Column(4).Width = 14;
+
+                for (int i = joff; i < ids.Count + joff; i++)
+                    sheet.Column(i).Width = 11;
 
 
                 //表2 
@@ -354,6 +471,7 @@ public partial class MainWindowViewModel : ObservableObject
                 sheet.Row(dates.Count + 2).Style.Fill.BackgroundColor = XLColor.LightGray;
 
                 // 数字格式
+                sheet.Range(2, joff, dates.Count + 2, ids.Count + joff).Style.Font.FontSize = 9;
                 sheet.Range(2, joff, dates.Count + 2, ids.Count + joff).Style.NumberFormat.Format = "#,##0.00;-#,##0.00;";
                 // 设置格式 
                 // 设置整行单元格为居中对齐
@@ -413,13 +531,14 @@ public partial class MainWindowViewModel : ObservableObject
 
                 string path = $"files/fee/{f.Fund.ShortName}_{dates[0]:yyyy.MM.dd}-{dates[^1]:yyyy.MM.dd}.xlsx";
                 workbook.SaveAs(path);
+
+                System.Diagnostics.Process.Start(new ProcessStartInfo { FileName = Path.GetFullPath($"files/fee/"), UseShellExecute = true });
             }
         }
         catch (Exception e)
         {
             Debug.WriteLine(e.Message);
         }
-
     }
 }
 
@@ -427,6 +546,10 @@ public partial class MainWindowViewModel : ObservableObject
 public partial class FundInfo : ObservableObject
 {
     public required Fund Fund { get; set; }
+
+
+    [ObservableProperty]
+    public partial bool IsDataValid { get; set; }
 
     [ObservableProperty]
     public partial bool IsChoosed { get; set; }
@@ -436,4 +559,14 @@ public partial class FundInfo : ObservableObject
 
     [ObservableProperty]
     public partial string? Error { get; internal set; }
+
+    public void CheckData(List<DateOnly> dates, DateOnly begin, DateOnly end)
+    {
+        using var db = new LiteDatabase(@"FileName=data\feecalc.db;Connection=Shared");
+        var fees = db.GetCollection<ManageFeeDetail>($"f{Fund.Id}").Find(x => x.Date >= begin && x.Date <= end).OrderBy(x => x.Date).ToList();
+        var fdate = fees.Select(x => x.Date).ToArray();
+
+        IsDataValid = dates.SequenceEqual(fdate);
+        if (!IsDataValid) Error = "缺少费用数据";
+    }
 }

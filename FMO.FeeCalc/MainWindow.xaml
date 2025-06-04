@@ -41,6 +41,14 @@
                     Command="{Binding CalcCommand}"
                     Content="计算"
                     Style="{StaticResource ButtonSuccess.Small}" />
+
+
+
+                <Button
+                    Margin="10,0"
+                    Command="{Binding ImportFeeDataCommand}"
+                    Content="导入费用数据"
+                    Style="{StaticResource ButtonPrimary.Small}" />
             </DockPanel>
 
             <ListBox
@@ -66,29 +74,45 @@
         </DockPanel>
 
 
-        <ListBox
-            IsEnabled="{Binding IsWorking, Converter={StaticResource Boolean2BooleanReConverter}}"
-            ItemsSource="{Binding Funds}"
-            SelectionMode="Multiple"
-            Style="{StaticResource ListBoxCustom}">
-            <ListBox.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <hc:WaterfallPanel IsItemsHost="True" />
-                </ItemsPanelTemplate>
-            </ListBox.ItemsPanel>
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel>
-                        <CheckBox
-                            Margin="0,2"
-                            Content="{Binding Fund.ShortName}"
-                            IsChecked="{Binding IsChoosed}" />
+        <hc:SimplePanel>
+            <ListBox
+                IsEnabled="{Binding IsWorking, Converter={StaticResource Boolean2BooleanReConverter}}"
+                ItemsSource="{Binding Funds}"
+                SelectionMode="Multiple"
+                Style="{StaticResource ListBoxCustom}">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <hc:WaterfallPanel IsItemsHost="True" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <WrapPanel>
+                            <CheckBox
+                                Margin="0,5"
+                                Content="{Binding Fund.ShortName}"
+                                IsChecked="{Binding IsChoosed}"
+                                IsEnabled="{Binding IsDataValid}" />
 
-                        <TextBlock Text="{Binding Error}" />
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-
+                            <TextBlock
+                                Margin="30,0"
+                                VerticalAlignment="Center"
+                                FontSize="10"
+                                Foreground="OrangeRed"
+                                Text="{Binding Error}" />
+                        </WrapPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <ScrollViewer
+                Margin="0,200,0,0"
+                HorizontalAlignment="Right"
+                VerticalScrollBarVisibility="Hidden">
+                <StackPanel
+                    Margin="0,10,10,10"
+                    VerticalAlignment="Bottom"
+                    hc:Growl.GrowlParent="True" />
+            </ScrollViewer>
+        </hc:SimplePanel>
     </DockPanel>
 </Window>

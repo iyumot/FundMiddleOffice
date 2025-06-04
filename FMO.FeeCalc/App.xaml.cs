@@ -11,7 +11,7 @@ namespace FMO.FeeCalc
         public App()
         {
 #if DEBUG
-            Directory.SetCurrentDirectory(@"E:\fmo");
+            Directory.SetCurrentDirectory(@"D:\fmo");
 #endif
         }
     }
