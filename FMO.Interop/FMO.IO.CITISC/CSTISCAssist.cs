@@ -819,7 +819,7 @@ public class CSTISCAssist : TrusteeAssistBase
             db.Dispose();
 
             db = DbHelper.Platform();
-            var last = db.GetCollection<PlatformSynchronizeTime>().FindOne(x => x.Identifier == Identifier && x.Method == func);
+            PlatformSynchronizeTime? last = null;// db.GetCollection<PlatformSynchronizeTime>().FindOne(x => x.Identifier == Identifier && x.Method == func);
             db.Dispose();
 
             if (last is null)
@@ -907,6 +907,14 @@ public class CSTISCAssist : TrusteeAssistBase
             // 排除同id数据
             //var hasids = data.Select(x => x.ExternalId);
             //db.GetCollection<TransferRecord>().DeleteMany(x => x.Source == Identifier && hasids.Contains(x.ExternalId));
+            var old = db.GetCollection<TransferRecord>().Find(x => x.Source == Identifier).ToList();
+            // 匹配id
+            foreach (var item in data)
+            {
+                var ov = old.FirstOrDefault(x=>x.ExternalId == item.ExternalId);
+                if(ov is not null) item.Id = ov.Id;
+            }
+
             db.GetCollection<TransferRecord>().EnsureIndex(x => new { x.Source, x.ExternalId }, true);
             db.GetCollection<TransferRecord>().Upsert(data);
             db.BuildFundShareRecord(data.Select(x => x.FundId).Distinct().ToArray());

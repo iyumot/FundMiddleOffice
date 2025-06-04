@@ -88,7 +88,7 @@ public class Item
             ExternalId = cserialNo,
             Source = identifier,
             Fee = 0,
-            PerformanceFee = managerFee ?? 0,
+            PerformanceFee = deductbalance ?? 0,
         };
     }
 }
