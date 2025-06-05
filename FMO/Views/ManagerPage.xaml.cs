@@ -1,4 +1,13 @@
-﻿using System.Collections.ObjectModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using FMO.IO.AMAC;
+using FMO.Models;
+using FMO.Shared;
+using FMO.Utilities;
+using Microsoft.Win32;
+using Serilog;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -6,13 +15,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-using FMO.Models;
-using FMO.Shared;
-using FMO.Utilities;
-using Microsoft.Win32;
 
 namespace FMO;
 
@@ -433,6 +435,57 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     partial void OnSelectedMemberChanged(Participant? value)
     {
         MemberContext = value is null ? null : new ManagerMemberViewModel(value);
+    }
+
+    [RelayCommand]
+    public async Task LoadMemberFromAmac()
+    {
+        try
+        {
+            // 检查有没有账号
+            using var db = DbHelper.Base();
+            var acc = db.GetCollection<AmacAccount>().FindById("human");
+            if (acc is null || string.IsNullOrWhiteSpace(acc.Name) || string.IsNullOrWhiteSpace(acc.Password))
+            {
+                HandyControl.Controls.Growl.Error($"获取管理人成员失败，没有有效的账号密码");
+                return;
+            }
+
+            var result = await AmacHuman.GetParticipants(acc.Name, acc.Password);
+
+            switch (result.Code)
+            {
+                case AmacReturn.AccountError:
+                    HandyControl.Controls.Growl.Error($"获取管理人成员失败，账号密码错误");
+                    return;
+                case AmacReturn.Browser:
+                case AmacReturn.InvalidResponse:
+                    HandyControl.Controls.Growl.Error($"获取管理人成员失败，请查看log");
+                    return;
+                default:
+                    break;
+            }
+
+
+            // 处理数据
+            var data = db.GetCollection<Participant>().FindAll().ToArray();
+            var np = result.Data.Where(x => data.All(y => y.Name != x.Name && y.Identity?.Id != x.Identity?.Id));
+            if (np.Any())
+            {
+                db.GetCollection<Participant>().Insert(np);
+
+                foreach (var item in np)
+                    Members.Add(new ParticipantViewModel(item));
+            }
+
+
+            HandyControl.Controls.Growl.Success($"获取管理人成员成功");
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"获取管理人成员失败，{ex}");
+            HandyControl.Controls.Growl.Error($"获取管理人成员失败，请查看log");
+        }
     }
 
 

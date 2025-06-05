@@ -284,6 +284,19 @@
                             Command="{Binding AddMemberCommand}"
                             Foreground="Green"
                             Style="{StaticResource ButtonIcon}" />
+
+                        <hc:SimplePanel>
+                            <hc:LoadingCircle
+                                Width="24"
+                                Height="24"
+                                DotDiameter="3"
+                                Visibility="{Binding LoadMemberFromAmacCommand.IsRunning, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.download}"
+                                Command="{Binding LoadMemberFromAmacCommand}"
+                                Style="{StaticResource ButtonIcon}"
+                                ToolTip="从协会更新" />
+                        </hc:SimplePanel>
                     </DockPanel>
                 </Border>
 

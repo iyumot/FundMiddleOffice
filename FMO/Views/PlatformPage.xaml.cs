@@ -6,6 +6,7 @@ using FMO.IO.AMAC;
 using FMO.IO.DS;
 using FMO.IO.Trustee;
 using FMO.Utilities;
+using Serilog;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -49,28 +50,28 @@ public partial class PlatformPageViewModel : ObservableObject
         /// 读取所有托管插件
         /// 
 
-        //if (_firstLoad)
-        //{
+        if (_firstLoad)
+        {
 
-        //    var files = new DirectoryInfo("plugins").GetFiles("*.dll");
+            var files = new DirectoryInfo("plugins").GetFiles("*.dll");
 
 
-        //    foreach (var file in files)
-        //    {
-        //        try
-        //        {
-        //            var assembly = Assembly.LoadFile(file.FullName);
-        //            TryAddTrustee(assembly);
-        //            TryAddSignature(assembly);
-        //        }
-        //        catch (Exception e)
-        //        {
-        //            Log.Error($"[{file.Name}]加载插件失败{e.Message}");
-        //        }
-        //    }
+            foreach (var file in files)
+            {
+                try
+                {
+                    var assembly = Assembly.LoadFile(file.FullName);
+                    TryAddTrustee(assembly);
+                    TryAddSignature(assembly);
+                }
+                catch (Exception e)
+                {
+                    Log.Error($"[{file.Name}]加载插件失败{e.Message}");
+                }
+            }
 
-        //    _firstLoad = false;
-        //}
+            _firstLoad = false;
+        }
 
         using var db = DbHelper.Base();
         var acc = db.GetCollection<AmacAccount>().FindAll().ToList();
