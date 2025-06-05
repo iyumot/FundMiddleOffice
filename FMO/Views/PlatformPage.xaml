@@ -122,6 +122,58 @@
     </UserControl.Resources>
     <DockPanel>
 
+        <DockPanel DockPanel.Dock="Top" LastChildFill="False">
+            <TextBlock
+                VerticalAlignment="Center"
+                FontSize="18"
+                FontWeight="Black"
+                Text="协会账号" />
+
+            <ListBox
+                BorderThickness="0"
+                ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
+                ItemsSource="{Binding AmacAccounts}"
+                Style="{StaticResource ListBoxCustom}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Border
+                            Margin="5,0"
+                            BorderBrush="{DynamicResource PrimaryBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6">
+                            <DockPanel Margin="5,0">
+                                <TextBlock VerticalAlignment="Center" Text="{Binding Title}" />
+                                <Button
+                                    hc:IconElement.Geometry="{StaticResource f.arrow-up-right-from-square}"
+                                    Command="{Binding GoToCommand}"
+                                    Foreground="RoyalBlue"
+                                    Style="{StaticResource ButtonIcon.Small}" />
+                                <hc:TextBox
+                                    Width="90"
+                                    HorizontalContentAlignment="Center"
+                                    hc:InfoElement.Placeholder="账号"
+                                    BorderThickness="0"
+                                    Text="{Binding Name, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                                <hc:PasswordBox
+                                    Width="110"
+                                    HorizontalContentAlignment="Center"
+                                    hc:InfoElement.Placeholder="密码"
+                                    BorderThickness="0"
+                                    IsSafeEnabled="False"
+                                    UnsafePassword="{Binding Password, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                                <Button
+                                    hc:IconElement.Geometry="{StaticResource f.floppy-disk}"
+                                    Command="{Binding SaveCommand}"
+                                    Style="{StaticResource ButtonIcon.Small}"
+                                    Visibility="{Binding IsChanged, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                            </DockPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+        </DockPanel>
+
 
         <DockPanel DockPanel.Dock="Top">
             <TextBlock DockPanel.Dock="Top" Text="电签平台" />

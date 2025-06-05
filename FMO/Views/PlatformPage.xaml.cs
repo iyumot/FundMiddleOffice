@@ -2,10 +2,10 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.IO;
+using FMO.IO.AMAC;
 using FMO.IO.DS;
 using FMO.IO.Trustee;
 using FMO.Utilities;
-using Serilog;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -42,38 +42,49 @@ public partial class PlatformPageViewModel : ObservableObject
 
     public ObservableCollection<PlatformPageViewModelDigital> Digitals { get; } = new();
 
-
+    public AmacAccountViewModel[] AmacAccounts { get; set; }
 
     public PlatformPageViewModel()
     {
         /// 读取所有托管插件
         /// 
 
-        if (_firstLoad)
-        {
+        //if (_firstLoad)
+        //{
 
-            var files = new DirectoryInfo("plugins").GetFiles("*.dll");
-
-
-            foreach (var file in files)
-            {
-                try
-                {
-                    var assembly = Assembly.LoadFile(file.FullName);
-                    TryAddTrustee(assembly);
-                    TryAddSignature(assembly);
-                }
-                catch (Exception e)
-                {
-                    Log.Error($"[{file.Name}]加载插件失败{e.Message}");
-                }
-            }
-
-            _firstLoad = false;
-        }
+        //    var files = new DirectoryInfo("plugins").GetFiles("*.dll");
 
 
+        //    foreach (var file in files)
+        //    {
+        //        try
+        //        {
+        //            var assembly = Assembly.LoadFile(file.FullName);
+        //            TryAddTrustee(assembly);
+        //            TryAddSignature(assembly);
+        //        }
+        //        catch (Exception e)
+        //        {
+        //            Log.Error($"[{file.Name}]加载插件失败{e.Message}");
+        //        }
+        //    }
 
+        //    _firstLoad = false;
+        //}
+
+        using var db = DbHelper.Base();
+        var acc = db.GetCollection<AmacAccount>().FindAll().ToList();
+
+        if (acc.All(x => x.Id != "ambers"))
+            acc.Add(new AmacAccount("ambers", "", "", false));
+        if (acc.All(x => x.Id != "human"))
+            acc.Add(new AmacAccount("human", "", "", false));
+        if (acc.All(x => x.Id != "peixun"))
+            acc.Add(new AmacAccount("peixun", "", "", false));
+        if (acc.All(x => x.Id != "xinpi"))
+            acc.Add(new AmacAccount("xinpi", "", "", false));
+
+        AmacAccounts = acc.Select(x => new AmacAccountViewModel(x)).ToArray();
 
         // using var db = DbHelper.Platform();
 
@@ -611,4 +622,83 @@ public partial class SyncButtonData(Geometry Icon, ICommand Command, PlatformPag
     public PlatformPageViewModelTrustee.SyncProcess SyncProcess { get; } = SyncProcess;
 
     public string Description { get; } = Description;
+}
+
+
+public partial class AmacAccountViewModel : ObservableObject
+{
+    public string Identifier { get; }
+
+    public string? Url { get; set; }
+
+    public string? Title { get; set; }
+
+    private AmacAccount _account;
+
+    public bool IsChanged => Name != _account.Name || Password != _account.Password;
+
+    public bool CanSave => !string.IsNullOrWhiteSpace(Name) && !string.IsNullOrWhiteSpace(Password) && IsChanged;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsChanged))]
+    [NotifyPropertyChangedFor(nameof(CanSave))]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    public partial string? Name { get;  set; }
+
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsChanged))]
+    [NotifyPropertyChangedFor(nameof(CanSave))]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    public partial string? Password { get;  set; }
+
+
+    [SetsRequiredMembers]
+    public AmacAccountViewModel(AmacAccount account)
+    {
+        _account = account;
+        Identifier = account.Id;
+        Name = account.Name;
+        Password = account.Password;
+
+        switch (Identifier)
+        {
+            case "ambers":
+                Url = "https://ambers.amac.org.cn/";
+                Title = "Ambers";
+                break;
+            case "human":
+                Url = "https://human.amac.org.cn/";
+                Title = "从业人员";
+                break;
+            case "peixun":
+                Url = "https://peixun.amac.org.cn/";
+                Title = "培训平台";
+                break;
+            case "xinpi":
+                Url = "https://pfid.amac.org.cn/";
+                Title = "信批平台";
+                break;
+            default:
+                break;
+        }
+    }
+
+
+    [RelayCommand(CanExecute = nameof(CanSave))]
+    public void Save()
+    {
+        _account = _account with { Name = Name!, Password = Password! };
+        using var db = DbHelper.Base();
+        db.GetCollection<AmacAccount>().Upsert(_account);
+
+        OnPropertyChanged(nameof(IsChanged));
+    }
+
+    [RelayCommand]
+    public void GoTo()
+    {
+        if (Url?.Length > 10)
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(Url) { UseShellExecute = true });
+    }
 }
