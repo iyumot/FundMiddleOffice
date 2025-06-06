@@ -1,0 +1,244 @@
+﻿<Window
+    x:Class="FMO.LearnAssist.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:local="clr-namespace:FMO.LearnAssist"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="基金从业培训报课助手"
+    Width="1200"
+    Height="800"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <Window.Resources>
+        <Style x:Key="DefaultText" TargetType="TextBlock">
+            <Setter Property="TextAlignment" Value="Center" />
+        </Style>
+
+        <Style
+            x:Key="ListItem.AllaysFocus"
+            BasedOn="{StaticResource ListViewItemBaseStyle}"
+            TargetType="ListViewItem">
+            <Setter Property="Margin" Value="2,0" />
+            <Setter Property="IsSelected" Value="{Binding IsSelected}" />
+            <Style.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="true">
+                    <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
+                </Trigger>
+                <Trigger Property="ListBoxItem.IsSelected" Value="true">
+                    <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource TextIconBrush}" />
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="false">
+                    <Setter Property="UIElement.Opacity" Value=".4" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style
+            x:Key="ListItem.AllaysFocus.Small"
+            BasedOn="{StaticResource ListItem.AllaysFocus}"
+            TargetType="ListViewItem">
+            <Setter Property="Padding" Value="6,0" />
+            <Setter Property="MinHeight" Value="24" />
+        </Style>
+    </Window.Resources>
+    <Window.DataContext>
+        <local:MainWindowViewModel />
+    </Window.DataContext>
+    <DockPanel Margin="10">
+        <StackPanel DockPanel.Dock="Top">
+            <DockPanel LastChildFill="False" Visibility="{Binding IsLogin, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                <TextBlock VerticalAlignment="Center" Text="登录账户" />
+
+                <hc:TextBox
+                    Width="140"
+                    Margin="10,0,0,0"
+                    hc:InfoElement.Placeholder="用户名"
+                    Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                <hc:TextBox
+                    Width="140"
+                    Margin="1,0"
+                    hc:InfoElement.Placeholder="密码"
+                    Text="{Binding Password, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+
+                <Button
+                    Padding="0"
+                    BorderThickness="0"
+                    Command="{Binding RefreshVerifyCommand}">
+                    <Image
+                        Height="50"
+                        Margin="0,-15"
+                        Source="{Binding VerifyImage}" />
+                </Button>
+
+                <TextBlock
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    Foreground="Gray"
+                    Text="验证码加载中"
+                    Visibility="{Binding ShowVerifyBox, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                <hc:TextBox
+                    Width="140"
+                    Margin="1,0"
+                    hc:InfoElement.Placeholder="验证码"
+                    InputMethod.IsInputMethodEnabled="False"
+                    Text="{Binding VerifyCode, UpdateSourceTrigger=PropertyChanged, Delay=200}"
+                    Visibility="{Binding ShowVerifyBox, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                <Button
+                    Width="80"
+                    Command="{Binding LoginCommand}"
+                    Content="登录"
+                    Style="{StaticResource ButtonPrimary}" />
+
+            </DockPanel>
+
+
+            <DockPanel Margin="0,1" LastChildFill="False">
+                <Border Background="{StaticResource SuccessBrush}">
+                    <TextBlock
+                        Margin="10,2"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Foreground="White"
+                        Text="登陆成功" />
+                </Border>
+
+                <Button
+                    Margin="20,0,0,0"
+                    Command="{Binding GetLearnHistoryCommand}"
+                    Content="获取学习历史"
+                    Style="{StaticResource ButtonInfo}" />
+
+                <Button
+                    Margin="5,0"
+                    Command="{Binding GetAllClassCommand}"
+                    Content="获取所有课程"
+                    Style="{StaticResource ButtonInfo}" />
+
+                <TextBlock VerticalAlignment="Center" Text="目标总学时" />
+                <hc:NumericUpDown Margin="5,0" Value="{Binding TargetHour}" />
+                <TextBlock VerticalAlignment="Center" Text="其中法律与道德学时" />
+                <hc:NumericUpDown Margin="5,0" Value="{Binding TargetHour2}" />
+
+
+                <CheckBox Content="只选免费课时" IsChecked="{Binding OnlyFree}" />
+
+                <Button
+                    Command="{Binding RandomChooseCommand}"
+                    Content="随机选课"
+                    Style="{StaticResource ButtonPrimary}" />
+
+            </DockPanel>
+        </StackPanel>
+
+        <hc:SimplePanel>
+
+            <DockPanel Margin="0,15,0,0">
+                <DataGrid
+                    AutoGenerateColumns="False"
+                    IsReadOnly="True"
+                    ItemsSource="{Binding History}"
+                    SelectedItem="{Binding Selected}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Binding="{Binding Name}" Header="学员" />
+                        <DataGridTextColumn
+                            Binding="{Binding Apply}"
+                            ElementStyle="{StaticResource DefaultText}"
+                            Header="报名" />
+                        <DataGridTextColumn
+                            Binding="{Binding Learned}"
+                            ElementStyle="{StaticResource DefaultText}"
+                            Header="完成" />
+                    </DataGrid.Columns>
+                </DataGrid>
+
+
+                <UniformGrid DataContext="{Binding Selected}" Rows="1">
+                    <GroupBox Header="已报名">
+                        <DataGrid
+                            AutoGenerateColumns="False"
+                            IsReadOnly="True"
+                            ItemsSource="{Binding Record}"
+                            Style="{StaticResource DataGrid.Small}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Binding="{Binding Id}" Header="ID" />
+                                <DataGridTextColumn Binding="{Binding Hour}" Header="课时" />
+                                <DataGridTextColumn Binding="{Binding PayTime, StringFormat=yyyy-MM-dd}" Header="报课日期" />
+                                <DataGridTextColumn
+                                    MaxWidth="300"
+                                    Binding="{Binding Name}"
+                                    Header="课程" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </GroupBox>
+
+                    <GroupBox Header="待报名">
+                        <!--<DataGrid
+                            AutoGenerateColumns="False"
+                            IsReadOnly="True"
+                            ItemsSource="{Binding ApplyInfo}"
+                            SelectionMode="Extended"
+                            Style="{StaticResource DataGrid.Small}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Binding="{Binding Class.Id}" Header="ID" />
+                                <DataGridTextColumn Binding="{Binding Class.Hour}" Header="课时" />
+                                <DataGridTextColumn Binding="{Binding Class.Price}" Header="价格" />
+                                <DataGridTextColumn
+                                    MaxWidth="300"
+                                    Binding="{Binding Class.Name}"
+                                    Header="课程" />
+                            </DataGrid.Columns>
+                        </DataGrid>-->
+
+                        <ListView
+                            ItemContainerStyle="{StaticResource ListItem.AllaysFocus.Small}"
+                            ItemsSource="{Binding ApplyClass.View}"
+                            SelectionMode="Multiple"
+                            Style="{StaticResource ListView.Small}">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn>
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Viewbox
+                                                    Width="14"
+                                                    Height="14"
+                                                    Visibility="{Binding Class.IsStar, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                                    <Path Data="{StaticResource StarGeometry}" Fill="Black" />
+                                                </Viewbox>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn DisplayMemberBinding="{Binding Class.Id}" Header="ID" />
+                                    <GridViewColumn DisplayMemberBinding="{Binding Class.Hour}" Header="课时" />
+                                    <GridViewColumn DisplayMemberBinding="{Binding Class.Price}" Header="价格" />
+                                    <GridViewColumn
+                                        Width="300"
+                                        DisplayMemberBinding="{Binding Class.Name}"
+                                        Header="课程" />
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </GroupBox>
+                </UniformGrid>
+            </DockPanel>
+
+
+
+
+            <ScrollViewer
+                Margin="0,20,0,0"
+                HorizontalAlignment="Right"
+                VerticalScrollBarVisibility="Hidden">
+                <StackPanel
+                    Margin="0,10,10,10"
+                    VerticalAlignment="Bottom"
+                    hc:Growl.GrowlParent="True" />
+            </ScrollViewer>
+        </hc:SimplePanel>
+    </DockPanel>
+</Window>
