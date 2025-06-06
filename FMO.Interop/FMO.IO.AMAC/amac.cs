@@ -528,7 +528,6 @@ public static class AmacAssist
 
 
 
-
 }
 
 
@@ -692,8 +691,6 @@ public static class HtmlParser
     }
 }
 
-public record AmacAccount(string Id, string Name, string Password, bool IsValid);
-
 public static class AmacHuman
 {
     public static async Task<(AmacReturn Code, Participant[] Data)> GetParticipants(string user, string password)
@@ -805,7 +802,7 @@ public static class AmacHuman
                     Phone = x.mobile,
                     Identity = new Identity { Id = x.idNumber!, Type = x.idType switch { "1" => IDType.IdentityCard, _ => IDType.Unknown } },
                 }));
-                 
+
                 locator = page.GetByText("每页行数").Locator(" .. >> .. >> div >> button");
                 cnt = await locator.CountAsync();
             }
@@ -821,3 +818,15 @@ public static class AmacHuman
     }
 }
 
+
+public struct LearnRecord
+{
+    public string Name { get; set; }
+
+    public string IdentityNo { get; set; }
+
+    public string ClassId { get; set; }
+
+    public string ClassName { get; set; }
+
+}
