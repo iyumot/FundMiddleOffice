@@ -9,6 +9,7 @@
     Title="基金从业培训报课助手"
     Width="1200"
     Height="800"
+    Loaded="Window_Loaded"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
     <Window.Resources>
@@ -44,9 +45,7 @@
             <Setter Property="MinHeight" Value="24" />
         </Style>
     </Window.Resources>
-    <Window.DataContext>
-        <local:MainWindowViewModel />
-    </Window.DataContext>
+
     <DockPanel Margin="10">
         <StackPanel DockPanel.Dock="Top">
             <DockPanel LastChildFill="False" Visibility="{Binding IsLogin, Converter={StaticResource Boolean2VisibilityReConverter}}">
@@ -97,7 +96,10 @@
             </DockPanel>
 
 
-            <DockPanel Margin="0,1" LastChildFill="False">
+            <DockPanel
+                Margin="0,1"
+                LastChildFill="False"
+                Visibility="{Binding IsLogin, Converter={StaticResource Boolean2VisibilityConverter}}">
                 <Border Background="{StaticResource SuccessBrush}">
                     <TextBlock
                         Margin="10,2"
@@ -128,16 +130,22 @@
                 <CheckBox Content="只选免费课时" IsChecked="{Binding OnlyFree}" />
 
                 <Button
+                    Margin="5,0"
                     Command="{Binding RandomChooseCommand}"
                     Content="随机选课"
                     Style="{StaticResource ButtonPrimary}" />
 
+
+                <Button
+                    Command="{Binding GenerateCommand}"
+                    Content="生成报课文件"
+                    Style="{StaticResource ButtonDefault}" />
             </DockPanel>
         </StackPanel>
 
         <hc:SimplePanel>
 
-            <DockPanel Margin="0,15,0,0">
+            <DockPanel Margin="0,15,0,0" Visibility="{Binding IsLogin, Converter={StaticResource Boolean2VisibilityConverter}}">
                 <DataGrid
                     AutoGenerateColumns="False"
                     IsReadOnly="True"
@@ -148,11 +156,21 @@
                         <DataGridTextColumn
                             Binding="{Binding Apply}"
                             ElementStyle="{StaticResource DefaultText}"
-                            Header="报名" />
+                            Header="累计报名" />
                         <DataGridTextColumn
                             Binding="{Binding Learned}"
                             ElementStyle="{StaticResource DefaultText}"
-                            Header="完成" />
+                            Header="累计完成" />
+
+                        <DataGridTextColumn
+                            Binding="{Binding AppledThisYear}"
+                            ElementStyle="{StaticResource DefaultText}"
+                            Header="今年报课" />
+
+                        <DataGridTextColumn
+                            Binding="{Binding Choosed}"
+                            ElementStyle="{StaticResource DefaultText}"
+                            Header="报课" />
                     </DataGrid.Columns>
                 </DataGrid>
 
@@ -194,35 +212,42 @@
                             </DataGrid.Columns>
                         </DataGrid>-->
 
-                        <ListView
-                            ItemContainerStyle="{StaticResource ListItem.AllaysFocus.Small}"
-                            ItemsSource="{Binding ApplyClass.View}"
-                            SelectionMode="Multiple"
-                            Style="{StaticResource ListView.Small}">
-                            <ListView.View>
-                                <GridView>
-                                    <GridViewColumn>
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <Viewbox
-                                                    Width="14"
-                                                    Height="14"
-                                                    Visibility="{Binding Class.IsStar, Converter={StaticResource Boolean2VisibilityConverter}}">
-                                                    <Path Data="{StaticResource StarGeometry}" Fill="Black" />
-                                                </Viewbox>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-                                    <GridViewColumn DisplayMemberBinding="{Binding Class.Id}" Header="ID" />
-                                    <GridViewColumn DisplayMemberBinding="{Binding Class.Hour}" Header="课时" />
-                                    <GridViewColumn DisplayMemberBinding="{Binding Class.Price}" Header="价格" />
-                                    <GridViewColumn
-                                        Width="300"
-                                        DisplayMemberBinding="{Binding Class.Name}"
-                                        Header="课程" />
-                                </GridView>
-                            </ListView.View>
-                        </ListView>
+                        <DockPanel>
+                            <hc:TextBox
+                                HorizontalContentAlignment="Center"
+                                hc:InfoElement.Placeholder="筛选"
+                                DockPanel.Dock="Top"
+                                Text="{Binding SearchKey, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                            <ListView
+                                ItemContainerStyle="{StaticResource ListItem.AllaysFocus.Small}"
+                                ItemsSource="{Binding ApplyClass.View}"
+                                SelectionMode="Multiple"
+                                Style="{StaticResource ListView.Small}">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn>
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Viewbox
+                                                        Width="14"
+                                                        Height="14"
+                                                        Visibility="{Binding Class.IsStar, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                                        <Path Data="{StaticResource StarGeometry}" Fill="Black" />
+                                                    </Viewbox>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn DisplayMemberBinding="{Binding Class.Id}" Header="ID" />
+                                        <GridViewColumn DisplayMemberBinding="{Binding Class.Hour}" Header="课时" />
+                                        <GridViewColumn DisplayMemberBinding="{Binding Class.Price}" Header="价格" />
+                                        <GridViewColumn
+                                            Width="300"
+                                            DisplayMemberBinding="{Binding Class.Name}"
+                                            Header="课程" />
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </DockPanel>
                     </GroupBox>
                 </UniformGrid>
             </DockPanel>

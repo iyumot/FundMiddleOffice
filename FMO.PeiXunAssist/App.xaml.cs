@@ -12,12 +12,17 @@ namespace FMO.LearnAssist
     {
         public App()
         {
-//#if DEBUG
-//            Directory.SetCurrentDirectory(@"D:\fmo");
-//#endif
+#if DEBUG
+            Directory.SetCurrentDirectory(@"D:\fmo");
+#endif
 
 
             Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+        }
+
+        private void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            MessageBox.Show(e.Exception.ToString());
         }
     }
 

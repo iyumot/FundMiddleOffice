@@ -8,10 +8,15 @@
     <UseWPF>true</UseWPF>
     <BaseOutputPath>..\FMO\bin</BaseOutputPath>
 	  <LangVersion>preview</LangVersion>
+	  <ApplicationIcon>pei.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="tpl.xls" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="pei.ico" />
   </ItemGroup>
 
   <ItemGroup>

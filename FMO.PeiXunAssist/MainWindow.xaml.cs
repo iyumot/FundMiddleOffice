@@ -4,6 +4,7 @@ using ExcelLibrary.SpreadSheet;
 using FMO.IO.AMAC;
 using FMO.Utilities;
 using Microsoft.Playwright;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -24,6 +25,11 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+    }
+
+    private void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+        DataContext = new MainWindowViewModel();
     }
 }
 
@@ -51,7 +57,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     public partial bool IsLogin { get; set; }
 
     [ObservableProperty]
-    public partial List<LearnInfo> History { get; set; } = new();
+    public partial ObservableCollection<LearnInfo> History { get; set; } = new();
 
 
     [ObservableProperty]
@@ -66,8 +72,6 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     public partial bool OnlyFree { get; set; } = true;
-
-
 
 
 
@@ -91,6 +95,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
     public MainWindowViewModel()
     {
+        Directory.CreateDirectory("data");
         Directory.CreateDirectory("files\\peixun");
 
 
@@ -98,13 +103,17 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         {
             using var sr = new StreamReader(@"files\peixun\records.json");
             var json = sr.ReadToEnd();
-            History = JsonSerializer.Deserialize<List<LearnInfo>>(Encoding.UTF8.GetString(Convert.FromBase64String(json)));
+            History = JsonSerializer.Deserialize<ObservableCollection<LearnInfo>>(Encoding.UTF8.GetString(Convert.FromBase64String(json)));
         }
 
         // 加载缓存 
-        if (File.Exists(@"files\peixun\classes.csv"))
+        var fi = new FileInfo(@"files\peixun\classes.csv");
+        if (fi.Exists && (DateTime.Now - fi.LastWriteTime).TotalHours < 72)
+        {
+            Toast.Success("加载课程列表成功");
             ParseClasses(@"files\peixun\classes.csv");
-
+        }
+        else Toast.Warning(fi.LastWriteTime.ToString());
 
         Init();
     }
@@ -124,12 +133,30 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         Task.Run(async () =>
         {
             Operator = await Playwright.CreateAsync();
-            Browser = await Operator.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Channel = "msedge", Headless = false });
-            Context = await Browser.NewContextAsync();
+            Browser = await Operator.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Channel = "msedge", Headless = true });
+
+            if (File.Exists("files\\peixun\\web.json"))
+            {
+                Context = await Browser.NewContextAsync(new BrowserNewContextOptions { StorageStatePath = "files\\peixun\\web.json" });
+            }
+            else
+                Context = await Browser.NewContextAsync();
             var page = await Context.NewPageAsync();
             await page.GotoAsync("https://peixun.amac.org.cn/team/");
 
-            await UpdateVerify(page);
+            // 验证
+            try
+            {
+                var ele = await page.WaitForSelectorAsync("span:has-text('培训查询')", new PageWaitForSelectorOptions { Timeout = 10000 });
+
+                IsLogin = ele is null ? false : await ele.IsVisibleAsync();
+            }
+            catch { }
+
+            if (!IsLogin)
+                await UpdateVerify(page);
+            else
+                await DownloadData(page);
         });
     }
 
@@ -227,25 +254,48 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
         if (IsLogin)
         {
+            await Context.StorageStateAsync(new BrowserContextStorageStateOptions { Path = "files\\peixun\\web.json" });
+
+
             Toast.Success("登录成功");
 
-            if (AllClasses?.Length < 10)
-            {
-                Toast.Info("开始下载所有课程");
-                await GetAllClass(page);
-                Toast.Info("所有课程 下载完成");
-            }
-
-            if (History?.Count < 1)
-            {
-                Toast.Info("开始下载学习历史");
-                await SyncLearnHistory(page);
-                Toast.Info("学习历史 下载完成");
-            }
+            await DownloadData(page);
         }
         else Toast.Warning("登录失败");
     }
 
+
+
+    private async Task DownloadData(IPage page)
+    {
+        //
+
+
+        //if (History?.Count < 1)
+        {
+            Toast.Info("开始下载学习历史");
+            await SyncLearnHistory(page);
+            Toast.Success("学习历史 下载完成");
+        }
+
+        if (AllClasses is null || AllClasses.Length < 300)
+        {
+            Toast.Info("开始下载所有课程");
+            await GetAllClass(page);
+            Toast.Success("所有课程 下载完成");
+        }
+        else
+        {
+            foreach (var p in History)
+            {
+                await App.Current.Dispatcher.BeginInvoke(() =>
+                 {
+                     p.ApplyInfo = (p.Record is null ? AllClasses : AllClasses.Where(x => !p.Record.Any(y => y.Id == x.Id))).Select(x => new ClassApply { Class = x }).ToArray();
+                     p.ApplyClass.Source = p.ApplyInfo;
+                 });
+            }
+        }
+    }
 
     [RelayCommand]
     public async Task GetLearnHistory()
@@ -318,6 +368,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
         }
 
+        // 选课
         foreach (var per in History)
         {
             if (per.ApplyInfo is null) continue;
@@ -325,7 +376,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
             // 选够法律与道德 
             var cl = per.ApplyInfo.Where(x => x.Class.Type == "法律法规与职业道德").Select(x => (x, rank: lawids.Contains(x.Class.Id) ? -1 : Random.Shared.Next())).OrderBy(x => x.rank).Select(x => x.x).ToArray();
-            decimal sum = per.Record?.Where(x => (x.Type == "职业道德" || x.Type == "法律规范") && x.PayTime.Year == year).Sum(x => x.Hour) ?? 0;// cl.Where(x => x.IsSelected).Sum(x => x.Class.Hour);
+            decimal sum = per.Record?.Where(x => (x.Type == "职业道德" || x.Type == "法律规范") && x.PayTime.Year == year).Sum(x => x.Hour) ?? 0;
             foreach (var item in cl)
             {
                 if (sum >= TargetHour2)
@@ -335,6 +386,9 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
                 if (per.Record?.Any(x => x.Id == item.Class.Id) ?? false) continue;
 
+                // 最佳匹配，如果选它，课时超过太多，就路过
+                if (sum + item.Class.Hour >= TargetHour2 + 1)
+                    continue;
 
                 item.IsSelected = true;
                 sum += item.Class.Hour;
@@ -357,6 +411,11 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
                 if (per.Record?.Any(x => x.Id == item.Class.Id) ?? false) continue;
 
+                // 最佳匹配，如果选它，课时超过太多，就路过
+                if (sum + sum2 + item.Class.Hour >= TargetHour + 1)
+                    continue;
+
+
                 item.IsSelected = true;
 
                 sum2 += item.Class.Hour;
@@ -365,12 +424,16 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
             per.ApplyClass.View.Refresh();
         }
 
-
-        // 生成模板文件
-        var path = GenerateFile();
     }
 
 
+    [RelayCommand]
+    public void Generate()
+    {
+        var path = GenerateFileFree(); GenerateFilePay();
+
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(new FileInfo(path)!.Directory!.FullName) { UseShellExecute = true });
+    }
 
     private async Task SyncLearnHistory(IPage page)
     {
@@ -401,26 +464,30 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
             await page.WaitForSelectorAsync("div.container-fluid >> div.tab >> table", new PageWaitForSelectorOptions { Timeout = 2000 });
 
             // 获取列表
-            List<LearnInfo> list = new();
+            List<(string a, string b, string c, decimal d, decimal e, string? f)> list = new();
             var rows = locator.Locator("tr");
             foreach (var r in await rows.AllAsync())
             {
                 var cells = await r.Locator("td").AllAsync();
                 if (cells.Count < 8) continue;
-                var info = new LearnInfo
-                {
-                    Name = await cells[1].InnerTextAsync(),
-                    IdType = await cells[2].InnerTextAsync(),
-                    IdNumber = await cells[3].InnerTextAsync(),
-                    Apply = decimal.Parse(await cells[6].InnerTextAsync()),
-                    Learned = decimal.Parse(await cells[8].InnerTextAsync()),
-                    Url = await cells[^1].Locator("a").GetAttributeAsync("href")
-                };
 
-                list.Add(info);
+                list.Add((await cells[1].InnerTextAsync(), await cells[2].InnerTextAsync(), await cells[3].InnerTextAsync(),
+                   decimal.Parse(await cells[6].InnerTextAsync()),
+                   decimal.Parse(await cells[8].InnerTextAsync()),
+                   await cells[^1].Locator("a").GetAttributeAsync("href")));
+
+
             }
 
-            History = list;
+            await App.Current.Dispatcher.BeginInvoke(() => History = new(list.Select(x => new LearnInfo
+            {
+                Name = x.a,
+                IdType = x.b,
+                IdNumber = x.c,
+                Apply = x.d,
+                Learned = x.e,
+                Url = x.f,
+            })));
 
 
         }
@@ -450,6 +517,16 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         using var fs = new StreamWriter("files\\peixun\\records.json");
         fs.Write(Convert.ToBase64String(Encoding.UTF8.GetBytes(json)));
         fs.Flush();
+
+        if (AllClasses is not null)
+            foreach (var p in History!)
+            {
+                await App.Current.Dispatcher.BeginInvoke(() =>
+                 {
+                     p.ApplyInfo = (p.Record is null ? AllClasses : AllClasses.Where(x => !p.Record.Any(y => y.Id == x.Id))).Select(x => new ClassApply { Class = x }).ToArray();
+                     p.ApplyClass.Source = p.ApplyInfo;
+                 });
+            }
     }
 
 
@@ -486,8 +563,11 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
         foreach (var p in History)
         {
-            p.ApplyInfo = (p.Record is null ? classes : classes.Where(x => !p.Record.Any(y => y.Id == x.Id))).Select(x => new ClassApply { Class = x }).ToArray();
-            p.ApplyClass.Source = p.ApplyInfo;
+            App.Current.Dispatcher.BeginInvoke(() =>
+            {
+                p.ApplyInfo = (p.Record is null ? classes : classes.Where(x => !p.Record.Any(y => y.Id == x.Id))).Select(x => new ClassApply { Class = x }).ToArray();
+                p.ApplyClass.Source = p.ApplyInfo;
+            });
         }
     }
 
@@ -553,30 +633,32 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
             list.Add(info);
         }
-        per.Record = list.ToArray();
 
+        await App.Current.Dispatcher.BeginInvoke(() => per.Record = list.ToArray());
+
+        if (AllClasses is not null)
+            per.ApplyInfo = (per.Record is null ? AllClasses : AllClasses.Where(x => !per.Record.Any(y => y.Id == x.Id))).Select(x => new ClassApply { Class = x }).ToArray();
         await p.CloseAsync();
     }
 
 
-    private string GenerateFile()
+    private string GenerateFileFree()
     {
         var stream = App.GetResourceStream(new Uri("pack://application:,,,/tpl.xls", UriKind.RelativeOrAbsolute)).Stream;
         using var ms = new MemoryStream();
         stream.CopyTo(ms);
         ms.Seek(0, SeekOrigin.Begin);
 
-        string path = @"files\peixun\apply.xls";
+        string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"批量报课-免费.xls");
 
         ExcelLibrary.SpreadSheet.Workbook workbook = ExcelLibrary.SpreadSheet.Workbook.Load(ms);
-
 
         var sheet = workbook.Worksheets[0];
 
         int row = 2;
         for (int i = 0; i < History.Count; i++)
         {
-            var apply = History[i].ApplyInfo?.Where(x => x.IsSelected).Select(x => x.Class).ToArray() ?? [];
+            var apply = History[i].ApplyInfo?.Where(x => x.IsSelected && x.Class.Price == 0).Select(x => x.Class).ToArray() ?? [];
 
             for (int j = 0; j < apply.Length; j++, row++)
             {
@@ -591,6 +673,44 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
             // 保存为 XLS 格式
         }
         workbook.Save(path);
+
+        return path;
+    }
+    private string GenerateFilePay()
+    {
+        var stream = App.GetResourceStream(new Uri("pack://application:,,,/tpl.xls", UriKind.RelativeOrAbsolute)).Stream;
+        using var ms = new MemoryStream();
+        stream.CopyTo(ms);
+        ms.Seek(0, SeekOrigin.Begin);
+
+        string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"批量报课-收费.xls");
+
+        ExcelLibrary.SpreadSheet.Workbook workbook = ExcelLibrary.SpreadSheet.Workbook.Load(ms);
+
+        var sheet = workbook.Worksheets[0];
+
+        bool any = false;
+        int row = 2;
+        for (int i = 0; i < History.Count; i++)
+        {
+            var apply = History[i].ApplyInfo?.Where(x => x.IsSelected && x.Class.Price > 0).Select(x => x.Class).ToArray() ?? [];
+
+            for (int j = 0; j < apply.Length; j++, row++)
+            {
+                sheet.Cells[row, 1] = new Cell(History[i].Name);
+                sheet.Cells[row, 2] = new Cell(History[i].IdType);
+                sheet.Cells[row, 3] = new Cell(History[i].IdNumber);
+                sheet.Cells[row, 4] = new Cell(apply[j].Id);
+                sheet.Cells[row, 5] = new Cell(apply[j].Name);
+
+                any = true;
+            }
+
+
+            // 保存为 XLS 格式
+        }
+        if (any)
+            workbook.Save(path);
 
         return path;
     }
