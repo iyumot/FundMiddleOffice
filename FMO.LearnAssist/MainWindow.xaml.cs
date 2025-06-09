@@ -1,6 +1,6 @@
-﻿using ClosedXML.Excel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ExcelLibrary.SpreadSheet;
 using FMO.IO.AMAC;
 using FMO.Utilities;
 using Microsoft.Playwright;
@@ -315,20 +315,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
                     break;
             }
 
-            //if (sum >= TargetHour2 && sum + sum2 >= TargetHour)
-            //{
-            //    Toast.Success("选课完成");
 
-            //    foreach (var per in History)
-            //    {
-            //        foreach (var s in lawids)
-            //            per.ApplyInfo?.First(x => x.Class.Id == s).IsSelected = true;
-
-            //        per.ApplyClass.View.Refresh();
-            //    }
-
-            //    return;
-            //}
         }
 
         foreach (var per in History)
@@ -377,6 +364,10 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
             per.ApplyClass.View.Refresh();
         }
+
+
+        // 生成模板文件
+        var path = GenerateFile();
     }
 
 
@@ -570,36 +561,38 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private string GenerateFile()
     {
-        var stream = App.GetResourceStream(new Uri("tpl.xlsx", UriKind.Relative)).Stream;
+        var stream = App.GetResourceStream(new Uri("pack://application:,,,/tpl.xls", UriKind.RelativeOrAbsolute)).Stream;
         using var ms = new MemoryStream();
         stream.CopyTo(ms);
+        ms.Seek(0, SeekOrigin.Begin);
 
-        // 打开 XLSX 文件
-        using (var workbook = new XLWorkbook(ms))
+        string path = @"files\peixun\apply.xls";
+
+        ExcelLibrary.SpreadSheet.Workbook workbook = ExcelLibrary.SpreadSheet.Workbook.Load(ms);
+
+
+        var sheet = workbook.Worksheets[0];
+
+        int row = 2;
+        for (int i = 0; i < History.Count; i++)
         {
-            var sheet = workbook.Worksheet(0);
+            var apply = History[i].ApplyInfo?.Where(x => x.IsSelected).Select(x => x.Class).ToArray() ?? [];
 
-            for (int i = 0; i < History.Count; i++)
+            for (int j = 0; j < apply.Length; j++, row++)
             {
-                var apply = History[i].ApplyInfo?.Where(x => x.IsSelected).Select(x => x.Class).ToArray() ?? [];
-
-                for (int j = 0; j < apply.Length; j++)
-                {
-                    sheet.Cell(i + j + 3, 2).Value = History[i].Name;
-                    sheet.Cell(i + j + 3, 3).Value = History[i].IdType;
-                    sheet.Cell(i + j + 3, 4).Value = History[i].IdNumber;
-
-                    sheet.Cell(i + j + 3, 5).Value = apply[j].Id;
-                    sheet.Cell(i + j + 3, 6).Value = apply[j].Name;
-
-                }
-
+                sheet.Cells[row, 1] = new Cell(History[i].Name);
+                sheet.Cells[row, 2] = new Cell(History[i].IdType);
+                sheet.Cells[row, 3] = new Cell(History[i].IdNumber);
+                sheet.Cells[row, 4] = new Cell(apply[j].Id);
+                sheet.Cells[row, 5] = new Cell(apply[j].Name);
             }
 
 
             // 保存为 XLS 格式
-            workbook.SaveAs(xlsFilePath, new SaveOptions { FileFormat = XLExtension.XLS });
         }
+        workbook.Save(path);
+
+        return path;
     }
 
     private int LineNumber([CallerLineNumber] int line = 0) => line;

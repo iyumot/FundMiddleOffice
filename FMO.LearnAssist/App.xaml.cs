@@ -12,9 +12,9 @@ namespace FMO.LearnAssist
     {
         public App()
         {
-#if DEBUG
-            Directory.SetCurrentDirectory(@"D:\fmo");
-#endif
+//#if DEBUG
+//            Directory.SetCurrentDirectory(@"D:\fmo");
+//#endif
 
 
             Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
