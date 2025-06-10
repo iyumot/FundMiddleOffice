@@ -80,6 +80,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.Trustee", "FMO.Trustee\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.PeiXunAssist", "FMO.PeiXunAssist\FMO.PeiXunAssist.csproj", "{F260DC1A-9730-9659-0787-AF778E0FB2F3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.LearnAssist", "LearnAssist\FMO.LearnAssist.csproj", "{D9EB6271-73DE-4C02-9CC4-F776829063C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -218,6 +220,10 @@ Global
 		{F260DC1A-9730-9659-0787-AF778E0FB2F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F260DC1A-9730-9659-0787-AF778E0FB2F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F260DC1A-9730-9659-0787-AF778E0FB2F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9EB6271-73DE-4C02-9CC4-F776829063C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9EB6271-73DE-4C02-9CC4-F776829063C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9EB6271-73DE-4C02-9CC4-F776829063C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9EB6271-73DE-4C02-9CC4-F776829063C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -246,6 +252,7 @@ Global
 		{23BBC333-AF16-4648-9751-94A8CB1FE6BF} = {2DD8BA92-BC83-426F-A5A9-B93B29AFB63B}
 		{9C390D71-0A83-4199-B6D0-CDC1167B255A} = {6B648140-571B-4297-A871-AB606EF6681A}
 		{F260DC1A-9730-9659-0787-AF778E0FB2F3} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{D9EB6271-73DE-4C02-9CC4-F776829063C8} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E8FF6F9B-A37B-4335-B135-EEEB33A830B1}
