@@ -60,7 +60,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FMO.Automation\FMO.Schedule.csproj" />
-    <ProjectReference Include="..\FMO.FeeCalc\FMO.FeeCalc.csproj" />
     <ProjectReference Include="..\FMO.Interop\FMO.IO.AMAC\FMO.IO.AMAC.csproj" />
     <ProjectReference Include="..\FMO.InterOp\FMO.IO.DS\FMO.IO.DS.csproj" />
     <ProjectReference Include="..\FMO.InterOp\FMO.IO.Trustee\FMO.IO.Trustee.csproj" />

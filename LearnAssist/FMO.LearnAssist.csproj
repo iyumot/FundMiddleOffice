@@ -8,6 +8,7 @@
     <UseWPF>true</UseWPF>
 	  <LangVersion>preview</LangVersion>
 	  <ApplicationIcon>learn.ico</ApplicationIcon>
+	  <BaseOutputPath>..\FMO\bin</BaseOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
