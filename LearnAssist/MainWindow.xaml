@@ -75,6 +75,32 @@
                 Text="正在加载所有课程"
                 Visibility="{Binding IsLoadingClasses, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
+            <DockPanel
+                Margin="10,0"
+                Background="WhiteSmoke"
+                Visibility="{Binding IsLoadingClasses, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                <TextBlock
+                    Margin="10,0,4,0"
+                    VerticalAlignment="Center"
+                    FontSize="22"
+                    Foreground="RoyalBlue"
+                    Text="{Binding Year}" />
+                <TextBlock VerticalAlignment="Center" Text="年" />
+
+                <UniformGrid Margin="5,0" VerticalAlignment="Center">
+                    <UniformGrid.Resources>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Margin" Value="5,0" />
+                        </Style>
+                    </UniformGrid.Resources>
+                    <TextBlock Text="{Binding TotalHour, StringFormat=总学时   ：{0}}" />
+                    <TextBlock Text="{Binding MoralHour, StringFormat=职业道德：{0}}" />
+                    <TextBlock Text="{Binding LawHour, StringFormat=法律规范：{0}}" />
+                    <TextBlock Text="{Binding SkillHour, StringFormat=专业技能：{0}}" />
+                </UniformGrid>
+            </DockPanel>
+
+
             <Button
                 Width="200"
                 Margin="20,0,0,0"

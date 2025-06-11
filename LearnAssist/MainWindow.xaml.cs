@@ -78,6 +78,22 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     IBrowser? Browser { get; set; }
     IBrowserContext? Context { get; set; }
 
+    [ObservableProperty]
+    public partial decimal? TotalHour { get; private set; }
+
+    [ObservableProperty]
+    public partial decimal? MoralHour { get; private set; }
+
+    [ObservableProperty]
+    public partial decimal? LawHour { get; private set; }
+
+    [ObservableProperty]
+    public partial decimal? SkillHour { get; private set; }
+
+
+    [ObservableProperty]
+    public partial int Year { get; set; }
+
     public MainWindowViewModel()
     {
         Directory.CreateDirectory("data");
@@ -115,8 +131,15 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
             IsLoadingClasses = true;
             page = Context.Pages.First();
+
             await GetClassInfo(page);
+
+            await GetCurrentYearLearn(page);
             IsLoadingClasses = false;
+
+
+
+
 
             await App.Current.Dispatcher.BeginInvoke(() => CanStartLearn = true);
 
@@ -297,7 +320,23 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     }
 
 
+    private async Task GetCurrentYearLearn(IPage page)
+    {
+        var locator = page.Locator("#yearid");
+        var year = DateTime.Today.Year;
+        Year = year;
+        await locator.ClickAsync(new LocatorClickOptions { Timeout = 2000 });
+        locator = page.Locator($"ul.year-pulldown >> li:has-text('{year}')");
+        await locator.ClickAsync(new LocatorClickOptions { Timeout = 2000 });
 
+        await page.WaitForTimeoutAsync(2000);
+
+        TotalHour = decimal.Parse(await page.Locator("#sum-hour-total").InnerTextAsync());
+        MoralHour = decimal.Parse(await page.Locator("#sum-hour-type1").InnerTextAsync());
+        LawHour = decimal.Parse(await page.Locator("#sum-hour-type2").InnerTextAsync());
+        SkillHour = decimal.Parse(await page.Locator("#sum-hour-type3").InnerTextAsync());
+
+    }
 
     private async Task GetClassInfo(IPage page)
     {
@@ -344,6 +383,9 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
         try
         {
+            locator = page.GetByText("本年度暂无未学习课程");
+            if (await locator.CountAsync() > 0 && await locator.First.IsVisibleAsync()) return;
+
             await page.WaitForSelectorAsync("#userclass_list", new PageWaitForSelectorOptions { Timeout = 10000 });
             await page.WaitForTimeoutAsync(2000);
 
@@ -410,7 +452,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
                     await Task.Delay(1000);
 
                     var pro = await video.EvaluateAsync<double>("video => video.currentTime");
-                  
+
                     ch.VideoProgress = pro / du * 100;
                     ch.VideoTime = double.IsNaN(pro) ? "-" : @$"{TimeSpan.FromSeconds(pro):hh\:mm\:ss} / {dur:hh\:mm\:ss}";
                     if (pro < last)
