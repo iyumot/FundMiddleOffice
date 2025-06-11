@@ -332,13 +332,13 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         // 获取所有人都未选的课
         int year = DateTime.Today.Year;
         var sel = History.Where(x => x.Record is not null).SelectMany(x => x.Record!.Where(y => y.PayTime.Year != year).Select(y => y.Id)!).Distinct();
-        var cansel = AllClasses?.ExceptBy(sel, x => x.Id)?.ToArray() ?? [];
+        var cansel = AllClasses?.Where(x=>!x.Name.Contains("?") && !x.Name.Contains("？"))?.ExceptBy(sel, x => x.Id)?.ToArray() ?? [];
 
 
-        // 选够法律与道德 
+        // 选够职业道德 
         List<string> lawids = new(), otherids = new();
         {
-            var cl = cansel.Where(x => x.Type == "法律法规与职业道德").Select(x => (x, rank: Random.Shared.Next())).OrderBy(x => x.rank).Select(x => x.x).ToArray();
+            var cl = cansel.Where(x => x.Type == "职业道德").Select(x => (x, rank: Random.Shared.Next())).OrderBy(x => x.rank).Select(x => x.x).ToArray();
             decimal sum = 0;
             foreach (var item in cl)
             {
@@ -352,7 +352,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
             }
 
 
-            cl = cansel.Where(x => x.Type != "法律法规与职业道德").Select(x => (x, rank: Random.Shared.Next())).OrderBy(x => x.rank).Select(x => x.x).ToArray();
+            cl = cansel.Where(x => x.Type != "职业道德").Select(x => (x, rank: Random.Shared.Next())).OrderBy(x => x.rank).Select(x => x.x).ToArray();
             decimal sum2 = 0;
             foreach (var item in cl)
             {
@@ -375,8 +375,8 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
 
             // 选够法律与道德 
-            var cl = per.ApplyInfo.Where(x => x.Class.Type == "法律法规与职业道德").Select(x => (x, rank: lawids.Contains(x.Class.Id) ? -1 : Random.Shared.Next())).OrderBy(x => x.rank).Select(x => x.x).ToArray();
-            decimal sum = per.Record?.Where(x => (x.Type == "职业道德" || x.Type == "法律规范") && x.PayTime.Year == year).Sum(x => x.Hour) ?? 0;
+            var cl = per.ApplyInfo.Where(x => x.Class.Type == "职业道德").Select(x => (x, rank: lawids.Contains(x.Class.Id) ? -1 : Random.Shared.Next())).OrderBy(x => x.rank).Select(x => x.x).ToArray();
+            decimal sum = per.Record?.Where(x => x.Type == "职业道德" && x.PayTime.Year == year).Sum(x => x.Hour) ?? 0;
             foreach (var item in cl)
             {
                 if (sum >= TargetHour2)
@@ -396,12 +396,12 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
             if (sum == 0)
             {
-                Toast.Warning($"{per.Name} 未找到足够的 法律法规与职业道德");
+                Toast.Warning($"{per.Name} 未找到足够的 职业道德");
                 return;
             }
 
-            cl = per.ApplyInfo.Where(x => x.Class.Type != "法律法规与职业道德").Select(x => (x, rank: Random.Shared.Next())).OrderBy(x => x.rank).Select(x => x.x).ToArray();
-            decimal sum2 = per.Record?.Where(x => (x.Type != "职业道德" && x.Type != "法律规范") && x.PayTime.Year == year).Sum(x => x.Hour) ?? 0;
+            cl = per.ApplyInfo.Where(x => x.Class.Type != "职业道德").Select(x => (x, rank: Random.Shared.Next())).OrderBy(x => x.rank).Select(x => x.x).ToArray();
+            decimal sum2 = per.Record?.Where(x => x.Type != "职业道德" && x.PayTime.Year == year).Sum(x => x.Hour) ?? 0;
             foreach (var item in cl)
             {
                 if (sum2 + sum >= TargetHour)
@@ -535,7 +535,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         // 解析
         using var sr = new StreamReader(path, Encoding.GetEncoding("GB2312"));
         var head = sr.ReadLine()?.Split(',');
-        if (head?.Length < 8 || head![0] != "课程编号" || head![1] != "课程名称" || head![6] != "课程分类" ||
+        if (head?.Length < 8 || head![0] != "课程编号" || head![1] != "课程名称" || head![2] != "课程属性" ||
             !head![5].Contains("课程价格") || head![4] != "学时数" || head[7] != "上线时间")
         {
             Toast.Warning("无法识别课程信息，请更新");
@@ -552,7 +552,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
             {
                 Id = values![0],
                 Name = values[1],
-                Type = values[6],
+                Type = values[2],
                 Hour = decimal.Parse(values[4]),
                 Price = decimal.Parse(values[5]),
                 Time = DateTime.Parse(values[7])

@@ -12,7 +12,7 @@ public class ClassInfo
     public required string Type { get; set; }
 
 
-    public bool IsStar => Type == "法律法规与职业道德";
+    public bool IsStar => Type == "职业道德";
 
     /// <summary>
     /// 学时

@@ -123,7 +123,7 @@
 
                 <TextBlock VerticalAlignment="Center" Text="目标总学时" />
                 <hc:NumericUpDown Margin="5,0" Value="{Binding TargetHour}" />
-                <TextBlock VerticalAlignment="Center" Text="其中法律与道德学时" />
+                <TextBlock VerticalAlignment="Center" Text="其中职业道德学时" />
                 <hc:NumericUpDown Margin="5,0" Value="{Binding TargetHour2}" />
 
 
