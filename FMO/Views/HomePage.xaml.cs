@@ -85,7 +85,9 @@ public partial class HomePageViewModel : ObservableObject
 
         Task[] t = [Task.Run(async() => await SyncFundsFromAmac(c) ),
                     Task.Run(() => DataTracker.CheckFundFolder(c)),
-                    Task.Run(()=> DataTracker.CheckShareIsPair(c))];
+                    Task.Run(()=> DataTracker.CheckShareIsPair(c)),
+                    Task.Run(()=> DataTracker.CheckIsExpired(c)),
+        ];
 
         Task.WaitAll(t);
         IsSelfTesting = false;

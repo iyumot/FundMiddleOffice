@@ -1,7 +1,7 @@
-﻿using System.Collections;
-using CommunityToolkit.Mvvm.Messaging;
+﻿using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using Serilog;
+using System.Collections;
 
 namespace FMO.Utilities;
 
@@ -18,6 +18,7 @@ public enum TipType
     /// 没有TA数据
     /// </summary>
     FundNoTARecord,
+    OverDue,
 }
 
 public record class FundTip(int FundId, TipType Type, string? Tip);
@@ -144,6 +145,27 @@ public static class DataTracker
 
         FundTips.Remove(x => x.Type == TipType.FundShareNotPair);
         WeakReferenceMessenger.Default.Send(new FundTipMessage(fid));
+    }
+
+
+    public static void CheckIsExpired(IEnumerable<Fund> funds)
+    {
+        // 验证最新的净值中份额与share是否一致
+        using var db = DbHelper.Base();
+        var cur = DateOnly.FromDateTime(DateTime.Today);
+
+        var coll = db.GetCollection<FundElements>();
+        foreach (var fund in funds)
+        {
+            var ele = coll.FindById(fund.Id);
+            if (ele is not null)
+            {
+                var expire = ele.ExpirationDate.Value;
+
+                if (expire != default && cur > expire)
+                    FundTips.Add(new FundTip(fund.Id, TipType.OverDue, $"基金已超期{cur.DayNumber - expire.DayNumber}天"));
+            }
+        }
     }
 
 }
