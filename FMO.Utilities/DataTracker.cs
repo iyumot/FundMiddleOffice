@@ -2,6 +2,7 @@
 using FMO.Models;
 using Serilog;
 using System.Collections;
+using System.Security.Cryptography;
 
 namespace FMO.Utilities;
 
@@ -21,7 +22,7 @@ public enum TipType
     OverDue,
 }
 
-public record class FundTip(int FundId, TipType Type, string? Tip);
+public record class FundTip(int FundId, string FundName, TipType Type, string? Tip);
 
 public record FundTipMessage(int FundId);
 
@@ -97,7 +98,7 @@ public static class DataTracker
 
             if (c is null || !c.Any())
             {
-                FundTips.Add(new FundTip(fund.Id, TipType.FundNoTARecord, "没有TA数据"));
+                FundTips.Add(new FundTip(fund.Id, fund.Name, TipType.FundNoTARecord, "没有TA数据"));
                 continue;
             }
 
@@ -105,7 +106,7 @@ public static class DataTracker
 
             if (sh?.Share != last.Share)
             {
-                FundTips.Add(new FundTip(fund.Id, TipType.FundShareNotPair, "基金份额与估值表不一致"));
+                FundTips.Add(new FundTip(fund.Id, fund.Name, TipType.FundShareNotPair, "基金份额与估值表不一致"));
                 continue;
             }
 
@@ -135,7 +136,7 @@ public static class DataTracker
 
         if (c is null || !c.Any())
         {
-            FundTips.Add(new FundTip(fund.Id, TipType.FundNoTARecord, "没有TA数据"));
+            FundTips.Add(new FundTip(fund.Id, fund.Name, TipType.FundNoTARecord, "没有TA数据"));
             WeakReferenceMessenger.Default.Send(new FundTipMessage(fid));
             return;
         }
@@ -144,7 +145,7 @@ public static class DataTracker
 
         if (sh?.Share != last.Share)
         {
-            FundTips.Add(new FundTip(fund.Id, TipType.FundShareNotPair, "基金份额与估值表不一致"));
+            FundTips.Add(new FundTip(fund.Id, fund.Name, TipType.FundShareNotPair, "基金份额与估值表不一致"));
             WeakReferenceMessenger.Default.Send(new FundTipMessage(fid));
             return;
         }
@@ -169,7 +170,10 @@ public static class DataTracker
                 var expire = ele.ExpirationDate.Value;
 
                 if (expire != default && cur > expire)
-                    FundTips.Add(new FundTip(fund.Id, TipType.OverDue, $"基金已超期{cur.DayNumber - expire.DayNumber}天"));
+                {
+                    FundTips.Add(new FundTip(fund.Id, fund.Name, TipType.OverDue, $"基金已超期{cur.DayNumber - expire.DayNumber}天"));
+                    WeakReferenceMessenger.Default.Send(new FundTipMessage(fund.Id));
+                }
             }
         }
     }

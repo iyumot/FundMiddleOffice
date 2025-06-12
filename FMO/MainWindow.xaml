@@ -9,6 +9,8 @@
     Title="基金中台"
     Width="800"
     Height="450"
+    d:Height="900"
+    d:Width="1600"
     SnapsToDevicePixels="True"
     UseLayoutRounding="True"
     WindowStartupLocation="CenterScreen"

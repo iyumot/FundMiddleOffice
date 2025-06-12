@@ -33,7 +33,7 @@ public partial class HomePage : UserControl
 
 
 
-public partial class HomePageViewModel : ObservableObject
+public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMessage>
 {
     /// <summary>
     /// 是否正在同步
@@ -56,9 +56,12 @@ public partial class HomePageViewModel : ObservableObject
     [ObservableProperty]
     public partial double BackupProcess2 { get; set; }
 
+    [ObservableProperty]
+    public partial IList<string>? FundTips { get; set; }
 
     public HomePageViewModel()
     {
+        WeakReferenceMessenger.Default.RegisterAll(this);
 
         Task.Run(() =>
         {
@@ -316,15 +319,14 @@ public partial class HomePageViewModel : ObservableObject
     [RelayCommand]
     public void RefreshPlot() => InitPlot();
 
+    public void Receive(FundTipMessage message)
+    {
+        App.Current.Dispatcher.BeginInvoke(() =>
+          {
+              FundTips = DataTracker.FundTips.Where(x => x.Tip is not null).Select(x => $"{x.FundName}  {x.Tip}").ToArray();
+          });
 
-
-
-
-
-
-
-
-
+    }
 
     public partial class HomePlotViewModel : ObservableObject
     {
