@@ -25,6 +25,8 @@ public record class FundTip(int FundId, TipType Type, string? Tip);
 
 public record FundTipMessage(int FundId);
 
+public record FundsTipCountMessage(int Count);
+
 
 /// <summary>
 /// 数据校验
@@ -34,6 +36,10 @@ public static class DataTracker
 
     public static ThreadSafeList<FundTip> FundTips { get; } = new();
 
+    static DataTracker()
+    {
+        FundTips.CollectionChanged += () => WeakReferenceMessenger.Default.Send(new FundsTipCountMessage(FundTips.Count));
+    }
 
 
     /// <summary>
@@ -174,6 +180,10 @@ public class ThreadSafeList<T> : IEnumerable<T>
     private readonly List<T> _innerList = new List<T>();
     private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
 
+    public delegate void CollectionChangedHandler();
+
+    public CollectionChangedHandler? CollectionChanged;
+
     public void Add(T item)
     {
         _lock.EnterWriteLock();
@@ -184,6 +194,7 @@ public class ThreadSafeList<T> : IEnumerable<T>
         finally
         {
             _lock.ExitWriteLock();
+            CollectionChanged?.Invoke();
         }
     }
     public void Remove(T item)
@@ -196,6 +207,7 @@ public class ThreadSafeList<T> : IEnumerable<T>
         finally
         {
             _lock.ExitWriteLock();
+            CollectionChanged?.Invoke();
         }
     }
     public void Remove(Func<T, bool> cond)
@@ -209,6 +221,7 @@ public class ThreadSafeList<T> : IEnumerable<T>
         finally
         {
             _lock.ExitWriteLock();
+            CollectionChanged?.Invoke();
         }
     }
 
