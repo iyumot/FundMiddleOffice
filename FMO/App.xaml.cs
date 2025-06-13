@@ -1,5 +1,6 @@
 ﻿using FMO.IO;
 using FMO.Models;
+using FMO.Plugin;
 using FMO.Utilities;
 using Serilog;
 using System.IO;
@@ -60,10 +61,15 @@ public partial class App : Application
         ///数据库自检等操作
         DatabaseAssist.SystemValidation();
 
+       
+
         if (CheckIsFirstRun())
             StartupUri = new Uri("InitWindow.xaml", UriKind.Relative);
         else
             StartupUri = new Uri("MainWindow.xaml", UriKind.Relative);
+
+        //加载插件
+        PluginManager.Init();
     }
 
 
