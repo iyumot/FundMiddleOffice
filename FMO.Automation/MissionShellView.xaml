@@ -84,6 +84,7 @@
                             Background="Transparent"
                             BorderThickness="0"
                             IsChecked="{Binding IsActivated}"
+                            IsEnabled="{Binding IsAvailable}"
                             Style="{StaticResource ToggleButtonFlip}">
                             <hc:StatusSwitchElement.CheckedElement>
                                 <Viewbox Width="20" Height="20">

@@ -71,6 +71,7 @@ public abstract class Mission
             }
             catch (Exception e)
             {
+                WorkLog = $"Error {e}";
                 Log.Error($"Mission Error {Id} {e}");
                 WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Error, $"[{Id}]任务执行出错，请查看log"));
             }
