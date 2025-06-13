@@ -2,10 +2,13 @@
 using FMO.Models;
 using MimeKit;
 using Serilog;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Windows.Controls;
 
 namespace FMO.Schedule;
 
@@ -144,5 +147,99 @@ public class MailMission : Mission
         using var db = new MissionDatabase();
         db.GetCollection<MailCategoryInfo>(_collection).Upsert(new MailCategoryInfo(message.MessageId, message.Subject, MailCategory.ValueSheet));
         return category;
+    }
+}
+
+
+
+public class MissionTemplate
+{
+    // public required string Id { get; init; }
+
+    public required string Title { get; init; }
+
+
+
+    public required Func<Mission, AutomationViewModelBase> CreateViewModel { get; init; }
+
+    public required Func<Mission> CreateMission { get; init; }
+
+    public required Func<UserControl> CreateView { get; init; }
+}
+
+public interface IMissionTemplateProvider
+{
+
+    public IList<MissionTemplate> Templates { get; }
+}
+
+
+
+
+public static class MissionTemplateManager
+{
+
+    public static ConcurrentDictionary<Type, MissionTemplate> Templates { get; } = new();
+
+
+    static MissionTemplateManager()
+    {
+        Register(typeof(DailyFromMailMission), new MissionTemplate
+        {
+            Title = "净值更新",
+            CreateMission = () => new DailyFromMailMission(),
+            CreateView = () => new DailyFromMailView(),
+            CreateViewModel = x => new DailyFromMailViewModel((x as DailyFromMailMission)!)
+        });
+
+        Register(typeof(MailCacheMission), new MissionTemplate
+        {
+            Title = "邮件缓存",
+            CreateMission = () => new MailCacheMission(),
+            CreateView = () => new MailCacheView(),
+            CreateViewModel = x => new MailCacheViewModel((x as MailCacheMission)!)
+        });
+        Register(typeof(SendDailyReportToWebhookMission), new MissionTemplate
+        {
+            Title = "发送日报",
+            CreateMission = () => new SendDailyReportToWebhookMission(),
+            CreateView = () => new SendDailyReportToWebhookView(),
+            CreateViewModel = x => new SendDailyReportToWebhookViewModel((x as SendDailyReportToWebhookMission)!)
+        });
+        Register(typeof(TAFromMailMission), new MissionTemplate
+        {
+            Title = "TA更新",
+            CreateMission = () => new TAFromMailMission(),
+            CreateView = () => new TAFromMailView(),
+            CreateViewModel = x => new TAFromMailViewModel((x as TAFromMailMission)!)
+        });
+
+
+
+
+
+
+    }
+
+
+    public static void Register(Type type, MissionTemplate template)
+    {
+        Templates[type] = template;
+    }
+
+    public static AutomationViewModelBase? MakeViewModel(Mission mission)
+    {
+        return Templates.TryGetValue(mission.GetType(), out var tpl) ? tpl.CreateViewModel(mission) : null;
+    }
+
+
+    public static object? MakeView(Mission mission)
+    {
+        return Templates.TryGetValue(mission.GetType(), out var tpl) ? tpl.CreateView() : null;
+    }
+     
+    internal static object? MakeView(Type missionType)
+    {
+        return Templates.TryGetValue(missionType, out var tpl) ? tpl.CreateView() : null;
     }
 }

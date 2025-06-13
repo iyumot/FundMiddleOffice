@@ -82,6 +82,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.PeiXunAssist", "FMO.Pei
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.LearnAssist", "LearnAssist\FMO.LearnAssist.csproj", "{D9EB6271-73DE-4C02-9CC4-F776829063C8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.Plugin", "FMO.Plugin\FMO.Plugin.csproj", "{B87B6DD3-B998-4EE3-91F0-A02D7BCA0C8F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -224,6 +226,10 @@ Global
 		{D9EB6271-73DE-4C02-9CC4-F776829063C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9EB6271-73DE-4C02-9CC4-F776829063C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D9EB6271-73DE-4C02-9CC4-F776829063C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B87B6DD3-B998-4EE3-91F0-A02D7BCA0C8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B87B6DD3-B998-4EE3-91F0-A02D7BCA0C8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B87B6DD3-B998-4EE3-91F0-A02D7BCA0C8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B87B6DD3-B998-4EE3-91F0-A02D7BCA0C8F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

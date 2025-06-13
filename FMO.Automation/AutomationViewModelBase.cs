@@ -12,7 +12,12 @@ public record RemoveMissionMessage(AutomationViewModelBase ViewModel);
 
 public partial class AutomationViewModelBase : ObservableObject, IRecipient<MissionMessage>, IRecipient<MissionProgressMessage>, IRecipient<MissionWorkMessage>
 {
+    public Type MissionType { get;  }
 
+    /// <summary>
+    /// 后台任务
+    /// </summary>
+    //public bool IsViewNotFound { get; init; }
 
     [ObservableProperty]
     public partial bool IsActivated { get; set; }
@@ -55,6 +60,7 @@ public partial class AutomationViewModelBase : ObservableObject, IRecipient<Miss
     public AutomationViewModelBase(Mission mission)
     {
         WeakReferenceMessenger.Default.RegisterAll(this);
+        MissionType = mission.GetType();
 
         try
         {

@@ -45,7 +45,7 @@
             Style="{StaticResource ListBoxCustom}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <mi:MissionShellView DataContext="{Binding .}" />
+                    <mi:MissionShellView />
                     <!--<ContentControl
                         Content="{Binding}"
                         ContentTemplateSelector="{StaticResource MissionTemplateSelector}"
