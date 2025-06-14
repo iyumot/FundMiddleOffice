@@ -42,6 +42,7 @@ public partial class App : Application
                 Directory.SetCurrentDirectory(di.FullName);
         }
 
+        DatabaseAssist.Miggrate();
         //DbHelper.initpassword();
 
         Log.Logger = new LoggerConfiguration().WriteTo.File("log.txt").CreateLogger();

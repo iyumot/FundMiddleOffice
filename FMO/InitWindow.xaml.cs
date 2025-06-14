@@ -194,7 +194,7 @@ public partial class InitWindowViewModel : ObservableRecipient, IRecipient<InitS
     {
         Manager = new Manager
         {
-            Id = "unset",
+            Id = 1,
             Name = sel.ManagerName!,
             AmacId = sel.Id!,
             RegisterAddress = sel.RegisterAddress,

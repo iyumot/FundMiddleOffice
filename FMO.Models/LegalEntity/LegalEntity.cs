@@ -22,7 +22,6 @@ public abstract class LegalEntity
     public abstract EntityType Type { get; }
 
 
-    public string _uid => $"{Type}.{Id}";
 
 }
 

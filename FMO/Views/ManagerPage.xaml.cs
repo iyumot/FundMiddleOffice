@@ -174,10 +174,11 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
 
         var db = DbHelper.Base();
         var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
-        var mfile = db.GetCollection<InstitutionFiles>().FindOne(x => x.InstitutionId == manager.Id);
+        var id = manager?.Identity?.Id;
+        var mfile = db.GetCollection<InstitutionFiles>().FindOne(x => x.InstitutionId == id);
         if (mfile is null)
         {
-            mfile = new InstitutionFiles { InstitutionId = manager.Id };
+            mfile = new InstitutionFiles { InstitutionId = id };
             db.GetCollection<InstitutionFiles>().Insert(mfile);
         }
         FilesId = mfile.Id;
@@ -310,7 +311,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         InstitutionCode = new ChangeableViewModel<Manager, string>
         {
             Label = "统一信用代码",
-            InitFunc = x => x.Id,
+            InitFunc = x => x.Identity?.Id,
             UpdateFunc = (x, y) => throw new Exception(),
             ClearFunc = x => throw new Exception(),
         };

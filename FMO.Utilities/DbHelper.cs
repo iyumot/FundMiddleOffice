@@ -1,9 +1,9 @@
-﻿using System.Configuration;
-using System.Security.Cryptography;
-using System.Text;
-using FMO.Models;
+﻿using FMO.Models;
 using LiteDB;
 using Serilog;
+using System.Configuration;
+using System.Security.Cryptography;
+using System.Text;
 namespace FMO.Utilities;
 
 public static class DatabaseAssist
@@ -84,7 +84,24 @@ public static class DatabaseAssist
         }
     }
 
+    public static void Miggrate()
+    {
+        using var db = DbHelper.Base();
+        var objs = db.GetCollection(nameof(Manager)).FindAll().ToArray();
+        var col = db.GetCollectionNames();
+        foreach (var item in objs)
+        {
+            if (item["_id"].Type == BsonType.Int32) return;
 
+            var id = item["_id"].AsString;
+            item.Remove("_id");
+            item.Add("_id", 1);
+            item.Add(nameof(Identity), BsonMapper.Global.ToDocument( new Identity { Type = IDType.OrganizationCode, Id = id }));
+        }
+        db.DropCollection(nameof(Manager));
+        db.GetCollection(nameof(Manager)).Insert(objs);
+
+    }
 }
 
 

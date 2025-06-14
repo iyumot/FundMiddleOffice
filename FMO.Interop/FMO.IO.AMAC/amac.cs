@@ -402,7 +402,7 @@ public static class AmacAssist
                 switch (sec.t)
                 {
                     case "机构信息":
-                        manager.Id = sec.d.FirstOrDefault(x => x[0].Contains("组织机构代码"))![1];
+                        manager.Identity = new Identity { Id = sec.d.FirstOrDefault(x => x[0].Contains("组织机构代码"))![1], Type = IDType.UnifiedSocialCreditCode };
                         //v = sec.d.FirstOrDefault(x => x[0].Contains("登记编号"));
                         //if (v is null) return false;
                         //manager.RegisterNo = v[1];
@@ -502,7 +502,8 @@ public static class AmacAssist
             var regno = dict.First(x => x.Key.Contains("登记编号")).Value;
 
             //Manager manager = new Manager() { Name = name, AmacId = amacid, RegisterNo = regno, Id = id };
-            manager.Id = id;
+
+            manager.Identity = new Identity { Id = id, Type = IDType.UnifiedSocialCreditCode };
             manager.RegisterCapital = decimal.Parse(dict.FirstOrDefault(x => x.Key.Contains("注册资本")).Value);
             manager.RealCapital = decimal.Parse(dict.FirstOrDefault(x => x.Key.Contains("实缴资本")).Value);
             manager.Advisorable = dict.FirstOrDefault(x => x.Key.Contains("提供投资建议")).Value?.Contains("是") ?? false;

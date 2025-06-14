@@ -1,13 +1,31 @@
-﻿using System.Text.Json.Serialization;
-
-namespace FMO.Models;
+﻿namespace FMO.Models;
 
 
 /// <summary>
 /// 机构：公司/企业
 /// </summary>
-public class Institution : LegalEntity
+public class Institution : IEntity
 {
+    public int Id { get; set; }
+
+    /// <summary>
+    /// 名称
+    /// </summary>
+    public required string Name { get; set; }
+
+
+    public Identity? Identity { get; set; }
+
+    public DateEfficient Efficient { get; set; }
+
+    public string? Phone { get; set; }
+
+
+    /// <summary>
+    /// 类型
+    /// </summary>
+    public EntityType Type { get; } = EntityType.Institution;
+
 
     public string? EnglishName { get; set; }
 
@@ -19,12 +37,12 @@ public class Institution : LegalEntity
     /// <summary>
     /// 法人代表、委派代表
     /// </summary>
-    public Person? LegalAgent { get; set; }
+    //public Person? LegalAgent { get; set; }
 
     /// <summary>
     /// 实控人
     /// </summary>
-    public Person? ActualController { get; set; }
+    //public Person? ActualController { get; set; }
 
 
 
@@ -79,14 +97,12 @@ public class Institution : LegalEntity
     public string? Fax { get; set; }
 
 
+    public string? Email { get; set; }
+
 
     /// <summary>
     /// 官网
     /// </summary>
     public string? WebSite { get; set; }
-
-
-    public override EntityType Type => EntityType.Institution;
- 
 }
 

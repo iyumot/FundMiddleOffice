@@ -24,26 +24,21 @@ public enum PersonRole
     [Description("结算单确认人")] ConfirmationPerson = 0x40
 }
 
+
+
 /// <summary>
-/// 自然人
+/// 人
 /// </summary>
-public class Person : LegalEntity
+public class Person : IEntity
 {
-    public IDType IDType { get; set; }
+    public int Id { get; set; }
 
-    /// <summary>
-    /// 称谓
-    /// </summary>
-    public string? Title { get; set; }
+    public required string Name { get; set; }
 
-    /// <summary>
-    /// 手机号
-    /// </summary>
-    public string? Cellphone { get; set; }
+    public Identity? Identity { get; set; }
 
-    /// <summary>
-    /// 固话
-    /// </summary>
+    public DateEfficient Efficient { get; set; }
+
     public string? Phone { get; set; }
 
     /// <summary>
@@ -60,6 +55,4 @@ public class Person : LegalEntity
     /// 简介
     /// </summary>
     public string? Profile { get; set; }
-
-    public override EntityType Type => EntityType.Natural;
 }

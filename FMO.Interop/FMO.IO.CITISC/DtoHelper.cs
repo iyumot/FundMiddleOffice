@@ -182,7 +182,7 @@ internal static class DtoHelper
             "警官证" => IDType.PoliceID,
             "台胞证" => IDType.TaiwanCompatriotsID,
             "外国人永久居留身份证" => IDType.ForeignPermanentResidentID,
-            "组织机构代码证" => IDType.OrganizationCodeCertificate,
+            "组织机构代码证" => IDType.OrganizationCode,
             "营业执照" => IDType.BusinessLicenseNumber,
             "行政机关" => IDType.Other,
             "社会团体" => IDType.Other,

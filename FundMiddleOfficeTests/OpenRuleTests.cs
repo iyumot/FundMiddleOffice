@@ -1,6 +1,5 @@
 ﻿using FMO.Models;
 using System.Diagnostics;
-using System.Text.Json;
 
 namespace FMO.Tests;
 
@@ -65,16 +64,4 @@ public class OpenRuleTests
         }
     }
 
-    [TestMethod]
-    public void testfunc()
-    {
-        Debug.WriteLine(JsonSerializer.Serialize(new a() { x = () => 3 }));
-    }
-}
-
-
-
-public class a
-{
-    public Func<int> x { get; set; }
 }

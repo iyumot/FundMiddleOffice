@@ -534,7 +534,7 @@ public class ListItem
                 6 => IDType.HongKongMacauPass,
                 7 => IDType.TaiwanCompatriotsID,
                 8 => IDType.BusinessLicenseNumber,
-                9 => IDType.OrganizationCodeCertificate,
+                9 => IDType.OrganizationCode,
                 12 => IDType.Other,
                 13 => IDType.ProductFilingCode,
                 14 => IDType.OfficerID,
