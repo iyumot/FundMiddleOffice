@@ -127,7 +127,7 @@ public partial class FutureOpenFilesGeneratorWindowViewModel : ObservableObject
                     Duration = $"{m.SetupDate}-{m.ExpireDate}",
                     Name = m.Name,
                     EnglishName = m.EnglishName,
-                    LegalPerson = m.LegalAgent?.Name ?? m.ArtificialPerson,
+                    LegalPerson = m.ArtificialPerson,
                     ArtificialPerson = m.ArtificialPerson,
                     SetupDate = m.SetupDate,
                     ExpireDate = m.ExpireDate,
