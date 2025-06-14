@@ -84,7 +84,7 @@ public enum IDType
     UnifiedSocialCreditCode,
 
     [Description("组织机构代码证")]
-    OrganizationCodeCertificate,
+    OrganizationCode,
 
     [Description("营业执照号")]
     BusinessLicenseNumber,

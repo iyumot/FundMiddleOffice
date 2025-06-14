@@ -146,7 +146,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
             case AmacInvestorType.NonLegalEntity:
             case AmacInvestorType.Foreign:
             case AmacInvestorType.DirectFinancialInvestment:
-                IDTypes = [Models.IDType.UnifiedSocialCreditCode, Models.IDType.OrganizationCodeCertificate, Models.IDType.BusinessLicenseNumber, Models.IDType.RegistrationNumber, Models.IDType.Other];
+                IDTypes = [Models.IDType.UnifiedSocialCreditCode, Models.IDType.OrganizationCode, Models.IDType.BusinessLicenseNumber, Models.IDType.RegistrationNumber, Models.IDType.Other];
                 break;
             case AmacInvestorType.QFII:
                 IDTypes = [Models.IDType.SecuritiesBusinessLicense, Models.IDType.Other];
@@ -168,7 +168,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
                 IDTypes = [Models.IDType.UnifiedSocialCreditCode, Models.IDType.BusinessLicenseNumber, Models.IDType.Other];
                 break;
             case AmacInvestorType.GovernmentGuidanceFund:
-                IDTypes = [Models.IDType.ProductFilingCode, Models.IDType.UnifiedSocialCreditCode, Models.IDType.BusinessLicenseNumber, Models.IDType.OrganizationCodeCertificate, Models.IDType.Other];
+                IDTypes = [Models.IDType.ProductFilingCode, Models.IDType.UnifiedSocialCreditCode, Models.IDType.BusinessLicenseNumber, Models.IDType.OrganizationCode, Models.IDType.Other];
                 break;
 
             default:
