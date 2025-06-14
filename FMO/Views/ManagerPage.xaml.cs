@@ -493,7 +493,9 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     [RelayCommand]
     public void AddShareHolder()
     {
-
+        var wnd = new AddOrModifyShareHolderWindow();
+        wnd.Owner = App.Current.MainWindow;
+        wnd.ShowDialog();
     }
 
 

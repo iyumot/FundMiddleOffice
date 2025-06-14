@@ -406,6 +406,9 @@
                             VerticalAlignment="Center"
                             FontSize="18"
                             Text="股东" />
+
+
+
                         <Button
                             hc:IconElement.Geometry="{StaticResource f.circle-plus}"
                             Command="{Binding AddShareHolderCommand}"
