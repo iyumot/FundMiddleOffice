@@ -182,6 +182,7 @@ public static class MissionTemplateManager
 
     public static ConcurrentDictionary<Type, MissionTemplate> Templates { get; } = new();
 
+    public static MissionTemplate CacheMailMissionTemplate { get; }
 
     static MissionTemplateManager()
     {
@@ -216,7 +217,7 @@ public static class MissionTemplateManager
         });
 
 
-
+        CacheMailMissionTemplate = Templates[typeof(MailCacheMission)];
 
 
 

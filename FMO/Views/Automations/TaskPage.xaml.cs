@@ -6,6 +6,7 @@ using FMO.Schedule;
 using Serilog;
 using System.Collections.ObjectModel;
 using System.Windows.Controls;
+using System.Windows.Documents;
 
 namespace FMO;
 
@@ -85,8 +86,12 @@ public partial class TaskPageViewModel : ObservableObject, IRecipient<RemoveMiss
 
     [RelayCommand]
     public void AddTask(MissionTemplate template)
-    {
+    { 
         var m = template.CreateMission();
+
+        if (m is DailyFromMailMission || m is TAFromMailMission)
+            if (!Tasks.Any(x => x.MissionType == typeof(MailCacheMission)))
+                AddTask(MissionTemplateManager.CacheMailMissionTemplate);
 
 
         var vm = template.CreateViewModel(m);
@@ -110,6 +115,6 @@ public partial class TaskPageViewModel : ObservableObject, IRecipient<RemoveMiss
     }
 
 
-   
+
 }
 
