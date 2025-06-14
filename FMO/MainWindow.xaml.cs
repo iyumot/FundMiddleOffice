@@ -29,21 +29,14 @@ public partial class MainWindow : HandyControl.Controls.Window
         Height = SystemParameters.FullPrimaryScreenHeight * 0.85;
 
 
-        // 管理人名称
-        using var db = DbHelper.Base();// DbHelper.Base();
-        Title += " - " + db.GetCollection<Manager>().FindOne(x => x.IsMaster)?.Name;
-        if (db.FileStorage.Exists("icon.main"))
-        {
-            using var ms = new MemoryStream();
-            db.FileStorage.Download("icon.main", ms);
-            BitmapImage bitmapSource = new BitmapImage();
-            bitmapSource.BeginInit();
-            bitmapSource.CacheOption = BitmapCacheOption.OnLoad;
-            bitmapSource.StreamSource = ms;
-            bitmapSource.EndInit();
-            Icon = bitmapSource;
-        }
 
+
+    }
+
+    private void DockPanel_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+            this.DragMove();
     }
 }
 
@@ -74,6 +67,9 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
     [ObservableProperty]
     public partial string? Title { get; set; }
 
+    [ObservableProperty]
+    public partial ImageSource? Logo { get; set; }
+
     /// <summary>
     /// 通知
     /// </summary>
@@ -88,6 +84,28 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
     {
         IsActive = true;
         Pages = new ObservableCollection<TabItemInfo>([new TabItemInfo { Header = "首页", IsCloseable = false, Content = new HomePage() }]);
+
+        // 管理人名称
+        using var db = DbHelper.Base();// DbHelper.Base();
+        Title += " - " + db.GetCollection<Manager>().FindOne(x => x.IsMaster)?.Name;
+        if (db.FileStorage.Exists("icon.main"))
+        {
+            try
+            {
+                using var ms = new MemoryStream();
+                db.FileStorage.Download("icon.main", ms);
+                ms.Seek(0, SeekOrigin.Begin);
+                BitmapImage bitmapSource = new BitmapImage();
+                bitmapSource.BeginInit();
+                bitmapSource.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapSource.StreamSource = ms;
+                bitmapSource.EndInit();
+                Logo = bitmapSource;
+            }
+            catch (Exception e)
+            { 
+            }
+        } 
     }
 
     public void Receive(string message)
@@ -275,7 +293,11 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
         }
     }
 
-
+    [RelayCommand]
+    public void CloseWindow()
+    {
+        App.Current.MainWindow.Close();
+    }
 
     [RelayCommand]
     public void test()

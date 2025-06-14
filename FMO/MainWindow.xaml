@@ -14,6 +14,7 @@
     SnapsToDevicePixels="True"
     UseLayoutRounding="True"
     WindowStartupLocation="CenterScreen"
+    WindowStyle="None"
     mc:Ignorable="d">
     <Window.DataContext>
         <local:MainWindowViewModel />
@@ -128,106 +129,138 @@
 
     </Window.Resources>
     <Grid Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="44" />
+            <RowDefinition Height="34" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="120" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
 
-        <DockPanel>
-            <hc:SideMenu Margin="0,20,0,0" AutoSelect="True">
-                <hc:SideMenuItem
-                    Width="120"
-                    Command="{Binding OpenPageCommand}"
-                    CommandParameter="ManagerPage"
-                    Header="管理人">
-                    <hc:SideMenuItem.Icon>
-                        <Viewbox Width="16" Height="16">
-                            <Path Data="{StaticResource G.Home}" Fill="BlueViolet" />
-                        </Viewbox>
-                    </hc:SideMenuItem.Icon>
-                </hc:SideMenuItem>
-                <hc:SideMenuItem
-                    Command="{Binding OpenPageCommand}"
-                    CommandParameter="FundsPage"
-                    Header="基金">
-                    <hc:SideMenuItem.Icon>
-                        <Viewbox Width="16" Height="16">
-                            <Path Data="{StaticResource f.fire}" Fill="Violet" />
-                        </Viewbox>
-                    </hc:SideMenuItem.Icon>
-                </hc:SideMenuItem>
-                <hc:SideMenuItem
-                    Command="{Binding OpenPageCommand}"
-                    CommandParameter="Customer"
-                    Header="客户">
-                    <hc:SideMenuItem.Icon>
-                        <Viewbox Width="16" Height="16">
-                            <Path Data="{StaticResource G.User}" Fill="#49bc69" />
-                        </Viewbox>
-                    </hc:SideMenuItem.Icon>
-                </hc:SideMenuItem>
-                <hc:SideMenuItem
-                    Command="{Binding OpenPageCommand}"
-                    CommandParameter="TA"
-                    Header="TA">
-                    <hc:SideMenuItem.Icon>
-                        <Viewbox Width="16" Height="16">
-                            <Path Data="{StaticResource f.table}" Fill="Orange" />
-                        </Viewbox>
-                    </hc:SideMenuItem.Icon>
+        <Image Grid.RowSpan="2" Source="{Binding Logo}" />
 
-                </hc:SideMenuItem>
-                <hc:SideMenuItem Command="{Binding OpenPageCommand}" CommandParameter="Trustee">
-                    <hc:SideMenuItem.Header>
-                        <hc:Badge
-                            Width="50"
-                            Content="平台"
-                            ShowBadge="False"
-                            Status="Dot" />
-                    </hc:SideMenuItem.Header>
-                    <hc:SideMenuItem.Icon>
-                        <Viewbox Width="16" Height="16">
-                            <Path Data="{StaticResource f.tree}" Fill="MediumSpringGreen" />
-                        </Viewbox>
-                    </hc:SideMenuItem.Icon>
-                </hc:SideMenuItem>
+        <DockPanel Grid.Column="1" Background="Transparent" MouseMove="DockPanel_MouseMove">
+            <Button
+                Margin="0,0,10,0"
+                hc:IconElement.Geometry="{StaticResource CloseGeometry}"
+                Command="{Binding CloseWindowCommand}"
+                DockPanel.Dock="Right"
+                Style="{StaticResource ButtonIcon.Small}" />
 
-                <hc:SideMenuItem Command="{Binding OpenPageCommand}" CommandParameter="Task">
-                    <hc:SideMenuItem.Header>
-                        <hc:Badge
-                            Width="50"
-                            Content="任务"
-                            ShowBadge="False"
-                            Status="Dot" />
-                    </hc:SideMenuItem.Header>
-                    <hc:SideMenuItem.Icon>
-                        <Viewbox Width="16" Height="16">
-                            <Path Data="{StaticResource f.brain}" Fill="DarkOrchid" />
-                        </Viewbox>
-                    </hc:SideMenuItem.Icon>
-                </hc:SideMenuItem>
-
-                <hc:SideMenuItem Command="{Binding OpenPageCommand}" CommandParameter="Statement">
-                    <hc:SideMenuItem.Header>
-                        <hc:Badge
-                            Width="50"
-                            Content="报表"
-                            ShowBadge="False"
-                            Status="Dot" />
-                    </hc:SideMenuItem.Header>
-                    <hc:SideMenuItem.Icon>
-                        <Viewbox Width="16" Height="16">
-                            <Path Data="{StaticResource f.square-poll-vertical}" Fill="RoyalBlue" />
-                        </Viewbox>
-                    </hc:SideMenuItem.Icon>
-                </hc:SideMenuItem>
-            </hc:SideMenu>
-
-            <TabControl
-                Margin="5,0"
-                BorderThickness="0"
-                ItemContainerStyle="{StaticResource TabItem.Home}"
-                ItemsSource="{Binding Pages}" />
-
+            <TextBlock
+                VerticalAlignment="Center"
+                FontWeight="Black"
+                Text="{Binding Title}" />
         </DockPanel>
 
+        <hc:SideMenu
+            Grid.Row="2"
+            Margin="0,20,0,0"
+            AutoSelect="True">
+            <hc:SideMenuItem
+                Width="120"
+                Command="{Binding OpenPageCommand}"
+                CommandParameter="ManagerPage"
+                Header="管理人">
+                <hc:SideMenuItem.Icon>
+                    <Viewbox Width="16" Height="16">
+                        <Path Data="{StaticResource G.Home}" Fill="BlueViolet" />
+                    </Viewbox>
+                </hc:SideMenuItem.Icon>
+            </hc:SideMenuItem>
+            <hc:SideMenuItem
+                Command="{Binding OpenPageCommand}"
+                CommandParameter="FundsPage"
+                Header="基金">
+                <hc:SideMenuItem.Icon>
+                    <Viewbox Width="16" Height="16">
+                        <Path Data="{StaticResource f.fire}" Fill="Violet" />
+                    </Viewbox>
+                </hc:SideMenuItem.Icon>
+            </hc:SideMenuItem>
+            <hc:SideMenuItem
+                Command="{Binding OpenPageCommand}"
+                CommandParameter="Customer"
+                Header="客户">
+                <hc:SideMenuItem.Icon>
+                    <Viewbox Width="16" Height="16">
+                        <Path Data="{StaticResource G.User}" Fill="#49bc69" />
+                    </Viewbox>
+                </hc:SideMenuItem.Icon>
+            </hc:SideMenuItem>
+            <hc:SideMenuItem
+                Command="{Binding OpenPageCommand}"
+                CommandParameter="TA"
+                Header="TA">
+                <hc:SideMenuItem.Icon>
+                    <Viewbox Width="16" Height="16">
+                        <Path Data="{StaticResource f.table}" Fill="Orange" />
+                    </Viewbox>
+                </hc:SideMenuItem.Icon>
+
+            </hc:SideMenuItem>
+            <hc:SideMenuItem Command="{Binding OpenPageCommand}" CommandParameter="Trustee">
+                <hc:SideMenuItem.Header>
+                    <hc:Badge
+                        Width="50"
+                        Content="平台"
+                        ShowBadge="False"
+                        Status="Dot" />
+                </hc:SideMenuItem.Header>
+                <hc:SideMenuItem.Icon>
+                    <Viewbox Width="16" Height="16">
+                        <Path Data="{StaticResource f.tree}" Fill="MediumSpringGreen" />
+                    </Viewbox>
+                </hc:SideMenuItem.Icon>
+            </hc:SideMenuItem>
+
+            <hc:SideMenuItem Command="{Binding OpenPageCommand}" CommandParameter="Task">
+                <hc:SideMenuItem.Header>
+                    <hc:Badge
+                        Width="50"
+                        Content="任务"
+                        ShowBadge="False"
+                        Status="Dot" />
+                </hc:SideMenuItem.Header>
+                <hc:SideMenuItem.Icon>
+                    <Viewbox Width="16" Height="16">
+                        <Path Data="{StaticResource f.brain}" Fill="DarkOrchid" />
+                    </Viewbox>
+                </hc:SideMenuItem.Icon>
+            </hc:SideMenuItem>
+
+            <hc:SideMenuItem Command="{Binding OpenPageCommand}" CommandParameter="Statement">
+                <hc:SideMenuItem.Header>
+                    <hc:Badge
+                        Width="50"
+                        Content="报表"
+                        ShowBadge="False"
+                        Status="Dot" />
+                </hc:SideMenuItem.Header>
+                <hc:SideMenuItem.Icon>
+                    <Viewbox Width="16" Height="16">
+                        <Path Data="{StaticResource f.square-poll-vertical}" Fill="RoyalBlue" />
+                    </Viewbox>
+                </hc:SideMenuItem.Icon>
+            </hc:SideMenuItem>
+        </hc:SideMenu>
+
+        <TabControl
+            Grid.Row="1"
+            Grid.RowSpan="2"
+            Grid.Column="1"
+            Margin="5,0"
+            BorderThickness="0"
+            ItemContainerStyle="{StaticResource TabItem.Home}"
+            ItemsSource="{Binding Pages}" />
+
+
+
         <ScrollViewer
+            Grid.Row="2"
+            Grid.Column="1"
             Margin="0,200,0,0"
             HorizontalAlignment="Right"
             VerticalScrollBarVisibility="Hidden">
