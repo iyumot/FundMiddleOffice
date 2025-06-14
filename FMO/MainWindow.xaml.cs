@@ -66,9 +66,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
 
     [ObservableProperty]
     public partial string? Title { get; set; }
-
-    [ObservableProperty]
-    public partial ImageSource? Logo { get; set; }
+     
 
     /// <summary>
     /// 通知
@@ -100,7 +98,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                 bitmapSource.CacheOption = BitmapCacheOption.OnLoad;
                 bitmapSource.StreamSource = ms;
                 bitmapSource.EndInit();
-                Logo = bitmapSource;
+                App.Current.MainWindow.Icon = bitmapSource;
             }
             catch (Exception e)
             { 

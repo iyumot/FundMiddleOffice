@@ -134,6 +134,7 @@ public class ShareHolder
 
     /// <summary>
     /// 持股的机构、公司
+    /// 0 表示 管理人
     /// </summary>
     public int OrganizationId { get; set; }
 

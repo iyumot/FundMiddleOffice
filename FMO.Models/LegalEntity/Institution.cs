@@ -90,16 +90,3 @@ public class Institution : LegalEntity
  
 }
 
-
-
-public class ShareRelation
-{
-    public int Id { get; set; }
-
-    public int MyProperty { get; set; }
-
-    public required string InstitutionId { get; set; }
-
-
-}
-

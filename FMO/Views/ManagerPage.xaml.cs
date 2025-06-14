@@ -714,17 +714,24 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         db.FileStorage.Upload("icon.main", v);
         if (db.FileStorage.Exists("icon.main"))
         {
-            using var ms = new MemoryStream();
-            db.FileStorage.Download("icon.main", ms);
-            ms.Seek(0, SeekOrigin.Begin);
-            BitmapImage bitmapSource = new BitmapImage();
-            bitmapSource.BeginInit();
-            bitmapSource.CacheOption = BitmapCacheOption.OnLoad;
-            bitmapSource.StreamSource = ms;
-            bitmapSource.EndInit();
-            MainLogo = bitmapSource;
+            try
+            {
+                using var ms = new MemoryStream();
+                db.FileStorage.Download("icon.main", ms);
+                ms.Seek(0, SeekOrigin.Begin);
+                BitmapImage bitmapSource = new BitmapImage();
+                bitmapSource.BeginInit();
+                bitmapSource.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapSource.StreamSource = ms;
+                bitmapSource.EndInit();
+                MainLogo = bitmapSource;
 
-            App.Current.MainWindow.Icon = MainLogo;
+                App.Current.MainWindow.Icon = MainLogo;
+            }
+            catch (Exception e)
+            {
+                Log.Error($"SetLogo Error {e}");
+            }
         }
     }
 
