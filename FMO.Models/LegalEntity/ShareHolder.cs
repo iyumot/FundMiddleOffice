@@ -2,7 +2,7 @@
 
  
 
-public class ShareHolderRelation
+public class Ownership
 {
     public int Id { get; set; }
 
