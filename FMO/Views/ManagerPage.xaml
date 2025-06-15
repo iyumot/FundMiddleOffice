@@ -19,6 +19,11 @@
             <Setter Property="IsReadOnly" Value="{Binding RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Path=DataContext.IsReadOnly}" />
         </Style>
 
+        <Style x:Key="RightAlignText" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextAlignment" Value="Right" />
+        </Style>
+
         <SolidColorBrush x:Key="LabelBrush">Gray</SolidColorBrush>
 
         <Style BasedOn="{StaticResource {x:Type shared:ChangeableControl}}" TargetType="shared:ChangeableControl">
@@ -414,8 +419,55 @@
                             Command="{Binding AddShareHolderCommand}"
                             Foreground="Green"
                             Style="{StaticResource ButtonIcon}" />
+
+
+                        <Button
+                            hc:IconElement.Geometry="{StaticResource f.dharmachakra}"
+                            Style="{StaticResource ButtonIcon}"
+                            ToolTip="股权结构图" />
                     </DockPanel>
                 </Border>
+
+                <DataGrid
+                    AutoGenerateColumns="False"
+                    IsReadOnly="True"
+                    ItemsSource="{Binding ShareRelations}"
+                    Style="{StaticResource DataGrid.NoSelect}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Binding="{Binding Holder.Name}" Header="持有人" />
+                        <DataGridTextColumn
+                            Binding="{Binding Share}"
+                            ElementStyle="{StaticResource RightAlignText}"
+                            Header="认缴金额" />
+                        <DataGridTextColumn
+                            Binding="{Binding Ratio, StringFormat=P2}"
+                            ElementStyle="{StaticResource RightAlignText}"
+                            Header="占比" />
+
+                        <!--  编辑/删除  -->
+                        <DataGridTemplateColumn>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <DockPanel LastChildFill="False">
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.circle-minus}"
+                                            Command="{Binding DataContext.RemoveShareHolderCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding .}"
+                                            Foreground="Red"
+                                            Style="{StaticResource ButtonIcon.Small}" />
+
+
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.pen}"
+                                            Command="{Binding DataContext.EditShareHolderCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding .}"
+                                            Style="{StaticResource ButtonIcon.Small}" />
+                                    </DockPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
             </StackPanel>
         </StackPanel>
 
