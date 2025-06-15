@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging; 
 using FMO.IO.AMAC;
 using FMO.Models;
 using FMO.Shared;
@@ -15,6 +15,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using static FMO.OwnershipMapViewModel;
 
 namespace FMO;
 
@@ -207,7 +208,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         //    Members.Add( (manager.LegalAgent));
 
 
-        var rel = db.GetCollection<ShareHolderRelation>().Find(x => x.InstitutionId == 1).ToArray();
+        var rel = db.GetCollection<Ownership>().Find(x => x.InstitutionId == 1).ToArray();
         ShareRelations = new(rel.Select(x => new RelationViewModel
         {
             Id = x.Id,
@@ -535,7 +536,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         if (HandyControl.Controls.MessageBox.Show($"是否确认删除 {value.Holder!.Name}？", button: MessageBoxButton.YesNo) == MessageBoxResult.Yes)
         {
             using var db = DbHelper.Base();
-            db.GetCollection<ShareHolderRelation>().Delete(value.Id);
+            db.GetCollection<Ownership>().Delete(value.Id);
 
             ShareRelations.Remove(value);
         }
@@ -556,7 +557,58 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     }
 
 
+    [RelayCommand]
+    public void OpenOwnership()
+    {
+        var wnd = new Window();
+        EquityStructureDiagram dig = new();
+        wnd.Content = dig;
+        dig.SetBinding(EquityStructureDiagram.NodesProperty, new Binding(nameof(EquityViewModel.CompanyNodes)));
+        wnd.DataContext = new EquityViewModel();
+        wnd.Owner = App.Current.MainWindow;
+        wnd.ShowDialog();
 
+
+        using var db = DbHelper.Base();
+        var per = db.GetCollection<IEntity>().FindAll().ToList();
+        per.Insert(0, db.GetCollection<Manager>().FindById(1));
+
+
+        var os = db.GetCollection<Ownership>().FindAll().ToArray();
+        // 解析股权结构图
+        List<OwnershipItem> data = new();
+
+        var ins = per.FirstOrDefault(x => x.Id == 1);
+        var oi = new OwnershipItem { Name = ins!.Name };
+        Parse(1, per, os, oi);
+
+  
+
+
+    }
+
+
+
+    private OwnershipItem Parse(int institutionId, IList<IEntity> per, IEnumerable<Ownership> os, OwnershipItem oi)
+    {
+        foreach (var item in os.Where(x => x.InstitutionId == institutionId))
+        {
+            var ins = per.FirstOrDefault(x => x.Id == item.InstitutionId);
+            var holder = per.FirstOrDefault(x => x.Id == item.HolderId);
+
+            if (holder is Person p)
+            {
+                oi.Childs.Add(new OwnershipItem { Name = p.Name, Ratio = item.Ratio });
+                continue;
+            }
+            else if (holder is Institution)
+                oi.Childs.Add(Parse(holder.Id, per, os, new OwnershipItem { Name = holder.Name, Ratio = item.Ratio }));
+
+
+        }
+
+        return oi;
+    }
 
 
     #region MyRegion

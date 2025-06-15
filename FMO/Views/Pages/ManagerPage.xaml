@@ -423,6 +423,7 @@
 
                         <Button
                             hc:IconElement.Geometry="{StaticResource f.dharmachakra}"
+                            Command="{Binding OpenOwnershipCommand}"
                             Style="{StaticResource ButtonIcon}"
                             ToolTip="股权结构图" />
                     </DockPanel>

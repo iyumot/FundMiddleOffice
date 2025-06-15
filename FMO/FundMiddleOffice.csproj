@@ -97,6 +97,10 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controls\Ownership\" />
+  </ItemGroup>
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="if EXIST plugins\copy.bat call plugins\copy.bat" />
   </Target>

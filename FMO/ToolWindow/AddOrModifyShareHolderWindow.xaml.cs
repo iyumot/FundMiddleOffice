@@ -105,7 +105,7 @@ public partial class AddOrModifyShareHolderWindowViewModel : ObservableObject
         using var db = DbHelper.Base();
 
         // 检测是否有相同的数据
-        var old = db.GetCollection<ShareHolderRelation>().FindOne(x => x.HolderId == Holder.Id && x.InstitutionId == Institution.Id);
+        var old = db.GetCollection<Ownership>().FindOne(x => x.HolderId == Holder.Id && x.InstitutionId == Institution.Id);
         if(old is not null)
         {
             WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "存在相同的记录"));
@@ -115,7 +115,7 @@ public partial class AddOrModifyShareHolderWindowViewModel : ObservableObject
         if (Holder.Id == 0)
             db.GetCollection<IEntity>().Insert(Holder);
 
-        db.GetCollection<ShareHolderRelation>().Insert(new ShareHolderRelation { HolderId = Holder.Id, InstitutionId = Institution.Id, Share = ShareAmount.Value });
+        db.GetCollection<Ownership>().Insert(new Ownership { HolderId = Holder.Id, InstitutionId = Institution.Id, Share = ShareAmount.Value });
 
         App.Current.Dispatcher.BeginInvoke(()=> wnd.Close());
     }
