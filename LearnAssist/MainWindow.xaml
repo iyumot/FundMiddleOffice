@@ -1,0 +1,158 @@
+﻿<Window
+    x:Class="FMO.LearnAssist.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:local="clr-namespace:FMO.LearnAssist"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="学习助手"
+    Width="700"
+    Height="450"
+    MinHeight="200"
+    d:DataContext="{d:DesignInstance Type=local:MainWindowViewModel}"
+    Loaded="Window_Loaded"
+    SizeToContent="Height"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <StackPanel Margin="10">
+
+
+
+
+        <DockPanel
+            HorizontalAlignment="Center"
+            LastChildFill="False"
+            Visibility="{Binding IsLogin, Converter={StaticResource Boolean2VisibilityReConverter}}">
+            <TextBlock
+                Margin="30,0"
+                VerticalAlignment="Center"
+                DockPanel.Dock="Right"
+                FontSize="33"
+                Foreground="RoyalBlue"
+                Text="{Binding CountDown, StringFormat={}{0}s, TargetNullValue=''}" />
+            <TextBlock
+                Margin="4"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                DockPanel.Dock="Top"
+                FontSize="22"
+                Foreground="Gray"
+                Text="正在验证登陆状态"
+                Visibility="{Binding IsCheckingLogin, Converter={StaticResource Boolean2VisibilityConverter}}" />
+            <TextBlock
+                Margin="4"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontSize="26"
+                Foreground="Gray"
+                Text="请在跳出的浏览器中登录您的账号"
+                Visibility="{Binding ShowLoginTip, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+        </DockPanel>
+
+        <TextBlock
+            Margin="4"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            FontSize="26"
+            Foreground="Red"
+            Text="登录账号异常"
+            Visibility="{Binding ShowLoginError, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+
+        <DockPanel
+            Margin="0,0,0,10"
+            LastChildFill="False"
+            Visibility="{Binding IsLogin, Converter={StaticResource Boolean2VisibilityConverter}}">
+
+            <TextBlock FontSize="22" Text="{Binding Name, StringFormat=学员：{0}}" />
+
+            <TextBlock
+                Margin="10,0"
+                VerticalAlignment="Center"
+                Foreground="Gray"
+                Text="正在加载所有课程"
+                Visibility="{Binding IsLoadingClasses, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+            <DockPanel
+                Margin="10,0"
+                Background="WhiteSmoke"
+                Visibility="{Binding IsLoadingClasses, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                <TextBlock
+                    Margin="10,0,4,0"
+                    VerticalAlignment="Center"
+                    FontSize="22"
+                    Foreground="RoyalBlue"
+                    Text="{Binding Year}" />
+                <TextBlock VerticalAlignment="Center" Text="年" />
+
+                <UniformGrid Margin="5,0" VerticalAlignment="Center">
+                    <UniformGrid.Resources>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Margin" Value="5,0" />
+                        </Style>
+                    </UniformGrid.Resources>
+                    <TextBlock Text="{Binding TotalHour, StringFormat=总学时   ：{0}}" />
+                    <TextBlock Text="{Binding MoralHour, StringFormat=职业道德：{0}}" />
+                    <TextBlock Text="{Binding LawHour, StringFormat=法律规范：{0}}" />
+                    <TextBlock Text="{Binding SkillHour, StringFormat=专业技能：{0}}" />
+                </UniformGrid>
+            </DockPanel>
+
+
+            <Button
+                Width="200"
+                Margin="20,0,0,0"
+                Command="{Binding StartCommand}"
+                Content="开始" />
+            <!--<Button Content="暂停" />
+
+            <Button Command="{Binding TestCommand}" Content="test" />-->
+        </DockPanel>
+
+        <ListBox
+            BorderThickness="0"
+            ItemsSource="{Binding Classes}"
+            Style="{StaticResource ListBoxCustom}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <DockPanel>
+                        <DockPanel DockPanel.Dock="Top">
+                            <TextBlock FontSize="16" Text="{Binding Name}" />
+                            <TextBlock
+                                Margin="10,0"
+                                VerticalAlignment="Center"
+                                Text="{Binding Progress, StringFormat={}{0}%}" />
+                        </DockPanel>
+
+                        <ListBox ItemsSource="{Binding Chapters}" Style="{StaticResource ListBoxCustom}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <hc:SimplePanel>
+                                        <ProgressBar
+                                            x:Name="p"
+                                            Margin="2"
+                                            hc:VisualElement.Text="{Binding VideoTime}"
+                                            Value="{Binding VideoProgress}" />
+                                        <TextBlock
+                                            x:Name="t"
+                                            Margin="10,0"
+                                            VerticalAlignment="Center"
+                                            Text="{Binding Name}" />
+                                    </hc:SimplePanel>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding Learned}" Value="True">
+                                            <Setter TargetName="p" Property="Background" Value="Green" />
+                                            <Setter TargetName="t" Property="Foreground" Value="White" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </DockPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </StackPanel>
+</Window>

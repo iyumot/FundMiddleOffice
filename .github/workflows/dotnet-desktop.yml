@@ -1,0 +1,54 @@
+name: Build WPF Application and Tools
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        version: '9.x' # 根据你的项目版本调整
+
+    - name: Restore Dependencies
+      run: dotnet restore
+
+    - name: Build Main Application (FMO)
+      run: dotnet build ./FMO/FundMiddleOffice.csproj --configuration Release
+
+   # - name: Build Tool1
+   #   run: dotnet build ./Tools/Tool1/Tool1.csproj --configuration Release
+
+   # - name: Build Tool2
+   #   run: dotnet build ./Tools/Tool2/Tool2.csproj --configuration Release
+ 
+    - name: Create Output Directory
+      run: |
+        $outputDir = "BuildOutput"
+        New-Item -ItemType Directory -Path $outputDir
+        Copy-Item -Path "./FMO/bin/Release/net9.0-windows/*" -Destination $outputDir
+ #       Copy-Item -Path "./Tools/Tool1/bin/Release/net8.0/Tool1.exe" -Destination $outputDir
+ #      Copy-Item -Path "./Tools/Tool2/bin/Release/net8.0/Tool2.exe" -Destination $outputDir
+ #       Copy-Item -Path "./Libs/Lib1/bin/Release/net8.0/Lib1.dll" -Destination $outputDir
+#        Copy-Item -Path "./Libs/Lib2/bin/Release/net8.0/Lib2.dll" -Destination $outputDir
+
+    - name: Zip Output Folder
+      run: |
+        $outputDir = "BuildOutput"
+        $zipFile = "FMO_Build.zip"
+        Compress-Archive -Path "$outputDir/*" -DestinationPath $zipFile -Force
+
+    - name: Upload ZIP as Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: FMO-Build
+        path: FMO_Build.zip

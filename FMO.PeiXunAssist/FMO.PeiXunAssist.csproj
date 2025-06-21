@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <BaseOutputPath>..\FMO\bin</BaseOutputPath>
+	  <LangVersion>preview</LangVersion>
+	  <ApplicationIcon>pei.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="tpl.xls" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="pei.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="tpl.xls" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.104.2" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="ExcelLibrary" Version="1.2011.7.31" />
+    <PackageReference Include="HandyControl" Version="3.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FMO.InterOp\FMO.IO.AMAC\FMO.IO.AMAC.csproj" />
+    <ProjectReference Include="..\FMO.Utilities\FMO.Utilities.csproj" />
+  </ItemGroup>
+
+</Project>

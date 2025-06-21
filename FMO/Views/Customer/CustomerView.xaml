@@ -1,0 +1,210 @@
+﻿<UserControl
+    x:Class="FMO.CustomerView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:local="clr-namespace:FMO"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
+    Width="500"
+    d:DataContext="{d:DesignInstance Type=local:CustomerViewModel}"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <Style BasedOn="{StaticResource {x:Type shared:ChangeableContainer}}" TargetType="shared:ChangeableContainer">
+            <Setter Property="Entity" Value="{Binding RelativeSource={RelativeSource AncestorType=local:CustomerView}, Path=DataContext}" />
+            <Setter Property="IsReadOnly" Value="{Binding RelativeSource={RelativeSource AncestorType=local:CustomerView}, Path=DataContext.IsReadOnly}" />
+        </Style>
+
+        <SolidColorBrush x:Key="LabelBrush">Gray</SolidColorBrush>
+
+
+
+        <DataTemplate x:Key="DT.CenterText">
+            <TextBox
+                BorderThickness="0,0,0,0"
+                Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=200}"
+                TextAlignment="Center" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="DT.QualificationItem" DataType="local:QualificationViewModel">
+            <Grid>
+                <TextBlock VerticalAlignment="Center" Text="{Binding Date.OldValue, StringFormat=yyyy-MM-dd, TargetNullValue=未设置日期}" />
+                <Border
+                    Width="12"
+                    Height="12"
+                    Margin="-14,-5"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Background="RoyalBlue"
+                    CornerRadius="10"
+                    Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="8"
+                        Foreground="White"
+                        Text="专" />
+                </Border>
+            </Grid>
+        </DataTemplate>
+
+        <ItemsPanelTemplate x:Key="IPT.QualificationItem">
+            <WrapPanel IsItemsHost="True" />
+        </ItemsPanelTemplate>
+    </UserControl.Resources>
+    <Grid>
+        <DockPanel>
+
+            <StackPanel>
+                <!--  基本信息  -->
+                <StackPanel>
+
+
+                    <Border
+                        Margin="0,0,40,0"
+                        BorderBrush="{StaticResource PrimaryBrush}"
+                        BorderThickness="0,0,0,1">
+                        <shared:ChangeableContainer
+                            HorizontalContentAlignment="Center"
+                            Binding="{Binding Name}"
+                            ContentTemplate="{StaticResource DT.CenterText}"
+                            TextElement.FontWeight="Bold" />
+                    </Border>
+
+
+
+                    <!--  投资人类型  -->
+                    <DockPanel Margin="0,4" LastChildFill="False">
+                        <shared:ChangeableContainer Binding="{Binding EntityType}">
+                            <shared:ChangeableContainer.ContentTemplate>
+                                <DataTemplate>
+                                    <ComboBox
+                                        MinWidth="100"
+                                        ItemsSource="{x:Static local:CustomerViewModel.EntityTypes}"
+                                        SelectedItem="{Binding NewValue}" />
+                                </DataTemplate>
+                            </shared:ChangeableContainer.ContentTemplate>
+                        </shared:ChangeableContainer>
+
+                        <shared:ChangeableContainer Binding="{Binding Type}">
+                            <shared:ChangeableContainer.ContentTemplate>
+                                <DataTemplate>
+                                    <ComboBox
+                                        MinWidth="100"
+                                        ItemsSource="{Binding DataContext.InvestorTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}"
+                                        SelectedItem="{Binding NewValue}" />
+                                </DataTemplate>
+                            </shared:ChangeableContainer.ContentTemplate>
+                        </shared:ChangeableContainer>
+
+                    </DockPanel>
+
+
+
+                    <!--  证件  -->
+                    <DockPanel Margin="0,4" LastChildFill="False">
+                        <shared:ChangeableContainer Binding="{Binding IDType}">
+                            <shared:ChangeableContainer.ContentTemplate>
+                                <DataTemplate>
+                                    <ComboBox
+                                        MinWidth="100"
+                                        ItemsSource="{Binding DataContext.IDTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}"
+                                        SelectedItem="{Binding NewValue}" />
+                                </DataTemplate>
+                            </shared:ChangeableContainer.ContentTemplate>
+                        </shared:ChangeableContainer>
+
+
+                        <shared:ChangeableContainer Binding="{Binding Identity}">
+                            <shared:ChangeableContainer.ContentTemplate>
+                                <DataTemplate>
+                                    <TextBox
+                                        MinWidth="200"
+                                        hc:InfoElement.Placeholder="证件号码"
+                                        IsReadOnly="{Binding OldValue, Converter={StaticResource Object2BooleanConverter}}"
+                                        Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=100}"
+                                        TextAlignment="Center" />
+                                </DataTemplate>
+                            </shared:ChangeableContainer.ContentTemplate>
+                        </shared:ChangeableContainer>
+                    </DockPanel>
+
+
+                    <shared:ChangeableContainer Binding="{Binding Efficient}">
+                        <shared:ChangeableContainer.ContentTemplate>
+                            <DataTemplate>
+                                <DockPanel DataContext="{Binding NewValue}">
+                                    <DatePicker MinWidth="100" SelectedDate="{Binding Begin, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
+                                    <DockPanel Visibility="{Binding IsLongTerm, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                                        <TextBlock
+                                            Margin="5,0"
+                                            VerticalAlignment="Center"
+                                            Text="-" />
+                                        <DatePicker MinWidth="100" SelectedDate="{Binding End, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
+                                    </DockPanel>
+                                    <CheckBox
+                                        Margin="5,0"
+                                        Content="长期"
+                                        IsChecked="{Binding IsLongTerm}" />
+                                </DockPanel>
+                            </DataTemplate>
+                        </shared:ChangeableContainer.ContentTemplate>
+                    </shared:ChangeableContainer>
+
+                    <UniformGrid Margin="0,5" Rows="1">
+                        <shared:ChangeableContainer HorizontalContentAlignment="Stretch" Binding="{Binding Email}" />
+
+                        <shared:ChangeableContainer HorizontalContentAlignment="Stretch" Binding="{Binding Phone}" />
+                    </UniformGrid>
+
+                    <local:MultiFileDisplay
+                        Margin="0,5"
+                        Header="身份证明文件"
+                        IsReadOnly="{Binding IsReadOnly}" />
+
+
+                </StackPanel>
+
+
+                <!--  合投  -->
+                <GroupBox>
+                    <GroupBox.Header>
+                        <DockPanel>
+                            <TextBlock VerticalAlignment="Center" Text="合格投资者认定" />
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource AddGeometry}"
+                                Command="{Binding AddQualificationCommand}"
+                                Foreground="Green"
+                                Style="{StaticResource ButtonIcon.Small}" />
+                        </DockPanel>
+                    </GroupBox.Header>
+                    <StackPanel>
+                        <ListBox
+                            ItemTemplate="{StaticResource DT.QualificationItem}"
+                            ItemsPanel="{StaticResource IPT.QualificationItem}"
+                            ItemsSource="{Binding Qualifications}"
+                            SelectedItem="{Binding SelectedQualification}" />
+
+                        <local:QualificationView
+                            Margin="0,5"
+                            DataContext="{Binding SelectedQualification}"
+                            Visibility="{Binding ., Converter={StaticResource Object2VisibilityConverter}}" />
+                    </StackPanel>
+                </GroupBox>
+
+            </StackPanel>
+
+        </DockPanel>
+
+        <!--  查看/编辑 切换  -->
+        <ToggleButton
+            Grid.Column="2"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            IsChecked="{Binding IsReadOnly}"
+            Style="{StaticResource EditSwitch}" />
+    </Grid>
+</UserControl>
