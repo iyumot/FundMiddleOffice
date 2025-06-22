@@ -30,11 +30,11 @@ public class BankTransaction
     /// 收款账号
     /// id 为BankAccount id
     /// </summary>
-    public required string TheirNo { get; set; }
+    public required string CounterNo { get; set; }
 
-    public required string TheirName { get; set; }
+    public required string CounterName { get; set; }
 
-    public required string TheirBank { get; set; }
+    public required string CounterBank { get; set; }
 
 
     public DateTime Time { get; set; }

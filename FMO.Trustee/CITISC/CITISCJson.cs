@@ -13,7 +13,7 @@ public partial class CITICS
         public JsonObject? Data { get; set; }
 
         [JsonPropertyName("code")]
-        public int Code { get; set; }
+        public int Code { get; set; } = -1;
 
         [JsonPropertyName("message")]
         public string? Msg { get; set; }
@@ -78,6 +78,13 @@ public partial class CITICS
 
         [JsonPropertyName("pages")]
         public int Pages { get; set; }
+
+        [JsonPropertyName("navigatePages")]
+        public int NavPages { get; set; }
+
+
+        public int PageCount => Pages == 0 ? NavPages : Pages;
+
     }
 
 
@@ -557,4 +564,153 @@ public partial class CITICS
             throw new FormatException($"无法将 '{value}' 解析为decimal类型");
         }
     }
+
+
+
+
+
+
+    public class BankTransactionJson
+    {
+
+        /// <summary>
+        /// 交易发生时间，格式为 YYYY-MM-DD HH:MM:SS
+        /// </summary>
+        [JsonPropertyName("occurTime")]
+        public required string OccurTime { get; set; }
+
+        /// <summary>
+        /// 基金代码
+        /// </summary>
+        [JsonPropertyName("fundCode")]
+        public required string FundCode { get; set; }
+
+        /// <summary>
+        /// 基金名称
+        /// </summary>
+        [JsonPropertyName("fundName")]
+        public required string FundName { get; set; }
+
+        /// <summary>
+        /// 账户类型，例如 "02-募集户"
+        /// </summary>
+        [JsonPropertyName("accoType")]
+        public required string AccoType { get; set; }
+
+        /// <summary>
+        /// 本方账号
+        /// </summary>
+        [JsonPropertyName("bankAcco")]
+        public required string BankAcco { get; set; }
+
+        /// <summary>
+        /// 本方账户名称
+        /// </summary>
+        [JsonPropertyName("accName")]
+        public required string AccName { get; set; }
+
+        /// <summary>
+        /// 本方开户行名称
+        /// </summary>
+        [JsonPropertyName("openBankName")]
+        public required string OpenBankName { get; set; }
+
+        /// <summary>
+        /// 本方银行编号，以人行大额付款码前三位为标准（见附录2）
+        /// </summary>
+        [JsonPropertyName("bankNo")]
+        public required string BankNo { get; set; }
+
+        /// <summary>
+        /// 对方账号
+        /// </summary>
+        [JsonPropertyName("othBankAcco")]
+        public required string OthBankAcco { get; set; }
+
+        /// <summary>
+        /// 对方账户名称
+        /// </summary>
+        [JsonPropertyName("othAccName")]
+        public required string OthAccName { get; set; }
+
+        /// <summary>
+        /// 对方开户行名称
+        /// </summary>
+        [JsonPropertyName("othOpenBankName")]
+        public required string OthOpenBankName { get; set; }
+
+        /// <summary>
+        /// 对方银行编号，以人行大额付款码前三位为标准（见附录2）
+        /// </summary>
+        [JsonPropertyName("othBankNo")]
+        public required string OthBankNo { get; set; }
+
+        /// <summary>
+        /// 币种
+        /// </summary>
+        [JsonPropertyName("curType")]
+        public required string CurType { get; set; }
+
+        /// <summary>
+        /// 收付方向，1表示收款，2表示付款
+        /// </summary>
+        [JsonPropertyName("directFlag")]
+        public required string DirectFlag { get; set; }
+
+        /// <summary>
+        /// 发生金额
+        /// </summary>
+        [JsonPropertyName("occurAmt")]
+        public required string OccurAmt { get; set; }
+
+        /// <summary>
+        /// 账户余额
+        /// </summary>
+        [JsonPropertyName("acctBal")]
+        public required string AcctBal { get; set; }
+
+        /// <summary>
+        /// 银行流水号
+        /// </summary>
+        [JsonPropertyName("bankJour")]
+        public required string BankJour { get; set; }
+
+        /// <summary>
+        /// 银行返回代码
+        /// </summary>
+        [JsonPropertyName("bankRetCode")]
+        public required string BankRetCode { get; set; }
+
+        /// <summary>
+        /// 银行摘要
+        /// </summary>
+        [JsonPropertyName("bankNote")]
+        public required string BankNote { get; set; }
+
+
+
+        public BankTransaction ToObject()
+        {
+            return new BankTransaction
+            {
+                Id = $"{BankAcco}|{BankJour}",
+                Time = DateTime.ParseExact(OccurTime, "yyyy-MM-dd HH:mm:ss", null),
+                AccountBank = OpenBankName,
+                AccountName = AccName,
+                AccountNo = BankAcco,
+                CounterBank = OthOpenBankName,
+                CounterName = OthAccName,
+                CounterNo = OthBankAcco,
+                Amount = decimal.Parse(OccurAmt),
+                Balance = decimal.Parse(AcctBal),
+                Direction = DirectFlag == "付款" ? TransctionDirection.Pay : TransctionDirection.Receive,
+                Remark = BankNote,
+                Serial = BankJour,
+            };
+        }
+    }
+
+
+
+
 }

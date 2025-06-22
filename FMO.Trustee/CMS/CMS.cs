@@ -1,5 +1,6 @@
 using FMO.Models;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
@@ -73,7 +74,7 @@ public partial class CMS : TrusteeApiBase
     }
 
 
-    public override async  Task<ReturnWrap<FundDailyFee>> QueryFundFeeDetail(DateOnly begin, DateOnly end)
+    public override async Task<ReturnWrap<FundDailyFee>> QueryFundFeeDetail(DateOnly begin, DateOnly end)
     {
         var data = await SyncWork<FundDailyFee, FundDailyFeeJson>(1020, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
         return data;
@@ -82,12 +83,27 @@ public partial class CMS : TrusteeApiBase
 
     public override async Task<ReturnWrap<BankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end)
     {
-        var data = await SyncWork<BankTransaction, BankTransactionJson>(1002, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
-        return data;
+        // 查询区间大于1个月，需要多次查询 
+        var tmp = begin.AddDays(30);
+        List<BankTransaction> transactions = new();
+        while (tmp < end)
+        {
+            var data = await SyncWork<BankTransaction, BankTransactionJson>(1002, new { ksrq = $"{begin:yyyyMMdd}", jsrq = $"{tmp:yyyyMMdd}" }, x => x.ToObject());
+            if (data.Code != ReturnCode.Success)
+                return data;
+
+            if (data.Data?.Length > 0)
+                transactions.AddRange(data.Data);
+
+            begin = tmp.AddDays(1);
+            tmp = begin.AddDays(30);
+        }
+         
+        return new(ReturnCode.Success, transactions.ToArray());
     }
 
 
-     
+
 
     public override Task<ReturnWrap<BankTransaction>> QueryTrusteeAccountTransction(DateOnly begin, DateOnly end)
     {
@@ -161,7 +177,7 @@ public partial class CMS : TrusteeApiBase
         return content;
     }
 
-    protected async Task<ReturnWrap<TEntity>> SyncWork<TEntity, TJSON>(int interfaceId, object? param, Func<TJSON, TEntity> transfer)
+    protected async Task<ReturnWrap<TEntity>> SyncWork<TEntity, TJSON>(int interfaceId, object? param, Func<TJSON, TEntity> transfer, [CallerMemberName] string? caller = null)
     {
         // 校验
         if (CheckBreforeSync() is ReturnCode rc && rc != ReturnCode.Success) return new(rc, null);
@@ -191,7 +207,7 @@ public partial class CMS : TrusteeApiBase
                     // 有错误
                     if (code != 10000)
                     {
-                        Log($"{interfaceId}", json, ret.Msg);
+                        Log(caller, json, ret.Msg);
                         return new(TransferReturnCode(code, ret.Msg), null);
                     }
 
@@ -284,7 +300,16 @@ public partial class CMS : TrusteeApiBase
 
             case 10004://（接口不可用） 
                 return ReturnCode.InterfaceUnavailable;
-                  
+
+
+            case 10005:
+                switch (message)
+                {
+                    case string s when s.Contains("不能超过一个月"):
+                        return ReturnCode.CMS_DateRangeLimitOneMonth;
+                    default:
+                        return ReturnCode.Unknown;
+                }
             default:
                 return ReturnCode.Unknown;
         }

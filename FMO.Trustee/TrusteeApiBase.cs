@@ -61,44 +61,44 @@ public abstract class TrusteeApiBase : ITrustee
     /// <param name="func"></param>
     /// <param name="param">object 或 Dictionary<string, object></param>
     /// <returns></returns>
-    protected async Task<ReturnWrap<T>> SyncWork<T>(Func<Dictionary<string, object>, Task<ReturnWrap<T>>> func, object? param)
-    {
-        // 校验
-        if (CheckBreforeSync() is ReturnCode rc && rc != ReturnCode.Success) return new(rc, null);
+    //protected async Task<ReturnWrap<T>> SyncWork<T>(Func<Dictionary<string, object>, Task<ReturnWrap<T>>> func, object? param)
+    //{
+    //    // 校验
+    //    if (CheckBreforeSync() is ReturnCode rc && rc != ReturnCode.Success) return new(rc, null);
 
-        // 非dict 转成dict 方便修改page
-        Dictionary<string, object> fp;
-        if (param is null) fp = new();
-        else if (param is Dictionary<string, object> pp) // (param is not null && (param.GetType() is not Type t || !t.IsGenericType || t.GetGenericTypeDefinition() != typeof(Dictionary<,>)))
-            fp = pp;
-        else
-            fp = GenerateParams(param);
+    //    // 非dict 转成dict 方便修改page
+    //    Dictionary<string, object> fp;
+    //    if (param is null) fp = new();
+    //    else if (param is Dictionary<string, object> pp) // (param is not null && (param.GetType() is not Type t || !t.IsGenericType || t.GetGenericTypeDefinition() != typeof(Dictionary<,>)))
+    //        fp = pp;
+    //    else
+    //        fp = GenerateParams(param);
 
-        var result = await func(fp);
-        List<T> list = new();
+    //    var result = await func(fp);
+    //    List<T> list = new();
 
-        // 校验返回 
-        switch (result.Code)
-        {
-            case ReturnCode.Success:
-                if (result.Data is not null) list.AddRange(result.Data);
-                ConsecutiveErrorCount = 0;
-                break;
+    //    // 校验返回 
+    //    switch (result.Code)
+    //    {
+    //        case ReturnCode.Success:
+    //            if (result.Data is not null) list.AddRange(result.Data);
+    //            ConsecutiveErrorCount = 0;
+    //            break;
 
-            case ReturnCode.NotFinished: // 还有数据
-                if (result.Data is not null) list.AddRange(result.Data);
-                result = await func(fp);
-                ConsecutiveErrorCount = 0;
-                break;
+    //        case ReturnCode.NotFinished: // 还有数据
+    //            if (result.Data is not null) list.AddRange(result.Data);
+    //            result = await func(fp);
+    //            ConsecutiveErrorCount = 0;
+    //            break;
 
-            default: // 有错误
-                ++ConsecutiveErrorCount;
-                if (ConsecutiveErrorCount > 6) SetDisabled();
-                return new(result.Code, null);
-        }
+    //        default: // 有错误
+    //            ++ConsecutiveErrorCount;
+    //            if (ConsecutiveErrorCount > 6) SetDisabled();
+    //            return new(result.Code, null);
+    //    }
 
-        return new(result.Code, list.ToArray());
-    }
+    //    return new(result.Code, list.ToArray());
+    //}
 
     /// <summary>
     /// 映射子基金关系
@@ -168,9 +168,9 @@ public abstract class TrusteeApiBase : ITrustee
     {
         _db.GetCollection<LogInfo>().Insert(new LogInfo { Identifier = Identifier, Log = message, Time = DateTime.Now });
     }
-    protected void Log(string part, string? json, string? message)
+    protected void Log(string? caller, string? json, string? message)
     {
-        _db.GetCollection<LogInfo>().Insert(new LogInfo { Identifier = Identifier, Log = message, Part = part, Content = json, Time = DateTime.Now });
+        _db.GetCollection<LogInfo>().Insert(new LogInfo { Identifier = Identifier, Log = message, Part = caller, Content = json, Time = DateTime.Now });
     }
 
 
@@ -219,7 +219,7 @@ public abstract class TrusteeApiBase : ITrustee
     protected string? GetUrl(string part)
     {
 
-        return Domain + part;
+        //return Domain + part;
 
 #if DEBUG
         return TestDomain + part;

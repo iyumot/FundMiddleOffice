@@ -155,9 +155,13 @@ public partial class CSC : TrusteeApiBase
         return result;
     }
 
-    public override Task<ReturnWrap<BankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end)
+    public override async Task<ReturnWrap<BankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end)
     {
-        throw new NotImplementedException();
+        var part = "/institution/tgpt/erp/raise/query/findRaiseAccountDetailList";
+        var result = await SyncWork<BankTransaction, BankTransactionJson>(part, null, x => x.ToObject());
+
+
+        return result;
     }
 
     public override Task<ReturnWrap<BankTransaction>> QueryTrusteeAccountTransction(DateOnly begin, DateOnly end)

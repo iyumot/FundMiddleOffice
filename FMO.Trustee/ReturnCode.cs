@@ -13,7 +13,7 @@ public enum ReturnCode
     /// <summary>
     /// 成功，但还有数据
     /// </summary>
-    NotFinished,
+    //NotFinished,
 
     FailedBegin,
 
@@ -80,8 +80,10 @@ public enum ReturnCode
     IdentitifyFailed,
 
 
-
-
+    /// <summary>
+    /// 流量限制
+    /// </summary>
+    [Description("流量限制")]TrafficLimit,
 
 
 
@@ -170,8 +172,14 @@ public enum ReturnCode
     /// <summary>
     /// 流量受限
     /// </summary>
-    [Description("流量受限")] CITICS_Limited,
+    [Description("流量受限")] CITICS_Limited, 
 
     #endregion
 
+
+    /// <summary>
+    /// 开始到结束不能超过一个月
+    /// </summary>
+    [Description("开始到结束不能超过一个月")]
+    CMS_DateRangeLimitOneMonth,
 }

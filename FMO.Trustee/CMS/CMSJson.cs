@@ -444,12 +444,13 @@ public partial class CMS
                 AccountBank = CollectionBank,
                 AccountName = OurAccountName,
                 Serial = TransactionId,
-                TheirBank = CounterpartyBankName,
-                TheirName = CounterpartyAccountName,
-                TheirNo = CounterpartyAccountNumber,
+                CounterBank = CounterpartyBankName,
+                CounterName = CounterpartyAccountName,
+                CounterNo = CounterpartyAccountNumber,
                 Amount = decimal.Parse(TransactionAmount),
                 Direction = TransactionType == "¸¶" ? TransctionDirection.Pay : TransctionDirection.Receive,
-                Time = DateTime.ParseExact(TransactionDate + TransactionTime, "yyyyMMddHH:mmss", null)
+                Remark = BankMemo,
+                Time = DateTime.ParseExact(TransactionDate + TransactionTime, "yyyyMMddHH:mm:ss", null)
             };
         }
     }

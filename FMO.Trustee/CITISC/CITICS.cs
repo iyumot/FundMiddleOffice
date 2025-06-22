@@ -2,7 +2,7 @@ using FMO.Models;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Web; 
+using System.Web;
 
 namespace FMO.Trustee;
 
@@ -16,7 +16,7 @@ public partial class CITICS : TrusteeApiBase
 
     public override string TestDomain { get; } = "https://apitest-iservice.citicsinfo.com";
 
-    public override string Domain { get; } = "https://api.iservice.citics.com/";
+    public override string Domain { get; } = "https://api.iservice.citics.com";
 
     public string? CustomerAuth { get; set; }
 
@@ -103,9 +103,12 @@ public partial class CITICS : TrusteeApiBase
 
 
 
-    public override Task<ReturnWrap<BankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end)
+    public override async Task<ReturnWrap<BankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end)
     {
-        throw new NotImplementedException();
+        var part = "/v1/fs/queryRaiseAccFlowForApi";
+        var result = await SyncWork<BankTransaction, BankTransactionJson>(part, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
+
+        return result;
     }
 
     public override Task<ReturnWrap<BankTransaction>> QueryTrusteeAccountTransction(DateOnly begin, DateOnly end)
@@ -155,6 +158,14 @@ public partial class CITICS : TrusteeApiBase
                 try
                 {
                     if (json is null) return new(ReturnCode.EmptyResponse, null);
+
+                    // token expired
+                    if (json.Contains("Token expired", StringComparison.OrdinalIgnoreCase))
+                    {
+                        await GetToken();
+                        continue;
+                    }
+
                     var ret = JsonSerializer.Deserialize<RootJson>(json)!;
 
                     var code = ret.Code;
@@ -163,9 +174,9 @@ public partial class CITICS : TrusteeApiBase
                     {
                         if (ret.Data?.ContainsKey("reason") ?? false)
                             ret.Msg = ret.Data["reason"]?.ToString();
-                        
+
                         Log(part, json, ret.Msg);
-                        return new(TransferReturnCode(code), null);
+                        return new(TransferReturnCode(code, ret.Msg), null);
                     }
 
                     var data = ret.Data.Deserialize<QueryRoot<TJSON>>()!;
@@ -174,7 +185,7 @@ public partial class CITICS : TrusteeApiBase
                     var page = (int)formatedParams["pageNum"];
 
                     // 数据获取全 
-                    if (page >= data.Pages)
+                    if (page >= data.PageCount)
                         break;
 
                     // 下一页
@@ -241,14 +252,14 @@ public partial class CITICS : TrusteeApiBase
         LoadConfig();
 
         // 检查token
-        if (string.IsNullOrWhiteSpace(Token))
+        if (string.IsNullOrWhiteSpace(Token))// || TokenTime is null || (DateTime.Now - TokenTime.Value).TotalHours > 18)
             await GetToken();
         return true;
     }
 
     protected override IAPIConfig SaveConfigOverride()
     {
-        return new APIConfig { CustomerAuth = CustomerAuth, Token = Token };
+        return new APIConfig { CustomerAuth = CustomerAuth, Token = Token, TokenTime = TokenTime };
     }
 
 
@@ -280,6 +291,8 @@ public partial class CITICS : TrusteeApiBase
                 return ReturnCode.CITICS_Limited;
 
             default:
+                if (message?.Contains("API rate limit exceeded", StringComparison.OrdinalIgnoreCase) ?? false)
+                    return ReturnCode.TrafficLimit;
                 return ReturnCode.Unknown;
         }
     }
@@ -301,7 +314,7 @@ public partial class CITICS : TrusteeApiBase
     {
         var url = GetUrl(part)!;
         if (param.Count > 0)
-            url = $"{url}?" + HttpUtility.UrlEncode(string.Join('&', param.Select(x => $"{x.Key}={x.Value}")));
+            url = $"{url}?" + string.Join('&', param.Select(x => $"{x.Key}={HttpUtility.UrlEncode(x.Value?.ToString() ?? "")}"));
 
 
         var request = new HttpRequestMessage(HttpMethod.Get, url);
