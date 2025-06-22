@@ -162,3 +162,23 @@ public class BankAccount
         return builder.ToString().Trim();
     }
 }
+
+/// <summary>
+/// 账户余额
+/// </summary>
+public class BankBalance
+{
+    public int Id { get; set; }
+
+    public required string AccountName { get; set; }
+
+    public required string AccountNo { get; set; }
+
+    public required string Name { get; set; }
+
+    public decimal Balance { get; set; }
+
+    public DateTime Time { get; set; }
+
+    public string Currency { get; set; } = "RMB";
+}
