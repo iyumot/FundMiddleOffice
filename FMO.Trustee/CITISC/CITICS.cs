@@ -3,6 +3,8 @@ using FMO.Utilities;
 using LiteDB;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection.Emit;
+using System.Security.Principal;
 using System.Text.Json;
 using System.Web;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -135,19 +137,43 @@ public partial class CITICS : TrusteeApiBase
         var part = "/v1/cs/queryTgAccountListForApi";
         var result = await SyncWork<FundBankAccount, CustodialAccountJson>(part, null, x => x.ToObject());
 
-        Fund[] funds;
-        using (var db = DbHelper.Base())
-            funds = db.GetCollection<Fund>().FindAll().ToArray();
+        if (result.Code == ReturnCode.Success && result.Data is not null)
+        {
+            Fund[] funds;
+            using (var db = DbHelper.Base())
+                funds = db.GetCollection<Fund>().FindAll().ToArray();
+
+            foreach (var d in result.Data)
+            {
+                if (funds.FirstOrDefault(x => x.Code == d.FundCode) is Fund o)
+                    d.FundId = o.Id;
+            }
 
 
-        using (var db = DbHelper.Platform())
-            db.GetCollection<FundBankAccount>().Upsert(result.Data);
-
+            // 更新
+            using (var db = DbHelper.Platform())
+            {
+                var old = db.GetCollection<FundBankAccount>().FindAll().ToArray();
+                // 同步id
+                foreach (var d in result.Data)
+                {
+                    if (old.FirstOrDefault(x => x.Number == d.Number) is FundBankAccount o)
+                        d.Id = o.Id;
+                }
+                db.GetCollection<FundBankAccount>().Upsert(result.Data);
+            }
+        }
         return result;
     }
 
 
-    public async Task<ReturnWrap<VirtualNetValueJson>> QueryVirtualNetValue(DateOnly begin, DateOnly end)
+    /// <summary>
+    /// 获取虚拟净值
+    /// </summary>
+    /// <param name="begin"></param>
+    /// <param name="end"></param>
+    /// <returns></returns>
+    public async Task<ReturnWrap<VirtualNetValueJson>> QueryVirtualNetValue(DateOnly begin, DateOnly end/*, params string?[] codes*/)
     {
         var part = "v1/ta/queryVirtualTaProfitForApi";
         var result = await SyncWork<VirtualNetValueJson, VirtualNetValueJson>(part, null, x => x);
@@ -155,6 +181,107 @@ public partial class CITICS : TrusteeApiBase
     }
 
 
+    /// <summary>
+    /// 托管户银行实时余额查询接口
+    /// </summary>
+    /// <param name="fundCode"></param>
+    /// <returns></returns>
+    public async Task<ReturnWrap<BankBalance>> QueryCustodialBalance(string fundCode)
+    {
+        var part = "/v1/cs/queryTgAccountBalanceForApi";
+
+        // 获取托管账户列表
+        using var db = DbHelper.Platform();
+        var acc = db.GetCollection<FundBankAccount>().Find(x => x.FundCode == fundCode && !x.IsCanceled).ToList();
+
+        if (acc.Count == 0)
+            return new(ReturnCode.ParameterInvalid, null);
+
+        List<BankBalance> balances = new ();
+
+        foreach (var item in acc)
+        {
+            var r = await SyncWork<BankBalance, BankBalanceJson>(part, new { pdCode = fundCode, bankName = item.BankOfDeposit, account = item.Number }, x => x.ToObject());
+
+            if(r.Code != ReturnCode.Success) return new(r.Code, null);
+
+            balances.AddRange(r.Data);
+        }
+
+
+
+        return new(ReturnCode.Success, balances.ToArray());
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public async Task<string?> GetToken()
+    {
+        await tokenSlim.WaitAsync();
+        try
+        {
+            if (TokenTime is not null && (DateTime.Now - TokenTime.Value).TotalHours < 18)
+                return Token;.
+
+
+            var cc = await _client.GetStringAsync("https://www.baidu.com");
+
+            string? requestUri = GetUrl("/v1/auth/getToken");
+
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+            request.Headers.Add("consumerAuth", CustomerAuth);
+
+            var response = await _client.SendAsync(request);
+
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            var obj = JsonSerializer.Deserialize<ReturnJsonRoot<TokenJson>>(json);
+
+            // 更新
+            if (obj?.Data?.Token is string s)
+            {
+                Token = s;
+                TokenTime = DateTime.Now;
+                SaveConfig();
+            }
+
+
+            return obj?.Data?.Token;
+        }
+        catch (Exception e) { return null; }
+        finally { tokenSlim.Release(); }
+    }
+
+    #region Functional
 
     private async Task<string> Query(string part, Dictionary<string, object> param)
     {
@@ -239,44 +366,6 @@ public partial class CITICS : TrusteeApiBase
         return new(ReturnCode.Success, list.Select(x => transfer(x)).ToArray());
     }
 
-
-    public async Task<string?> GetToken()
-    {
-        await tokenSlim.WaitAsync();
-        try
-        {
-            if (TokenTime is not null && (DateTime.Now - TokenTime.Value).TotalHours < 18)
-                return Token;.
-
-
-            var cc = await _client.GetStringAsync("https://www.baidu.com");
-
-            string? requestUri = GetUrl("/v1/auth/getToken");
-
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, requestUri);
-            request.Headers.Add("consumerAuth", CustomerAuth);
-
-            var response = await _client.SendAsync(request);
-
-
-            var json = await response.Content.ReadAsStringAsync();
-
-            var obj = JsonSerializer.Deserialize<ReturnJsonRoot<TokenJson>>(json);
-
-            // 更新
-            if (obj?.Data?.Token is string s)
-            {
-                Token = s;
-                TokenTime = DateTime.Now;
-                SaveConfig();
-            }
-
-
-            return obj?.Data?.Token;
-        }
-        catch (Exception e) { return null; }
-        finally { tokenSlim.Release(); }
-    }
 
     protected override bool LoadConfigOverride(IAPIConfig config)
     {
@@ -367,6 +456,7 @@ public partial class CITICS : TrusteeApiBase
         return request;
     }
 
+    #endregion
 
 
     protected override ReturnCode CheckBreforeSync()

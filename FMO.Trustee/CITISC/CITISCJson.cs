@@ -846,4 +846,80 @@ public partial class CITICS
         public required string NetValueCheckStatus { get; set; }
     }
 
+
+    public class BankBalanceJson
+    {  
+        /// <summary>
+        /// 账号
+        /// </summary>
+        [JsonPropertyName("YHZH")]
+        public required string AccountNumber { get; set; }
+
+        /// <summary>
+        /// 账户余额
+        /// </summary>
+        [JsonPropertyName("ZHYE")]
+        public required string AccountBalance { get; set; }
+
+        /// <summary>
+        /// 账户名称
+        /// </summary>
+        [JsonPropertyName("KHHM")]
+        public required string AccountHolderName { get; set; }
+
+        /// <summary>
+        /// 货币种类：
+        /// HKD-港币；
+        /// RMB-人民币；
+        /// USD-美元
+        /// </summary>
+        [JsonPropertyName("JSBZ")]
+        public required string CurrencyType { get; set; }
+
+        /// <summary>
+        /// 余额查询时间，格式：YYYY-MM-DD HH:MM:SS
+        /// </summary>
+        [JsonPropertyName("CXSJ")]
+        public required string QueryTime { get; set; }
+
+        /// <summary>
+        /// 账户可用余额
+        /// </summary>
+        [JsonPropertyName("ZHKYYE")]
+        public required string AvailableBalance { get; set; }
+
+        /// <summary>
+        /// 处理结果：
+        /// 0-成功；
+        /// -2-处理中；
+        /// 其他值代表失败
+        /// </summary>
+        [JsonPropertyName("CLJG")]
+        public required string ProcessingResult { get; set; }
+
+        /// <summary>
+        /// 处理说明
+        /// </summary>
+        [JsonPropertyName("CLSM")]
+        public required string ProcessingDescription { get; set; }
+
+        /// <summary>
+        /// 开户行
+        /// </summary>
+        [JsonPropertyName("KHYH")]
+        public required string OpeningBank { get; set; }
+
+        public BankBalance ToObject()
+        {
+            return new BankBalance
+            {
+                AccountName = AccountHolderName,
+                AccountNo = AccountNumber,
+                Name = OpeningBank,
+                Balance = decimal.Parse(AccountBalance),
+                Currency = CurrencyType,
+                Time = DateTime.ParseExact(QueryTime, "yyyy-MM-dd HH:mm:ss", null)
+            };
+        }
+    }
 }
