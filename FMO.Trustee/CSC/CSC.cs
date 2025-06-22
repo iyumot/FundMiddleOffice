@@ -1,5 +1,6 @@
 using FMO.Models;
 using FMO.Utilities;
+using LiteDB;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
@@ -155,6 +156,12 @@ public partial class CSC : TrusteeApiBase
         return result;
     }
 
+    /// <summary>
+    /// 中信建投不返回 本方户名和银行名
+    /// </summary>
+    /// <param name="begin"></param>
+    /// <param name="end"></param>
+    /// <returns></returns>
     public override async Task<ReturnWrap<BankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end)
     {
         var part = "/institution/tgpt/erp/raise/query/findRaiseAccountDetailList";
@@ -173,9 +180,7 @@ public partial class CSC : TrusteeApiBase
 
 
 
-
-
-
+    
 
 
 

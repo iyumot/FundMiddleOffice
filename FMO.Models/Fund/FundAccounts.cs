@@ -137,3 +137,22 @@ public class FundSingletonAccounts
 
 
 }
+
+
+
+/// <summary>
+/// 募集、托管户等
+/// </summary>
+public class FundBankAccount : BankAccount
+{
+    public int FundId { get; set; }
+
+    public string? FundCode { get; set; }
+
+    /// <summary>
+    /// 销户
+    /// </summary>
+    public bool IsCanceled { get; set; }
+
+
+}

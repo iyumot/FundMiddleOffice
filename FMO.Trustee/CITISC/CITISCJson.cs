@@ -713,4 +713,137 @@ public partial class CITICS
 
 
 
+    public class CustodialAccountJson
+    {
+        [JsonPropertyName("pdCode")]
+        public required string ProductCode { get; set; }
+
+        [JsonPropertyName("pdName")]
+        public required string ProductName { get; set; }
+
+        [JsonPropertyName("accName")]
+        public required string AccountName { get; set; }
+
+        [JsonPropertyName("account")]
+        public required string Account { get; set; }
+
+        [JsonPropertyName("bankName")]
+        public required string BankName { get; set; }
+
+        [JsonPropertyName("lrgAmtNo")]
+        public required string LargePaymentNumber { get; set; }
+
+        [JsonPropertyName("recentBalance")]
+        public required string RecentBalance { get; set; }
+
+        [JsonPropertyName("recentBalanceQueryTime")]
+        public required string BalanceQueryTime { get; set; }
+
+        /// <summary>
+        /// 1：正常 2：销户
+        /// </summary>
+        [JsonPropertyName("status")]
+        public int Status { get; set; }
+
+
+        public FundBankAccount ToObject()
+        {
+            return new FundBankAccount
+            {
+                Name = AccountName,
+                BankOfDeposit = BankName,
+                FundCode = ProductCode,
+                LargePayNo = LargePaymentNumber,
+                Number = Account,
+                IsCanceled = Status == 2,
+            };
+        }
+    }
+
+
+    public class VirtualNetValueJson
+    {
+        /// <summary>
+        /// 业务日期，格式：YYYY-MM-DD
+        /// </summary>
+        [JsonPropertyName("date")]
+        public required string BusinessDate { get; set; }
+
+        /// <summary>
+        /// 客户名称
+        /// </summary>
+        [JsonPropertyName("custName")]
+        public required string CustomerName { get; set; }
+
+        /// <summary>
+        /// 基金账号
+        /// </summary>
+        [JsonPropertyName("fundAcco")]
+        public required string FundAccount { get; set; }
+
+        /// <summary>
+        /// 产品代码
+        /// </summary>
+        [JsonPropertyName("fundCode")]
+        public required string FundCode { get; set; }
+
+        /// <summary>
+        /// 产品名称
+        /// </summary>
+        [JsonPropertyName("fundName")]
+        public required string FundName { get; set; }
+
+        /// <summary>
+        /// 持仓份额
+        /// </summary>
+        [JsonPropertyName("shares")]
+        public decimal Shares { get; set; }
+
+        /// <summary>
+        /// 计提方式：1-估值计提；2-TA计提
+        /// </summary>
+        [JsonPropertyName("flag")]
+        public required string AccrualMethod { get; set; }
+
+        /// <summary>
+        /// 虚拟业绩报酬金额
+        /// </summary>
+        [JsonPropertyName("virtualBalance")]
+        public decimal VirtualPerformanceFee { get; set; }
+
+        /// <summary>
+        /// 虚拟净值
+        /// </summary>
+        [JsonPropertyName("virtualAssetVal")]
+        public required string VirtualNetAssetValue { get; set; }
+
+        /// <summary>
+        /// 实际净值
+        /// </summary>
+        [JsonPropertyName("netAssetVal")]
+        public required string ActualNetAssetValue { get; set; }
+
+        /// <summary>
+        /// 累计净值
+        /// </summary>
+        [JsonPropertyName("totalAssetVal")]
+        public required string TotalNetAssetValue { get; set; }
+
+        /// <summary>
+        /// 虚拟扣减份额
+        /// </summary>
+        [JsonPropertyName("virtualDeductionShare")]
+        public decimal VirtualDeductionShare { get; set; }
+
+        /// <summary>
+        /// 净值核对状态：
+        /// 0-一致，托管复核一致；
+        /// 1-不一致，未经托管确认；
+        /// 2-处理中；
+        /// 3-无托管方产品，无托管方复核
+        /// </summary>
+        [JsonPropertyName("checkStatus")]
+        public required string NetValueCheckStatus { get; set; }
+    }
+
 }

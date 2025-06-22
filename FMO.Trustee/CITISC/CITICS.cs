@@ -1,13 +1,19 @@
 using FMO.Models;
+using FMO.Utilities;
+using LiteDB;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Web;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace FMO.Trustee;
 
 public partial class CITICS : TrusteeApiBase
 {
+
+    SemaphoreSlim tokenSlim = new SemaphoreSlim(1);
+
     private readonly int SizePerPage = 500;
 
     public override string Identifier => "trustee_citics";
@@ -118,9 +124,35 @@ public partial class CITICS : TrusteeApiBase
 
 
 
+    /// <summary>
+    /// 查询银行信息
+    /// 流量控制策略：50次/天，1次/秒（生产环境）
+    /// 保存到
+    /// </summary>
+    /// <returns></returns>
+    public async Task<ReturnWrap<FundBankAccount>> QueryCustodialAccountInfo()
+    {
+        var part = "/v1/cs/queryTgAccountListForApi";
+        var result = await SyncWork<FundBankAccount, CustodialAccountJson>(part, null, x => x.ToObject());
+
+        Fund[] funds;
+        using (var db = DbHelper.Base())
+            funds = db.GetCollection<Fund>().FindAll().ToArray();
 
 
+        using (var db = DbHelper.Platform())
+            db.GetCollection<FundBankAccount>().Upsert(result.Data);
 
+        return result;
+    }
+
+
+    public async Task<ReturnWrap<VirtualNetValueJson>> QueryVirtualNetValue(DateOnly begin, DateOnly end)
+    {
+        var part = "v1/ta/queryVirtualTaProfitForApi";
+        var result = await SyncWork<VirtualNetValueJson, VirtualNetValueJson>(part, null, x => x);
+        return result;
+    }
 
 
 
@@ -210,30 +242,40 @@ public partial class CITICS : TrusteeApiBase
 
     public async Task<string?> GetToken()
     {
-        var cc = await _client.GetStringAsync("https://www.baidu.com");
-
-        string? requestUri = GetUrl("/v1/auth/getToken");
-
-        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, requestUri);
-        request.Headers.Add("consumerAuth", CustomerAuth);
-
-        var response = await _client.SendAsync(request);
-
-
-        var json = await response.Content.ReadAsStringAsync();
-
-        var obj = JsonSerializer.Deserialize<ReturnJsonRoot<TokenJson>>(json);
-
-        // 更新
-        if (obj?.Data?.Token is string s)
+        await tokenSlim.WaitAsync();
+        try
         {
-            Token = s;
-            TokenTime = DateTime.Now;
-            SaveConfig();
+            if (TokenTime is not null && (DateTime.Now - TokenTime.Value).TotalHours < 18)
+                return Token;.
+
+
+            var cc = await _client.GetStringAsync("https://www.baidu.com");
+
+            string? requestUri = GetUrl("/v1/auth/getToken");
+
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+            request.Headers.Add("consumerAuth", CustomerAuth);
+
+            var response = await _client.SendAsync(request);
+
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            var obj = JsonSerializer.Deserialize<ReturnJsonRoot<TokenJson>>(json);
+
+            // 更新
+            if (obj?.Data?.Token is string s)
+            {
+                Token = s;
+                TokenTime = DateTime.Now;
+                SaveConfig();
+            }
+
+
+            return obj?.Data?.Token;
         }
-
-
-        return obj?.Data?.Token;
+        catch (Exception e) { return null; }
+        finally { tokenSlim.Release(); }
     }
 
     protected override bool LoadConfigOverride(IAPIConfig config)
