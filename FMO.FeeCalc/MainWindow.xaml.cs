@@ -1,7 +1,6 @@
 ﻿using ClosedXML.Excel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using FMO.IO.Trustee;
 using FMO.Models;
 using FMO.Utilities;
 using LiteDB;
@@ -67,7 +66,6 @@ public partial class MainWindowViewModel : ObservableObject
 
     public bool CanCalc => Funds?.Any(x => x.IsChoosed) ?? false;
 
-    public List<ITrusteeAssist> Trustees { get; private set; } = new();
 
     Debouncer debouncer;
 
@@ -92,15 +90,6 @@ public partial class MainWindowViewModel : ObservableObject
 
         //    }
         //}
-    }
-    void TryAddTrustee(Assembly assembly)
-    {
-        var type = assembly.GetTypes().FirstOrDefault(x => x.GetInterface(typeof(ITrusteeAssist).FullName!) is not null);
-        if (type is null) return;
-
-        ITrusteeAssist trusteeAssist = (ITrusteeAssist)Activator.CreateInstance(type)!;
-
-        Trustees.Add(trusteeAssist);
     }
 
     partial void OnBeginChanged(DateTime? value)
