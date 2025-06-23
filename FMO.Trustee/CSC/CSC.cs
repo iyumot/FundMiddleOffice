@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using static FMO.Trustee.SM4;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace FMO.Trustee;
 
@@ -141,7 +142,7 @@ public partial class CSC : TrusteeApiBase
     }
 
 
-    public override Task<ReturnWrap<Investor>> SyncInvestors()
+    public override Task<ReturnWrap<Investor>> QueryInvestors()
     {
         throw new NotImplementedException();
     }
@@ -171,7 +172,7 @@ public partial class CSC : TrusteeApiBase
         return result;
     }
 
-    public override Task<ReturnWrap<BankTransaction>> QueryTrusteeAccountTransction(DateOnly begin, DateOnly end)
+    public override Task<ReturnWrap<BankTransaction>> QueryCustodialAccountTransction(DateOnly begin, DateOnly end)
     {
         throw new NotImplementedException();
     }

@@ -3,8 +3,6 @@ using FMO.Utilities;
 using LiteDB;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Reflection.Emit;
-using System.Security.Principal;
 using System.Text.Json;
 using System.Web;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -46,12 +44,20 @@ public partial class CITICS : TrusteeApiBase
     }
 
 
-    public override async Task<ReturnWrap<Investor>> SyncInvestors()
+    public override async Task<ReturnWrap<Investor>> QueryInvestors()
     {
         var part = "/v1/ta/queryCustInfoForApi";
 
-        return await SyncWork<Investor, InvestorJson>(part, null, x => x.ToObject());
+        var r = await SyncWork<InvestorJson, InvestorJson>(part, null, x => x);
 
+        // 需要保存基金账号到投资人映射，因为TA返回数据没有投资人信息
+        if (r.Data?.Length > 0)
+        {
+            using var db = DbHelper.Platform();
+            db.GetCollection<InvestorAccountMapping>().Upsert(r.Data.Select(x => new InvestorAccountMapping { Id = x.FundAcco, Indentity = x.CertiNo, Name = x.CustName }));
+        }
+
+        return new(r.Code, r.Data?.Select(x => x.ToObject()).ToArray());
     }
 
 
@@ -103,12 +109,55 @@ public partial class CITICS : TrusteeApiBase
     public override async Task<ReturnWrap<TransferRecord>> QueryTransferRecords(DateOnly begin, DateOnly end)
     {
         var part = "/v1/ta/TradeConfirmationForApi";
-        var result = await SyncWork<TransferRecord, TransferRecordJson>(part, new { ackBeginDate = $"{begin:yyyyMMdd}", ackEndDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
+        var result = await SyncWork<TransferRecordJson, TransferRecordJson>(part, new { ackBeginDate = $"{begin:yyyyMMdd}", ackEndDate = $"{end:yyyyMMdd}" }, x => x);
+
+        // 后处理
+        if (result.Data?.Length > 0)
+        {
+            // 获取账户映射
+            using var db = DbHelper.Platform();
+            var map = db.GetCollection<InvestorAccountMapping>().FindAll().ToArray();
+
+            List<TransferRecord> list = new();
+            foreach (var item in result.Data)
+            {
+                var r = item.ToObject();
+                list.Add(r);
+
+                if (map.FirstOrDefault(x => x.Id == item.FundAcco) is InvestorAccountMapping m)
+                {
+                    r.CustomerName = m.Name;
+                    r.CustomerIdentity = m.Indentity;
+                }
+            }
+            return new(result.Code, list.ToArray());
+        }
+
+        return new (result.Code, null);
+    }
+
+
+    public async Task<ReturnWrap<TransferRequest>> QueryTransferRequest(DateOnly begin, DateOnly end)
+    {
+        var part = "/v1/ta/queryTradeApplyForApi";
+        var result = await SyncWork<TransferRequest, TransferRequestJson>(part, new { ackBeginDate = $"{begin:yyyyMMdd}", ackEndDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
 
         return result;
     }
 
+    /// <summary>
+    /// 募集户余额
+    /// </summary>
+    /// <param name="fundCode"></param>
+    /// <returns></returns>
+    public async Task<ReturnWrap<BankBalance>> QueryRaisingBalance(string fundCode)
+    {
+        var part = "/v1/fs/queryRaiseAccBalForApi";
 
+        var r = await SyncWork<BankBalance, RaisingBalanceJson>(part, null, x => x.ToObject());
+
+        return r;
+    }
 
 
     public override async Task<ReturnWrap<BankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end)
@@ -119,9 +168,43 @@ public partial class CITICS : TrusteeApiBase
         return result;
     }
 
-    public override Task<ReturnWrap<BankTransaction>> QueryTrusteeAccountTransction(DateOnly begin, DateOnly end)
+    public override async Task<ReturnWrap<BankTransaction>> QueryCustodialAccountTransction(DateOnly begin, DateOnly end = default)
     {
-        throw new NotImplementedException();
+        if (end == default) end = begin;
+
+        if (begin == DateOnly.FromDateTime(DateTime.Today))
+        {
+            //当日 
+            var part = "/v1/cs/queryTgAccountCurrentFlowForApi";
+            var result = await SyncWork<BankTransaction, CustodialTransactionJson>(part, null, x => x.ToObject());
+            return result;
+        }
+        else
+        {
+            //历史 
+            var part = "/v1/cs/queryTgAccountHistoryFlowForApi";
+            var result = await SyncWork<BankTransaction, CustodialTransactionJson2>(part, null, x => x.ToObject());
+            return result;
+        }
+    }
+    public async Task<ReturnWrap<BankTransaction>> QueryCustodialAccountTransction(string code, DateOnly begin, DateOnly end = default)
+    {
+        if (end == default) end = begin;
+
+        if (begin == DateOnly.FromDateTime(DateTime.Today))
+        {
+            //当日 
+            var part = "/v1/cs/queryTgAccountCurrentFlowForApi";
+            var result = await SyncWork<BankTransaction, CustodialTransactionJson>(part, new { pdCode = code }, x => x.ToObject());
+            return result;
+        }
+        else
+        {
+            //历史 
+            var part = "/v1/cs/queryTgAccountHistoryFlowForApi";
+            var result = await SyncWork<BankTransaction, CustodialTransactionJson2>(part, new { pdCode = code }, x => x.ToObject());
+            return result;
+        }
     }
 
 
@@ -197,13 +280,13 @@ public partial class CITICS : TrusteeApiBase
         if (acc.Count == 0)
             return new(ReturnCode.ParameterInvalid, null);
 
-        List<BankBalance> balances = new ();
+        List<BankBalance> balances = new();
 
         foreach (var item in acc)
         {
             var r = await SyncWork<BankBalance, BankBalanceJson>(part, new { pdCode = fundCode, bankName = item.BankOfDeposit, account = item.Number }, x => x.ToObject());
 
-            if(r.Code != ReturnCode.Success) return new(r.Code, null);
+            if (r.Code != ReturnCode.Success) return new(r.Code, null);
 
             balances.AddRange(r.Data);
         }
@@ -214,12 +297,48 @@ public partial class CITICS : TrusteeApiBase
     }
 
 
+    /// <summary>
+    /// 托管户银行实时余额查询接口
+    /// </summary>
+    /// <param name="fundCode"></param>
+    /// <returns></returns>
+    public async Task<ReturnWrap<BankBalance>> QueryCustodialBalance(string fundCode, string bank, string account)
+    {
+        var part = "/v1/cs/queryTgAccountBalanceForApi";
+
+        var r = await SyncWork<BankBalance, BankBalanceJson>(part, new { pdCode = fundCode, bankName = bank, account = account }, x => x.ToObject());
+
+        return r;
+    }
+
+
+    public async Task<ReturnWrap<TransferRecord>> QueryDistibution(DateOnly begin, DateOnly end)
+    {
+        var part = "/v1/ta/queryDividendForApi";
+        var result = await SyncWork<TransferRecord, DistrubutionJson>(part, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
+
+        return result;
+    }
+
+
+    public async Task<ReturnWrap<PerformanceJson>> QueryPerformance(DateOnly begin, DateOnly end)
+    {
+        var part = "/v1/ta/queryTaProfitForApi";
+        var result = await SyncWork<PerformanceJson, PerformanceJson>(part, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x);
+
+        return result;
+    }
 
 
 
 
+    //public   async Task<ReturnWrap<BankTransaction>> QueryShare(DateOnly begin, DateOnly end)
+    //{
+    //    var part = "/v1/fs/queryRaiseAccFlowForApi";
+    //    var result = await SyncWork<BankTransaction, BankTransactionJson>(part, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
 
-
+    //    return result;
+    //}
 
 
 
@@ -249,8 +368,7 @@ public partial class CITICS : TrusteeApiBase
         try
         {
             if (TokenTime is not null && (DateTime.Now - TokenTime.Value).TotalHours < 18)
-                return Token;.
-
+                return Token;
 
             var cc = await _client.GetStringAsync("https://www.baidu.com");
 
@@ -301,8 +419,7 @@ public partial class CITICS : TrusteeApiBase
 
         // 非dict 转成dict 方便修改page
         Dictionary<string, object> formatedParams;
-        if (param is null) formatedParams = new();
-        else if (param is Dictionary<string, object> pp) formatedParams = pp;
+        if (param is Dictionary<string, object> pp) formatedParams = pp;
         else formatedParams = GenerateParams(param);
 
         List<TJSON> list = new();
@@ -341,7 +458,7 @@ public partial class CITICS : TrusteeApiBase
                     var data = ret.Data.Deserialize<QueryRoot<TJSON>>()!;
                     list.AddRange(data.List!);
 
-                    var page = (int)formatedParams["pageNum"];
+                    var page = data.PageNum;// (int)formatedParams["pageNum"];
 
                     // 数据获取全 
                     if (page >= data.PageCount)

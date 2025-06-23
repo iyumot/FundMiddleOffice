@@ -5,7 +5,7 @@ namespace FMO.Trustee;
 
 
 
- 
+
 
 
 
@@ -58,7 +58,7 @@ public interface ITrustee
     /// <param name="end"></param>
     /// <returns></returns>
     Task<ReturnWrap<TransferRecord>> QueryTransferRecords(DateOnly begin, DateOnly end);
-     
+
     /// <summary>
     /// 获取基金固定费用
     /// </summary>
@@ -74,7 +74,7 @@ public interface ITrustee
     /// <param name="begin"></param>
     /// <param name="end"></param>
     /// <returns></returns>
-    Task<ReturnWrap<BankTransaction>> QueryTrusteeAccountTransction(DateOnly begin, DateOnly end);
+    Task<ReturnWrap<BankTransaction>> QueryCustodialAccountTransction(DateOnly begin, DateOnly end = default);
 
 
     /// <summary>

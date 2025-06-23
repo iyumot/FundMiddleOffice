@@ -105,7 +105,7 @@ public partial class CMS : TrusteeApiBase
 
 
 
-    public override Task<ReturnWrap<BankTransaction>> QueryTrusteeAccountTransction(DateOnly begin, DateOnly end)
+    public override Task<ReturnWrap<BankTransaction>> QueryCustodialAccountTransction(DateOnly begin, DateOnly end)
     {
         throw new NotImplementedException();
     }
@@ -127,7 +127,7 @@ public partial class CMS : TrusteeApiBase
         return await Task.FromResult(true);
     }
 
-    public override Task<ReturnWrap<Investor>> SyncInvestors()
+    public override Task<ReturnWrap<Investor>> QueryInvestors()
     {
         throw new NotImplementedException();
     }

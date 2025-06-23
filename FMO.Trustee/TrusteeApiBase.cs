@@ -46,7 +46,7 @@ public abstract class TrusteeApiBase : ITrustee
     public abstract Task<BankTransaction[]?> GetRaisingAccountRecords(DateOnly begin, DateOnly end);
 
 
-    public abstract Task<ReturnWrap<Investor>> SyncInvestors();
+    public abstract Task<ReturnWrap<Investor>> QueryInvestors();
 
 
 
@@ -124,7 +124,9 @@ public abstract class TrusteeApiBase : ITrustee
 
 
 
-    public abstract Task<ReturnWrap<BankTransaction>> QueryTrusteeAccountTransction(DateOnly begin, DateOnly end);
+    public abstract Task<ReturnWrap<BankTransaction>> QueryCustodialAccountTransction(DateOnly begin, DateOnly end = default);
+
+
     public abstract Task<ReturnWrap<BankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end);
 
 
