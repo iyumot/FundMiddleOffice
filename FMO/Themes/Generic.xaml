@@ -396,7 +396,7 @@
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-        <Setter Property="Padding" Value="{StaticResource DefaultControlPadding}" />
+        <Setter Property="Padding" Value="0" />
         <Setter Property="hc:BorderElement.CornerRadius" Value="{StaticResource DefaultCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
