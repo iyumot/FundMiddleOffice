@@ -2,7 +2,7 @@
 
 
 
-public enum TransctionDirection { Pay, Receive };
+public enum TransctionDirection { Pay, Receive, Cancel };
 
 /// <summary>
 /// 银行流水
@@ -39,6 +39,7 @@ public class BankTransaction
 
     public DateTime Time { get; set; }
 
+    public string Currency { get; set; } = "RMB";
 
     /// <summary>
     /// 余额
