@@ -104,6 +104,79 @@
             </DockPanel>
         </GroupBox>
 
-        <TextBlock />
+
+        <WrapPanel>
+            <Border BorderBrush="AliceBlue" BorderThickness="1">
+                <ContentControl Content="{Binding RaisingAccountTip}">
+                    <ContentControl.ContentTemplate>
+                        <DataTemplate>
+                            <DockPanel>
+                                <DockPanel.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                    </Style>
+                                </DockPanel.Resources>
+                                <DockPanel Name="info" DockPanel.Dock="Top">
+                                    <TextBlock Text="募集户余额：" />
+                                    <TextBlock Name="b" Text="{Binding TotalBalance, TargetNullValue=未获取}" />
+                                    <Button
+                                        hc:IconElement.Geometry="{StaticResource f.rotate}"
+                                        Command="{Binding UpdateCommand}"
+                                        Style="{StaticResource ButtonIcon.Small}" />
+                                </DockPanel>
+
+                                <Popup
+                                    Name="pop"
+                                    AllowsTransparency="True"
+                                    Placement="Bottom"
+                                    PlacementTarget="{Binding ElementName=info}">
+                                    <Border Background="White">
+                                        <StackPanel>
+                                            <ListBox ItemsSource="{Binding BalanceDetail}" Style="{StaticResource ListBoxCustom}">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <DockPanel>
+                                                            <TextBlock
+                                                                Width="80"
+                                                                Text="{Binding Value}"
+                                                                TextAlignment="Center" />
+                                                            <TextBlock Text="{Binding Key}" />
+                                                        </DockPanel>
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+
+                                            <TextBlock Text="失败列表" Visibility="{Binding HasFailed, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                                            <ListBox
+                                                ItemsSource="{Binding FailedFunds}"
+                                                Style="{StaticResource ListBoxCustom}"
+                                                Visibility="{Binding HasFailed, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Margin="3" Text="{Binding .}" />
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+                                        </StackPanel>
+                                    </Border>
+                                </Popup>
+                            </DockPanel>
+                            <DataTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="pop" Property="IsOpen" Value="True" />
+                                </Trigger>
+                                <DataTrigger Binding="{Binding HasFailed}" Value="True">
+                                    <Setter TargetName="b" Property="Foreground" Value="Red" />
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </ContentControl.ContentTemplate>
+                </ContentControl>
+            </Border>
+
+
+        </WrapPanel>
+
     </DockPanel>
 </UserControl>

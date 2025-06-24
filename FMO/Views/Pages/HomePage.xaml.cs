@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using FMO.IO.AMAC;
 using FMO.Models;
 using FMO.Schedule;
+using FMO.Trustee;
 using FMO.Utilities;
 using LiveCharts;
 using Serilog;
@@ -33,7 +34,7 @@ public partial class HomePage : UserControl
 
 
 
-public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMessage>
+public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMessage>, IRecipient<TrusteeWorkResult>
 {
     /// <summary>
     /// 是否正在同步
@@ -58,6 +59,12 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
     [ObservableProperty]
     public partial IList<string>? FundTips { get; set; }
+
+
+    /// <summary>
+    /// 募集户余额报警
+    /// </summary> 
+    public RaisingAccountWarning RaisingAccountTip { get; } = new();
 
     public HomePageViewModel()
     {
@@ -328,6 +335,58 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
     }
 
+    public void Receive(TrusteeWorkResult message)
+    {
+        switch (message.Method)
+        {
+            case nameof(ITrustee.QueryRaisingBalance):
+                OnHandleRaisingBalance(message.Returns);
+                break;
+            default:
+                break;
+        }
+
+    }
+
+    private void OnHandleRaisingBalance(IList<TrusteeWorker.WorkReturn> returns)
+    {
+        //
+        using var db = DbHelper.Base();
+        var funds = db.GetCollection<Fund>().FindAll().Where(x=> x.Status>= FundStatus.ContractFinalized && x.Status <= FundStatus.StartLiquidation).ToArray();
+
+        List<(string fc, ReturnCode rc, decimal v)> list = new();
+
+        foreach (var r in returns)
+        {
+            // 失败
+            if (r.Code != ReturnCode.Success)
+            {
+                // 获取对应的产品名
+
+
+
+                continue;
+            }
+
+            // 成功
+            if (r.Data is FundBankBalance[] bankBalances)
+            {
+                foreach (var b in bankBalances)
+                {
+                    list.Add((b.FundName!, r.Code, b.Balance));
+                }
+            }
+        }
+
+        // 没有记录的产品
+        var failed = funds.Where(x => x.Status >= FundStatus.ContractFinalized && x.Status <= FundStatus.StartLiquidation).ExceptBy(list.Select(x => x.fc), x => x.Name).ToArray();
+
+        RaisingAccountTip.HasFailed = failed.Length > 0;
+        RaisingAccountTip.FailedFunds = failed.Select(x => x.Name).ToArray();
+        RaisingAccountTip.TotalBalance = list.Sum(x => x.v);
+        RaisingAccountTip.BalanceDetail = list.Where(x => x.v > 0).ToDictionary(x => x.fc, x => x.v);
+    }
+
     public partial class HomePlotViewModel : ObservableObject
     {
         [ObservableProperty]
@@ -338,5 +397,34 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
         public partial Func<double, string>? YFormatter { get; set; }
     }
 
+
+
+    public partial class RaisingAccountWarning : ObservableObject
+    {
+        [ObservableProperty]
+        public partial string[]? FailedFunds { get; set; }
+
+        [ObservableProperty]
+        public partial bool HasFailed { get; set; }
+
+        [ObservableProperty]
+        public partial decimal? TotalBalance { get; set; }
+
+        [ObservableProperty]
+        public partial bool HasBalance { get; set; }
+
+        [ObservableProperty]
+        public partial Dictionary<string, decimal>? BalanceDetail { get; set; }
+
+
+
+        [RelayCommand]
+        public async Task Update()
+        {
+            /// 在WeakReferenceMessenger接收消息
+            await TrusteeGallay.Worker.RaisingRecordOnce();
+        }
+
+    }
 
 }
