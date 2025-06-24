@@ -77,7 +77,7 @@ public interface ITrustee
     /// 获取分级产品映射关系
     /// </summary>
     /// <returns></returns>
-    Task<ReturnWrap<SubjectFundMapping>> SyncSubjectFundMappings();
+    Task<ReturnWrap<SubjectFundMapping>> QuerySubjectFundMappings();
 
 
     /// <summary>

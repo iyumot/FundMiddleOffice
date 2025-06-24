@@ -44,7 +44,7 @@ public partial class CSC : TrusteeApiBase
 
 
 
-    public override async Task<ReturnWrap<SubjectFundMapping>> SyncSubjectFundMappings()
+    public override async Task<ReturnWrap<SubjectFundMapping>> QuerySubjectFundMappings()
     {
         var part = "/institution/tgpt/erp/file/productFile/findProductList";
         var result = await SyncWork<SubjectFundMapping, SubjectFundMapping>(part, null, x => x);

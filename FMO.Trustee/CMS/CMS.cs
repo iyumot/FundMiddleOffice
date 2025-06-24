@@ -41,7 +41,7 @@ public partial class CMS : TrusteeApiBase
      
 
 
-    public override async Task<ReturnWrap<SubjectFundMapping>> SyncSubjectFundMappings()
+    public override async Task<ReturnWrap<SubjectFundMapping>> QuerySubjectFundMappings()
     {
         var data = await SyncWork<SubjectFundMapping, SubjectFundMappingJson>(1018, null, x => x.ToObject());
         return data;
@@ -108,9 +108,10 @@ public partial class CMS : TrusteeApiBase
     }
 
 
-    public override Task<ReturnWrap<Investor>> QueryInvestors()
+    public override async Task<ReturnWrap<Investor>> QueryInvestors()
     {
-        throw new NotImplementedException();
+        var data = await SyncWork<Investor, InvestorJson>(1008, null, x => x.ToObject());
+        return data;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////

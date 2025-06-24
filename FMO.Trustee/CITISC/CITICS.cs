@@ -89,7 +89,7 @@ public partial class CITICS : TrusteeApiBase
     }
 
 
-    public override Task<ReturnWrap<SubjectFundMapping>> SyncSubjectFundMappings()
+    public override Task<ReturnWrap<SubjectFundMapping>> QuerySubjectFundMappings()
     {
         return Task.FromResult(new ReturnWrap<SubjectFundMapping>(ReturnCode.NotImplemented, null));
     }

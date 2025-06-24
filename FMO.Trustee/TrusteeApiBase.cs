@@ -55,7 +55,7 @@ public abstract class TrusteeApiBase : ITrustee
     /// 映射子基金关系
     /// </summary>
     /// <returns></returns>
-    public abstract Task<ReturnWrap<SubjectFundMapping>> SyncSubjectFundMappings();
+    public abstract Task<ReturnWrap<SubjectFundMapping>> QuerySubjectFundMappings();
 
     /// <summary>
     /// 同步交易确认
