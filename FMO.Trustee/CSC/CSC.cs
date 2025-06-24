@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Text.Json;
 using static FMO.Trustee.SM4;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -36,19 +35,9 @@ public partial class CSC : TrusteeApiBase
     private SM4? Encoder { get; set; }
 
     private SM4? Decoder { get; set; }
+     
 
-    public override Task<BankTransaction[]?> GetCustodyAccountRecords(DateOnly begin, DateOnly end)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override Task<BankTransaction[]?> GetRaisingAccountRecords(DateOnly begin, DateOnly end)
-    {
-        throw new NotImplementedException();
-    }
-
-
-    public override Task<TransferRequest[]?> GetTransferRequests(DateOnly begin, DateOnly end)
+    public override Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end)
     {
         throw new NotImplementedException();
     }
@@ -172,6 +161,24 @@ public partial class CSC : TrusteeApiBase
         return result;
     }
 
+
+    /// <summary>
+    /// 02	募集户 04	托管户
+    /// </summary>
+    /// <returns></returns>
+    public override async Task<ReturnWrap<FundBankBalance>> QueryRaisingBalance()
+    {
+        var part = "/institution/tgpt/erp/product/query/findAccBalanceList";
+        var result = await SyncWork<FundBankBalance, BankBalanceJson>(part, new { accType = "02" }, x => x.ToObject());
+
+
+        return result;
+    }
+
+
+
+
+
     public override Task<ReturnWrap<BankTransaction>> QueryCustodialAccountTransction(DateOnly begin, DateOnly end)
     {
         throw new NotImplementedException();
@@ -181,7 +188,7 @@ public partial class CSC : TrusteeApiBase
 
 
 
-    
+
 
 
 
@@ -213,10 +220,10 @@ public partial class CSC : TrusteeApiBase
         return true;
     }
 
-    public override Task<bool> Prepare()
+    public override bool Prepare()
     {
         if (string.IsNullOrWhiteSpace(EncryptKey))
-            return Task.FromResult(false);
+            return false;
 
         byte[] keyBytes = Encoding.UTF8.GetBytes(EncryptKey);
 
@@ -228,7 +235,7 @@ public partial class CSC : TrusteeApiBase
 
 
 
-        return Task.FromResult(true);
+        return true;
     }
 
     protected override IAPIConfig SaveConfigOverride()
@@ -259,7 +266,7 @@ public partial class CSC : TrusteeApiBase
         // 非dict 转成dict 方便修改page
         Dictionary<string, object> formatedParams;
         if (param is null) formatedParams = new();
-        else if (param is Dictionary<string, object> pp) formatedParams = pp;
+        if (param is Dictionary<string, object> pp) formatedParams = pp;
         else formatedParams = GenerateParams(param);
 
         List<TJSON> list = new();
@@ -268,7 +275,7 @@ public partial class CSC : TrusteeApiBase
         // 获取所有结果
         try
         {
-            for (int i = 0; i < 99; i++) // 防止无限循环，最多99次 
+            for (int i = 0; i < 19; i++) // 防止无限循环，最多99次 
             {
                 var json = await Query(part, formatedParams);
 

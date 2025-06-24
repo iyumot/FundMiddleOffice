@@ -3,16 +3,18 @@ using System.Text.Json.Serialization;
 
 namespace FMO.Trustee;
 
+
+#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑添加 "required" 修饰符或声明为可为 null。
 public partial class CMS
 {
     public class JsonRoot
     {
         [JsonPropertyName("resultcode")]
-        public required string Code { get; set; }
+        public string Code { get; set; }
 
 
         [JsonPropertyName("msg")]
-        public required string Msg { get; set; }
+        public string Msg { get; set; }
 
 
         [JsonPropertyName("page")]
@@ -39,11 +41,11 @@ public partial class CMS
     public class JsonRoot<T>
     {
         [JsonPropertyName("resultcode")]
-        public required string Code { get; set; }
+        public string Code { get; set; }
 
 
         [JsonPropertyName("msg")]
-        public required string Msg { get; set; }
+        public string Msg { get; set; }
 
 
         [JsonPropertyName("page")]
@@ -59,22 +61,22 @@ public partial class CMS
     public class SubjectFundMappingJson
     {
         [JsonPropertyName("gradeNo")]
-        public required string GradeNo { get; set; }
+        public string GradeNo { get; set; }
 
         [JsonPropertyName("gradeName")]
-        public required string GradeName { get; set; }
+        public string GradeName { get; set; }
 
         [JsonPropertyName("productNo")]
-        public required string ProductNo { get; set; }
+        public string ProductNo { get; set; }
 
         [JsonPropertyName("productName")]
-        public required string ProductName { get; set; }
+        public string ProductName { get; set; }
 
         [JsonPropertyName("isGrade")]
         public bool IsGrade { get; set; }
 
         [JsonPropertyName("registerNo")]
-        public required string RegisterNo { get; set; }
+        public string RegisterNo { get; set; }
 
         public SubjectFundMapping ToObject()
         {
@@ -84,129 +86,141 @@ public partial class CMS
     }
 
 
-    public class TransferRecordJson
+    public class TransferRequestJson
     {
-
+        /// <summary>
+        /// 客户名称（最大长度：200）
+        /// </summary>
         [JsonPropertyName("custName")]
-        public required string CustName { get; set; }
+        public string CustomerName { get; set; }
 
+        /// <summary>
+        /// 客户类型（最大长度：30）
+        /// </summary>
         [JsonPropertyName("custType")]
-        public required string CustType { get; set; }
+        public string CustomerType { get; set; }
 
+        /// <summary>
+        /// 证件类型（最大长度：50）
+        /// </summary>
         [JsonPropertyName("certificateType")]
-        public required string CertificateType { get; set; }
+        public string CertificateType { get; set; }
 
+        /// <summary>
+        /// 证件号码（最大长度：30）
+        /// </summary>
         [JsonPropertyName("certificateNo")]
-        public required string CertificateNo { get; set; }
+        public string CertificateNumber { get; set; }
 
+        /// <summary>
+        /// 基金账号（最大长度：20）
+        /// </summary>
         [JsonPropertyName("taAccountId")]
-        public required string TaAccountId { get; set; }
+        public string TaAccountId { get; set; }
 
+        /// <summary>
+        /// 交易账号（最大长度：30）
+        /// </summary>
         [JsonPropertyName("transactionAccountId")]
-        public required string TransactionAccountId { get; set; }
+        public string TransactionAccountId { get; set; }
 
+        /// <summary>
+        /// 产品名称（最大长度：300）
+        /// </summary>
         [JsonPropertyName("fundName")]
-        public required string FundName { get; set; }
+        public string FundName { get; set; }
 
+        /// <summary>
+        /// 产品代码（最大长度：6）
+        /// </summary>
         [JsonPropertyName("fundCode")]
-        public required string FundCode { get; set; }
+        public string FundCode { get; set; }
 
+        /// <summary>
+        /// 业务类型（最大长度：6）
+        /// </summary>
         [JsonPropertyName("businessCode")]
-        public required string BusinessCode { get; set; }
+        public string BusinessCode { get; set; }
 
+        /// <summary>
+        /// 申请金额，保留两位小数
+        /// </summary>
         [JsonPropertyName("applicationAmount")]
-        public required string ApplicationAmount { get; set; } // 保留两位小数
+        public string ApplicationAmount { get; set; }
 
+        /// <summary>
+        /// 申请份额，保留两位小数
+        /// </summary>
         [JsonPropertyName("applicationVol")]
-        public required string ApplicationVol { get; set; } // 保留两位小数
+        public string ApplicationVol { get; set; }
 
+        /// <summary>
+        /// 申请日期，格式：yyyymmdd
+        /// </summary>
         [JsonPropertyName("transactionDate")]
-        public required string TransactionDate { get; set; } // 格式：yyyymmdd
+        public string TransactionDate { get; set; }
 
-        [JsonPropertyName("nav")]
-        public required string Nav { get; set; } // 清盘日可保留8位小数
+        /// <summary>
+        /// 手续费折扣率，保留两位小数
+        /// </summary>
+        [JsonPropertyName("discountRateOfCommission")]
+        public string DiscountRateOfCommission { get; set; }
 
-        [JsonPropertyName("transactionCfmDate")]
-        public required string TransactionCfmDate { get; set; } // 格式：yyyymmdd
-
-        [JsonPropertyName("confirmedVol")]
-        public required string ConfirmedVol { get; set; } // 保留两位小数
-
-        [JsonPropertyName("confirmedAmount")]
-        public required string ConfirmedAmount { get; set; } // 保留两位小数
-
-        [JsonPropertyName("confirmedNavVol")]
-        public required string ConfirmedNavVol { get; set; } // 保留两位小数
-
-        [JsonPropertyName("charge")]
-        public required string Charge { get; set; } // 保留两位小数
-
-        [JsonPropertyName("performance")]
-        public required string Performance { get; set; } // 保留两位小数
-
+        /// <summary>
+        /// 销售渠道代码（最大长度：3）
+        /// </summary>
         [JsonPropertyName("distributorCode")]
-        public required string DistributorCode { get; set; }
+        public string DistributorCode { get; set; }
 
+        /// <summary>
+        /// 销售渠道名称（最大长度：300）
+        /// </summary>
         [JsonPropertyName("distributorName")]
-        public required string DistributorName { get; set; }
+        public string DistributorName { get; set; }
 
+        /// <summary>
+        /// 申请流水号（最大长度：500）
+        /// </summary>
         [JsonPropertyName("remark1")]
-        public required string Remark1 { get; set; }
+        public string Remark1 { get; set; }
 
+        /// <summary>
+        /// 预留字段2（最大长度：500）
+        /// </summary>
         [JsonPropertyName("remark2")]
-        public required string Remark2 { get; set; }
+        public string Remark2 { get; set; }
 
-        [JsonPropertyName("note")]
-        public required string Note { get; set; }
+        /// <summary>
+        /// 预约申购日期，格式：yyyymmdd（可为空）
+        /// </summary>
+        [JsonPropertyName("futureBuyDate")]
+        public string FutureBuyDate { get; set; }
 
-        [JsonPropertyName("origDefNo")]
-        public required string OrigDefNo { get; set; }
+        /// <summary>
+        /// 预约赎回日期，格式：yyyymmdd（可为空）
+        /// </summary>
+        [JsonPropertyName("redemptionDateInAdvance")]
+        public string RedemptionDateInAdvance { get; set; }
 
-        [JsonPropertyName("shareBonusType")]
-        public required string ShareBonusType { get; set; }
 
-        [JsonPropertyName("attributionManagerFee")]
-        public required string AttributionManagerFee { get; set; } // 保留两位小数
-
-        [JsonPropertyName("attributionFundAssetFee")]
-        public required string AttributionFundAssetFee { get; set; } // 保留两位小数
-
-        [JsonPropertyName("interest")]
-        public required string Interest { get; set; } // 保留两位小数
-
-        [JsonPropertyName("attributionSellAgencyFee")]
-        public required string AttributionSellAgencyFee { get; set; } // 保留两位小数
-
-        [JsonPropertyName("applyNo")]
-        public required string ApplyNo { get; set; }
-
-        public TransferRecord ToObject()
+        public TransferRequest ToObject()
         {
-            return new TransferRecord
+            return new TransferRequest
             {
-                CustomerIdentity = CertificateNo,
-                CustomerName = CustName,
-                Agency = DistributorName,
-                RequestDate = DateOnly.ParseExact(TransactionDate, "yyyyMMdd"),
-                RequestAmount = decimal.Parse(ApplicationAmount),
-                RequestShare = decimal.Parse(ApplicationVol),
-                ConfirmedDate = DateOnly.ParseExact(TransactionCfmDate, "yyyyMMdd"),
-                ConfirmedAmount = decimal.Parse(ConfirmedAmount),
-                ConfirmedShare = decimal.Parse(ConfirmedVol),
-                ConfirmedNetAmount = decimal.Parse(ConfirmedNavVol),
-                CreateDate = DateOnly.FromDateTime(DateTime.Today),
-                ExternalId = Remark1,
-                Type = Translate(BusinessCode),
-                Fee = decimal.Parse(Charge),
-                PerformanceFee = decimal.Parse(Performance),
-                ExternalRequestId = ApplyNo,
-                FundCode = FundCode,
+                CustomerIdentity = CertificateNumber,
+                CustomerName = CustomerName,
                 FundName = FundName,
-                Source = "api",
+                FundCode = FundCode,
+                RequestDate = DateOnly.ParseExact(TransactionDate, "yyyyMMdd"),
+                RequestType = TranslateRequest(BusinessCode),
+                RequestAmount = ParseDecimal(ApplicationAmount),
+                RequestShare = ParseDecimal(ApplicationVol),
+                Agency = DistributorName,
+                FeeDiscount = ParseDecimal(DiscountRateOfCommission),
+                ExternalId = Remark1,
             };
         }
     }
-
 
     /// <summary>
     /// 基金费用信息实体类
@@ -217,19 +231,19 @@ public partial class CMS
         /// 产品名称（必填，最大长度300）
         /// </summary>
         [JsonPropertyName("fundName")]
-        public required string FundName { get; set; }
+        public string FundName { get; set; }
 
         /// <summary>
         /// 产品代码（必填，最大长度6）
         /// </summary>
         [JsonPropertyName("fundCode")]
-        public required string FundCode { get; set; }
+        public string FundCode { get; set; }
 
         /// <summary>
         /// 费用日期（格式：yyyyMMdd，必填）
         /// </summary>
         [JsonPropertyName("busiDate")]
-        public required string BusiDate { get; set; }
+        public string BusiDate { get; set; }
 
         // 托管费
         [JsonPropertyName("custodianFeeJt")]
@@ -349,91 +363,91 @@ public partial class CMS
         /// 本方账户号
         /// </summary>
         [JsonPropertyName("bfzhh")]
-        public required string OurAccountNumber { get; set; }
+        public string OurAccountNumber { get; set; }
 
         /// <summary>
         /// 本方账户名
         /// </summary>
         [JsonPropertyName("bfzhmc")]
-        public required string OurAccountName { get; set; }
+        public string OurAccountName { get; set; }
 
         /// <summary>
         /// 币种
         /// </summary>
         [JsonPropertyName("bz")]
-        public required string Currency { get; set; }
+        public string Currency { get; set; }
 
         /// <summary>
         /// 产品代码
         /// </summary>
         [JsonPropertyName("cpdm")]
-        public required string ProductCode { get; set; }
+        public string ProductCode { get; set; }
 
         /// <summary>
         /// 产品名称
         /// </summary>
         [JsonPropertyName("cpmc")]
-        public required string ProductName { get; set; }
+        public string ProductName { get; set; }
 
         /// <summary>
         /// 对手方开户行名称
         /// </summary>
         [JsonPropertyName("dsfkhhmc")]
-        public required string CounterpartyBankName { get; set; }
+        public string CounterpartyBankName { get; set; }
 
         /// <summary>
         /// 对方账户号
         /// </summary>
         [JsonPropertyName("dsfzhh")]
-        public required string CounterpartyAccountNumber { get; set; }
+        public string CounterpartyAccountNumber { get; set; }
 
         /// <summary>
         /// 对方账户名
         /// </summary>
         [JsonPropertyName("dsfzhmc")]
-        public required string CounterpartyAccountName { get; set; }
+        public string CounterpartyAccountName { get; set; }
 
         /// <summary>
         /// 交易金额
         /// </summary>
         [JsonPropertyName("jyje")]
-        public required string TransactionAmount { get; set; }
+        public string TransactionAmount { get; set; }
 
         /// <summary>
         /// 交易日期
         /// </summary>
         [JsonPropertyName("jyrq")]
-        public required string TransactionDate { get; set; }
+        public string TransactionDate { get; set; }
 
         /// <summary>
         /// 交易时间
         /// </summary>
         [JsonPropertyName("jysj")]
-        public required string TransactionTime { get; set; }
+        public string TransactionTime { get; set; }
 
         /// <summary>
         /// 流水号
         /// </summary>
         [JsonPropertyName("lsh")]
-        public required string TransactionId { get; set; }
+        public string TransactionId { get; set; }
 
         /// <summary>
         /// 募集户开户行
         /// </summary>
         [JsonPropertyName("mjhyh")]
-        public required string CollectionBank { get; set; }
+        public string CollectionBank { get; set; }
 
         /// <summary>
         /// 收付方向（收、付）
         /// </summary>
         [JsonPropertyName("sffx")]
-        public required string TransactionType { get; set; }
+        public string TransactionType { get; set; }
 
         /// <summary>
         /// 银行摘要
         /// </summary>
         [JsonPropertyName("yhbz")]
-        public required string BankMemo { get; set; }
+        public string BankMemo { get; set; }
 
         internal BankTransaction ToObject()
         {
@@ -455,36 +469,133 @@ public partial class CMS
         }
     }
 
+    public class BankBalanceJson
+    {
+        /// <summary>
+        /// 币种
+        /// </summary>
+        [JsonPropertyName("bz")]
+        public string Currency { get; set; }
+
+        /// <summary>
+        /// 说明
+        /// </summary>
+        [JsonPropertyName("clsm")]
+        public string Description { get; set; }
+
+        /// <summary>
+        /// 产品代码
+        /// </summary>
+        [JsonPropertyName("cpdm")]
+        public string ProductCode { get; set; }
+
+        /// <summary>
+        /// 产品名称
+        /// </summary>
+        [JsonPropertyName("cpmc")]
+        public string ProductName { get; set; }
+
+        /// <summary>
+        /// 更新时间（格式建议：yyyyMMddHHmmss）
+        /// </summary>
+        [JsonPropertyName("gxsj")]
+        public string UpdateTime { get; set; }
+
+        /// <summary>
+        /// 开户行
+        /// </summary>
+        [JsonPropertyName("khzh")]
+        public string BankName { get; set; }
+
+        /// <summary>
+        /// 可用余额
+        /// </summary>
+        [JsonPropertyName("kyye")]
+        public string AvailableBalance { get; set; }
+
+        /// <summary>
+        /// 账号
+        /// </summary>
+        [JsonPropertyName("zhh")]
+        public string AccountNo { get; set; }
+
+        /// <summary>
+        /// 账号名称
+        /// </summary>
+        [JsonPropertyName("zhmc")]
+        public string AccountName { get; set; }
+
+        /// <summary>
+        /// 账号余额
+        /// </summary>
+        [JsonPropertyName("zhye")]
+        public string AccountBalance { get; set; }
+
+        public FundBankBalance ToObject()
+        {
+            return new FundBankBalance
+            {
+                FundCode = ProductCode,
+                FundName = ProductName,
+                Currency = Currency,
+                AccountName = AccountName,
+                AccountNo = AccountNo,
+                Name = BankName,
+                Balance = decimal.Parse(AccountBalance),
+                Time = DateTime.ParseExact(UpdateTime, "yyyy-MM-dd HH:mm:ss", null)
+            };
+        }
+    }
 
 
-    public static TARecordType Translate(string c)
+
+    public static TransferRecordType Translate(string c)
     {
         return c switch
         {
             //"120" => TARecordType.Subscription, //"认购确认" 此项没有份额数据, 用认购结果
-            "122" => TARecordType.Purchase,     //"申购确认",
-            "124" => TARecordType.Redemption,// "赎回确认",
-            "126" => TARecordType.MoveIn,   //"转托确认",
-            "127" => TARecordType.MoveIn,   //"转销售人/机构转入",
-            "128" => TARecordType.MoveOut,  //"转销售人/机构转出",
-            "129" => TARecordType.BonusType,//"分红方式",
-            "130" => TARecordType.Subscription, // "认购结果",
-            "131" => TARecordType.Frozen,       //"基金份数冻结",
-            "132" => TARecordType.Thawed,       //"基金份数解冻",
+            "122" => TransferRecordType.Purchase,     //"申购确认",
+            "124" => TransferRecordType.Redemption,// "赎回确认",
+            "126" => TransferRecordType.MoveIn,   //"转托确认",
+            "127" => TransferRecordType.MoveIn,   //"转销售人/机构转入",
+            "128" => TransferRecordType.MoveOut,  //"转销售人/机构转出",
+            "129" => TransferRecordType.BonusType,//"分红方式",
+            "130" => TransferRecordType.Subscription, // "认购结果",
+            "131" => TransferRecordType.Frozen,       //"基金份数冻结",
+            "132" => TransferRecordType.Thawed,       //"基金份数解冻",
             //"133" => TARecordType.TransferIn,   //"非交易过户",
-            "134" => TARecordType.TransferIn,   //"非交易过户转入",
-            "135" => TARecordType.TransferOut,  //"非交易过户转出",
+            "134" => TransferRecordType.TransferIn,   //"非交易过户转入",
+            "135" => TransferRecordType.TransferOut,  //"非交易过户转出",
             //"136" => TARecordType.SwitchIn,     //"基金转换",
-            "137" => TARecordType.SwitchIn,     //"基金转换转入",
-            "138" => TARecordType.SwitchOut,    //"基金转换转出",
+            "137" => TransferRecordType.SwitchIn,     //"基金转换转入",
+            "138" => TransferRecordType.SwitchOut,    //"基金转换转出",
 
 
-            "139" => TARecordType.Purchase,     //"定时定额申购",
-            "142" => TARecordType.ForceRedemption,//"强制赎回",
-            "143" => TARecordType.Distribution,     //"分红确认",
-            "144" => TARecordType.Increase,     //"强行调增",
-            "145" => TARecordType.Decrease,     //"强行调减",
-            _ => TARecordType.UNK,              //"未知业务类型"
+            "139" => TransferRecordType.Purchase,     //"定时定额申购",
+            "142" => TransferRecordType.ForceRedemption,//"强制赎回",
+            "143" => TransferRecordType.Distribution,     //"分红确认",
+            "144" => TransferRecordType.Increase,     //"强行调增",
+            "145" => TransferRecordType.Decrease,     //"强行调减",
+            _ => TransferRecordType.UNK,              //"未知业务类型"
+        };
+    }
+
+
+    public static TransferRequestType TranslateRequest(string c)
+    {
+        return c switch
+        {
+            "122" => TransferRequestType.Purchase,
+            "124" => TransferRequestType.Redemption,
+            "130" => TransferRequestType.Subscription,
+            "142" => TransferRequestType.ForceRedemption,
+            "144" => TransferRequestType.Increase,     //"强行调增", 份额类型调整
+            "145" => TransferRequestType.Decrease,     //"强行调减",
+            _ => TransferRequestType.UNK
         };
     }
 }
+
+
+
+#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑添加 "required" 修饰符或声明为可为 null。

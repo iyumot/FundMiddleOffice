@@ -40,66 +40,17 @@ public abstract class TrusteeApiBase : ITrustee
 
     private static ILiteDatabase _db { get; } = new LiteDatabase(@$"FileName=data\platformlog.db;Connection=Shared");
 
-
-    public abstract Task<BankTransaction[]?> GetCustodyAccountRecords(DateOnly begin, DateOnly end);
-
-    public abstract Task<BankTransaction[]?> GetRaisingAccountRecords(DateOnly begin, DateOnly end);
+     
 
 
     public abstract Task<ReturnWrap<Investor>> QueryInvestors();
 
 
 
-    public abstract Task<TransferRequest[]?> GetTransferRequests(DateOnly begin, DateOnly end);
+    public abstract Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end);
 
 
-
-    /// <summary>
-    /// 有参
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="func"></param>
-    /// <param name="param">object 或 Dictionary<string, object></param>
-    /// <returns></returns>
-    //protected async Task<ReturnWrap<T>> SyncWork<T>(Func<Dictionary<string, object>, Task<ReturnWrap<T>>> func, object? param)
-    //{
-    //    // 校验
-    //    if (CheckBreforeSync() is ReturnCode rc && rc != ReturnCode.Success) return new(rc, null);
-
-    //    // 非dict 转成dict 方便修改page
-    //    Dictionary<string, object> fp;
-    //    if (param is null) fp = new();
-    //    else if (param is Dictionary<string, object> pp) // (param is not null && (param.GetType() is not Type t || !t.IsGenericType || t.GetGenericTypeDefinition() != typeof(Dictionary<,>)))
-    //        fp = pp;
-    //    else
-    //        fp = GenerateParams(param);
-
-    //    var result = await func(fp);
-    //    List<T> list = new();
-
-    //    // 校验返回 
-    //    switch (result.Code)
-    //    {
-    //        case ReturnCode.Success:
-    //            if (result.Data is not null) list.AddRange(result.Data);
-    //            ConsecutiveErrorCount = 0;
-    //            break;
-
-    //        case ReturnCode.NotFinished: // 还有数据
-    //            if (result.Data is not null) list.AddRange(result.Data);
-    //            result = await func(fp);
-    //            ConsecutiveErrorCount = 0;
-    //            break;
-
-    //        default: // 有错误
-    //            ++ConsecutiveErrorCount;
-    //            if (ConsecutiveErrorCount > 6) SetDisabled();
-    //            return new(result.Code, null);
-    //    }
-
-    //    return new(result.Code, list.ToArray());
-    //}
-
+ 
     /// <summary>
     /// 映射子基金关系
     /// </summary>
@@ -131,11 +82,13 @@ public abstract class TrusteeApiBase : ITrustee
 
 
 
+    public abstract Task<ReturnWrap<FundBankBalance>> QueryRaisingBalance();
 
 
 
 
-    public abstract Task<bool> Prepare();
+
+    public abstract bool Prepare();
 
     /// <summary>
     /// 访问前验证
@@ -221,7 +174,7 @@ public abstract class TrusteeApiBase : ITrustee
     protected string? GetUrl(string part)
     {
 
-        //return Domain + part;
+        return Domain + part;
 
 #if DEBUG
         return TestDomain + part;
@@ -230,6 +183,18 @@ public abstract class TrusteeApiBase : ITrustee
 #endif
     }
 
+
+
+    protected static decimal ParseDecimal(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return 0;
+
+        if (decimal.TryParse(value, out var result))
+            return result;
+
+        throw new FormatException($"无法将 '{value}' 解析为decimal类型");
+    }
 
 
     /// <summary>

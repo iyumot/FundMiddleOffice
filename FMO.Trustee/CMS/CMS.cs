@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
-using System.Web;
+using System.Web;  
 
 namespace FMO.Trustee;
 
@@ -34,31 +34,11 @@ public partial class CMS : TrusteeApiBase
 
     public X509Certificate2? Certificate { get; set; }
 
+     
 
 
 
-    public override Task<BankTransaction[]?> GetCustodyAccountRecords(DateOnly begin, DateOnly end)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override Task<BankTransaction[]?> GetRaisingAccountRecords(DateOnly begin, DateOnly end)
-    {
-        throw new NotImplementedException();
-    }
-
-
-
-    public override Task<TransferRequest[]?> GetTransferRequests(DateOnly begin, DateOnly end)
-    {
-        throw new NotImplementedException();
-    }
-
-
-
-
-
-
+     
 
 
     public override async Task<ReturnWrap<SubjectFundMapping>> SyncSubjectFundMappings()
@@ -66,6 +46,16 @@ public partial class CMS : TrusteeApiBase
         var data = await SyncWork<SubjectFundMapping, SubjectFundMappingJson>(1018, null, x => x.ToObject());
         return data;
     }
+
+
+
+    public override async Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end)
+    {
+        var data = await SyncWork<TransferRequest, TransferRequestJson>(1006, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
+        return data;
+    }
+
+
 
     public override async Task<ReturnWrap<TransferRecord>> QueryTransferRecords(DateOnly begin, DateOnly end)
     {
@@ -77,6 +67,21 @@ public partial class CMS : TrusteeApiBase
     public override async Task<ReturnWrap<FundDailyFee>> QueryFundFeeDetail(DateOnly begin, DateOnly end)
     {
         var data = await SyncWork<FundDailyFee, FundDailyFeeJson>(1020, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
+        return data;
+    }
+
+
+
+
+    public override Task<ReturnWrap<BankTransaction>> QueryCustodialAccountTransction(DateOnly begin, DateOnly end)
+    {
+        throw new NotImplementedException();
+    }
+
+
+    public override async Task<ReturnWrap<FundBankBalance>> QueryRaisingBalance()
+    {
+        var data = await SyncWork<FundBankBalance, BankBalanceJson>(1001, null, x => x.ToObject());
         return data;
     }
 
@@ -98,39 +103,29 @@ public partial class CMS : TrusteeApiBase
             begin = tmp.AddDays(1);
             tmp = begin.AddDays(30);
         }
-         
+
         return new(ReturnCode.Success, transactions.ToArray());
     }
 
-
-
-
-    public override Task<ReturnWrap<BankTransaction>> QueryCustodialAccountTransction(DateOnly begin, DateOnly end)
-    {
-        throw new NotImplementedException();
-    }
-
-
-
-
-    //////////////////////////////////////////////////////////////////////////////////////////
-
-
-    public override async Task<bool> Prepare()
-    {
-
-        InitCertificate();
-
-        if (string.IsNullOrWhiteSpace(CompanyId) || string.IsNullOrWhiteSpace(LicenceKey) || string.IsNullOrWhiteSpace(UserNo) || ServerType is null || Certificate is null)
-            SetDisabled();
-
-        return await Task.FromResult(true);
-    }
 
     public override Task<ReturnWrap<Investor>> QueryInvestors()
     {
         throw new NotImplementedException();
     }
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+
+
+    public override bool Prepare()
+    { 
+        InitCertificate();
+
+        if (string.IsNullOrWhiteSpace(CompanyId) || string.IsNullOrWhiteSpace(LicenceKey) || string.IsNullOrWhiteSpace(UserNo) || ServerType is null || Certificate is null)
+            SetDisabled();
+
+        return true;
+    }
+
 
     protected override bool LoadConfigOverride(IAPIConfig config)
     {
@@ -185,7 +180,7 @@ public partial class CMS : TrusteeApiBase
         // 非dict 转成dict 方便修改page
         Dictionary<string, object> formatedParams;
         if (param is null) formatedParams = new();
-        else if (param is Dictionary<string, object> pp) formatedParams = pp;
+        if (param is Dictionary<string, object> pp) formatedParams = pp;
         else formatedParams = GenerateParams(param);
 
         List<TJSON> list = new();
@@ -193,7 +188,7 @@ public partial class CMS : TrusteeApiBase
         // 获取所有结果
         try
         {
-            for (int i = 0; i < 99; i++) // 防止无限循环，最多99次 
+            for (int i = 0; i < 19; i++) // 防止无限循环，最多99次 
             {
                 var json = await Query(interfaceId, formatedParams);
 

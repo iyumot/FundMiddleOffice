@@ -182,3 +182,14 @@ public class BankBalance
 
     public string Currency { get; set; } = "RMB";
 }
+
+
+public class FundBankBalance : BankBalance
+{
+    public int FundId { get; set; }
+
+    public string? FundCode { get; set; }
+
+    public string? FundName { get; set; }
+
+}

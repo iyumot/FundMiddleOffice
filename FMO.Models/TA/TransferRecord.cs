@@ -63,7 +63,7 @@ public class TransferRecord : IEquatable<TransferRecord>
     /// 交易类型
     /// </summary> 
     [Description("业务类型")]
-    public TARecordType Type { get; set; }
+    public TransferRecordType Type { get; set; }
 
     /// <summary>
     /// 申请份额
@@ -135,14 +135,14 @@ public class TransferRecord : IEquatable<TransferRecord>
     {
         switch (Type)
         {
-            case TARecordType.Subscription:
-            case TARecordType.Purchase:
-            case TARecordType.Increase:
-            case TARecordType.Distribution:
+            case TransferRecordType.Subscription:
+            case TransferRecordType.Purchase:
+            case TransferRecordType.Increase:
+            case TransferRecordType.Distribution:
                 return ConfirmedShare;
-            case TARecordType.Redemption:
-            case TARecordType.ForceRedemption:
-            case TARecordType.Decrease:
+            case TransferRecordType.Redemption:
+            case TransferRecordType.ForceRedemption:
+            case TransferRecordType.Decrease:
                 return -ConfirmedShare; 
             default:
                 return 0;
@@ -152,14 +152,14 @@ public class TransferRecord : IEquatable<TransferRecord>
     {
         switch (Type)
         {
-            case TARecordType.Subscription:
-            case TARecordType.Purchase:
-            case TARecordType.Increase:
-            case TARecordType.Distribution:
+            case TransferRecordType.Subscription:
+            case TransferRecordType.Purchase:
+            case TransferRecordType.Increase:
+            case TransferRecordType.Distribution:
                 return -ConfirmedAmount;
-            case TARecordType.Redemption:
-            case TARecordType.ForceRedemption:
-            case TARecordType.Decrease:
+            case TransferRecordType.Redemption:
+            case TransferRecordType.ForceRedemption:
+            case TransferRecordType.Decrease:
                 return ConfirmedAmount;
             default:
                 return 0;

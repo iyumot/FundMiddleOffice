@@ -30,26 +30,12 @@ public interface ITrustee
 
     bool IsValid { get; }
 
-    Task<bool> Prepare();
+    bool Prepare();
 
-    /// <summary>
-    /// 获取募集户流水
-    /// </summary>
-    /// <param name="begin"></param>
-    /// <param name="end"></param>
-    /// <returns></returns>
-    Task<BankTransaction[]?> GetRaisingAccountRecords(DateOnly begin, DateOnly end);
-
-    /// <summary>
-    /// 获取托管户流水
-    /// </summary>
-    /// <param name="begin"></param>
-    /// <param name="end"></param>
-    /// <returns></returns>
-    Task<BankTransaction[]?>? GetCustodyAccountRecords(DateOnly begin, DateOnly end);
+    string Title {  get; }
 
 
-    Task<TransferRequest[]?> GetTransferRequests(DateOnly begin, DateOnly end);
+    Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end);
 
     /// <summary>
     /// 获取交易确认记录
@@ -92,6 +78,14 @@ public interface ITrustee
     /// </summary>
     /// <returns></returns>
     Task<ReturnWrap<SubjectFundMapping>> SyncSubjectFundMappings();
+
+
+    /// <summary>
+    /// 获取募集户余额
+    /// </summary>
+    /// <param name="fundCode"></param>
+    /// <returns></returns>
+    Task<ReturnWrap<FundBankBalance>> QueryRaisingBalance( );
 }
 
 

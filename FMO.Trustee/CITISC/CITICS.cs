@@ -29,20 +29,7 @@ public partial class CITICS : TrusteeApiBase
     public string? Token { get; set; }
 
     private DateTime? TokenTime { get; set; }
-
-    public override async Task<BankTransaction[]?> GetCustodyAccountRecords(DateOnly begin, DateOnly end)
-    {
-        var content = await _client.GetStringAsync(GetUrl("/v1/ta/TradeConfirmationForApi "));
-
-
-        return [];
-    }
-
-    public override Task<BankTransaction[]?> GetRaisingAccountRecords(DateOnly begin, DateOnly end)
-    {
-        throw new NotImplementedException();
-    }
-
+     
 
     public override async Task<ReturnWrap<Investor>> QueryInvestors()
     {
@@ -93,9 +80,12 @@ public partial class CITICS : TrusteeApiBase
     }
 
 
-    public override Task<TransferRequest[]?> GetTransferRequests(DateOnly begin, DateOnly end)
+    public override async Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end)
     {
-        throw new NotImplementedException();
+        var part = "/v1/ta/queryTradeApplyForApi";
+        var result = await SyncWork<TransferRequest, TransferRequestJson>(part, new { ackBeginDate = $"{begin:yyyyMMdd}", ackEndDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
+
+        return result;
     }
 
 
@@ -133,17 +123,11 @@ public partial class CITICS : TrusteeApiBase
             return new(result.Code, list.ToArray());
         }
 
-        return new (result.Code, null);
+        return new(result.Code, null);
     }
 
 
-    public async Task<ReturnWrap<TransferRequest>> QueryTransferRequest(DateOnly begin, DateOnly end)
-    {
-        var part = "/v1/ta/queryTradeApplyForApi";
-        var result = await SyncWork<TransferRequest, TransferRequestJson>(part, new { ackBeginDate = $"{begin:yyyyMMdd}", ackEndDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
-
-        return result;
-    }
+ 
 
     /// <summary>
     /// 募集户余额
@@ -159,6 +143,14 @@ public partial class CITICS : TrusteeApiBase
         return r;
     }
 
+    public override async Task<ReturnWrap<FundBankBalance>> QueryRaisingBalance()
+    {
+        var part = "/v1/fs/queryRaiseAccBalForApi";
+
+        var r = await SyncWork<FundBankBalance, RaisingBalanceJson>(part, null, x => x.ToObject());
+
+        return r;
+    }
 
     public override async Task<ReturnWrap<BankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end)
     {
@@ -417,6 +409,11 @@ public partial class CITICS : TrusteeApiBase
         // 校验
         if (CheckBreforeSync() is ReturnCode rc && rc != ReturnCode.Success) return new(rc, null);
 
+        // 检查token
+        if (string.IsNullOrWhiteSpace(Token) || TokenTime is null || (DateTime.Now - TokenTime.Value).TotalHours > 18)
+            await GetToken();
+
+
         // 非dict 转成dict 方便修改page
         Dictionary<string, object> formatedParams;
         if (param is Dictionary<string, object> pp) formatedParams = pp;
@@ -427,7 +424,7 @@ public partial class CITICS : TrusteeApiBase
         // 获取所有结果
         try
         {
-            for (int i = 0; i < 99; i++) // 防止无限循环，最多99次 
+            for (int i = 0; i < 19; i++) // 防止无限循环，最多99次 
             {
                 var json = await Query(part, formatedParams);
 
@@ -495,13 +492,9 @@ public partial class CITICS : TrusteeApiBase
         return true;
     }
 
-    public override async Task<bool> Prepare()
+    public override bool Prepare()
     {
-        LoadConfig();
 
-        // 检查token
-        if (string.IsNullOrWhiteSpace(Token))// || TokenTime is null || (DateTime.Now - TokenTime.Value).TotalHours > 18)
-            await GetToken();
         return true;
     }
 
@@ -581,7 +574,7 @@ public partial class CITICS : TrusteeApiBase
         // 检验可用性 
         if (!IsValid) return ReturnCode.ConfigInvalid;
 
-        if (string.IsNullOrWhiteSpace(CustomerAuth) || string.IsNullOrWhiteSpace(Token))
+        if (string.IsNullOrWhiteSpace(CustomerAuth) /*|| string.IsNullOrWhiteSpace(Token)*/)
         {
             SetDisabled();
             return ReturnCode.ConfigInvalid;

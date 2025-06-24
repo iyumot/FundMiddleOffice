@@ -67,8 +67,8 @@ public partial class FundTAViewModel : ObservableObject
                 Name = x.Name,
                 Share = x.Share,
                 Asset = x.Share * nv,
-                Deposit = x.Record.Where(x => x.Type switch { TARecordType.Subscription or TARecordType.Purchase or TARecordType.MoveIn => true, _ => false }).Sum(x => x.ConfirmedNetAmount),
-                Withdraw = x.Record.Where(x => x.Type switch { TARecordType.Redemption or TARecordType.Redemption or TARecordType.MoveOut or TARecordType.Distribution => true, _ => false }).Sum(x => x.ConfirmedNetAmount),
+                Deposit = x.Record.Where(x => x.Type switch { TransferRecordType.Subscription or TransferRecordType.Purchase or TransferRecordType.MoveIn => true, _ => false }).Sum(x => x.ConfirmedNetAmount),
+                Withdraw = x.Record.Where(x => x.Type switch { TransferRecordType.Redemption or TransferRecordType.Redemption or TransferRecordType.MoveOut or TransferRecordType.Distribution => true, _ => false }).Sum(x => x.ConfirmedNetAmount),
                 Proportion = x.Share == 0 ? null : x.Share / CurrentTotalShare
                 //Profit = x.Record.Sum(y => y.AmountChange()) + x.Share * nv
             }).ToList();
@@ -79,7 +79,7 @@ public partial class FundTAViewModel : ObservableObject
             CurrentShareNotPair = true;
 
         // 认购时份额
-        var subscription = ta.Where(x => x.Type == TARecordType.Subscription);
+        var subscription = ta.Where(x => x.Type == TransferRecordType.Subscription);
         InitialShares = new(subscription.Select(x => new InvestorShareViewModel { Id = x.Id, Name = x.CustomerName, Share = x.ConfirmedShare }));
         InitialTotalShare = subscription.Sum(x => x.ConfirmedShare);
     }

@@ -66,14 +66,14 @@ public partial class AddTAWindowViewModel : ObservableObject
     public partial Investor? SelectedInvestor { get; set; }
 
 
-    public TARecordType[] Types { get; } = [TARecordType.Subscription, TARecordType.Purchase, TARecordType.Redemption, TARecordType.ForceRedemption, TARecordType.Distribution];
+    public TransferRecordType[] Types { get; } = [TransferRecordType.Subscription, TransferRecordType.Purchase, TransferRecordType.Redemption, TransferRecordType.ForceRedemption, TransferRecordType.Distribution];
 
 
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowRequestNumber))]
     [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
-    public partial TARecordType? SelectedType { get; set; }
+    public partial TransferRecordType? SelectedType { get; set; }
 
 
     [ObservableProperty]
@@ -86,7 +86,7 @@ public partial class AddTAWindowViewModel : ObservableObject
     public partial DateTime? ConfirmDate { get; set; }
 
 
-    public bool ShowRequestNumber => SelectedType switch { TARecordType.Purchase or TARecordType.Subscription or TARecordType.Redemption or TARecordType.ForceRedemption => true, _ => false };
+    public bool ShowRequestNumber => SelectedType switch { TransferRecordType.Purchase or TransferRecordType.Subscription or TransferRecordType.Redemption or TransferRecordType.ForceRedemption => true, _ => false };
 
 
     [ObservableProperty]
@@ -145,7 +145,7 @@ public partial class AddTAWindowViewModel : ObservableObject
 
 
 
-    public bool CanConfirm => SelectedFund is not null && SelectedType is not null && SelectedInvestor is not null && RequestDate is not null && ConfirmDate is not null && ConfirmShare is not null && ConfirmAmount is not null && ConfirmNetAmount is not null && SelectedType switch { TARecordType.Distribution or TARecordType.Redemption or TARecordType.ForceRedemption => PerformanceFee is not null, _ => true };
+    public bool CanConfirm => SelectedFund is not null && SelectedType is not null && SelectedInvestor is not null && RequestDate is not null && ConfirmDate is not null && ConfirmShare is not null && ConfirmAmount is not null && ConfirmNetAmount is not null && SelectedType switch { TransferRecordType.Distribution or TransferRecordType.Redemption or TransferRecordType.ForceRedemption => PerformanceFee is not null, _ => true };
 
 
 
@@ -166,9 +166,9 @@ public partial class AddTAWindowViewModel : ObservableObject
             CustomerIdentity = SelectedInvestor.Identity.Id,
             CustomerName = SelectedInvestor!.Name,
             RequestDate = DateOnly.FromDateTime(RequestDate!.Value),
-            RequestAmount = SelectedType switch { TARecordType.Subscription or TARecordType.Purchase => RequestNumber ?? 0, _ => 0 },
-            RequestShare = SelectedType switch { TARecordType.Redemption or TARecordType.ForceRedemption => RequestNumber ?? 0, _ => 0 },
-            RequestType = SelectedType switch { TARecordType.Subscription => RequestType.Subscription, TARecordType.Purchase => RequestType.Purchase, TARecordType.Redemption => RequestType.Redemption, TARecordType.ForceRedemption => RequestType.ForceRedemption },
+            RequestAmount = SelectedType switch { TransferRecordType.Subscription or TransferRecordType.Purchase => RequestNumber ?? 0, _ => 0 },
+            RequestShare = SelectedType switch { TransferRecordType.Redemption or TransferRecordType.ForceRedemption => RequestNumber ?? 0, _ => 0 },
+            RequestType = SelectedType switch { TransferRecordType.Subscription => TransferRequestType.Subscription, TransferRecordType.Purchase => TransferRequestType.Purchase, TransferRecordType.Redemption => TransferRequestType.Redemption, TransferRecordType.ForceRedemption => TransferRequestType.ForceRedemption },
             CreateDate = DateOnly.FromDateTime(DateTime.Today),
             Source = "manual"
         };
@@ -185,8 +185,8 @@ public partial class AddTAWindowViewModel : ObservableObject
             CustomerName = SelectedInvestor!.Name,
             RequestDate = DateOnly.FromDateTime(RequestDate!.Value),
             ConfirmedDate = DateOnly.FromDateTime(ConfirmDate!.Value),
-            RequestAmount = SelectedType switch { TARecordType.Subscription or TARecordType.Purchase => RequestNumber ?? 0, _ => 0 },
-            RequestShare = SelectedType switch { TARecordType.Redemption or TARecordType.ForceRedemption => RequestNumber ?? 0, _ => 0 },
+            RequestAmount = SelectedType switch { TransferRecordType.Subscription or TransferRecordType.Purchase => RequestNumber ?? 0, _ => 0 },
+            RequestShare = SelectedType switch { TransferRecordType.Redemption or TransferRecordType.ForceRedemption => RequestNumber ?? 0, _ => 0 },
             ConfirmedShare = ConfirmShare ?? 0,
             ConfirmedAmount = ConfirmAmount ?? 0,
             ConfirmedNetAmount = ConfirmNetAmount ?? 0,

@@ -12,6 +12,8 @@ public static class TrusteeGallay
     public static TrusteeViewModelBase[] TrusteeViewModels { get; }
 
 
+    public static TrusteeWorker Worker { get; }
+
     static TrusteeGallay()
     {
         using var pdb = DbHelper.Platform();
@@ -22,12 +24,20 @@ public static class TrusteeGallay
         }
 
 
-
-
         TrusteeViewModels = [new CMSViewModel(), new CITISCViewModel(), new CSCViewModel()];
 
         Trustees = TrusteeViewModels.OfType<ITrusteeViewModel>().Select(x => x.Assist).ToArray();
+
+
+        Worker = new TrusteeWorker(Trustees);
     }
 
 
+    /// <summary>
+    /// 放到首页中
+    /// </summary>
+    public static void Initialize()
+    {
+        Worker.Start();
+    }
 }

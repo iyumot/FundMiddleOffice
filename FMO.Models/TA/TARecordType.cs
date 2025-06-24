@@ -4,7 +4,7 @@ namespace FMO.Models;
 
 [TypeConverter(typeof(EnumDescriptionTypeConverter))]
 [Description("TA业务类型")]
-public enum TARecordType
+public enum TransferRecordType
 {
     [Description("未知")] UNK,
     /// <summary>

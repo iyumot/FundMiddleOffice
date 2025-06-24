@@ -106,7 +106,7 @@ namespace FMO
             if (flow.InitialAsset == 0)
             {
                 using var db = DbHelper.Base();
-                var ta = db.GetCollection<TransferRecord>().Find(x => x.FundId == FundId && x.Type == TARecordType.Subscription).ToArray();
+                var ta = db.GetCollection<TransferRecord>().Find(x => x.FundId == FundId && x.Type == TransferRecordType.Subscription).ToArray();
                 if (ta.Length > 0)
                     InitialAsset.NewValue = ta.Sum(x => x.ConfirmedNetAmount);
             }

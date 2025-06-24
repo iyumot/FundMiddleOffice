@@ -77,7 +77,7 @@ public class TAFieldGather : FieldGather<TransferRecord>
 {
     public FieldInfo<TransferRecord, string?> FundName { get; init; } = new FieldInfo<TransferRecord, string?>("产品名称", o => o switch { string s => s, _ => o.ToString() }, (x, y) => x.FundName = y);
     public FieldInfo<TransferRecord, string?> FundCode { get; init; } = new FieldInfo<TransferRecord, string?>("产品代码", o => o switch { string s => s, _ => o.ToString() }, (x, y) => x.FundCode = y);
-    public FieldInfo<TransferRecord, TARecordType> Type { get; init; } = new FieldInfo<TransferRecord, TARecordType>("业务类型", o => ParseType(o?.ToString()), (x, y) => x.Type = y);
+    public FieldInfo<TransferRecord, TransferRecordType> Type { get; init; } = new FieldInfo<TransferRecord, TransferRecordType>("业务类型", o => ParseType(o?.ToString()), (x, y) => x.Type = y);
     public FieldInfo<TransferRecord, DateOnly> RequestDate { get; init; } = new FieldInfo<TransferRecord, DateOnly>("申请日期", o => DateOnlyValue(o), (x, y) => x.RequestDate = y);
     public FieldInfo<TransferRecord, decimal> RequestAmount { get; init; } = new FieldInfo<TransferRecord, decimal>("申请金额", o => DecimalValue(o), (x, y) => x.RequestAmount = y);
     public FieldInfo<TransferRecord, decimal> RequestShare { get; init; } = new FieldInfo<TransferRecord, decimal>("申请份额", o => DecimalValue(o), (x, y) => x.RequestShare = y);
@@ -169,39 +169,39 @@ public class TAFieldGather : FieldGather<TransferRecord>
     }
 
 
-    public static TARecordType ParseType(string? str)
+    public static TransferRecordType ParseType(string? str)
     {
         switch (str)
         {
             case "认购结果":
-                return TARecordType.Subscription;
+                return TransferRecordType.Subscription;
 
             case "申购确认":
-                return TARecordType.Purchase;
+                return TransferRecordType.Purchase;
 
             case string s when s.Contains("强制赎回"):
-                return TARecordType.ForceRedemption;
+                return TransferRecordType.ForceRedemption;
 
             case string s when s.Contains("赎回"):
-                return TARecordType.Redemption;
+                return TransferRecordType.Redemption;
 
             case string s when s.Contains("调增"):
-                return TARecordType.Increase;
+                return TransferRecordType.Increase;
 
             case string s when s.Contains("调减"):
-                return TARecordType.Decrease;
+                return TransferRecordType.Decrease;
 
             case string s when s.Contains("转入"):
-                return TARecordType.MoveIn;
+                return TransferRecordType.MoveIn;
 
             case string s when s.Contains("转出"):
-                return TARecordType.MoveOut;
+                return TransferRecordType.MoveOut;
 
             case string s when s.Contains("分红"):
-                return TARecordType.Distribution;
+                return TransferRecordType.Distribution;
 
             default:
-                return TARecordType.UNK;
+                return TransferRecordType.UNK;
         }
     }
 

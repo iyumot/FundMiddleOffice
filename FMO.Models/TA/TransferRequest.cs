@@ -64,7 +64,7 @@ public class TransferRequest
     /// <summary>
     /// 业务类型
     /// </summary>
-    public RequestType RequestType { get; set; }
+    public TransferRequestType RequestType { get; set; }
 
     /// <summary>
     /// 申请份额

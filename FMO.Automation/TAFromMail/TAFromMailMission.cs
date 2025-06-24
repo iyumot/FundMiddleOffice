@@ -214,7 +214,7 @@ public class TAFromMailMission : MailMission
             foreach (var rec in records)
             {
                 // 校验
-                if (rec.Type == TARecordType.UNK || (rec.ConfirmedShare == 0 && rec.ConfirmedAmount == 0))
+                if (rec.Type == TransferRecordType.UNK || (rec.ConfirmedShare == 0 && rec.ConfirmedAmount == 0))
                 {
                     Log.Error($"TA Bad Data {rec.PrintProperties()}");
                     continue;

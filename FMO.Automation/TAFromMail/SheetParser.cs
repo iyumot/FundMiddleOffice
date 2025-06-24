@@ -9,39 +9,39 @@ namespace FMO.Schedule;
 
 public class SheetParser
 {
-    public static TARecordType ParseType(string? str)
+    public static TransferRecordType ParseType(string? str)
     {
         switch (str)
         {
             case "认购结果":
-                return TARecordType.Subscription;
+                return TransferRecordType.Subscription;
 
             case "申购确认":
-                return TARecordType.Purchase;
+                return TransferRecordType.Purchase;
 
             case string s when s.Contains("强制赎回"):
-                return TARecordType.ForceRedemption;
+                return TransferRecordType.ForceRedemption;
 
             case string s when s.Contains("赎回"):
-                return TARecordType.Redemption;
+                return TransferRecordType.Redemption;
 
             case string s when s.Contains("调增"):
-                return TARecordType.Increase;
+                return TransferRecordType.Increase;
 
             case string s when s.Contains("调减"):
-                return TARecordType.Decrease;
+                return TransferRecordType.Decrease;
 
             case string s when s.Contains("转入"):
-                return TARecordType.MoveIn;
+                return TransferRecordType.MoveIn;
 
             case string s when s.Contains("转出"):
-                return TARecordType.MoveOut;
+                return TransferRecordType.MoveOut;
 
             case string s when s.Contains("分红"):
-                return TARecordType.Distribution;
+                return TransferRecordType.Distribution;
 
             default:
-                return TARecordType.UNK;
+                return TransferRecordType.UNK;
         }
     }
     public static string StringValue(object obj) => obj switch { string s => s, _ => obj?.ToString() ?? "" };
@@ -142,7 +142,7 @@ public class CMSParser : SheetParser
     {
         FieldInfo<TransferRecord, string?> FundName = new FieldInfo<TransferRecord, string?>("产品名称", o => o switch { string s => s, _ => o.ToString() }, (x, y) => x.FundName = y);
         FieldInfo<TransferRecord, string?> FundCode = new FieldInfo<TransferRecord, string?>("产品代码", o => o switch { string s => s, _ => o.ToString() }, (x, y) => x.FundCode = y);
-        FieldInfo<TransferRecord, TARecordType> Type = new FieldInfo<TransferRecord, TARecordType>("业务类型", o => ParseType(o?.ToString()), (x, y) => x.Type = y);
+        FieldInfo<TransferRecord, TransferRecordType> Type = new FieldInfo<TransferRecord, TransferRecordType>("业务类型", o => ParseType(o?.ToString()), (x, y) => x.Type = y);
         FieldInfo<TransferRecord, DateOnly> RequestDate = new FieldInfo<TransferRecord, DateOnly>("申请日期", o => DateOnlyValue(o), (x, y) => x.RequestDate = y);
         FieldInfo<TransferRecord, decimal> RequestAmount = new FieldInfo<TransferRecord, decimal>("申请金额", o => DecimalValue(o), (x, y) => x.RequestAmount = y);
         FieldInfo<TransferRecord, decimal> RequestShare = new FieldInfo<TransferRecord, decimal>("申请份额", o => DecimalValue(o), (x, y) => x.RequestShare = y);
@@ -259,7 +259,7 @@ public class CSTISCParser : SheetParser
     {
         FieldInfo<TransferRecord, string?> FundName = new FieldInfo<TransferRecord, string?>("产品名称", o => o switch { string s => s, _ => o.ToString() }, (x, y) => x.FundName = y);
         FieldInfo<TransferRecord, string?> FundCode = new FieldInfo<TransferRecord, string?>("产品代码", o => o switch { string s => s, _ => o.ToString() }, (x, y) => x.FundCode = y);
-        FieldInfo<TransferRecord, TARecordType> Type = new FieldInfo<TransferRecord, TARecordType>("业务类型", o => ParseType(o?.ToString()), (x, y) => x.Type = y);
+        FieldInfo<TransferRecord, TransferRecordType> Type = new FieldInfo<TransferRecord, TransferRecordType>("业务类型", o => ParseType(o?.ToString()), (x, y) => x.Type = y);
         FieldInfo<TransferRecord, DateOnly> RequestDate = new FieldInfo<TransferRecord, DateOnly>("申请日期", o => DateOnlyValue(o), (x, y) => x.RequestDate = y);
         FieldInfo<TransferRecord, decimal> RequestAmount = new FieldInfo<TransferRecord, decimal>("申请金额", o => DecimalValue(o), (x, y) => x.RequestAmount = y);
         FieldInfo<TransferRecord, decimal> RequestShare = new FieldInfo<TransferRecord, decimal>("申请份额", o => DecimalValue(o), (x, y) => x.RequestShare = y);
@@ -351,7 +351,7 @@ public class CSTISCParser : SheetParser
             Fill(ExternalId, r, values);
 
             // 特殊情况
-            if (r.Type switch { TARecordType.Redemption or TARecordType.ForceRedemption => true, _ => false } && r.ConfirmedNetAmount <= 0)
+            if (r.Type switch { TransferRecordType.Redemption or TransferRecordType.ForceRedemption => true, _ => false } && r.ConfirmedNetAmount <= 0)
                 r.ConfirmedNetAmount = r.ConfirmedAmount;
 
 
@@ -374,7 +374,7 @@ public class CSCParser : SheetParser
     {
         FieldInfo<TransferRecord, string?> FundName = new FieldInfo<TransferRecord, string?>("产品名称", o => o switch { string s => s, _ => o.ToString() }, (x, y) => x.FundName = y);
         FieldInfo<TransferRecord, string?> FundCode = new FieldInfo<TransferRecord, string?>("产品代码", o => o switch { string s => s, _ => o.ToString() }, (x, y) => x.FundCode = y);
-        FieldInfo<TransferRecord, TARecordType> Type = new FieldInfo<TransferRecord, TARecordType>("业务类型", o => ParseType(o?.ToString()), (x, y) => x.Type = y);
+        FieldInfo<TransferRecord, TransferRecordType> Type = new FieldInfo<TransferRecord, TransferRecordType>("业务类型", o => ParseType(o?.ToString()), (x, y) => x.Type = y);
         FieldInfo<TransferRecord, DateOnly> RequestDate = new FieldInfo<TransferRecord, DateOnly>("申请日期", o => DateOnlyValue(o), (x, y) => x.RequestDate = y);
         FieldInfo<TransferRecord, decimal> RequestAmount = new FieldInfo<TransferRecord, decimal>("申请金额", o => DecimalValue(o), (x, y) => x.RequestAmount = y);
         FieldInfo<TransferRecord, decimal> RequestShare = new FieldInfo<TransferRecord, decimal>("申请份额", o => DecimalValue(o), (x, y) => x.RequestShare = y);
@@ -465,7 +465,7 @@ public class CSCParser : SheetParser
             Fill(ExternalId, r, values);
 
             // 特殊情况
-            if (r.Type switch { TARecordType.Redemption or TARecordType.ForceRedemption => true, _ => false } && r.ConfirmedNetAmount <= 0)
+            if (r.Type switch { TransferRecordType.Redemption or TransferRecordType.ForceRedemption => true, _ => false } && r.ConfirmedNetAmount <= 0)
                 r.ConfirmedNetAmount = r.ConfirmedAmount;
 
 
@@ -484,7 +484,7 @@ public class CSCParser : SheetParser
     {
         FieldInfo<TransferRecord, string?> FundName = new FieldInfo<TransferRecord, string?>("基金名称", o => o switch { string s => s, _ => o.ToString() }, (x, y) => x.FundName = y);
         FieldInfo<TransferRecord, string?> FundCode = new FieldInfo<TransferRecord, string?>("基金代码", o => o switch { string s => s, _ => o.ToString() }, (x, y) => x.FundCode = y);
-        FieldInfo<TransferRecord, TARecordType> Type = new FieldInfo<TransferRecord, TARecordType>("业务类型", o => ParseType(o?.ToString()), (x, y) => x.Type = y);
+        FieldInfo<TransferRecord, TransferRecordType> Type = new FieldInfo<TransferRecord, TransferRecordType>("业务类型", o => ParseType(o?.ToString()), (x, y) => x.Type = y);
         FieldInfo<TransferRecord, DateOnly> RequestDate = new FieldInfo<TransferRecord, DateOnly>("申请日期", o => DateOnlyValue(o), (x, y) => x.RequestDate = y);
         FieldInfo<TransferRecord, decimal> RequestAmount = new FieldInfo<TransferRecord, decimal>("申请金额", o => DecimalValue(o), (x, y) => x.RequestAmount = y);
         FieldInfo<TransferRecord, decimal> RequestShare = new FieldInfo<TransferRecord, decimal>("申请份额", o => DecimalValue(o), (x, y) => x.RequestShare = y);

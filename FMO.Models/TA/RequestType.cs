@@ -6,7 +6,7 @@ namespace FMO.Models;
 /// 交易申请业务类型
 /// </summary>
 [TypeConverter(typeof(EnumDescriptionTypeConverter))]
-public enum RequestType
+public enum TransferRequestType
 {
     [Description("未知")] UNK,
     /// <summary>
