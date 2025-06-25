@@ -1,4 +1,12 @@
 连接管理人、托管外包、基协、电子合同平台
-![image](https://github.com/user-attachments/assets/53673bd0-f740-4f49-abed-cd2e02b032ae)
+
+
+
+# 首页
+1. 历史规模图
+2. 常用工具集
+3. 各类提示信息
+3. 托管提示信息
+
 
 ![Home](readme/home.png)
