@@ -234,7 +234,6 @@ public class TAFromMailMission : MailMission
                 db.GetCollection<TransferRecord>().Upsert(rec);
 
                 WeakReferenceMessenger.Default.Send(rec);
-                DataTracker.CheckShareIsPair(rec.FundId);
             }
         }
 
