@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
@@ -92,6 +93,7 @@ public partial class TrusteeWorker : ObservableObject
         }
     }
 
+    [RelayCommand]
     public async Task RaisingRecordOnce()
     {
         List<WorkReturn> ret = new();
