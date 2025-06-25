@@ -10,7 +10,7 @@
     xmlns:trust="clr-namespace:FMO.Trustee;assembly=FMO.Trustee"
     d:DataContext="{d:DesignInstance Type=local:PlatformPageViewModel}"
     d:DesignHeight="450"
-    d:DesignWidth="800"
+    d:DesignWidth="1300"
     mc:Ignorable="d">
     <UserControl.Resources>
 
@@ -439,97 +439,158 @@
         </DockPanel>
 
 
-        <DockPanel Margin="5" DockPanel.Dock="Top">
-            <TextBlock
-                VerticalAlignment="Center"
-                FontSize="18"
-                FontWeight="Black"
-                Text="托管API" />
+        <DockPanel
+            Margin="5"
+            DockPanel.Dock="Top"
+            LastChildFill="False">
+            <DockPanel MinWidth="550">
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="18"
+                    FontWeight="Black"
+                    Text="托管API" />
 
-            <TextBlock
-                Margin="10,0,0,0"
-                VerticalAlignment="Center"
-                Foreground="Gray"
-                Text="{Binding LocalIP, StringFormat=当前ip: {0}, TargetNullValue=''}" />
+                <TextBlock
+                    Margin="10,0,0,0"
+                    VerticalAlignment="Center"
+                    Foreground="Gray"
+                    Text="{Binding LocalIP, StringFormat=当前ip: {0}, TargetNullValue=''}" />
 
-            <TextBlock
-                Margin="10,0"
-                VerticalAlignment="Center"
-                Foreground="Gray"
-                Text="如果没有固定IP，可以用阿里、腾讯云等代理" />
+                <TextBlock
+                    Margin="10,0"
+                    VerticalAlignment="Center"
+                    Foreground="Gray"
+                    Text="如果没有固定IP，可以用阿里、腾讯云等代理" />
 
-            <CheckBox
-                Content="代理"
-                IsChecked="{Binding UseProxyForTrustee}"
-                IsEnabled="{Binding IsTrusteeProxyAvailiable}" />
+                <CheckBox
+                    Content="代理"
+                    IsChecked="{Binding UseProxyForTrustee}"
+                    IsEnabled="{Binding IsTrusteeProxyAvailiable}" />
 
-            <ToggleButton
-                BorderThickness="0"
-                IsChecked="{Binding ShowProxyConfig}"
-                Style="{StaticResource ToggleButtonFlip}">
-                <Viewbox Width="16">
-                    <Path Data="{StaticResource f.gear}" Fill="Black" />
-                </Viewbox>
-                <hc:StatusSwitchElement.CheckedElement>
-                    <Viewbox Width="18">
-                        <Path Data="{StaticResource f.reply}" Fill="Black" />
+                <ToggleButton
+                    BorderThickness="0"
+                    IsChecked="{Binding ShowProxyConfig}"
+                    Style="{StaticResource ToggleButtonFlip}">
+                    <Viewbox Width="16">
+                        <Path Data="{StaticResource f.gear}" Fill="Black" />
                     </Viewbox>
-                </hc:StatusSwitchElement.CheckedElement>
-            </ToggleButton>
+                    <hc:StatusSwitchElement.CheckedElement>
+                        <Viewbox Width="18">
+                            <Path Data="{StaticResource f.reply}" Fill="Black" />
+                        </Viewbox>
+                    </hc:StatusSwitchElement.CheckedElement>
+                </ToggleButton>
 
-            <hc:SimplePanel Visibility="{Binding ShowProxyConfig, Converter={StaticResource Boolean2VisibilityConverter}}">
-                <ContentControl Margin="10,0" DataContext="{Binding ProxyViewModel}">
-                    <DockPanel LastChildFill="False">
-                        <hc:TextBox
-                            Width="240"
-                            hc:InfoElement.Placeholder="http://aaa.com:1123"
-                            Text="{Binding Address, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                <hc:SimplePanel Visibility="{Binding ShowProxyConfig, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    <ContentControl Margin="10,0" DataContext="{Binding ProxyViewModel}">
+                        <DockPanel LastChildFill="False">
+                            <hc:TextBox
+                                Width="240"
+                                hc:InfoElement.Placeholder="http://aaa.com:1123"
+                                Text="{Binding Address, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
 
-                        <hc:TextBox
-                            Width="130"
-                            hc:InfoElement.Placeholder="user name 可以为空"
-                            Text="{Binding User, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                            <hc:TextBox
+                                Width="130"
+                                hc:InfoElement.Placeholder="user name 可以为空"
+                                Text="{Binding User, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
 
-                        <hc:PasswordBox
-                            Width="130"
-                            hc:InfoElement.Placeholder="password 可以为空"
-                            IsSafeEnabled="False"
-                            UnsafePassword="{Binding Password, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                            <hc:PasswordBox
+                                Width="130"
+                                hc:InfoElement.Placeholder="password 可以为空"
+                                IsSafeEnabled="False"
+                                UnsafePassword="{Binding Password, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
 
-                        <Button
-                            Margin="5,0,0,0"
-                            Command="{Binding CheckAccessCommand}"
-                            Content="校验"
-                            Style="{StaticResource ButtonPrimary}" />
-                    </DockPanel>
-                </ContentControl>
-            </hc:SimplePanel>
+                            <Button
+                                Margin="5,0,0,0"
+                                Command="{Binding CheckAccessCommand}"
+                                Content="校验"
+                                Style="{StaticResource ButtonPrimary}" />
+                        </DockPanel>
+                    </ContentControl>
+                </hc:SimplePanel>
+            </DockPanel>
 
+            <Rectangle
+                Width="2"
+                Margin="10,3"
+                Fill="Gray" />
 
-            <!--<ListBox
+            <!--  同步设置与状态  -->
+
+            <ListBox
                 BorderThickness="0"
-                ItemsSource="{Binding Trustees[0].Buttons}"
+                ItemsSource="{Binding TrusteeAPIButtons}"
                 Style="{StaticResource ListBoxCustom}">
-                <ListBox.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel IsItemsHost="True" />
-                    </ItemsPanelTemplate>
-                </ListBox.ItemsPanel>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <DockPanel Margin="5,0">
-                            <Viewbox
-                                Width="16"
-                                Height="16"
-                                Margin="2,0">
-                                <Path Data="{Binding Icon}" Fill="Black" />
-                            </Viewbox>
-                            <TextBlock Text="{Binding Description}" />
+                        <DockPanel>
+                            <ProgressBar
+                                Width="30"
+                                Height="4"
+                                Margin="0,-2,0,0"
+                                DockPanel.Dock="Bottom"
+                                IsIndeterminate="True"
+                                Style="{StaticResource ProgressBarSuccess}"
+                                Visibility="{Binding Command.IsRunning, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                            <Button
+                                hc:IconElement.Geometry="{Binding Icon}"
+                                Command="{Binding Command}"
+                                Style="{StaticResource ButtonIcon}" />
                         </DockPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
-            </ListBox>-->
+            </ListBox>
 
+
+            <!--  运行报告  -->
+            <ToggleButton
+                Name="apiRepBtn"
+                hc:IconElement.Geometry="{StaticResource f.grip}"
+                BorderThickness="0"
+                Command="{Binding ViewTrusteeWorkReportCommand}"
+                Foreground="DarkKhaki"
+                IsChecked="{Binding IsTrusteeReportVisible}" />
+
+            <Popup
+                AllowsTransparency="True"
+                IsOpen="{Binding IsTrusteeReportVisible}"
+                Placement="Bottom"
+                PlacementTarget="{Binding ElementName=apiRepBtn}"
+                StaysOpen="False">
+                <Border Background="WhiteSmoke" CornerRadius="10">
+                    <ListBox
+                        MaxHeight="800"
+                        Margin="5"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ItemsSource="{Binding TrusteeWorkLogSource.View}"
+                        Style="{StaticResource ListBoxCustom}">
+                        <ListBox.GroupStyle>
+                            <GroupStyle>
+                                <GroupStyle.HeaderTemplate>
+                                    <DataTemplate>
+                                        <TextBlock
+                                            Margin="0,3"
+                                            FontWeight="Black"
+                                            Text="{Binding Name, StringFormat=yyyy-MM-dd}" />
+                                    </DataTemplate>
+                                </GroupStyle.HeaderTemplate>
+                            </GroupStyle>
+                        </ListBox.GroupStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel>
+                                    <TextBlock Width="90" Text="{Binding Identifier}" />
+                                    <TextBlock Text="{Binding Method}" />
+                                    <TextBlock Margin="6,0" Text="{Binding Time, StringFormat=HH:mm}" />
+                                    <TextBlock Text="{Binding Log}" TextWrapping="WrapWithOverflow" />
+                                    <TextBlock Margin="10,0,0,0" Text="{Binding Content}" />
+                                </DockPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Border>
+            </Popup>
         </DockPanel>
 
 

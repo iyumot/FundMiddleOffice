@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 using FMO.IO;
 using FMO.IO.AMAC;
 using FMO.IO.DS;
@@ -14,6 +13,7 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -83,7 +83,7 @@ public partial class ProxyViewModel : ObservableObject
 
     public delegate void ProxyCheckedHandlder(bool valid);
 
-    public ProxyCheckedHandlder ProxyChecked;
+    public ProxyCheckedHandlder? ProxyChecked;
 }
 
 /// <summary>
@@ -116,8 +116,22 @@ public partial class PlatformPageViewModel : ObservableObject
     public ProxyViewModel ProxyViewModel { get; } = new();
 
 
+    public SyncButtonInfo[] TrusteeAPIButtons { get; set; }
+
+
     [ObservableProperty]
     public partial string? LocalIP { get; set; }
+
+
+    [ObservableProperty]
+    public partial bool IsTrusteeReportVisible { get; set; }
+
+
+    [ObservableProperty]
+    public partial IEnumerable< TrusteeApiBase.LogInfo>? TrusteeWorkLogs { get; set; }
+
+
+    public CollectionViewSource TrusteeWorkLogSource { get; } = new();
 
     public PlatformPageViewModel()
     {
@@ -165,7 +179,10 @@ public partial class PlatformPageViewModel : ObservableObject
         // using var db = DbHelper.Platform();
 
 
+
         Trustees2 = TrusteeGallay.TrusteeViewModels;
+        var work = TrusteeGallay.Worker;
+        TrusteeAPIButtons = [new((Geometry)App.Current.Resources["f.hand-holding-dollar"], work.QueryRaisingBalanceOnceCommand)];
 
         using var pdb = DbHelper.Platform();
         var config = pdb.GetCollection<TrusteeUnifiedConfig>().FindOne(_ => true);
@@ -185,6 +202,22 @@ public partial class PlatformPageViewModel : ObservableObject
         };
 
         Task.Run(async () => await UpdateLocalIP());
+
+
+
+        TrusteeWorkLogSource.GroupDescriptions.Add(new PropertyGroupDescription("Time.Date"));
+    }
+
+
+    /// <summary>
+    /// 查看api 运行报告
+    /// </summary>
+    [RelayCommand]
+    public void ViewTrusteeWorkReport()
+    {
+        //只看3天内的
+        TrusteeWorkLogs = TrusteeApiBase.GetLogs()?.Where(x => (DateTime.Today - x.Time).Days < 3);
+        TrusteeWorkLogSource.Source = TrusteeWorkLogs;
     }
 
 
@@ -193,7 +226,7 @@ public partial class PlatformPageViewModel : ObservableObject
         LocalIP = null;
 
         var obj = ProxyViewModel;
-         
+
         Task.Run(async () => await UpdateLocalIP());
 
         using var pdb = DbHelper.Platform();
@@ -770,6 +803,14 @@ public partial class SyncButtonData(Geometry Icon, ICommand Command, SyncButtonD
 
     public delegate Task SyncProcess();
 }
+
+
+public class SyncButtonInfo(Geometry Icon, IAsyncRelayCommand Command)
+{
+    public Geometry Icon { get; } = Icon;
+    public IAsyncRelayCommand Command { get; } = Command;
+}
+
 
 
 public partial class AmacAccountViewModel : ObservableObject

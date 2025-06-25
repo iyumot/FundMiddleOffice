@@ -70,14 +70,30 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
     {
         WeakReferenceMessenger.Default.RegisterAll(this);
 
+        //启动api
+        TrusteeGallay.Initialize();
+
         Task.Run(() =>
         {
             MissionSchedule.Init();
 
             DataSelfTest();
 
+            // 加载托管消息
+            LoadTrusteeMessages();
+
+
             InitPlot();
         });
+    }
+
+    private void LoadTrusteeMessages()
+    {
+        using var db = DbHelper.Base();
+        var data = db.GetCollection<TrusteeWorker.WorkReturn>(TrusteeWorker.TableRaisingBalance).FindAll().ToArray();
+        if(data.Length > 0) WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryRaisingBalance), data));
+
+
     }
 
 
@@ -368,8 +384,8 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
                 continue;
             }
 
-            // 成功
-            if (r.Data is FundBankBalance[] bankBalances)
+            // 成功 r.Data 可能是object[]
+            if (r.Data is System.Collections.IEnumerable en && en.OfType<FundBankBalance>() is IEnumerable<FundBankBalance> bankBalances)
             {
                 foreach (var b in bankBalances)
                 {
@@ -422,7 +438,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
         public async Task Update()
         {
             /// 在WeakReferenceMessenger接收消息
-            await TrusteeGallay.Worker.RaisingRecordOnce();
+            await TrusteeGallay.Worker.QueryRaisingBalanceOnce();
         }
 
     }
