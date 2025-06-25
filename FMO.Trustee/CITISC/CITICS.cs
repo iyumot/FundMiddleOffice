@@ -450,7 +450,7 @@ public partial class CITICS : TrusteeApiBase
                         if (ret.Data?.ContainsKey("reason") ?? false)
                             ret.Msg = ret.Data["reason"]?.ToString();
 
-                        Log(part, json, ret.Msg);
+                        Log(caller, json, ret.Msg);
                         return new(TransferReturnCode(code, ret.Msg), null);
                     }
 
