@@ -35,6 +35,8 @@ public interface ITrustee
     string Title {  get; }
 
 
+    string Identifier { get; }
+
     Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end);
 
     /// <summary>

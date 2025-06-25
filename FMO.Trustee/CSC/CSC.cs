@@ -60,75 +60,7 @@ public partial class CSC : TrusteeApiBase
         var part = "/institution/tgpt/erp/product/query/findAckTransList";
         var result = await SyncWork<TransferRecord, TransferRecordJson>(part, new { beginDate = begin.ToString("yyyyMMdd"), endDate = end.ToString("yyyyMMdd") }, x => x.ToObject());
         return result;
-
-        var records = result.Data!;
-
-        // 对齐数据 
-        using var db = DbHelper.Base();
-        var funds = db.GetCollection<Fund>().FindAll().ToArray();
-        foreach (var r in records)
-        {
-            // code 匹配
-            var f = funds.FirstOrDefault(x => x.Code == r.FundCode);
-            if (f is not null)
-            {
-                r.FundId = f.Id;
-                continue;
-            }
-
-            // 待完善
-
-        }
-
-        var customers = db.GetCollection<Investor>().FindAll().ToList();
-        foreach (var r in records)
-        {
-            var c = customers.FirstOrDefault(x => x.Name == r.CustomerName && x.Identity?.Id == r.CustomerIdentity);
-            if (c is not null)
-            {
-                r.CustomerId = c.Id;
-                continue;
-            }
-            else // 添加数据
-            {
-                c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
-                db.GetCollection<Investor>().Insert(c);
-                r.CustomerId = c.Id;
-            }
-        }
-
-        // 对齐id
-        var olds = db.GetCollection<TransferRecord>().FindAll().ToList();
-        foreach (var r in records)
-        {
-            // 同日同名
-            var exi = olds.Where(x => x.CustomerName == r.CustomerName && x.CustomerIdentity == r.CustomerIdentity && x.ConfirmedDate == r.ConfirmedDate).ToList();
-
-            // 只有一个，替换
-            if (exi.Count == 0)
-            {
-                r.Id = exi[0].Id;
-                continue;
-            }
-
-            // > 1个
-            // 存在同ex id，替换
-            var old = exi.Where(x => x.ExternalId == r.ExternalId);
-            if (old.Any())
-                r.Id = old.First().Id;
-
-            // 如果存在手动录入的，也删除
-            foreach (var item in exi)
-                if (item.Source == "manual" || item.ExternalId == r.ExternalId)
-                    db.GetCollection<TransferRecord>().Delete(item.Id);
-
-        }
-
-        // 保存到数据库
-        db.GetCollection<TransferRecord>().Upsert(records);
-
-
-        return new(ReturnCode.Success, records);
+ 
     }
 
 
