@@ -370,7 +370,18 @@ public class DailyValueCurveDrawing : FrameworkElement
     protected override void OnMouseLeave(MouseEventArgs e)
     {
         base.OnMouseLeave(e);
+
         _tooltipVisual.RenderOpen().Close();
+        //Task.Run(async () =>
+        //{
+        //    await Task.Delay(500);
+
+        //    await App.Current.Dispatcher.BeginInvoke(() =>
+        //    {
+        //        _tooltipVisual.RenderOpen().Close();
+        //        InvalidateVisual();
+        //    });
+        //});
     }
 
     public Pen _blackPen { get; } = new Pen(Brushes.Black, 1);
@@ -839,6 +850,10 @@ public class DailyValueCurveDrawing : FrameworkElement
     private void ShowTip(Point mousePos)
     {
         if (DataContext is not DailyValueCurveViewModel vm || vm.Choosed is null)
+            return;
+
+        // 判断是否离开
+        if (this.InputHitTest(Mouse.GetPosition(this)) is null)
             return;
 
         var data = vm.Choosed.Where(x => x.NetValue != 0 && x.CumNetValue != 0).ToArray();
