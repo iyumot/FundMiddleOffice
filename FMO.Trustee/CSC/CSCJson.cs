@@ -293,14 +293,14 @@ public partial class CSC
                 Agency = AgencyName,
                 CustomerName = CustName,
                 CustomerIdentity = CertiNo,
-                RequestAmount = decimal.Parse(Balance),
-                RequestShare = decimal.Parse(Shares),
-                ConfirmedAmount = decimal.Parse(ConfBalance),
-                ConfirmedShare = decimal.Parse(ConfShares),
+                RequestAmount = ParseDecimal(Balance),
+                RequestShare = ParseDecimal(Shares),
+                ConfirmedAmount = ParseDecimal(ConfBalance),
+                ConfirmedShare = ParseDecimal(ConfShares),
                 CreateDate = DateOnly.FromDateTime(DateTime.Today),
                 ExternalId = CserialNo,
-                PerformanceFee = decimal.Parse(AchievementPay),
-                Fee = decimal.Parse(Charge),
+                PerformanceFee = ParseDecimal(AchievementPay),
+                Fee = ParseDecimal(Charge),
                 ExternalRequestId = OriginalNo,
                 Type = ParseType(BusiFlag),
                 Source = "api",
@@ -675,7 +675,7 @@ public partial class CSC
             {
                 Id = $"{OurAccount}|{TransactionNo}",
                 Time = DateTime.ParseExact(TradeDate + TradeTime, "yyyyMMddHHmmss", null),
-                Amount = decimal.Parse(Amount),
+                Amount = ParseDecimal(Amount),
                 AccountNo = OurAccount,
                 // ¥À Ù–‘»± ß
                 AccountBank = "unset",
@@ -684,7 +684,7 @@ public partial class CSC
                 CounterBank = CounterpartyBank,
                 CounterName = CounterpartyName,
                 CounterNo = CounterpartyAccount,
-                Balance = decimal.Parse(Balance),
+                Balance = ParseDecimal(Balance),
                 Serial = TransactionNo,
                 Remark = Summary,
             };
@@ -779,7 +779,7 @@ public partial class CSC
                 Name = OpenBankName,
                 FundName = FundName,
                 FundCode = FundCode,
-                Balance = string.IsNullOrWhiteSpace(AccountBalance) ? 0: decimal.Parse(AccountBalance),
+                Balance = string.IsNullOrWhiteSpace(AccountBalance) ? 0: ParseDecimal(AccountBalance),
                 Currency = ParseCurrency(Currency),
                 Time = string.IsNullOrWhiteSpace(LastUpdateTime) ? default : DateTime.ParseExact(LastUpdateTime, "yyyy-MM-dd HH:mm:ss", null)
             };

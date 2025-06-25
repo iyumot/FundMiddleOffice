@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using FMO.Models;
 using FMO.Utilities;
 using LiteDB;
 using System.Diagnostics.CodeAnalysis;
@@ -62,7 +63,7 @@ public partial class TrusteeWorker : ObservableObject
         Trustees = trustees;
         foreach (var t in trustees)
             t.Prepare();
-        
+
 
         // 解析基金和api的映射
         //Fund[] funds;
@@ -94,6 +95,8 @@ public partial class TrusteeWorker : ObservableObject
     public async Task RaisingRecordOnce()
     {
         List<WorkReturn> ret = new();
+        // 保存数据库
+        using var db = DbHelper.Base();
 
         foreach (var tr in Trustees)
         {
@@ -106,6 +109,12 @@ public partial class TrusteeWorker : ObservableObject
             try
             {
                 var rc = await tr.QueryRaisingBalance();
+
+                ///
+                // 保存数据库 
+                if (rc.Data is not null)
+                    db.GetCollection<FundBankBalance>().Upsert(rc.Data);
+
                 ret.Add(new(tr.Title, rc.Code, rc.Data));
             }
             catch (Exception e)
@@ -113,6 +122,8 @@ public partial class TrusteeWorker : ObservableObject
                 ret.Add(new(tr.Title, ReturnCode.Unknown));
             }
         }
+
+
 
         WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryRaisingBalance), ret));
         RaisingRecord.Last = DateTime.Now;

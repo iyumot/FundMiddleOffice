@@ -103,27 +103,64 @@ public partial class CMS
 
         public TransferRecord ToObject()
         {
+            TransferRecordType transferRecordType = Translate(BusinessCode);
+            if (transferRecordType == TransferRecordType.UNK)
+                ITrustee.ReportJsonUnexpected(CMS._Identifier, nameof(CMS.QueryInvestors), $"TA[{ApplyNo}] {TransactionCfmDate} 份额：{ConfirmedNavVol} 金额：{ConfirmedAmount} 的业务类型[{BusinessCode}]无法识别");
+
             return new TransferRecord
             {
                 CustomerIdentity = CertificateNo,
                 CustomerName = CustName,
                 Agency = DistributorName,
                 RequestDate = DateOnly.ParseExact(TransactionDate, "yyyyMMdd"),
-                RequestAmount = decimal.Parse(ApplicationAmount),
-                RequestShare = decimal.Parse(ApplicationVol),
+                RequestAmount = ParseDecimal(ApplicationAmount),
+                RequestShare = ParseDecimal(ApplicationVol),
                 ConfirmedDate = DateOnly.ParseExact(TransactionCfmDate, "yyyyMMdd"),
-                ConfirmedAmount = decimal.Parse(ConfirmedAmount),
-                ConfirmedShare = decimal.Parse(ConfirmedVol),
-                ConfirmedNetAmount = decimal.Parse(ConfirmedNavVol),
+                ConfirmedAmount = ParseDecimal(ConfirmedAmount),
+                ConfirmedShare = ParseDecimal(ConfirmedVol),
+                ConfirmedNetAmount = ParseDecimal(ConfirmedNavVol),
                 CreateDate = DateOnly.FromDateTime(DateTime.Today),
                 ExternalId = Remark1,
-                Type = Translate(BusinessCode),
-                Fee = decimal.Parse(Charge),
-                PerformanceFee = decimal.Parse(Performance),
+                Type = transferRecordType,
+                Fee = ParseDecimal(Charge),
+                PerformanceFee = ParseDecimal(Performance),
                 ExternalRequestId = ApplyNo,
                 FundCode = FundCode,
                 FundName = FundName,
                 Source = "api",
+            };
+        }
+
+
+
+        public static TransferRecordType Translate(string c)
+        {
+            return c switch
+            {
+                //"120" => TARecordType.Subscription, //"认购确认" 此项没有份额数据, 用认购结果
+                "122" => TransferRecordType.Purchase,     //"申购确认",
+                "124" => TransferRecordType.Redemption,// "赎回确认",
+                "126" => TransferRecordType.MoveIn,   //"转托确认",
+                "127" => TransferRecordType.MoveIn,   //"转销售人/机构转入",
+                "128" => TransferRecordType.MoveOut,  //"转销售人/机构转出",
+                "129" => TransferRecordType.BonusType,//"分红方式",
+                "130" => TransferRecordType.Subscription, // "认购结果",
+                "131" => TransferRecordType.Frozen,       //"基金份数冻结",
+                "132" => TransferRecordType.Thawed,       //"基金份数解冻",
+                                                          //"133" => TARecordType.TransferIn,   //"非交易过户",
+                "134" => TransferRecordType.TransferIn,   //"非交易过户转入",
+                "135" => TransferRecordType.TransferOut,  //"非交易过户转出",
+                                                          //"136" => TARecordType.SwitchIn,     //"基金转换",
+                "137" => TransferRecordType.SwitchIn,     //"基金转换转入",
+                "138" => TransferRecordType.SwitchOut,    //"基金转换转出",
+
+
+                "139" => TransferRecordType.Purchase,     //"定时定额申购",
+                "142" => TransferRecordType.ForceRedemption,//"强制赎回",
+                "143" => TransferRecordType.Distribution,     //"分红确认",
+                "144" => TransferRecordType.Increase,     //"强行调增",
+                "145" => TransferRecordType.Decrease,     //"强行调减",
+                _ => TransferRecordType.UNK,              //"未知业务类型"
             };
         }
     }

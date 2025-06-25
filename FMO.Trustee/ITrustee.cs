@@ -86,6 +86,17 @@ public interface ITrustee
     /// <param name="fundCode"></param>
     /// <returns></returns>
     Task<ReturnWrap<FundBankBalance>> QueryRaisingBalance( );
+
+    /// <summary>
+    /// 报告示识别的json 数据
+    /// </summary>
+    /// <param name="identifier"></param>
+    /// <param name="method"></param>
+    /// <param name="info"></param>
+    protected static void ReportJsonUnexpected(string identifier, string method, string info)
+    {
+
+    }
 }
 
 

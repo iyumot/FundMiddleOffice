@@ -4,12 +4,14 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
-using System.Web;  
+using System.Web;
 
 namespace FMO.Trustee;
 
 public partial class CMS : TrusteeApiBase
 {
+    public const string _Identifier = "trustee_cms";
+
     public override string Identifier => "trustee_cms";
 
     public override string Title => "упилж╓х╞";
@@ -34,11 +36,11 @@ public partial class CMS : TrusteeApiBase
 
     public X509Certificate2? Certificate { get; set; }
 
-     
 
 
 
-     
+
+
 
 
     public override async Task<ReturnWrap<SubjectFundMapping>> QuerySubjectFundMappings()
@@ -118,7 +120,7 @@ public partial class CMS : TrusteeApiBase
 
 
     public override bool Prepare()
-    { 
+    {
         InitCertificate();
 
         if (string.IsNullOrWhiteSpace(CompanyId) || string.IsNullOrWhiteSpace(LicenceKey) || string.IsNullOrWhiteSpace(UserNo) || ServerType is null || Certificate is null)
