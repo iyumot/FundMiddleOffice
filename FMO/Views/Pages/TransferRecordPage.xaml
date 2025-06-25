@@ -183,13 +183,29 @@
                         <DataGridTemplateColumn>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button
-                                        hc:IconElement.Geometry="{StaticResource f.file-pdf}"
-                                        Command="{Binding DataContext.OpenConfirmFileCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
-                                        CommandParameter="{Binding File}"
-                                        Foreground="Blue"
-                                        Style="{StaticResource ButtonIcon.Small}"
-                                        Visibility="{Binding FileExists, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                                    <hc:SimplePanel>
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.file-pdf}"
+                                            Command="{Binding DataContext.OpenConfirmFileCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
+                                            CommandParameter="{Binding File}"
+                                            Foreground="Blue"
+                                            Style="{StaticResource ButtonIcon.Small}"
+                                            Visibility="{Binding FileExists, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                                        <Button
+                                            x:Name="del"
+                                            hc:IconElement.Geometry="{StaticResource f.trash}"
+                                            Command="{Binding DataContext.DeleteRecordCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
+                                            CommandParameter="{Binding .}"
+                                            Foreground="Red"
+                                            Style="{StaticResource ButtonIcon.Small}"
+                                            Visibility="Collapsed" />
+                                    </hc:SimplePanel>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding Source}" Value="manual">
+                                            <Setter TargetName="del" Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>

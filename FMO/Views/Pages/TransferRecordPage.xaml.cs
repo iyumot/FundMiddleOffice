@@ -1,14 +1,14 @@
-﻿using System.Collections.ObjectModel;
-using System.IO;
-using System.Text.RegularExpressions;
-using System.Windows.Controls;
-using System.Windows.Data;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Text.RegularExpressions;
+using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace FMO;
 
@@ -24,7 +24,7 @@ public partial class TransferRecordPage : UserControl
 }
 
 
-public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<TransferRecord>,IRecipient<PageTAMessage>
+public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<TransferRecord>, IRecipient<PageTAMessage>
 {
     [ObservableProperty]
     public partial ObservableCollection<TransferRecordViewModel>? Records { get; set; }
@@ -146,6 +146,18 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(fi.FullName) { UseShellExecute = true }); } catch { }
     }
 
+    [RelayCommand]
+    public void DeleteRecord(TransferRecordViewModel r)
+    {
+        using var db = DbHelper.Base();
+        db.GetCollection<TransferRecord>().Delete(r.Id);
+
+        Records?.Remove(r);
+
+        if (r?.FundId is not null)
+            DataTracker.CheckShareIsPair(r.FundId.Value);
+    }
+
 
     [RelayCommand]
     public void AddTARecord()
@@ -153,12 +165,17 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         var wnd = new AddTAWindow();
         wnd.Owner = App.Current.MainWindow;
         wnd.ShowDialog();
+
+        RecordsSource.View.Refresh();
+
+        if (wnd.DataContext is AddTAWindowViewModel vm && vm.SelectedFund is not null)
+            DataTracker.CheckShareIsPair(vm.SelectedFund.Id);
     }
 
     public void Receive(TransferRecord message)
     {
         var old = Records!.FirstOrDefault(x => x.Id == message.Id);
-        if(old is not null)
+        if (old is not null)
             old.UpdateFrom(message);
         else Records!.Add(new TransferRecordViewModel(message) { File = new FileInfo(@$"files\tac\{message.Id}.pdf") });
 
@@ -166,7 +183,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     }
 
     public void Receive(PageTAMessage message)
-    {        
+    {
         TabIndex = message.TabIndex;
         SearchKeyword = message.Search;
     }

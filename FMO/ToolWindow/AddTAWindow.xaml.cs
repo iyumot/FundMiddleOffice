@@ -172,6 +172,7 @@ public partial class AddTAWindowViewModel : ObservableObject
             CreateDate = DateOnly.FromDateTime(DateTime.Today),
             Source = "manual"
         };
+        db.GetCollection<TransferRequest>().DropIndex("SourceSourceExternalIdExternalId");
         db.GetCollection<TransferRequest>().Insert(tq);
 
 
