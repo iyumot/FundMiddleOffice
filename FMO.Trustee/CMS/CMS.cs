@@ -224,17 +224,18 @@ public partial class CMS : TrusteeApiBase
                 }
                 catch
                 {
+                    Log(caller, json, "Json Serialize Error");
                     return new(ReturnCode.JsonNotPairToEntity, null);
                 }
             }
         }
         catch (Exception e)
         {
-            Log(e.Message);
+            Log(caller, null, e.Message);
             return new(ReturnCode.Unknown, null);
         }
 
-
+        Log(caller, null, "OK");
         return new(ReturnCode.Success, list.Select(x => transfer(x)).ToArray());
     }
 

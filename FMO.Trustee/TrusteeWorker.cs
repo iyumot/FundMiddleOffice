@@ -40,6 +40,8 @@ public partial class TrusteeWorker : ObservableObject
 
     public record WorkReturn(string Name, ReturnCode Code, object? Data = null);
 
+    public const string TableRaisingBalance = "api_raising_balance";
+
 
     internal List<FundTrusteePair> Maps { get; } = new();
 
@@ -47,7 +49,7 @@ public partial class TrusteeWorker : ObservableObject
 
     ITrustee[] Trustees { get; }
 
-    private WorkConfig RaisingRecord { get; set; }
+    private WorkConfig RaisingBalance { get; set; }
 
 
     public TrusteeWorker(ITrustee[] trustees)
@@ -60,7 +62,7 @@ public partial class TrusteeWorker : ObservableObject
         using (var db = DbHelper.Platform())
             cfg = db.GetCollection<WorkConfig>().FindAll().ToArray();
 
-        RaisingRecord = cfg.FirstOrDefault(x => x.Id == nameof(RaisingRecord)) ?? new(nameof(RaisingRecord));
+        RaisingBalance = cfg.FirstOrDefault(x => x.Id == nameof(RaisingBalance)) ?? new(nameof(RaisingBalance));
         Trustees = trustees;
         foreach (var t in trustees)
             t.Prepare();
@@ -87,14 +89,14 @@ public partial class TrusteeWorker : ObservableObject
 
         // 分钟位
         var minute = t.Hour * 60 + t.Minute; //  new DateTime(t.Year, t.Month, t.Day, t.Hour, t.Minute, 0);
-        if (minute % RaisingRecord.Interval == 0)
+        if (minute % RaisingBalance.Interval == 0)
         {
-            await RaisingRecordOnce();
+            await QueryRaisingBalanceOnce();
         }
     }
 
     [RelayCommand]
-    public async Task RaisingRecordOnce()
+    public async Task QueryRaisingBalanceOnce()
     {
         List<WorkReturn> ret = new();
         // 保存数据库
@@ -125,11 +127,13 @@ public partial class TrusteeWorker : ObservableObject
             }
         }
 
-
+        // 保存ret，程序加载时恢复，并生成消息
+        db.DropCollection(TableRaisingBalance);
+        db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
 
         WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryRaisingBalance), ret));
-        RaisingRecord.Last = DateTime.Now;
-        Save(RaisingRecord);
+        RaisingBalance.Last = DateTime.Now;
+        Save(RaisingBalance);
     }
 
     internal void Start() => timer.Change(0, 1000);

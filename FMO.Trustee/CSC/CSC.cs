@@ -2,6 +2,7 @@ using FMO.Models;
 using FMO.Utilities;
 using LiteDB;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -258,7 +259,7 @@ public partial class CSC : TrusteeApiBase
     /// <param name="func"></param>
     /// <param name="param">object »ò Dictionary<string, object></param>
     /// <returns></returns>
-    protected async Task<ReturnWrap<TEntity>> SyncWork<TEntity, TJSON>(string part, object? param, Func<TJSON, TEntity> transfer)
+    protected async Task<ReturnWrap<TEntity>> SyncWork<TEntity, TJSON>(string part, object? param, Func<TJSON, TEntity> transfer, [CallerMemberName] string? caller = null)
     {
         // Ð£Ñé
         if (CheckBreforeSync() is ReturnCode rc && rc != ReturnCode.Success) return new(rc, null);
@@ -311,17 +312,18 @@ public partial class CSC : TrusteeApiBase
                 }
                 catch
                 {
+                    Log(caller, json, "Json Serialize Error");
                     return new(ReturnCode.JsonNotPairToEntity, null);
                 }
             }
         }
         catch (Exception e)
         {
-            Log(e.Message);
+            Log(caller, null, e.Message);
             return new(ReturnCode.Unknown, null);
         }
 
-
+        Log(caller, null, "OK");
         return new(ReturnCode.Success, list.Select(x => transfer(x)).ToArray());
     }
 

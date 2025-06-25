@@ -105,7 +105,7 @@ public partial class CMS
         {
             TransferRecordType transferRecordType = Translate(BusinessCode);
             if (transferRecordType == TransferRecordType.UNK)
-                ITrustee.ReportJsonUnexpected(CMS._Identifier, nameof(CMS.QueryInvestors), $"TA[{ApplyNo}] {TransactionCfmDate} 份额：{ConfirmedNavVol} 金额：{ConfirmedAmount} 的业务类型[{BusinessCode}]无法识别");
+                ReportJsonUnexpected(CMS._Identifier, nameof(CMS.QueryInvestors), $"TA[{ApplyNo}] {TransactionCfmDate} 份额：{ConfirmedNavVol} 金额：{ConfirmedAmount} 的业务类型[{BusinessCode}]无法识别");
 
             return new TransferRecord
             {

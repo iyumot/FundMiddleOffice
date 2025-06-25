@@ -1310,7 +1310,7 @@ public partial class CITICS
         /// 账户余额
         /// </summary>
         [JsonPropertyName("acctBal")]
-        public decimal AccountBalance { get; set; }
+        public string AccountBalance { get; set; }
 
         /// <summary>
         /// 银行返回代码
@@ -1340,7 +1340,7 @@ public partial class CITICS
                 AccountName = BankAccountName,
                 AccountNo = BankNumber,
                 Name = OpenBankName,
-                Balance = AccountBalance,
+                Balance = ParseDecimal(AccountBalance),
                 Currency = Currency,
                 Time = DateTime.ParseExact(OccurTime, "yyyy-MM-dd HH:mm:ss", null),
             };

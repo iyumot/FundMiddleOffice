@@ -3,6 +3,7 @@ using FMO.Utilities;
 using LiteDB;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Web;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -29,7 +30,7 @@ public partial class CITICS : TrusteeApiBase
     public string? Token { get; set; }
 
     private DateTime? TokenTime { get; set; }
-     
+
 
     public override async Task<ReturnWrap<Investor>> QueryInvestors()
     {
@@ -127,7 +128,7 @@ public partial class CITICS : TrusteeApiBase
     }
 
 
- 
+
 
     /// <summary>
     /// 募集户余额
@@ -404,7 +405,7 @@ public partial class CITICS : TrusteeApiBase
     }
 
 
-    protected async Task<ReturnWrap<TEntity>> SyncWork<TEntity, TJSON>(string part, object? param, Func<TJSON, TEntity> transfer)
+    protected async Task<ReturnWrap<TEntity>> SyncWork<TEntity, TJSON>(string part, object? param, Func<TJSON, TEntity> transfer, [CallerMemberName] string? caller = null)
     {
         // 校验
         if (CheckBreforeSync() is ReturnCode rc && rc != ReturnCode.Success) return new(rc, null);
@@ -422,11 +423,12 @@ public partial class CITICS : TrusteeApiBase
         List<TJSON> list = new();
 
         // 获取所有结果
+        string json = "";
         try
         {
             for (int i = 0; i < 19; i++) // 防止无限循环，最多99次 
             {
-                var json = await Query(part, formatedParams);
+                json = await Query(part, formatedParams);
 
                 try
                 {
@@ -466,17 +468,18 @@ public partial class CITICS : TrusteeApiBase
                 }
                 catch
                 {
+                    Log(caller, json, "Json Serialize Error");
                     return new(ReturnCode.JsonNotPairToEntity, null);
                 }
             }
         }
         catch (Exception e)
         {
-            Log(e.Message);
+            Log(caller, json, e.Message);
             return new(ReturnCode.Unknown, null);
         }
 
-
+        Log(caller, null, "OK");
         return new(ReturnCode.Success, list.Select(x => transfer(x)).ToArray());
     }
 

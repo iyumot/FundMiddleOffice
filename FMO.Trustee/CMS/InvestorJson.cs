@@ -106,9 +106,9 @@ public partial class CMS
             EntityType entityType = ParseCustomerType(CustType);
 
             if(iDType == IDType.Unknown)
-                ITrustee.ReportJsonUnexpected(CMS._Identifier, nameof(CMS.QueryInvestors), $"{CustName}的证件类型[{CertificateType}]无法识别");
+                ReportJsonUnexpected(CMS._Identifier, nameof(CMS.QueryInvestors), $"{CustName}的证件类型[{CertificateType}]无法识别");
             if(entityType == EntityType.Unk)
-                ITrustee.ReportJsonUnexpected(CMS._Identifier, nameof(CMS.QueryInvestors), $"{CustName}的实体类型[{entityType}]无法识别");
+                ReportJsonUnexpected(CMS._Identifier, nameof(CMS.QueryInvestors), $"{CustName}的实体类型[{entityType}]无法识别");
 
             return new Investor
             {

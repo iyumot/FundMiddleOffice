@@ -128,7 +128,7 @@ public partial class CMS
         {
             TransferRequestType transferRequestType = TranslateRequest(BusinessCode);
             if (transferRequestType == TransferRequestType.UNK)
-                ITrustee.ReportJsonUnexpected(CMS._Identifier, nameof(CMS.QueryInvestors), $"TA[{Remark1}] {TransactionDate} 份额：{ApplicationVol} 金额：{ApplicationAmount} 的业务类型[{BusinessCode}]无法识别");
+                ReportJsonUnexpected(CMS._Identifier, nameof(CMS.QueryInvestors), $"TA[{Remark1}] {TransactionDate} 份额：{ApplicationVol} 金额：{ApplicationAmount} 的业务类型[{BusinessCode}]无法识别");
 
 
             return new TransferRequest

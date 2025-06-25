@@ -5,6 +5,7 @@ using LiteDB;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
+using static FMO.Trustee.CSC;
 
 namespace FMO.Trustee;
 
@@ -125,10 +126,25 @@ public abstract class TrusteeApiBase : ITrustee
     }
     protected void Log(string? caller, string? json, string? message)
     {
-        _db.GetCollection<LogInfo>().Insert(new LogInfo { Identifier = Identifier, Log = message, Part = caller, Content = json, Time = DateTime.Now });
+        _db.GetCollection<LogInfo>().Insert(new LogInfo { Identifier = Identifier, Log = message, Method = caller, Content = json, Time = DateTime.Now });
+    }
+
+    public static LogInfo[]? GetLogs()
+    {
+        return _db.GetCollection<LogInfo>().FindAll().ToArray();
     }
 
 
+    /// <summary>
+    /// 报告示识别的json 数据
+    /// </summary>
+    /// <param name="identifier"></param>
+    /// <param name="method"></param>
+    /// <param name="info"></param>
+    protected static void ReportJsonUnexpected(string identifier, string method, string info)
+    {
+        _db.GetCollection<LogInfo>().Insert(new LogInfo { Identifier = identifier, Log = info, Method = method, Content = "", Time = DateTime.Now });
+    }
     protected virtual Dictionary<string, object> GenerateParams(object? obj)
     {
         Dictionary<string, object>? dic = new();
@@ -205,7 +221,7 @@ public abstract class TrusteeApiBase : ITrustee
         IsValid = false;
     }
 
-    protected class LogInfo
+    public class LogInfo
     {
         public int Id { get; set; }
 
@@ -217,7 +233,7 @@ public abstract class TrusteeApiBase : ITrustee
         /// <summary>
         /// url endpoint
         /// </summary>
-        public string? Part { get; set; }
+        public string? Method { get; set; }
 
         /// <summary>
         /// 返回的报文
