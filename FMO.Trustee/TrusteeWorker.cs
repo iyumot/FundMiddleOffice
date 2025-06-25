@@ -56,6 +56,8 @@ public partial class TrusteeWorker : ObservableObject
 
         [BsonIgnore]
         public SemaphoreSlim Semaphore { get; } = new SemaphoreSlim(1, 1);
+
+        public int GetLastRunIndex() => (Last.Hour * 60 + Last.Minute) / Interval;
     }
 
 
@@ -298,8 +300,9 @@ public partial class TrusteeWorker : ObservableObject
             await RaisingBalanceConfig.Semaphore.WaitAsync();
             try
             {
-                // 检验是否与上次运行时间一样
-                if (t.Hour == RaisingBalanceConfig.Last.Hour || t.Minute == RaisingBalanceConfig.Last.Minute)
+                // 检验是否与上次运行时间不一样
+                //if (t.Hour != RaisingBalanceConfig.Last.Hour || t.Minute != RaisingBalanceConfig.Last.Minute)
+                if (minute / RaisingBalanceConfig.Interval != RaisingBalanceConfig.GetLastRunIndex())
                     await QueryRaisingBalanceOnce();
             }
             catch { }
