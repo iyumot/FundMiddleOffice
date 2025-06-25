@@ -25,10 +25,22 @@ namespace FMO;
 /// </summary>
 public partial class PlatformPage : UserControl
 {
+    private Queue<Key> queue = new();
+
+
     public PlatformPage()
     {
         InitializeComponent();
 
+    }
+
+    private void UserControl_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        while (queue.Count > 4) queue.Dequeue();
+        queue.Enqueue(e.Key);
+
+        if (DataContext is PlatformPageViewModel vm && queue.SequenceEqual([Key.D, Key.E, Key.B, Key.U, Key.G]))
+            vm.OpenDebug();
     }
 }
 
@@ -128,7 +140,10 @@ public partial class PlatformPageViewModel : ObservableObject
 
 
     [ObservableProperty]
-    public partial IEnumerable< TrusteeApiBase.LogInfo>? TrusteeWorkLogs { get; set; }
+    public partial IEnumerable<TrusteeApiBase.LogInfo>? TrusteeWorkLogs { get; set; }
+
+    [ObservableProperty]
+    public partial bool AllowWorkReport { get; set; }
 
 
     public CollectionViewSource TrusteeWorkLogSource { get; } = new();
@@ -325,6 +340,10 @@ public partial class PlatformPageViewModel : ObservableObject
 
     }
 
+    internal void OpenDebug()
+    {
+        AllowWorkReport = true;
+    }
 }
 
 public partial class PlatformPageViewModelDigital : ObservableRecipient//, IRecipient<string>
