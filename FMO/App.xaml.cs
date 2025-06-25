@@ -42,10 +42,8 @@ public partial class App : Application
                 Directory.SetCurrentDirectory(di.FullName);
         }
 
-        DatabaseAssist.Miggrate();
         //DbHelper.initpassword();
 
-        Log.Logger = new LoggerConfiguration().WriteTo.File("log.txt").CreateLogger();
 
         Directory.CreateDirectory("data");
         Directory.CreateDirectory("config");
@@ -58,6 +56,10 @@ public partial class App : Application
         Directory.CreateDirectory("files\\accounts\\future");
         Directory.CreateDirectory("files\\accounts\\fund");
         Directory.CreateDirectory("files\\accounts\\other");
+
+
+        Log.Logger = new LoggerConfiguration().WriteTo.File("log.txt").CreateLogger();
+        DatabaseAssist.Miggrate();
 
         ///数据库自检等操作
         DatabaseAssist.SystemValidation();
@@ -92,5 +94,6 @@ public partial class App : Application
     private void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
     {
         Log.Error(e.Exception.Message);
+        MessageBox.Show("出错了，请查看Log");
     }
 }
