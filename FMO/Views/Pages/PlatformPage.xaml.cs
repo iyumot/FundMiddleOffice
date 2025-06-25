@@ -216,7 +216,7 @@ public partial class PlatformPageViewModel : ObservableObject
     public void ViewTrusteeWorkReport()
     {
         //只看3天内的
-        TrusteeWorkLogs = TrusteeApiBase.GetLogs()?.Where(x => (DateTime.Today - x.Time).Days < 3);
+        TrusteeWorkLogs = TrusteeApiBase.GetLogs()?.OrderByDescending(x => x.Time).Take(100);//.Where(x => (DateTime.Today - x.Time).Days < 3);
         TrusteeWorkLogSource.Source = TrusteeWorkLogs;
     }
 

@@ -36,6 +36,9 @@ public partial class TrusteeWorker : ObservableObject
         /// </summary>
         public DateTime Last { get; set; }
 
+
+        [BsonIgnore]
+        public SemaphoreSlim Semaphore { get; } = new SemaphoreSlim(1, 1);
     }
 
     public record WorkReturn(string Name, ReturnCode Code, object? Data = null);
@@ -91,7 +94,15 @@ public partial class TrusteeWorker : ObservableObject
         var minute = t.Hour * 60 + t.Minute; //  new DateTime(t.Year, t.Month, t.Day, t.Hour, t.Minute, 0);
         if (minute % RaisingBalance.Interval == 0)
         {
-            await QueryRaisingBalanceOnce();
+            await RaisingBalance.Semaphore.WaitAsync();
+            try
+            {
+                // 检验是否与上次运行时间一样
+                if (t.Hour == RaisingBalance.Last.Hour || t.Minute == RaisingBalance.Last.Minute)
+                    await QueryRaisingBalanceOnce();
+            }
+            catch { }
+            finally { RaisingBalance.Semaphore.Release(); }
         }
     }
 

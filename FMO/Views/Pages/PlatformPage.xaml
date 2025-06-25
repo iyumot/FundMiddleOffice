@@ -559,27 +559,22 @@
                 StaysOpen="False">
                 <Border Background="WhiteSmoke" CornerRadius="10">
                     <ListBox
-                        MaxHeight="800"
+                        MaxHeight="500"
                         Margin="5"
                         Background="Transparent"
                         BorderThickness="0"
                         ItemsSource="{Binding TrusteeWorkLogSource.View}"
+                        ScrollViewer.VerticalScrollBarVisibility="Visible"
                         Style="{StaticResource ListBoxCustom}">
-                        <ListBox.GroupStyle>
-                            <GroupStyle>
-                                <GroupStyle.HeaderTemplate>
-                                    <DataTemplate>
-                                        <TextBlock
-                                            Margin="0,3"
-                                            FontWeight="Black"
-                                            Text="{Binding Name, StringFormat=yyyy-MM-dd}" />
-                                    </DataTemplate>
-                                </GroupStyle.HeaderTemplate>
-                            </GroupStyle>
-                        </ListBox.GroupStyle>
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <DockPanel>
+                                <DockPanel Background="Transparent">
                                     <TextBlock Width="90" Text="{Binding Identifier}" />
                                     <TextBlock Text="{Binding Method}" />
                                     <TextBlock Margin="6,0" Text="{Binding Time, StringFormat=HH:mm}" />
