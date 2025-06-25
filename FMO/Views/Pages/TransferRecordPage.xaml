@@ -150,6 +150,26 @@
                     ItemsSource="{Binding RequestsSource.View}"
                     Style="{StaticResource DataGrid.NoSelect}">
                     <DataGrid.Columns>
+                        <DataGridTemplateColumn>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+
+                                    <Button
+                                        x:Name="del"
+                                        hc:IconElement.Geometry="{StaticResource f.trash}"
+                                        Command="{Binding DataContext.DeleteRequestCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
+                                        CommandParameter="{Binding .}"
+                                        Foreground="Red"
+                                        Style="{StaticResource ButtonIcon.Small}"
+                                        Visibility="Collapsed" />
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding Source}" Value="manual">
+                                            <Setter TargetName="del" Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                         <DataGridTextColumn Binding="{Binding RequestDate, StringFormat=yyyy-MM-dd}" Header="日期" />
                         <DataGridTextColumn Binding="{Binding FundCode}" Header="代码" />
                         <DataGridTextColumn Binding="{Binding FundName}" Header="产品" />

@@ -36,7 +36,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     public partial string? SearchKeyword { get; set; }
 
     [ObservableProperty]
-    public partial int TabIndex { get; set; }
+    public partial int TabIndex { get; set; } = 2;
 
     [ObservableProperty]
     public partial ObservableCollection<TransferRequest>? Requests { get; set; }
@@ -158,6 +158,14 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
             DataTracker.CheckShareIsPair(r.FundId.Value);
     }
 
+    [RelayCommand]
+    public void DeleteRequest(TransferRequest r)
+    {
+        using var db = DbHelper.Base();
+        db.GetCollection<TransferRequest>().Delete(r.Id);
+
+        Requests?.Remove(r); 
+    }
 
     [RelayCommand]
     public void AddTARecord()
