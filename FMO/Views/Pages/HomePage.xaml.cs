@@ -91,7 +91,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
     {
         using var db = DbHelper.Base();
         var data = db.GetCollection<TrusteeWorker.WorkReturn>(TrusteeWorker.TableRaisingBalance).FindAll().ToArray();
-        if(data.Length > 0) WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryRaisingBalance), data));
+        if (data.Length > 0) WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryRaisingBalance), data));
 
 
     }
@@ -121,13 +121,14 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
     private static async Task SyncFundsFromAmac(Fund[] c)
     {
-        var ned = c.Where(x => x.PublicDisclosureSynchronizeTime == default).ToArray();
+        // 从未同步过的、正在清算的、备案的
+        var ned = c.Where(x => x.PublicDisclosureSynchronizeTime == default || x.Status switch { FundStatus.StartLiquidation or FundStatus.Registration => true, _ => false }).ToArray();
         if (ned.Length > 0)
         {
             try
             {
                 var db = DbHelper.Base();
-                HandyControl.Controls.Growl.Warning($"发现{ned.Length}个基金未同步公示信息");
+                HandyControl.Controls.Growl.Warning($"发现{ned.Length}个基金待同步公示信息");
 
                 using HttpClient client = new HttpClient();
                 foreach (var (i, set) in ned.Chunk(50).Index())
@@ -137,6 +138,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
                         await AmacAssist.SyncFundInfoAsync(f, client);
                         DataTracker.CheckFundFolder([f]);
 
+                        f.PublicDisclosureSynchronizeTime = DateTime.Now;
                         db.GetCollection<Fund>().Update(f);
                         WeakReferenceMessenger.Default.Send(f);
 
@@ -147,7 +149,6 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
                     if (finished < ned.Length)
                         HandyControl.Controls.Growl.Success($"已同步{finished}个基金，剩余{ned.Length - finished}个");
                 }
-
                 db.Dispose();
                 HandyControl.Controls.Growl.Success($"基金同步公示信息完成");
             }
@@ -368,7 +369,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
     {
         //
         using var db = DbHelper.Base();
-        var funds = db.GetCollection<Fund>().FindAll().Where(x=> x.Status>= FundStatus.ContractFinalized && x.Status <= FundStatus.StartLiquidation).ToArray();
+        var funds = db.GetCollection<Fund>().FindAll().Where(x => x.Status >= FundStatus.ContractFinalized && x.Status <= FundStatus.StartLiquidation).ToArray();
 
         List<(string fc, ReturnCode rc, decimal v)> list = new();
 
