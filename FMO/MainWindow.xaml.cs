@@ -92,8 +92,8 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                     new MainMenu { Title = "基金", IconBrush = Brushes.Violet, Command = OpenPageCommand, Parameter = "FundsPage", Icon = GetGeometry("f.fire")},
                     new MainMenu { Title = "客户", IconBrush = Brushes.ForestGreen, Command = OpenPageCommand, Parameter = "Customer", Icon = GetGeometry("f.user")},
                     new MainMenu { Title = "TA", IconBrush = Brushes.Orange, Command = OpenPageCommand, Parameter = "TA", Icon = GetGeometry("f.calendar-days")},
-                    new MainMenu { Title = "平台", IconBrush = Brushes.MediumSpringGreen, Command = OpenPageCommand, Parameter = "Trustee", Icon = GetGeometry("f.tree")},
-                    new MainMenu { Title = "任务", IconBrush = Brushes.DarkOrchid, Command = OpenPageCommand, Parameter = "Task", Icon = GetGeometry("f.brain")},
+                    new MainMenu { Title = "平台", IconBrush = Brushes.Brown, Command = OpenPageCommand, Parameter = "Trustee", Icon = GetGeometry("f.infinity")},
+                    new MainMenu { Title = "任务", IconBrush = Brushes.DarkOrchid, Command = OpenPageCommand, Parameter = "Task", Icon = GetGeometry("f.bolt")},
                     new MainMenu { Title = "报表", IconBrush = Brushes.RoyalBlue, Command = OpenPageCommand, Parameter = "Statement", Icon = GetGeometry("f.square-poll-vertical")},  ];
 
 
@@ -180,7 +180,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                     if (page is null)
                     {
                         PlatformDataContext = PlatformDataContext ?? new PlatformPageViewModel();
-                        page = new TabItemInfo { Header = "外部平台", Background = Brushes.MediumSpringGreen, Content = new PlatformPage { DataContext = PlatformDataContext } };
+                        page = new TabItemInfo { Header = "外部平台", Background = Brushes.Brown, HeaderBrush = Brushes.White, Content = new PlatformPage { DataContext = PlatformDataContext } };
                         Pages.Add(page);
                     }
 
