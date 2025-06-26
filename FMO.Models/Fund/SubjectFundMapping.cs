@@ -5,7 +5,7 @@ namespace FMO.Models;
 /// </summary>
 public class SubjectFundMapping
 {
-    public int Id { get; set; }
+    public string Id => FundCode;
 
     public required string FundName { get; set; }
 
@@ -25,4 +25,6 @@ public class SubjectFundMapping
     /// ·İ¶îÃû
     /// </summary>
     public string? ShareClass { get; set; }
+
+    public FundStatus Status { get; set; }
 }
