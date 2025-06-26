@@ -125,6 +125,19 @@
                             DockPanel.Dock="Right"
                             Style="{StaticResource ButtonIcon}" />
 
+                        <Border
+                            Name="id"
+                            VerticalAlignment="Center"
+                            Background="Gray"
+                            CornerRadius="10"
+                            DockPanel.Dock="Right"
+                            Visibility="Collapsed">
+                            <TextBlock
+                                Margin="6,2"
+                                Foreground="White"
+                                Text="{Binding Id}" />
+                        </Border>
+
                         <TextBlock
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
@@ -231,6 +244,7 @@
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter TargetName="runonce" Property="Visibility" Value="Visible" />
                     <Setter TargetName="del" Property="Visibility" Value="Visible" />
+                    <Setter TargetName="id" Property="Visibility" Value="Visible" />
                 </Trigger>
                 <DataTrigger Binding="{Binding IsActivated}" Value="False">
                     <Setter TargetName="content" Property="Opacity" Value="0.8" />
