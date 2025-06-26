@@ -190,10 +190,10 @@ public partial class PlatformPageViewModel : ObservableObject
         var work = TrusteeGallay.Worker;
         TrusteeAPIButtons = [
             new((Geometry)App.Current.Resources["f.hand-holding-dollar"], work.QueryRaisingBalanceOnceCommand, "同步募集户余额"),
-            new((Geometry)App.Current.Resources["f.tornado"], work.QueryTransferRecoredOnceCommand, "同步募集户流水"),
-            new((Geometry)App.Current.Resources["f.bars"], work.QueryTransferRecoredOnceCommand, "同步交易申请"),
+            new((Geometry)App.Current.Resources["f.tornado"], null, "同步募集户流水"),
+            new((Geometry)App.Current.Resources["f.bars"], null, "同步交易申请"),
             new((Geometry)App.Current.Resources["f.calendar-days"], work.QueryTransferRecoredOnceCommand, "同步交易确认"),
-            new((Geometry)App.Current.Resources["f.file-invoice-dollar"], work.QueryTransferRecoredOnceCommand, "同步每日计提费用"), ];
+            new((Geometry)App.Current.Resources["f.file-invoice-dollar"], work.QueryDailyFeeOnceCommand, "同步每日计提费用"), ];
 
         using var pdb = DbHelper.Platform();
         var config = pdb.GetCollection<TrusteeUnifiedConfig>().FindOne(_ => true);

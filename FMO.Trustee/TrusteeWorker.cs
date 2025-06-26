@@ -283,7 +283,7 @@ public partial class TrusteeWorker : ObservableObject
         // ±£´æÊý¾Ý¿â
         using var db = DbHelper.Base();
         var funds = db.GetCollection<Fund>().FindAll().ToArray();
-        var StartDateOfAny = db.GetCollection<Fund>().Min(x => x.SetupDate);
+        var StartDateOfAny = db.GetCollection<Fund>().FindAll().Min(x => x.SetupDate);
 
         using var pdb = DbHelper.Platform();
         var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();

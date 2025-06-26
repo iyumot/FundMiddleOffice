@@ -32,73 +32,73 @@ public partial class CMS
 
         // 托管费
         [JsonPropertyName("custodianFeeJt")]
-        public decimal CustodianFeeJt { get; set; } // 计提
+        public string CustodianFeeJt { get; set; } // 计提
 
         [JsonPropertyName("custodianFeeZf")]
-        public decimal CustodianFeeZf { get; set; } // 支付
+        public string CustodianFeeZf { get; set; } // 支付
 
         [JsonPropertyName("custodianFeeYe")]
-        public decimal CustodianFeeYe { get; set; } // 余额
+        public string CustodianFeeYe { get; set; } // 余额
 
         // 运营服务费
         [JsonPropertyName("operationServiceFeeJt")]
-        public decimal OperationServiceFeeJt { get; set; }
+        public string OperationServiceFeeJt { get; set; }
 
         [JsonPropertyName("operationServiceFeeZf")]
-        public decimal OperationServiceFeeZf { get; set; }
+        public string OperationServiceFeeZf { get; set; }
 
         [JsonPropertyName("operationServiceFeeYe")]
-        public decimal OperationServiceFeeYe { get; set; }
+        public string OperationServiceFeeYe { get; set; }
 
         // 管理费
         [JsonPropertyName("managementFeeJt")]
-        public decimal ManagementFeeJt { get; set; }
+        public string ManagementFeeJt { get; set; }
 
         [JsonPropertyName("managementFeeZf")]
-        public decimal ManagementFeeZf { get; set; }
+        public string ManagementFeeZf { get; set; }
 
         [JsonPropertyName("managementFeeYe")]
-        public decimal ManagementFeeYe { get; set; }
+        public string ManagementFeeYe { get; set; }
 
         // 业绩报酬费
         [JsonPropertyName("performanceFeeJt")]
-        public decimal PerformanceFeeJt { get; set; }
+        public string PerformanceFeeJt { get; set; }
 
         [JsonPropertyName("performanceFeeZf")]
-        public decimal PerformanceFeeZf { get; set; }
+        public string PerformanceFeeZf { get; set; }
 
         [JsonPropertyName("performanceFeeYe")]
-        public decimal PerformanceFeeYe { get; set; }
+        public string PerformanceFeeYe { get; set; }
 
         // 销售服务费
         [JsonPropertyName("salesandServiceFeesJt")]
-        public decimal SalesAndServiceFeesJt { get; set; }
+        public string SalesAndServiceFeesJt { get; set; }
 
         [JsonPropertyName("salesandServiceFeesZf")]
-        public decimal SalesAndServiceFeesZf { get; set; }
+        public string SalesAndServiceFeesZf { get; set; }
 
         [JsonPropertyName("salesandServiceFeesYe")]
-        public decimal SalesAndServiceFeesYe { get; set; }
+        public string SalesAndServiceFeesYe { get; set; }
 
         // 投资顾问费
         [JsonPropertyName("investmentConsultantFeeJt")]
-        public decimal InvestmentConsultantFeeJt { get; set; }
+        public string InvestmentConsultantFeeJt { get; set; }
 
         [JsonPropertyName("investmentConsultantFeeZf")]
-        public decimal InvestmentConsultantFeeZf { get; set; }
+        public string InvestmentConsultantFeeZf { get; set; }
 
         [JsonPropertyName("investmentConsultantFeeYe")]
-        public decimal InvestmentConsultantFeeYe { get; set; }
+        public string InvestmentConsultantFeeYe { get; set; }
 
         // 客户服务费
         [JsonPropertyName("customerServiceFeeJt")]
-        public decimal CustomerServiceFeeJt { get; set; }
+        public string CustomerServiceFeeJt { get; set; }
 
         [JsonPropertyName("customerServiceFeeZf")]
-        public decimal CustomerServiceFeeZf { get; set; }
+        public string CustomerServiceFeeZf { get; set; }
 
         [JsonPropertyName("customerServiceFeeYe")]
-        public decimal CustomerServiceFeeYe { get; set; }
+        public string CustomerServiceFeeYe { get; set; }
 
         public FundDailyFee ToObject()
         {
@@ -107,34 +107,34 @@ public partial class CMS
                 FundCode = FundCode,
                 Date = DateOnly.ParseExact(BusiDate, "yyyyMMdd"),
                 // 管理费
-                ManagerFeeAccrued = ManagementFeeJt,
-                ManagerFeePaid = ManagementFeeZf,
-                ManagerFeeBalance = ManagementFeeYe,
+                ManagerFeeAccrued = ParseDecimal(ManagementFeeJt),
+                ManagerFeePaid = ParseDecimal(ManagementFeeZf),
+                ManagerFeeBalance = ParseDecimal(ManagementFeeYe),
 
                 // 托管费
-                CustodianFeeAccrued = CustodianFeeJt,
-                CustodianFeePaid = CustodianFeeZf,
-                CustodianFeeBalance = CustodianFeeYe,
+                CustodianFeeAccrued = ParseDecimal(CustodianFeeJt),
+                CustodianFeePaid = ParseDecimal(CustodianFeeZf),
+                CustodianFeeBalance = ParseDecimal(CustodianFeeYe),
 
                 // 外包运营服务费（OperationServiceFee）
-                OutsourcingFeeAccrued = OperationServiceFeeJt,
-                OutsourcingFeePaid = OperationServiceFeeZf,
-                OutsourcingFeeBalance = OperationServiceFeeYe,
+                OutsourcingFeeAccrued = ParseDecimal(OperationServiceFeeJt),
+                OutsourcingFeePaid = ParseDecimal(OperationServiceFeeZf),
+                OutsourcingFeeBalance = ParseDecimal(OperationServiceFeeYe),
 
                 // 业绩报酬费
-                PerformanceFeeAccrued = PerformanceFeeJt,
-                PerformanceFeePaid = PerformanceFeeZf,
-                PerformanceFeeBalance = PerformanceFeeYe,
+                PerformanceFeeAccrued = ParseDecimal(PerformanceFeeJt),
+                PerformanceFeePaid = ParseDecimal(PerformanceFeeZf),
+                PerformanceFeeBalance = ParseDecimal(PerformanceFeeYe),
 
                 // 销售服务费
-                SalesFeeAccrued = SalesAndServiceFeesJt,
-                SalesFeePaid = SalesAndServiceFeesZf,
-                SalesFeeBalance = SalesAndServiceFeesYe,
+                SalesFeeAccrued = ParseDecimal(SalesAndServiceFeesJt),
+                SalesFeePaid = ParseDecimal(SalesAndServiceFeesZf),
+                SalesFeeBalance = ParseDecimal(SalesAndServiceFeesYe),
 
                 // 投资顾问费
-                ConsultantFeeAccrued = InvestmentConsultantFeeJt,
-                ConsultantFeePaid = InvestmentConsultantFeeZf,
-                ConsultantFeeBalance = InvestmentConsultantFeeYe
+                ConsultantFeeAccrued = ParseDecimal(InvestmentConsultantFeeJt),
+                ConsultantFeePaid = ParseDecimal(InvestmentConsultantFeeZf),
+                ConsultantFeeBalance = ParseDecimal(InvestmentConsultantFeeYe)
 
             };
         }
@@ -142,8 +142,8 @@ public partial class CMS
     }
 
 
-    
-     
+
+
 }
 
 

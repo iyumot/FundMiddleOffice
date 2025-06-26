@@ -70,8 +70,9 @@ public partial class CMS : TrusteeApiBase
     {
         // 查询区间大于1个月，需要多次查询 
         var tmp = begin.AddDays(30);
+        if (tmp > end) tmp = end;
         List<FundDailyFee> transactions = new();
-        while (tmp < end)
+        while (tmp <= end)
         {
             var data = await SyncWork<FundDailyFee, FundDailyFeeJson>(1020, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
             if (data.Code != ReturnCode.Success)
@@ -223,6 +224,10 @@ public partial class CMS : TrusteeApiBase
                         Log(caller, json, ret.Msg);
                         return new(TransferReturnCode(code, ret.Msg), null);
                     }
+
+                    // 调用成功，实际无数据
+                    if (string.IsNullOrWhiteSpace(ret.Data))
+                        return new(ReturnCode.Success, []);
 
                     // 解析实际数据
                     var data = JsonSerializer.Deserialize<TJSON[]>(ret.Data!);

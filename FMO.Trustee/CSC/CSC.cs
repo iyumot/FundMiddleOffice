@@ -1,5 +1,4 @@
 using FMO.Models;
-using FMO.Utilities;
 using LiteDB;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
@@ -36,7 +35,12 @@ public partial class CSC : TrusteeApiBase
     private SM4? Encoder { get; set; }
 
     private SM4? Decoder { get; set; }
-     
+
+
+    // 产品列表
+    private List<SubjectFundMapping> FundsInfo { get; set; } = new();
+
+
 
     public override Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end)
     {
@@ -48,8 +52,10 @@ public partial class CSC : TrusteeApiBase
     public override async Task<ReturnWrap<SubjectFundMapping>> QuerySubjectFundMappings()
     {
         var part = "/institution/tgpt/erp/file/productFile/findProductList";
-        var result = await SyncWork<SubjectFundMapping, SubjectFundMapping>(part, null, x => x);
+        var result = await SyncWork<SubjectFundMapping, SubjectFundMappingJson>(part, null, x => x.ToObject());
 
+        if (result.Data?.Length > 0)
+            FundsInfo = [.. result.Data];
 
         return result;
     }
@@ -60,7 +66,7 @@ public partial class CSC : TrusteeApiBase
         var part = "/institution/tgpt/erp/product/query/findAckTransList";
         var result = await SyncWork<TransferRecord, TransferRecordJson>(part, new { beginDate = begin.ToString("yyyyMMdd"), endDate = end.ToString("yyyyMMdd") }, x => x.ToObject());
         return result;
- 
+
     }
 
 
@@ -73,10 +79,23 @@ public partial class CSC : TrusteeApiBase
     public override async Task<ReturnWrap<FundDailyFee>> QueryFundDailyFee(DateOnly begin, DateOnly end)
     {
         var part = "/institution/tgpt/erp/product/query/findDailyFeeList";
-        var result = await SyncWork<FundDailyFee, FundDailyFeeJson>(part, null, x => x.ToObject());
 
+        // 需要传FundCode
+        if (FundsInfo.Count == 0)
+            await QuerySubjectFundMappings();
 
-        return result;
+        List<FundDailyFee> list = [];
+        foreach (var item in FundsInfo)
+        {
+            var result = await SyncWork<FundDailyFee, FundDailyFeeJson>(part, new { fundCode = item.FundCode, beginDate = begin.ToString("yyyyMMdd"), endDate = end.ToString("yyyyMMdd") }, x => x.ToObject());
+            if (result.Code != ReturnCode.Success)
+                return result;
+
+            if(result.Data?.Length > 0)
+            list.AddRange(result.Data);
+        }
+
+        return new(ReturnCode.Success, list.ToArray());
     }
 
     /// <summary>
@@ -88,7 +107,7 @@ public partial class CSC : TrusteeApiBase
     public override async Task<ReturnWrap<BankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end)
     {
         var part = "/institution/tgpt/erp/raise/query/findRaiseAccountDetailList";
-        var result = await SyncWork<BankTransaction, BankTransactionJson>(part, null, x => x.ToObject());
+        var result = await SyncWork<BankTransaction, BankTransactionJson>(part, new { beginDate = begin.ToString("yyyyMMdd"), endDate = end.ToString("yyyyMMdd") }, x => x.ToObject());
 
 
         return result;
@@ -222,7 +241,7 @@ public partial class CSC : TrusteeApiBase
                     // 有错误
                     if (code != 0)
                     {
-                        Log(part, json, ret.Msg);
+                        Log(caller, json, ret.Msg);
                         return new(TransferReturnCode(code, ret.Msg), null);
                     }
 

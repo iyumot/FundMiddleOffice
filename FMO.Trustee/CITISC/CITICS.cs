@@ -75,7 +75,7 @@ public partial class CITICS : TrusteeApiBase
     {
         var part = "/v1/fm/queryFeeInfoForApi";
 
-        var result = await SyncWork<FundDailyFee, FundDailyFeeJson>(part, new { ackBeginDate = $"{begin:yyyyMMdd}", ackEndDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
+        var result = await SyncWork<FundDailyFee, FundDailyFeeJson>(part, new { startDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
 
         return result;
     }
