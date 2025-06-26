@@ -71,7 +71,7 @@ public abstract class TrusteeApiBase : ITrustee
 
 
 
-    public abstract Task<ReturnWrap<FundDailyFee>> QueryFundFeeDetail(DateOnly begin, DateOnly end);
+    public abstract Task<ReturnWrap<FundDailyFee>> QueryFundDailyFee(DateOnly begin, DateOnly end);
 
 
 

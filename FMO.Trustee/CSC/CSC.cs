@@ -70,7 +70,7 @@ public partial class CSC : TrusteeApiBase
     }
 
 
-    public override async Task<ReturnWrap<FundDailyFee>> QueryFundFeeDetail(DateOnly begin, DateOnly end)
+    public override async Task<ReturnWrap<FundDailyFee>> QueryFundDailyFee(DateOnly begin, DateOnly end)
     {
         var part = "/institution/tgpt/erp/product/query/findDailyFeeList";
         var result = await SyncWork<FundDailyFee, FundDailyFeeJson>(part, null, x => x.ToObject());

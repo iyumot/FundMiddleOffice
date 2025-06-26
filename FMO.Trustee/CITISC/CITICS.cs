@@ -71,7 +71,7 @@ public partial class CITICS : TrusteeApiBase
 
     //}
 
-    public override async Task<ReturnWrap<FundDailyFee>> QueryFundFeeDetail(DateOnly begin, DateOnly end)
+    public override async Task<ReturnWrap<FundDailyFee>> QueryFundDailyFee(DateOnly begin, DateOnly end)
     {
         var part = "/v1/fm/queryFeeInfoForApi";
 

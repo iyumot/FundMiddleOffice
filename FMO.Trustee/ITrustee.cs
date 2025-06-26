@@ -53,7 +53,7 @@ public interface ITrustee
     /// <param name="begin"></param>
     /// <param name="end"></param>
     /// <returns></returns>
-    Task<ReturnWrap<FundDailyFee>> QueryFundFeeDetail(DateOnly begin, DateOnly end);
+    Task<ReturnWrap<FundDailyFee>> QueryFundDailyFee(DateOnly begin, DateOnly end);
 
 
     /// <summary>

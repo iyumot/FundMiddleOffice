@@ -7,6 +7,7 @@ using FMO.Trustee;
 using FMO.Utilities;
 using Serilog;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
@@ -34,14 +35,7 @@ public partial class PlatformPage : UserControl
 
     }
 
-    private void UserControl_PreviewKeyDown(object sender, KeyEventArgs e)
-    {
-        while (queue.Count > 4) queue.Dequeue();
-        queue.Enqueue(e.Key);
 
-        if (DataContext is PlatformPageViewModel vm && queue.SequenceEqual([Key.D, Key.E, Key.B, Key.U, Key.G]))
-            vm.OpenDebug();
-    }
 }
 
 
@@ -191,13 +185,15 @@ public partial class PlatformPageViewModel : ObservableObject
 
         AmacAccounts = acc.Select(x => new AmacAccountViewModel(x)).ToArray();
 
-        // using var db = DbHelper.Platform();
-
-
 
         Trustees2 = TrusteeGallay.TrusteeViewModels;
         var work = TrusteeGallay.Worker;
-        TrusteeAPIButtons = [new((Geometry)App.Current.Resources["f.hand-holding-dollar"], work.QueryRaisingBalanceOnceCommand)];
+        TrusteeAPIButtons = [
+            new((Geometry)App.Current.Resources["f.hand-holding-dollar"], work.QueryRaisingBalanceOnceCommand, "同步募集户余额"),
+            new((Geometry)App.Current.Resources["f.tornado"], work.QueryTransferRecoredOnceCommand, "同步募集户流水"),
+            new((Geometry)App.Current.Resources["f.bars"], work.QueryTransferRecoredOnceCommand, "同步交易申请"),
+            new((Geometry)App.Current.Resources["f.calendar-days"], work.QueryTransferRecoredOnceCommand, "同步交易确认"),
+            new((Geometry)App.Current.Resources["f.file-invoice-dollar"], work.QueryTransferRecoredOnceCommand, "同步每日计提费用"), ];
 
         using var pdb = DbHelper.Platform();
         var config = pdb.GetCollection<TrusteeUnifiedConfig>().FindOne(_ => true);
@@ -824,10 +820,11 @@ public partial class SyncButtonData(Geometry Icon, ICommand Command, SyncButtonD
 }
 
 
-public class SyncButtonInfo(Geometry Icon, IAsyncRelayCommand Command)
+public class SyncButtonInfo(Geometry Icon, IAsyncRelayCommand Command, string ToolTip)
 {
     public Geometry Icon { get; } = Icon;
     public IAsyncRelayCommand Command { get; } = Command;
+    public string ToolTip { get; } = ToolTip;
 }
 
 

@@ -3,7 +3,11 @@
 /// <summary>
 /// 每日计提费用
 /// </summary>
-public class FundDailyFee {
+public class FundDailyFee 
+{
+
+    public string Id => $"{FundCode}{Date}";
+
 
     public int FundId { get; set; }
 

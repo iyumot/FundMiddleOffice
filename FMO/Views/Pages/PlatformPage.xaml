@@ -11,7 +11,7 @@
     d:DataContext="{d:DesignInstance Type=local:PlatformPageViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="1300"
-    PreviewKeyDown="UserControl_PreviewKeyDown"
+    Focusable="True"
     mc:Ignorable="d">
     <UserControl.Resources>
 
@@ -520,11 +520,12 @@
 
             <ListBox
                 BorderThickness="0"
+                ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
                 ItemsSource="{Binding TrusteeAPIButtons}"
                 Style="{StaticResource ListBoxCustom}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <DockPanel>
+                        <DockPanel ToolTip="{Binding ToolTip}">
                             <ProgressBar
                                 Width="30"
                                 Height="4"
@@ -549,14 +550,14 @@
                 hc:IconElement.Geometry="{StaticResource f.grip}"
                 BorderThickness="0"
                 Command="{Binding ViewTrusteeWorkReportCommand}"
+                DockPanel.Dock="Right"
                 Foreground="DarkKhaki"
-                IsChecked="{Binding IsTrusteeReportVisible}"
-                Visibility="{Binding AllowWorkReport, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                IsChecked="{Binding IsTrusteeReportVisible}" />
 
             <Popup
                 AllowsTransparency="True"
                 IsOpen="{Binding IsTrusteeReportVisible}"
-                Placement="Bottom"
+                Placement="Left"
                 PlacementTarget="{Binding ElementName=apiRepBtn}"
                 StaysOpen="False">
                 <Border Background="WhiteSmoke" CornerRadius="10">

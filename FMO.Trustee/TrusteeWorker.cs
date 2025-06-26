@@ -57,7 +57,7 @@ public partial class TrusteeWorker : ObservableObject
         [BsonIgnore]
         public SemaphoreSlim Semaphore { get; } = new SemaphoreSlim(1, 1);
 
-        public int GetLastRunIndex() => (Last.Hour * 60 + Last.Minute) / Interval;
+        public int GetLastRunIndex() => (int)(Last.Ticks / TimeSpan.TicksPerMinute / Interval);
     }
 
 
@@ -66,6 +66,7 @@ public partial class TrusteeWorker : ObservableObject
 
     public const string TableRaisingBalance = "api_raising_balance";
 
+     
 
     internal List<FundTrusteePair> Maps { get; } = new();
 
@@ -77,6 +78,7 @@ public partial class TrusteeWorker : ObservableObject
 
     private WorkConfig TransferRecordConfig { get; set; }
 
+    private WorkConfig DailyFeeConfig { get; set; }
 
     public TrusteeWorker(ITrustee[] trustees)
     {
@@ -87,9 +89,11 @@ public partial class TrusteeWorker : ObservableObject
         WorkConfig[] cfg;
         using (var db = DbHelper.Platform())
             cfg = db.GetCollection<WorkConfig>().FindAll().ToArray();
+         
 
         RaisingBalanceConfig = cfg.FirstOrDefault(x => x.Id == nameof(RaisingBalanceConfig)) ?? new(nameof(RaisingBalanceConfig));
         TransferRecordConfig = cfg.FirstOrDefault(x => x.Id == nameof(TransferRecordConfig)) ?? new(nameof(TransferRecordConfig));
+        DailyFeeConfig = cfg.FirstOrDefault(x => x.Id == nameof(DailyFeeConfig)) ?? new(nameof(DailyFeeConfig)) { Interval = 60 * 24 }; // 每天一次
 
 
 
@@ -249,6 +253,7 @@ public partial class TrusteeWorker : ObservableObject
 
                 if (range is null) range = new(tr.Identifier + nameof(tr.QueryTransferRecords), begin, end);
                 else range = range with { End = end };
+                pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
 
                 // 合并记录
                 ret.Add(new(tr.Title, rc.Code, rc.Data));
@@ -271,8 +276,70 @@ public partial class TrusteeWorker : ObservableObject
     }
 
 
+    [RelayCommand]
+    public async Task QueryDailyFeeOnce()
+    {
+        List<WorkReturn> ret = new();
+        // 保存数据库
+        using var db = DbHelper.Base();
+        var funds = db.GetCollection<Fund>().FindAll().ToArray();
+        var StartDateOfAny = db.GetCollection<Fund>().Min(x => x.SetupDate);
+
+        using var pdb = DbHelper.Platform();
+        var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
 
 
+        foreach (var tr in Trustees)
+        {
+            if (!tr.IsValid)
+            {
+                ret.Add(new(tr.Title, ReturnCode.ConfigInvalid));
+                continue;
+            }
+
+            try
+            {
+                // 获取历史区间
+                var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + nameof(tr.QueryFundDailyFee));
+
+                DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
+                var rc = await tr.QueryFundDailyFee(begin, end);
+
+                ///
+                // 保存数据库 
+                if (rc.Data is not null)
+                {
+                    // 对齐Fund
+                    foreach (var f in rc.Data)
+                    {
+                        f.FundId = funds.FirstOrDefault(x => x.Code == f.FundCode)?.Id ?? 0;
+                    }
+
+                    db.GetCollection<FundDailyFee>().Upsert(rc.Data);
+                }
+
+                if (range is null) range = new(tr.Identifier + nameof(tr.QueryFundDailyFee), begin, end);
+                else range = range with { End = end };
+                pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
+
+                // 合并记录
+                ret.Add(new(tr.Title, rc.Code, rc.Data));
+            }
+            catch (Exception e)
+            {
+                ret.Add(new(tr.Title, ReturnCode.Unknown));
+            }
+        }
+
+        // 保存ret，程序加载时恢复，并生成消息
+        db.DropCollection(TableRaisingBalance);
+        db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
+
+        WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryRaisingBalance), ret));
+        RaisingBalanceConfig.Last = DateTime.Now;
+        Save(RaisingBalanceConfig);
+
+    }
 
 
 
@@ -294,7 +361,7 @@ public partial class TrusteeWorker : ObservableObject
         var t = DateTime.Now;
 
         // 分钟位
-        var minute = t.Hour * 60 + t.Minute; //  new DateTime(t.Year, t.Month, t.Day, t.Hour, t.Minute, 0);
+        var minute = t.Ticks / TimeSpan.TicksPerMinute; //  new DateTime(t.Year, t.Month, t.Day, t.Hour, t.Minute, 0);
         if (minute % RaisingBalanceConfig.Interval == 0)
         {
             await RaisingBalanceConfig.Semaphore.WaitAsync();
