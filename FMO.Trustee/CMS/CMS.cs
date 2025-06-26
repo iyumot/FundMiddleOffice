@@ -68,8 +68,23 @@ public partial class CMS : TrusteeApiBase
 
     public override async Task<ReturnWrap<FundDailyFee>> QueryFundDailyFee(DateOnly begin, DateOnly end)
     {
-        var data = await SyncWork<FundDailyFee, FundDailyFeeJson>(1020, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
-        return data;
+        // 查询区间大于1个月，需要多次查询 
+        var tmp = begin.AddDays(30);
+        List<FundDailyFee> transactions = new();
+        while (tmp < end)
+        {
+            var data = await SyncWork<FundDailyFee, FundDailyFeeJson>(1020, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
+            if (data.Code != ReturnCode.Success)
+                return data;
+
+            if (data.Data?.Length > 0)
+                transactions.AddRange(data.Data);
+
+            begin = tmp.AddDays(1);
+            tmp = begin.AddDays(30);
+        }
+
+        return new(ReturnCode.Success, transactions.ToArray());
     }
 
 
