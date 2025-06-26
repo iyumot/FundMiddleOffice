@@ -46,8 +46,15 @@
 
                 <Button
                     Margin="10,0"
+                    Command="{Binding SyncByAPICommand}"
+                    Content="API同步数据"
+                    Style="{StaticResource ButtonPrimary.Small}" />
+
+
+                <Button
+                    Margin="10,0"
                     Command="{Binding ImportFeeDataCommand}"
-                    Content="导入费用数据"
+                    Content="从表格导入费用数据"
                     Style="{StaticResource ButtonPrimary.Small}" />
             </DockPanel>
 

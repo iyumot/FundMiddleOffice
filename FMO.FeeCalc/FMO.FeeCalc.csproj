@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FMO.Models\FMO.Models.csproj" />
+    <ProjectReference Include="..\FMO.Trustee\FMO.Trustee.csproj" />
     <ProjectReference Include="..\FMO.Utilities\FMO.Utilities.csproj" />
   </ItemGroup>
 

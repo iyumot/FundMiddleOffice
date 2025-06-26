@@ -2,13 +2,13 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
+using FMO.Trustee;
 using FMO.Utilities;
 using LiteDB;
 using Microsoft.Win32;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -186,15 +186,15 @@ public partial class MainWindowViewModel : ObservableObject
         while (dates[^1] < end)
             dates.Add(dates[^1].AddDays(1));
 
-        Task.Run(async () =>
+        Task.Run(() =>
         {
             var sel = Funds.Where(x => x.IsChoosed).GroupBy(x => x.Fund.Trustee);
 
 
             Parallel.ForEach(sel, async f =>
-            {
-                await Calc(f!, dates);
-            });
+           {
+               await Calc(f!, dates);
+           });
 
             IsWorking = false;
         });
@@ -267,7 +267,7 @@ public partial class MainWindowViewModel : ObservableObject
             v = iShare > -1 ? read.GetValue(iShare) : -1;
             var share = v switch { double d => (decimal)d, decimal d => d, string s => decimal.TryParse(s, out var d) ? d : -1, _ => -1 };
 
-            fees.Add((read.GetString(iCode).Trim(), new ManageFeeDetail(0, date, fee, share)));
+            fees.Add((read.GetString(iCode).Trim(), new ManageFeeDetail(date.DayNumber, date, fee, share)));
         }
 
         // 保存
@@ -284,11 +284,11 @@ public partial class MainWindowViewModel : ObservableObject
             foreach (var n in f.Select(x => x.Fee))
             {
                 var v = old.FirstOrDefault(x => x.Date == n.Date);
-                if (v is not null) v = v with { Fee = n.Fee, Share = n.Share};
+                if (v is not null) v = v with { Fee = n.Fee, Share = n.Share };
                 else old.Add(n);
             }
 
-            db.GetCollection<ManageFeeDetail>($"f{fund.Id}").EnsureIndex(x => x.Date, true);
+            //db.GetCollection<ManageFeeDetail>($"f{fund.Id}").EnsureIndex(x => x.Date, true);
             db.GetCollection<ManageFeeDetail>($"f{fund.Id}").Upsert(old);
         }
 
@@ -297,7 +297,33 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
 
+    [RelayCommand]
+    public async Task SyncByAPI()
+    {
+        if (Begin is null || End is null) return;
 
+        using var db = DbHelper.Base();
+        var funds = db.GetCollection<Fund>().FindAll().ToArray();
+
+        foreach (var t in TrusteeGallay.Trustees)
+        {
+            if (!t.IsValid) continue;
+
+            var rc = await t.QueryFundDailyFee(DateOnly.FromDateTime(Begin.Value), DateOnly.FromDateTime(End.Value));
+
+            // 保存数据库 
+            if (rc.Data is not null)
+            {
+                // 对齐Fund
+                foreach (var f in rc.Data)
+                {
+                    f.FundId = funds.FirstOrDefault(x => x.Code == f.FundCode)?.Id ?? 0;
+                }
+
+                db.GetCollection<FundDailyFee>().Upsert(rc.Data);
+            }
+        }
+    }
 
 
 
@@ -555,11 +581,34 @@ public partial class FundInfo : ObservableObject
 
     public void CheckData(List<DateOnly> dates, DateOnly begin, DateOnly end)
     {
+        // 从platform中同步
+        using var pdb = DbHelper.Base();
+        var data = pdb.GetCollection<FundDailyFee>().Find(x => x.FundId == Fund.Id).ToArray();
+
+
         using var db = new LiteDatabase(@"FileName=data\feecalc.db;Connection=Shared");
-        var fees = db.GetCollection<ManageFeeDetail>($"f{Fund.Id}").Find(x => x.Date >= begin && x.Date <= end).OrderBy(x => x.Date).ToList();
+        var fees = db.GetCollection<ManageFeeDetail>($"f{Fund.Id}").Find(x => x.Date >= begin && x.Date <= end).OrderBy(x => x.Date).DistinctBy(x => x.Date).ToList();
         var fdate = fees.Select(x => x.Date).ToArray();
 
         IsDataValid = dates.SequenceEqual(fdate);
-        if (!IsDataValid) Error = "缺少费用数据";
+        if (!IsDataValid)
+        {
+            // 尝试从 中同步
+            var nvs = pdb.GetDailyCollection(Fund.Id).FindAll().OrderBy(x => x.Date).ToList();
+            var fe = data.Select(x => new ManageFeeDetail(x.Date.DayNumber, x.Date, x.ManagerFeeAccrued, nvs.LastOrDefault(y => y.Date <= x.Date)?.Share ?? 0));
+
+            // 保存
+            db.GetCollection<ManageFeeDetail>($"f{Fund.Id}").Upsert(fe);
+            // db.GetCollection<ManageFeeDetail>($"f{Fund.Id}").DeleteMany(x => x.Id < 10000);
+
+        }
+
+        // 再次加载
+        fees = db.GetCollection<ManageFeeDetail>($"f{Fund.Id}").Find(x => x.Date >= begin && x.Date <= end).OrderBy(x => x.Date).DistinctBy(x => x.Date).ToList();
+        fdate = fees.Select(x => x.Date).ToArray();
+
+        IsDataValid = dates.SequenceEqual(fdate);
+        if (!IsDataValid)
+            Error = $"费用数据{fdate.Length}个";
     }
 }
