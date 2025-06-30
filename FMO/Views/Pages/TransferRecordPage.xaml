@@ -192,6 +192,8 @@
 
             <TabItem Header="交易确认">
                 <DataGrid
+                    d:DataContext="{d:DesignInstance CreateList=True,
+                                                     Type=local:TransferRecordViewModel}"
                     hc:DataGridAttach.ShowRowNumber="True"
                     AutoGenerateColumns="False"
                     BorderThickness="0"
@@ -253,6 +255,8 @@
                         <DataGridTextColumn Binding="{Binding Fee, Converter={StaticResource ZeroToBlankConverter}}" Header="费用" />
                         <DataGridTextColumn Binding="{Binding PerformanceFee, Converter={StaticResource ZeroToBlankConverter}}" Header="业绩报酬" />
                         <DataGridTextColumn Binding="{Binding Agency}" Header="销售" />
+                        <DataGridTextColumn Binding="{Binding Source}" Header="来源" />
+                        <DataGridTextColumn Binding="{Binding ExternalId}" Header="ID" />
                     </DataGrid.Columns>
                 </DataGrid>
             </TabItem>
