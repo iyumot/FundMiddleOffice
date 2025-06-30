@@ -544,13 +544,14 @@
             </ListBox>
 
 
-<!--
+
             <ToggleButton
                 Name="apiReb"
-                hc:IconElement.Geometry="{StaticResource f.database}"
+                hc:IconElement.Geometry="{StaticResource f.gears}"
                 BorderThickness="0"
                 Foreground="RoyalBlue"
-                ToolTip="重建数据" />
+                IsChecked="{Binding IsTrusteeRebuildVisible}"
+                ToolTip="配置" />
 
             <Popup
                 AllowsTransparency="True"
@@ -558,8 +559,13 @@
                 Placement="Left"
                 PlacementTarget="{Binding ElementName=apiReb}"
                 StaysOpen="False">
-                <ListBox ItemsSource="{Binding TrusteeRebuildDataList}" />
-            </Popup>-->
+                <Border
+                    Width="800"
+                    Height="800"
+                    Background="WhiteSmoke">
+                    <local:TrusteeWorkerSettingView />
+                </Border>
+            </Popup>
 
 
             <!--  运行报告  -->
