@@ -161,7 +161,7 @@ public static class DataTracker
         var cur = DateOnly.FromDateTime(DateTime.Today);
 
         var coll = db.GetCollection<FundElements>();
-        foreach (var fund in funds)
+        foreach (var fund in funds.Where(x=>x.Status == FundStatus.Normal || x.Status == FundStatus.StartLiquidation))
         {
             var ele = coll.FindById(fund.Id);
             if (ele is not null)
