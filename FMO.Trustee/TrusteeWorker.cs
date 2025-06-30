@@ -205,6 +205,7 @@ public partial class TrusteeWorker : ObservableObject
                         if (f is not null)
                         {
                             r.FundId = f.Id;
+                            r.FundName = f.Name;
                             continue;
                         }
 
@@ -260,7 +261,11 @@ public partial class TrusteeWorker : ObservableObject
 
                 if (range is null) range = new(tr.Identifier + nameof(tr.QueryTransferRecords), begin, end);
                 else range = range with { End = end };
-                pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
+
+
+                // 如果有unset，表示数据异常，不保存进度
+                if (!(rc.Data?.Any(x => x.CustomerName == "unset" || x.FundName == "unset" || x.CustomerIdentity == "unset") ?? false))
+                    pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
 
                 // 合并记录
                 ret.Add(new(tr.Title, rc.Code, rc.Data));

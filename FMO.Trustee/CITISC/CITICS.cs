@@ -42,7 +42,7 @@ public partial class CITICS : TrusteeApiBase
         if (r.Data?.Length > 0)
         {
             using var db = DbHelper.Platform();
-            db.GetCollection<InvestorAccountMapping>().Upsert(r.Data.Select(x => new InvestorAccountMapping { Id = x.FundAcco, Indentity = x.CertiNo, Name = x.CustName }));
+            db.GetCollection<InvestorAccountMapping>(Identifier).Upsert(r.Data.Select(x => new InvestorAccountMapping { Id = x.FundAcco, Indentity = x.CertiNo, Name = x.CustName }));
         }
 
         return new(r.Code, r.Data?.Select(x => x.ToObject()).ToArray());
@@ -105,9 +105,22 @@ public partial class CITICS : TrusteeApiBase
         // 后处理
         if (result.Data?.Length > 0)
         {
+            // 获取待处理账号列表
+            var unk = result.Data.Select(x => x.FundAcco).Distinct().ToList();
+
+
             // 获取账户映射
             using var db = DbHelper.Platform();
-            var map = db.GetCollection<InvestorAccountMapping>().FindAll().ToArray();
+            var map = db.GetCollection<InvestorAccountMapping>(Identifier).FindAll().ToArray();
+
+            // 检查是否匹配
+            var kn = map.Select(x => x.Id).ToArray();
+            if (kn.Intersect(unk).Count() != unk.Count)
+            {
+                // 重新获取
+                await QueryInvestors();
+                map = db.GetCollection<InvestorAccountMapping>(Identifier).FindAll().ToArray();
+            }
 
             List<TransferRecord> list = new();
             foreach (var item in result.Data)
