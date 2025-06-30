@@ -2,6 +2,7 @@
 using FMO.Models;
 using Serilog;
 using System.Collections;
+using System.Security.Cryptography;
 
 namespace FMO.Utilities;
 
@@ -161,7 +162,7 @@ public static class DataTracker
         var cur = DateOnly.FromDateTime(DateTime.Today);
 
         var coll = db.GetCollection<FundElements>();
-        foreach (var fund in funds.Where(x=>x.Status == FundStatus.Normal || x.Status == FundStatus.StartLiquidation))
+        foreach (var fund in funds.Where(x => x.Status == FundStatus.Normal || x.Status == FundStatus.StartLiquidation))
         {
             var ele = coll.FindById(fund.Id);
             if (ele is not null)
@@ -177,6 +178,13 @@ public static class DataTracker
         }
     }
 
+    public static void OnFundCleared(Fund f)
+    {
+        foreach (var m in FundTips.Where(x => x.FundId == f.Id && x.Type == TipType.OverDue))
+            FundTips.Remove(m);
+
+        WeakReferenceMessenger.Default.Send(new FundTipMessage(f.Id));
+    }
 }
 public class ThreadSafeList<T> : IEnumerable<T>
 {

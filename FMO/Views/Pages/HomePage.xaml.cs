@@ -135,12 +135,18 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
                 {
                     foreach (var (j, f) in set.Index())
                     {
+                        var cleared = f.Status > FundStatus.StartLiquidation;
+
                         await AmacAssist.SyncFundInfoAsync(f, client);
                         DataTracker.CheckFundFolder([f]);
 
                         f.PublicDisclosureSynchronizeTime = DateTime.Now;
                         db.GetCollection<Fund>().Update(f);
                         WeakReferenceMessenger.Default.Send(f);
+
+                        //
+                        if (!cleared && f.Status > FundStatus.StartLiquidation)
+                            DataTracker.OnFundCleared(f);
 
                         await Task.Delay(200);
                     }
