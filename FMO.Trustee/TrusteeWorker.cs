@@ -25,7 +25,18 @@ public record TrusteeWorkResult(string Method, IList<TrusteeWorker.WorkReturn> R
 /// <param name="Id">Identifier+Method</param>
 /// <param name="Begin"></param>
 /// <param name="End"></param>
-public record TrusteeMethodShotRange(string Id, DateOnly Begin, DateOnly End);
+public class TrusteeMethodShotRange(string Id, DateOnly Begin, DateOnly End)
+{
+    public string Id { get; } = Id;
+    public DateOnly Begin { get; set; } = Begin;
+    public DateOnly End { get; set; } = End;
+
+    public void Merge(DateOnly begin, DateOnly end)
+    {
+        if (begin < Begin) Begin = begin;
+        if (end > End) End = end;
+    }
+}
 
 //public record TrusteeWorkRecord(string Identifier, string Method, DateOnly Begin, DateOnly End, int Count);
 
@@ -79,6 +90,8 @@ public partial class TrusteeWorker : ObservableObject
     private WorkConfig TransferRecordConfig { get; set; }
 
     private WorkConfig DailyFeeConfig { get; set; }
+    private WorkConfig TransferRequestConfig { get; set; }
+    private WorkConfig RaisingAccountTransctionConfig { get; set; }
 
     public TrusteeWorker(ITrustee[] trustees)
     {
@@ -92,9 +105,10 @@ public partial class TrusteeWorker : ObservableObject
 
 
         RaisingBalanceConfig = cfg.FirstOrDefault(x => x.Id == nameof(RaisingBalanceConfig)) ?? new(nameof(RaisingBalanceConfig));
-        TransferRecordConfig = cfg.FirstOrDefault(x => x.Id == nameof(TransferRecordConfig)) ?? new(nameof(TransferRecordConfig));
+        TransferRecordConfig = cfg.FirstOrDefault(x => x.Id == nameof(TransferRecordConfig)) ?? new(nameof(TransferRecordConfig)) { Interval = 60 * 6 }; // 每6个小时
+        TransferRequestConfig = cfg.FirstOrDefault(x => x.Id == nameof(TransferRequestConfig)) ?? new(nameof(TransferRequestConfig));
         DailyFeeConfig = cfg.FirstOrDefault(x => x.Id == nameof(DailyFeeConfig)) ?? new(nameof(DailyFeeConfig)) { Interval = 60 * 24 }; // 每天一次
-
+        RaisingAccountTransctionConfig = cfg.FirstOrDefault(x => x.Id == nameof(RaisingAccountTransctionConfig)) ?? new(nameof(RaisingAccountTransctionConfig));
 
 
         Trustees = trustees;
@@ -161,18 +175,166 @@ public partial class TrusteeWorker : ObservableObject
         Save(RaisingBalanceConfig);
     }
 
+
+
     /// <summary>
     /// 获取交易确认记录
     /// </summary>
     /// <returns></returns>
     [RelayCommand]
-    public async Task QueryTransferRecoredOnce()
+    public async Task QueryTransferRequestOnce()
     {
         List<WorkReturn> ret = new();
         // 保存数据库
         using var db = DbHelper.Base();
         var funds = db.GetCollection<Fund>().FindAll().ToArray();
         var manager = db.GetCollection<Manager>().FindById(1);
+        var StartDateOfAny = funds.Min(x => x.SetupDate);
+
+        using var pdb = DbHelper.Platform();
+        var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
+
+
+        foreach (var tr in Trustees)
+        {
+            if (!tr.IsValid)
+            {
+                ret.Add(new(tr.Title, ReturnCode.ConfigInvalid));
+                continue;
+            }
+
+            try
+            {
+                // 获取历史区间
+                var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + nameof(tr.QueryTransferRequests));
+
+                DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
+                do
+                {
+                    var rc = await tr.QueryTransferRequests(begin, end);
+
+                    ///
+                    // 保存数据库 
+                    if (rc.Data is not null)
+                    {
+                        // 对齐数据   
+                        foreach (var r in rc.Data)
+                        {
+                            if (r.Agency == manager.Name)
+                                r.Agency = "直销";
+
+
+                            // code 匹配
+                            var f = funds.FirstOrDefault(x => x.Code == r.FundCode);
+                            if (f is not null)
+                            {
+                                r.FundId = f.Id;
+                                r.FundName = f.Name;
+                                continue;
+                            }
+
+                            // 子份额
+
+
+                            // 待完善
+                        }
+
+                        var customers = db.GetCollection<Investor>().FindAll().ToList();
+                        foreach (var r in rc.Data)
+                        {
+                            var c = customers.FirstOrDefault(x => x.Name == r.CustomerName && x.Identity?.Id == r.CustomerIdentity);
+                            if (c is not null)
+                            {
+                                r.CustomerId = c.Id;
+                                continue;
+                            }
+                            else // 添加数据
+                            {
+                                c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
+                                db.GetCollection<Investor>().Insert(c);
+                                r.CustomerId = c.Id;
+                            }
+                        }
+
+                        // 对齐id 
+                        var olds = db.GetCollection<TransferRequest>().Find(x => x.RequestDate >= rc.Data.Min(x => x.RequestDate));
+                        foreach (var r in rc.Data)
+                        {
+                            // 同日同名
+                            var exi = olds.Where(x => x.ExternalId == r.ExternalId || (x.CustomerName == r.CustomerName && x.CustomerIdentity == r.CustomerIdentity && x.RequestDate == r.RequestDate)).ToList();
+
+                            // 只有一个，替换
+                            if (exi.Count == 1 && (exi[0].Source != "api" || exi[0].ExternalId == r.ExternalId))
+                            {
+                                r.Id = exi[0].Id;
+                                continue;
+                            }
+
+                            // > 1个
+                            // 存在同ex id，替换
+                            var old = exi.Where(x => x.ExternalId == r.ExternalId);
+                            if (old.Any())
+                                r.Id = old.First().Id;
+
+                            // 如果存在手动录入的，也删除
+                            foreach (var item in exi)
+                                db.GetCollection<TransferRequest>().DeleteMany(item => item.Source == "manual" || item.ExternalId == r.ExternalId);
+
+                        }
+
+                        db.GetCollection<TransferRequest>().Upsert(rc.Data);
+                    }
+
+
+                    // 如果有unset，表示数据异常，不保存进度
+                    if (rc.Data?.Any(x => x.CustomerName == "unset" || x.FundName == "unset" || x.CustomerIdentity == "unset") ?? false)
+                        break;
+
+                    // 更新进度
+                    if (range is null) range = new(tr.Identifier + nameof(tr.QueryTransferRequests), begin, end);
+                    else range.Merge(begin, end);
+                    pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
+
+                    // 合并记录
+                    ret.Add(new(tr.Title, rc.Code, rc.Data));
+
+                    // 向前一年
+                    end = begin.AddDays(-1);
+                    begin = end.AddYears(-1);
+                } while (begin > StartDateOfAny);
+            }
+            catch (Exception e)
+            {
+                ret.Add(new(tr.Title, ReturnCode.Unknown));
+            }
+        }
+
+        // 保存ret，程序加载时恢复，并生成消息
+        db.DropCollection(TableRaisingBalance);
+        db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
+
+        WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryRaisingBalance), ret));
+        RaisingBalanceConfig.Last = DateTime.Now;
+        Save(RaisingBalanceConfig);
+
+        DataTracker.CheckShareIsPair(funds);
+    }
+
+
+
+    /// <summary>
+    /// 获取交易确认记录
+    /// </summary>
+    /// <returns></returns>
+    [RelayCommand]
+    public async Task QueryTransferRecordOnce()
+    {
+        List<WorkReturn> ret = new();
+        // 保存数据库
+        using var db = DbHelper.Base();
+        var funds = db.GetCollection<Fund>().FindAll().ToArray();
+        var manager = db.GetCollection<Manager>().FindById(1);
+        var StartDateOfAny = funds.Min(x => x.SetupDate);
 
         using var pdb = DbHelper.Platform();
         var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
@@ -192,90 +354,100 @@ public partial class TrusteeWorker : ObservableObject
                 var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + nameof(tr.QueryTransferRecords));
 
                 DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
-                var rc = await tr.QueryTransferRecords(begin, end);
-
-                ///
-                // 保存数据库 
-                if (rc.Data is not null)
+                do
                 {
-                    // 对齐数据   
-                    foreach (var r in rc.Data)
+                    var rc = await tr.QueryTransferRecords(begin, end);
+
+                    ///
+                    // 保存数据库 
+                    if (rc.Data is not null)
                     {
-                        if (r.Agency == manager.Name)
-                            r.Agency = "直销";
-
-
-                        // code 匹配
-                        var f = funds.FirstOrDefault(x => x.Code == r.FundCode);
-                        if (f is not null)
+                        // 对齐数据   
+                        foreach (var r in rc.Data)
                         {
-                            r.FundId = f.Id;
-                            r.FundName = f.Name;
-                            continue;
+                            if (r.Agency == manager.Name)
+                                r.Agency = "直销";
+
+
+                            // code 匹配
+                            var f = funds.FirstOrDefault(x => x.Code == r.FundCode);
+                            if (f is not null)
+                            {
+                                r.FundId = f.Id;
+                                r.FundName = f.Name;
+                                continue;
+                            }
+
+                            // 子份额
+
+
+                            // 待完善
                         }
 
-                        // 子份额
+                        var customers = db.GetCollection<Investor>().FindAll().ToList();
+                        foreach (var r in rc.Data)
+                        {
+                            var c = customers.FirstOrDefault(x => x.Name == r.CustomerName && x.Identity?.Id == r.CustomerIdentity);
+                            if (c is not null)
+                            {
+                                r.CustomerId = c.Id;
+                                continue;
+                            }
+                            else // 添加数据
+                            {
+                                c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
+                                db.GetCollection<Investor>().Insert(c);
+                                r.CustomerId = c.Id;
+                            }
+                        }
 
+                        // 对齐id 
+                        var olds = db.GetCollection<TransferRecord>().Find(x => x.ConfirmedDate >= rc.Data.Min(x => x.ConfirmedDate));
+                        foreach (var r in rc.Data)
+                        {
+                            // 同日同名
+                            var exi = olds.Where(x => x.ExternalId == r.ExternalId || (x.CustomerName == r.CustomerName && x.CustomerIdentity == r.CustomerIdentity && x.ConfirmedDate == r.ConfirmedDate)).ToList();
 
-                        // 待完善
+                            // 只有一个，替换
+                            if (exi.Count == 1 && (exi[0].Source != "api" || exi[0].ExternalId == r.ExternalId))
+                            {
+                                r.Id = exi[0].Id;
+                                continue;
+                            }
+
+                            // > 1个
+                            // 存在同ex id，替换
+                            var old = exi.Where(x => x.ExternalId == r.ExternalId);
+                            if (old.Any())
+                                r.Id = old.First().Id;
+
+                            // 如果存在手动录入的，也删除
+                            foreach (var item in exi)
+                                db.GetCollection<TransferRecord>().DeleteMany(item => item.Source == "manual" || item.ExternalId == r.ExternalId);
+
+                        }
+
+                        db.GetCollection<TransferRecord>().Upsert(rc.Data);
                     }
 
-                    var customers = db.GetCollection<Investor>().FindAll().ToList();
-                    foreach (var r in rc.Data)
-                    {
-                        var c = customers.FirstOrDefault(x => x.Name == r.CustomerName && x.Identity?.Id == r.CustomerIdentity);
-                        if (c is not null)
-                        {
-                            r.CustomerId = c.Id;
-                            continue;
-                        }
-                        else // 添加数据
-                        {
-                            c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
-                            db.GetCollection<Investor>().Insert(c);
-                            r.CustomerId = c.Id;
-                        }
-                    }
-
-                    // 对齐id 
-                    var olds = db.GetCollection<TransferRecord>().Find(x => x.ConfirmedDate >= rc.Data.Min(x => x.ConfirmedDate));
-                    foreach (var r in rc.Data)
-                    {
-                        // 同日同名
-                        var exi = olds.Where(x => x.CustomerName == r.CustomerName && x.CustomerIdentity == r.CustomerIdentity && x.ConfirmedDate == r.ConfirmedDate).ToList();
-
-                        // 只有一个，替换
-                        if (exi.Count == 1 && (exi[0].Source != "api" || exi[0].ExternalId == r.ExternalId))
-                        {
-                            r.Id = exi[0].Id;
-                            continue;
-                        }
-
-                        // > 1个
-                        // 存在同ex id，替换
-                        var old = exi.Where(x => x.ExternalId == r.ExternalId);
-                        if (old.Any())
-                            r.Id = old.First().Id;
-
-                        // 如果存在手动录入的，也删除
-                        foreach (var item in exi)
-                            db.GetCollection<TransferRecord>().DeleteMany(item => item.Source == "manual" || item.ExternalId == r.ExternalId);
-
-                    }
-
-                    db.GetCollection<TransferRecord>().Upsert(rc.Data);
-                }
-
-                if (range is null) range = new(tr.Identifier + nameof(tr.QueryTransferRecords), begin, end);
-                else range = range with { End = end };
 
 
-                // 如果有unset，表示数据异常，不保存进度
-                if (!(rc.Data?.Any(x => x.CustomerName == "unset" || x.FundName == "unset" || x.CustomerIdentity == "unset") ?? false))
+                    // 如果有unset，表示数据异常，不保存进度
+                    if (rc.Data?.Any(x => x.CustomerName == "unset" || x.FundName == "unset" || x.CustomerIdentity == "unset") ?? false)
+                        break;
+
+                    // 更新进度
+                    if (range is null) range = new(tr.Identifier + nameof(tr.QueryTransferRecords), begin, end);
+                    else range.Merge(begin, end);
                     pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
 
-                // 合并记录
-                ret.Add(new(tr.Title, rc.Code, rc.Data));
+                    // 合并记录
+                    ret.Add(new(tr.Title, rc.Code, rc.Data));
+
+                    // 向前一年
+                    end = begin.AddDays(-1);
+                    begin = end.AddYears(-1);
+                } while (begin > StartDateOfAny);
             }
             catch (Exception e)
             {
@@ -345,7 +517,7 @@ public partial class TrusteeWorker : ObservableObject
                     }
 
                     if (range is null) range = new(tr.Identifier + method, begin, end);
-                    else range = range with { End = end };
+                    else range.Merge(begin, end);
                     pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
 
                     // 合并记录
@@ -374,7 +546,10 @@ public partial class TrusteeWorker : ObservableObject
 
 
 
-
+    /// <summary>
+    /// 获取募集户流水
+    /// </summary>
+    /// <returns></returns>
     [RelayCommand]
     public async Task QueryRaisingAccountTransctionOnce()
     {
@@ -382,6 +557,7 @@ public partial class TrusteeWorker : ObservableObject
         // 保存数据库
         using var db = DbHelper.Base();
         var funds = db.GetCollection<Fund>().FindAll().ToArray();
+        var StartDateOfAny = funds.Min(x => x.SetupDate);
 
         using var pdb = DbHelper.Platform();
         var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
@@ -401,79 +577,86 @@ public partial class TrusteeWorker : ObservableObject
                 var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + nameof(tr.QueryTransferRecords));
 
                 DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
-                var rc = await tr.QueryTransferRecords(begin, end);
-
-                ///
-                // 保存数据库 
-                if (rc.Data is not null)
+                do
                 {
-                    // 对齐数据   
-                    foreach (var r in rc.Data)
+                    var rc = await tr.QueryTransferRecords(begin, end);
+
+                    ///
+                    // 保存数据库 
+                    if (rc.Data is not null)
                     {
-                        // code 匹配
-                        var f = funds.FirstOrDefault(x => x.Code == r.FundCode);
-                        if (f is not null)
+                        // 对齐数据   
+                        foreach (var r in rc.Data)
                         {
-                            r.FundId = f.Id;
-                            continue;
+                            // code 匹配
+                            var f = funds.FirstOrDefault(x => x.Code == r.FundCode);
+                            if (f is not null)
+                            {
+                                r.FundId = f.Id;
+                                continue;
+                            }
+
+                            // 待完善
+
                         }
 
-                        // 待完善
+                        var customers = db.GetCollection<Investor>().FindAll().ToList();
+                        foreach (var r in rc.Data)
+                        {
+                            var c = customers.FirstOrDefault(x => x.Name == r.CustomerName && x.Identity?.Id == r.CustomerIdentity);
+                            if (c is not null)
+                            {
+                                r.CustomerId = c.Id;
+                                continue;
+                            }
+                            else // 添加数据
+                            {
+                                c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
+                                db.GetCollection<Investor>().Insert(c);
+                                r.CustomerId = c.Id;
+                            }
+                        }
 
+                        // 对齐id 
+                        var olds = db.GetCollection<TransferRecord>().Find(x => x.ConfirmedDate >= rc.Data.Min(x => x.ConfirmedDate));
+                        foreach (var r in rc.Data)
+                        {
+                            // 同日同名
+                            var exi = olds.Where(x => x.CustomerName == r.CustomerName && x.CustomerIdentity == r.CustomerIdentity && x.ConfirmedDate == r.ConfirmedDate).ToList();
+
+                            // 只有一个，替换
+                            if (exi.Count == 1)
+                            {
+                                r.Id = exi[0].Id;
+                                continue;
+                            }
+
+                            // > 1个
+                            // 存在同ex id，替换
+                            var old = exi.Where(x => x.ExternalId == r.ExternalId);
+                            if (old.Any())
+                                r.Id = old.First().Id;
+
+                            // 如果存在手动录入的，也删除
+                            foreach (var item in exi)
+                                db.GetCollection<TransferRecord>().DeleteMany(item => item.Source == "manual" || item.ExternalId == r.ExternalId);
+
+                        }
+
+                        db.GetCollection<TransferRecord>().Upsert(rc.Data);
                     }
 
-                    var customers = db.GetCollection<Investor>().FindAll().ToList();
-                    foreach (var r in rc.Data)
-                    {
-                        var c = customers.FirstOrDefault(x => x.Name == r.CustomerName && x.Identity?.Id == r.CustomerIdentity);
-                        if (c is not null)
-                        {
-                            r.CustomerId = c.Id;
-                            continue;
-                        }
-                        else // 添加数据
-                        {
-                            c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
-                            db.GetCollection<Investor>().Insert(c);
-                            r.CustomerId = c.Id;
-                        }
-                    }
+                    if (range is null) range = new(tr.Identifier + nameof(tr.QueryTransferRecords), begin, end);
+                    else range.Merge(begin, end);
+                    pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
 
-                    // 对齐id 
-                    var olds = db.GetCollection<TransferRecord>().Find(x => x.ConfirmedDate >= rc.Data.Min(x => x.ConfirmedDate));
-                    foreach (var r in rc.Data)
-                    {
-                        // 同日同名
-                        var exi = olds.Where(x => x.CustomerName == r.CustomerName && x.CustomerIdentity == r.CustomerIdentity && x.ConfirmedDate == r.ConfirmedDate).ToList();
+                    // 合并记录
+                    ret.Add(new(tr.Title, rc.Code, rc.Data));
 
-                        // 只有一个，替换
-                        if (exi.Count == 1)
-                        {
-                            r.Id = exi[0].Id;
-                            continue;
-                        }
-
-                        // > 1个
-                        // 存在同ex id，替换
-                        var old = exi.Where(x => x.ExternalId == r.ExternalId);
-                        if (old.Any())
-                            r.Id = old.First().Id;
-
-                        // 如果存在手动录入的，也删除
-                        foreach (var item in exi)
-                            db.GetCollection<TransferRecord>().DeleteMany(item => item.Source == "manual" || item.ExternalId == r.ExternalId);
-
-                    }
-
-                    db.GetCollection<TransferRecord>().Upsert(rc.Data);
-                }
-
-                if (range is null) range = new(tr.Identifier + nameof(tr.QueryTransferRecords), begin, end);
-                else range = range with { End = end };
-                pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
-
-                // 合并记录
-                ret.Add(new(tr.Title, rc.Code, rc.Data));
+                    // 向前一年
+                    end = begin.AddDays(-1);
+                    begin = end.AddYears(-1);
+                } while (begin > StartDateOfAny);
             }
             catch (Exception e)
             {
@@ -495,9 +678,12 @@ public partial class TrusteeWorker : ObservableObject
 
 
 
-
-
-
+    [RelayCommand]
+    public void Rebuild(string method)
+    {
+        using (var pdf = DbHelper.Platform()) //删除记录
+            pdf.GetCollection("TrusteeMethodShotRange").Delete(method);
+    }
 
 
 

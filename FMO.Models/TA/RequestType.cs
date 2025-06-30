@@ -24,6 +24,17 @@ public enum TransferRequestType
     /// </summary>
     [Description("份额调增")] Increase,
 
+
+    /// <summary>
+    /// 受让
+    /// </summary>
+    [Description("受让")] TransferIn,
+
+    /// <summary>
+    /// 份额转换
+    /// </summary>
+    [Description("份额转换转入")] SwitchIn,
+
     /// <summary>
     /// 分红
     /// </summary>
@@ -45,6 +56,23 @@ public enum TransferRequestType
     /// </summary>
     [Description("份额调减")] Decrease,
 
+    /// <summary>
+    /// 转让
+    /// </summary>
+    [Description("转让")] TransferOut,
+
+
+    /// <summary>
+    /// 份额转换
+    /// </summary>
+    [Description("份额转换转出")] SwitchOut,
+
+
+
+    /// <summary>
+    /// 设置分红方式
+    /// </summary>
+    [Description("设置分红方式")] BonusType = 21,
 
     /// <summary>
     /// 二次或多次清算产生的金额

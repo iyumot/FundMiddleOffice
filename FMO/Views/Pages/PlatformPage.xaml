@@ -544,6 +544,24 @@
             </ListBox>
 
 
+<!--
+            <ToggleButton
+                Name="apiReb"
+                hc:IconElement.Geometry="{StaticResource f.database}"
+                BorderThickness="0"
+                Foreground="RoyalBlue"
+                ToolTip="重建数据" />
+
+            <Popup
+                AllowsTransparency="True"
+                IsOpen="{Binding IsTrusteeRebuildVisible}"
+                Placement="Left"
+                PlacementTarget="{Binding ElementName=apiReb}"
+                StaysOpen="False">
+                <ListBox ItemsSource="{Binding TrusteeRebuildDataList}" />
+            </Popup>-->
+
+
             <!--  运行报告  -->
             <ToggleButton
                 Name="apiRepBtn"

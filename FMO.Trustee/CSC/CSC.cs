@@ -42,9 +42,11 @@ public partial class CSC : TrusteeApiBase
 
 
 
-    public override Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end)
+    public override async Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end)
     {
-        throw new NotImplementedException();
+        var part = "/institution/tgpt/erp/product/query/findAckTransList";
+        var result = await SyncWork<TransferRequest, TransferRequestJson>(part, new { beginDate = begin.ToString("yyyyMMdd"), endDate = end.ToString("yyyyMMdd") }, x => x.ToObject());
+        return result;
     }
 
 
