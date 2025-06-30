@@ -206,6 +206,7 @@ public partial class CITICS
                 ConfirmedNetAmount = ParseDecimal(RealBalance),
                 Source = "api",               
             };
+            r.Fee -= r.PerformanceFee;
             r.ConfirmedNetAmount = r.ConfirmedAmount - r.Fee;
             return r;
         }

@@ -22,14 +22,14 @@ public partial class CMS
         public string ProductName { get; set; }
 
         [JsonPropertyName("isGrade")]
-        public bool IsGrade { get; set; }
+        public string IsGrade { get; set; }
 
         [JsonPropertyName("registerNo")]
         public string RegisterNo { get; set; }
 
         public SubjectFundMapping ToObject()
         {
-            var sc = IsGrade ? GradeName.Replace(ProductName, "") : "";
+            var sc = IsGrade == "1" ? GradeName.Replace(ProductName, "") : "";
             return new SubjectFundMapping { FundCode = GradeNo, FundName = GradeName, MasterCode = ProductNo, MasterName = ProductName, ShareClass = sc };
         }
     }

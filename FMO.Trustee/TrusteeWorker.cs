@@ -172,6 +172,7 @@ public partial class TrusteeWorker : ObservableObject
         // 保存数据库
         using var db = DbHelper.Base();
         var funds = db.GetCollection<Fund>().FindAll().ToArray();
+        var manager = db.GetCollection<Manager>().FindById(1);
 
         using var pdb = DbHelper.Platform();
         var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
@@ -200,6 +201,10 @@ public partial class TrusteeWorker : ObservableObject
                     // 对齐数据   
                     foreach (var r in rc.Data)
                     {
+                        if (r.Agency == manager.Name)
+                            r.Agency = "直销";
+
+
                         // code 匹配
                         var f = funds.FirstOrDefault(x => x.Code == r.FundCode);
                         if (f is not null)
@@ -209,8 +214,10 @@ public partial class TrusteeWorker : ObservableObject
                             continue;
                         }
 
-                        // 待完善
+                        // 子份额
 
+
+                        // 待完善
                     }
 
                     var customers = db.GetCollection<Investor>().FindAll().ToList();
@@ -238,7 +245,7 @@ public partial class TrusteeWorker : ObservableObject
                         var exi = olds.Where(x => x.CustomerName == r.CustomerName && x.CustomerIdentity == r.CustomerIdentity && x.ConfirmedDate == r.ConfirmedDate).ToList();
 
                         // 只有一个，替换
-                        if (exi.Count == 1)
+                        if (exi.Count == 1 && (exi[0].Source != "api" || exi[0].ExternalId == r.ExternalId))
                         {
                             r.Id = exi[0].Id;
                             continue;

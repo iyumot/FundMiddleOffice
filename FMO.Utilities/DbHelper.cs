@@ -48,32 +48,13 @@ public static class DatabaseAssist
                 db.GetCollection<TransferRecord>().Update(d);
             }
 
-            //fix fund folder miggrate
-            //var f = db.GetCollection<FundFlow>().FindAll().ToArray();
-            //foreach (var item in f)
-            //{
-            //    foreach (var p in item.GetType().GetProperties())
-            //    {
-            //        if (p.PropertyType == typeof(FileStorageInfo))
-            //        {
-            //            var s = p.GetValue(item, null) as FileStorageInfo;
-            //            if (s?.Path is null) continue;
-            //            var fi = new FileInfo(s.Path);
-            //            if (!fi.Exists)
-            //            {
-            //                if (s.Path.StartsWith("files\\funds\\"))
-            //                {
-            //                    var np = s.Path.Replace("files\\funds\\", $"files\\funds\\{item.FundId}.");
-            //                    if (File.Exists(np))
-            //                    {
-            //                        s.Path = np;
-            //                        db.GetCollection<FundFlow>().Update(item);
-            //                    }
-            //                }
-            //            }
-            //        }
-            //    }
-            //}
+            // 6.30 解决中信ta，有unset
+            var haser = db.GetCollection<TransferRecord>().Find(x => x.Source != null && x.Source.Contains("citics")).Any(x => x.CustomerName == "unset");
+            using (var pdf = DbHelper.Platform()) //删除记录
+                //1pdf.GetCollection("TrusteeMethodShotRange").Delete("trustee_citicsQueryTransferRecords");
+                pdf.GetCollection("TrusteeMethodShotRange").Delete("trustee_cmsQueryTransferRecords");
+
+            db.GetCollection<TransferRecord>().DeleteMany(x => x.Source == "" || x.Source == null);            
         }
 
 
@@ -96,7 +77,7 @@ public static class DatabaseAssist
             var id = item["_id"].AsString;
             item.Remove("_id");
             item.Add("_id", 1);
-            item.Add(nameof(Identity), BsonMapper.Global.ToDocument( new Identity { Type = IDType.OrganizationCode, Id = id }));
+            item.Add(nameof(Identity), BsonMapper.Global.ToDocument(new Identity { Type = IDType.OrganizationCode, Id = id }));
         }
         db.DropCollection(nameof(Manager));
         db.GetCollection(nameof(Manager)).Insert(objs);

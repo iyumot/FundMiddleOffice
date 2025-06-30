@@ -37,7 +37,7 @@ public partial class CMS : TrusteeApiBase
     public X509Certificate2? Certificate { get; set; }
 
 
-
+    private SubjectFundMapping[]? FundsInfo { get; set; }
 
 
 
@@ -46,6 +46,9 @@ public partial class CMS : TrusteeApiBase
     public override async Task<ReturnWrap<SubjectFundMapping>> QuerySubjectFundMappings()
     {
         var data = await SyncWork<SubjectFundMapping, SubjectFundMappingJson>(1018, null, x => x.ToObject());
+
+        if (data.Code == ReturnCode.Success && data.Data?.Length > 0)
+            FundsInfo = data.Data.ToArray();
         return data;
     }
 
@@ -62,6 +65,24 @@ public partial class CMS : TrusteeApiBase
     public override async Task<ReturnWrap<TransferRecord>> QueryTransferRecords(DateOnly begin, DateOnly end)
     {
         var data = await SyncWork<TransferRecord, TransferRecordJson>(1006, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
+
+        // ×Ó²úÆ· Ó³Éä
+        if (FundsInfo is null)
+            await QuerySubjectFundMappings();
+
+        if (data.Code == ReturnCode.Success && data.Data is not null)
+        {
+            foreach (var item in data.Data)
+            {
+                if (FundsInfo?.FirstOrDefault(x => x.FundCode == item.FundCode) is SubjectFundMapping sfm)
+                {
+                    item.FundCode = sfm.MasterCode;
+                    item.FundName = sfm.MasterName;
+                    if (!string.IsNullOrWhiteSpace(sfm.ShareClass))
+                        item.ShareClass = sfm.ShareClass;
+                }
+            }
+        }
         return data;
     }
 
