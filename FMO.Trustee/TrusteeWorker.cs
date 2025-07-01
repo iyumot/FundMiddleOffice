@@ -707,6 +707,59 @@ public partial class TrusteeWorker : ObservableObject
             catch { }
             finally { RaisingBalanceConfig.Semaphore.Release(); }
         }
+
+        // 募集户流水
+        if(minute % RaisingAccountTransctionConfig.Interval == 0)
+        {
+            await RaisingAccountTransctionConfig.Semaphore.WaitAsync();
+            try
+            {
+                if (minute / RaisingAccountTransctionConfig.Interval != RaisingAccountTransctionConfig.GetLastRunIndex())
+                    await QueryRaisingAccountTransctionOnce();
+            }
+            catch { }
+            finally { RaisingAccountTransctionConfig.Semaphore.Release(); }
+        }
+
+        // 交易申请 
+        if (minute % TransferRequestConfig.Interval == 0)
+        {
+            await TransferRequestConfig.Semaphore.WaitAsync();
+            try
+            {
+                if (minute / TransferRequestConfig.Interval != TransferRequestConfig.GetLastRunIndex())
+                    await QueryTransferRecordOnce();
+            }
+            catch { }
+            finally { TransferRequestConfig.Semaphore.Release(); }
+        }
+
+        // 交易确认
+        if (minute % TransferRecordConfig.Interval == 0)
+        {
+            await TransferRecordConfig.Semaphore.WaitAsync();
+            try
+            {
+                if (minute / TransferRecordConfig.Interval != TransferRecordConfig.GetLastRunIndex())
+                    await QueryTransferRecordOnce();
+            }
+            catch { }
+            finally { TransferRecordConfig.Semaphore.Release(); }
+        }
+
+
+        // 费用
+        if (minute % DailyFeeConfig.Interval == 0)
+        {
+            await DailyFeeConfig.Semaphore.WaitAsync();
+            try
+            {
+                if (minute / DailyFeeConfig.Interval != DailyFeeConfig.GetLastRunIndex())
+                    await QueryDailyFeeOnce();
+            }
+            catch { }
+            finally { DailyFeeConfig.Semaphore.Release(); }
+        }
     }
 
 

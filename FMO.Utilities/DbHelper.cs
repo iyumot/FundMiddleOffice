@@ -92,10 +92,11 @@ public static class DatabaseAssist
         { 
             // 6.30 解决中信ta，有unset
             var haser = db.GetCollection<TransferRecord>().Find(x => x.Source != null && x.Source.Contains("citics")).Any(x => x.CustomerName == "unset");
-            using (var pdf = DbHelper.Platform()) //删除记录
-                //1pdf.GetCollection("TrusteeMethodShotRange").Delete("trustee_citicsQueryTransferRecords");
-                pdf.GetCollection("TrusteeMethodShotRange").Delete("trustee_cmsQueryTransferRecords");
-
+            using (var pdb = DbHelper.Platform()) //删除记录
+            {
+                pdb.GetCollection("TrusteeMethodShotRange").Delete("trustee_citicsQueryTransferRecords");
+                pdb.GetCollection("TrusteeMethodShotRange").Delete("trustee_cmsQueryTransferRecords");
+            }
             db.GetCollection<TransferRecord>().DeleteMany(x => x.Source == "" || x.Source == null);
 
             col.Insert(new PatchRecord(2, DateTime.Now));
