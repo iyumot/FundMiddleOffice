@@ -93,6 +93,8 @@ public partial class TrusteeWorker : ObservableObject
     private WorkConfig TransferRequestConfig { get; set; }
     private WorkConfig RaisingAccountTransctionConfig { get; set; }
 
+    
+
     public TrusteeWorker(ITrustee[] trustees)
     {
         WeakReferenceMessenger.Default.RegisterAll(this);
@@ -189,8 +191,7 @@ public partial class TrusteeWorker : ObservableObject
         using var db = DbHelper.Base();
         var funds = db.GetCollection<Fund>().FindAll().ToArray();
         var manager = db.GetCollection<Manager>().FindById(1);
-        var StartDateOfAny = funds.Min(x => x.SetupDate);
-
+        var StartDateOfAny = StartOfAnyWork();
         using var pdb = DbHelper.Platform();
         var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
 
@@ -299,7 +300,8 @@ public partial class TrusteeWorker : ObservableObject
                     ret.Add(new(tr.Title, rc.Code, rc.Data));
 
                     // 向前一年
-                    end = begin.AddDays(-1);
+                    end = range.Begin.AddDays(-1);
+                    if (end.Year < 1970) break;
                     begin = end.AddYears(-1);
                 } while (begin > StartDateOfAny);
             }
@@ -334,7 +336,7 @@ public partial class TrusteeWorker : ObservableObject
         using var db = DbHelper.Base();
         var funds = db.GetCollection<Fund>().FindAll().ToArray();
         var manager = db.GetCollection<Manager>().FindById(1);
-        var StartDateOfAny = funds.Min(x => x.SetupDate);
+        var StartDateOfAny = StartOfAnyWork();
 
         using var pdb = DbHelper.Platform();
         var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
@@ -445,7 +447,8 @@ public partial class TrusteeWorker : ObservableObject
                     ret.Add(new(tr.Title, rc.Code, rc.Data));
 
                     // 向前一年
-                    end = begin.AddDays(-1);
+                    end = range.Begin.AddDays(-1);
+                    if (end.Year < 1970) break;
                     begin = end.AddYears(-1);
                 } while (begin > StartDateOfAny);
             }
@@ -477,8 +480,7 @@ public partial class TrusteeWorker : ObservableObject
         // 保存数据库
         using var db = DbHelper.Base();
         var funds = db.GetCollection<Fund>().FindAll().ToArray();
-        var StartDateOfAny = db.GetCollection<Fund>().FindAll().Min(x => x.SetupDate);
-
+        var StartDateOfAny = StartOfAnyWork();
         using var pdb = DbHelper.Platform();
         var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
 
@@ -524,7 +526,8 @@ public partial class TrusteeWorker : ObservableObject
                     ret.Add(new(tr.Title, rc.Code, rc.Data));
 
                     // 向前一年
-                    end = begin.AddDays(-1);
+                    end = range.Begin.AddDays(-1);
+                    if (end.Year < 1970) break;
                     begin = end.AddYears(-1);
                 } while (begin > StartDateOfAny);
             }
@@ -557,8 +560,7 @@ public partial class TrusteeWorker : ObservableObject
         // 保存数据库
         using var db = DbHelper.Base();
         var funds = db.GetCollection<Fund>().FindAll().ToArray();
-        var StartDateOfAny = funds.Min(x => x.SetupDate);
-
+        var StartDateOfAny = StartOfAnyWork();
         using var pdb = DbHelper.Platform();
         var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
 
@@ -654,7 +656,8 @@ public partial class TrusteeWorker : ObservableObject
                     ret.Add(new(tr.Title, rc.Code, rc.Data));
 
                     // 向前一年
-                    end = begin.AddDays(-1);
+                    end = range.Begin.AddDays(-1);
+                    if (end.Year < 1970) break;
                     begin = end.AddYears(-1);
                 } while (begin > StartDateOfAny);
             }
@@ -709,7 +712,7 @@ public partial class TrusteeWorker : ObservableObject
         }
 
         // 募集户流水
-        if(minute % RaisingAccountTransctionConfig.Interval == 0)
+        if (minute % RaisingAccountTransctionConfig.Interval == 0)
         {
             await RaisingAccountTransctionConfig.Semaphore.WaitAsync();
             try
@@ -728,7 +731,7 @@ public partial class TrusteeWorker : ObservableObject
             try
             {
                 if (minute / TransferRequestConfig.Interval != TransferRequestConfig.GetLastRunIndex())
-                    await QueryTransferRecordOnce();
+                    await QueryTransferRequestOnce();
             }
             catch { }
             finally { TransferRequestConfig.Semaphore.Release(); }
@@ -763,7 +766,7 @@ public partial class TrusteeWorker : ObservableObject
     }
 
 
-    internal void Start() => timer.Change(0, 1000);
+    internal void Start() => timer.Change(0, 15000);
 
     private void Save(WorkConfig workConfig)
     {
@@ -771,4 +774,13 @@ public partial class TrusteeWorker : ObservableObject
         db.GetCollection<WorkConfig>().Upsert(workConfig);
     }
 
+
+    private DateOnly StartOfAnyWork()
+    { 
+        using var db = DbHelper.Base();
+        var dates = db.GetCollection<Fund>().Query().Select(x => x.SetupDate).ToList();
+        dates.Add(db.GetCollection<Manager>().FindById(1).SetupDate);
+
+        return dates.Where(x => x != default).Min();
+    }
 }

@@ -102,6 +102,13 @@ public static class DatabaseAssist
             col.Insert(new PatchRecord(2, DateTime.Now));
         }
 
+        // 清空work记录
+        var id = 3;
+        if (col.FindById(id) is null)
+        {
+            using (var pdb = DbHelper.Platform())
+                pdb.DropCollection("TrusteeMethodShotRange");
+        }
 
 
 

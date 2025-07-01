@@ -104,8 +104,8 @@ public partial class CMS
         public TransferRecord ToObject()
         {
             TransferRecordType transferRecordType = Translate(BusinessCode);
-            if (transferRecordType == TransferRecordType.UNK)
-                ReportJsonUnexpected(CMS._Identifier, nameof(CMS.QueryInvestors), $"TA[{ApplyNo}] {TransactionCfmDate} 份额：{ConfirmedNavVol} 金额：{ConfirmedAmount} 的业务类型[{BusinessCode}]无法识别");
+            if (transferRecordType == TransferRecordType.UNK && BusinessCode switch { "120" => false, _ => true })
+                ReportJsonUnexpected(CMS._Identifier, nameof(CMS.QueryTransferRecords), $"TA[{ApplyNo}] {TransactionCfmDate} 份额：{ConfirmedNavVol} 金额：{ConfirmedAmount} 的业务类型[{BusinessCode}]无法识别");
 
             return new TransferRecord
             {

@@ -127,8 +127,8 @@ public partial class CMS
         public TransferRequest ToObject()
         {
             TransferRequestType transferRequestType = TranslateRequest(BusinessCode);
-            if (transferRequestType == TransferRequestType.UNK)
-                ReportJsonUnexpected(CMS._Identifier, nameof(CMS.QueryInvestors), $"TA[{Remark1}] {TransactionDate} 份额：{ApplicationVol} 金额：{ApplicationAmount} 的业务类型[{BusinessCode}]无法识别");
+            if (transferRequestType == TransferRequestType.UNK && BusinessCode switch { "120" => false, _ => true })
+                ReportJsonUnexpected(CMS._Identifier, nameof(CMS.QueryTransferRequests), $"TA[{Remark1}] {TransactionDate} 份额：{ApplicationVol} 金额：{ApplicationAmount} 的业务类型[{BusinessCode}]无法识别");
 
 
             return new TransferRequest
@@ -153,8 +153,10 @@ public partial class CMS
             {
                 "122" => TransferRequestType.Purchase,
                 "124" => TransferRequestType.Redemption,
+                "129" => TransferRequestType.BonusType,//"分红方式",
                 "130" => TransferRequestType.Subscription,
                 "142" => TransferRequestType.ForceRedemption,
+                "143" => TransferRequestType.Distribution,     //"分红确认",
                 "144" => TransferRequestType.Increase,     //"强行调增", 份额类型调整
                 "145" => TransferRequestType.Decrease,     //"强行调减",
                 _ => TransferRequestType.UNK
