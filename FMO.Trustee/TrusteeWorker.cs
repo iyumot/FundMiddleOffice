@@ -5,6 +5,7 @@ using FMO.Models;
 using FMO.Utilities;
 using LiteDB;
 using System.Diagnostics.CodeAnalysis;
+using System.Windows;
 
 namespace FMO.Trustee;
 
@@ -93,7 +94,7 @@ public partial class TrusteeWorker : ObservableObject
     private WorkConfig TransferRequestConfig { get; set; }
     private WorkConfig RaisingAccountTransctionConfig { get; set; }
 
-    
+
 
     public TrusteeWorker(ITrustee[] trustees)
     {
@@ -705,7 +706,7 @@ public partial class TrusteeWorker : ObservableObject
                 // 检验是否与上次运行时间不一样
                 //if (t.Hour != RaisingBalanceConfig.Last.Hour || t.Minute != RaisingBalanceConfig.Last.Minute)
                 if (minute / RaisingBalanceConfig.Interval != RaisingBalanceConfig.GetLastRunIndex())
-                    await QueryRaisingBalanceOnce();
+                    await Application.Current.Dispatcher.BeginInvoke(()=> QueryRaisingBalanceOnceCommand.Execute(null));
             }
             catch { }
             finally { RaisingBalanceConfig.Semaphore.Release(); }
@@ -718,7 +719,7 @@ public partial class TrusteeWorker : ObservableObject
             try
             {
                 if (minute / RaisingAccountTransctionConfig.Interval != RaisingAccountTransctionConfig.GetLastRunIndex())
-                    await QueryRaisingAccountTransctionOnce();
+                     await Application.Current.Dispatcher.BeginInvoke(() => QueryRaisingAccountTransctionOnceCommand.Execute(null));
             }
             catch { }
             finally { RaisingAccountTransctionConfig.Semaphore.Release(); }
@@ -731,7 +732,7 @@ public partial class TrusteeWorker : ObservableObject
             try
             {
                 if (minute / TransferRequestConfig.Interval != TransferRequestConfig.GetLastRunIndex())
-                    await QueryTransferRequestOnce();
+                    await Application.Current.Dispatcher.BeginInvoke(() => QueryTransferRequestOnceCommand.Execute(null));
             }
             catch { }
             finally { TransferRequestConfig.Semaphore.Release(); }
@@ -744,7 +745,7 @@ public partial class TrusteeWorker : ObservableObject
             try
             {
                 if (minute / TransferRecordConfig.Interval != TransferRecordConfig.GetLastRunIndex())
-                    await QueryTransferRecordOnce();
+                    await Application.Current.Dispatcher.BeginInvoke(() => QueryTransferRecordOnceCommand.Execute(null));
             }
             catch { }
             finally { TransferRecordConfig.Semaphore.Release(); }
@@ -758,7 +759,7 @@ public partial class TrusteeWorker : ObservableObject
             try
             {
                 if (minute / DailyFeeConfig.Interval != DailyFeeConfig.GetLastRunIndex())
-                    await QueryDailyFeeOnce();
+                    await Application.Current.Dispatcher.BeginInvoke(() => QueryDailyFeeOnceCommand.Execute(null));
             }
             catch { }
             finally { DailyFeeConfig.Semaphore.Release(); }
@@ -776,7 +777,7 @@ public partial class TrusteeWorker : ObservableObject
 
 
     private DateOnly StartOfAnyWork()
-    { 
+    {
         using var db = DbHelper.Base();
         var dates = db.GetCollection<Fund>().Query().Select(x => x.SetupDate).ToList();
         dates.Add(db.GetCollection<Manager>().FindById(1).SetupDate);

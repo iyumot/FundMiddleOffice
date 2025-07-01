@@ -38,6 +38,8 @@ public static class TrusteeGallay
     /// </summary>
     public static void Initialize()
     {
+#if !DEBUG
         Worker.Start();
+#endif
     }
 }
