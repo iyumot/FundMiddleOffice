@@ -556,7 +556,7 @@
             <Popup
                 AllowsTransparency="True"
                 IsOpen="{Binding IsTrusteeRebuildVisible}"
-                Placement="Left"
+                Placement="Center"
                 PlacementTarget="{Binding ElementName=apiReb}"
                 StaysOpen="False">
                 <Border

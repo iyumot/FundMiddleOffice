@@ -21,7 +21,14 @@ public partial class TrusteeWorkerSettingView : UserControl
         int cols = 5;
 
         for (int i = 0; i <= rows; i++)
-            grid.RowDefinitions.Add(new RowDefinition());
+            grid.RowDefinitions.Add(new RowDefinition { Height = new(80) });
+
+        for (int i = 0; i <= cols; i++)
+        {
+            head.ColumnDefinitions.Add(new ColumnDefinition());
+            grid.ColumnDefinitions.Add(new ColumnDefinition());
+        }
+
 
         for (int i = 0; i < rows; i++)
         {
@@ -34,13 +41,8 @@ public partial class TrusteeWorkerSettingView : UserControl
                 HorizontalAlignment = System.Windows.HorizontalAlignment.Center
             };
             grid.Children.Add(tb);
-            Grid.SetRow(tb, i + 1);
+            Grid.SetRow(tb, i);
         }
-
-        for (int i = 0; i <= cols; i++)
-            grid.ColumnDefinitions.Add(new ColumnDefinition());
-
-
 
 
     }
