@@ -39,3 +39,9 @@ public class Investor
 }
 
 
+/// <summary>
+/// 
+/// </summary>
+/// <param name="Id">investor id</param>
+/// <param name="Account"></param>
+public record PfidAccount(int Id, string Account);
