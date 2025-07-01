@@ -2,11 +2,13 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using FMO.IO.AMAC;
 using FMO.Models;
 using FMO.Utilities;
 using Serilog;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -92,7 +94,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
     }
 
     [RelayCommand]
-    public void GeneratePfidSheet()
+    public async Task GeneratePfidSheet()
     {
         try
         {
@@ -115,6 +117,15 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
             var ta = db.GetCollection<TransferRecord>().FindAll().ToList();
             var pfmap = db.GetCollection<PfidAccount>();
 
+
+            if(pfmap.Count() == 0)
+            {
+                var acc = db.GetCollection<AmacAccount>().FindById("xinpi");
+                var ad = await PfidAssist.QueryInvestorAccounts(acc);
+                pfmap.Upsert(ad);
+            }
+
+
             int row = 2;
 
             foreach (var c in customer)
@@ -122,11 +133,14 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
                 // 检查有无仓位 
                 var cta = ta.Where(x => x.CustomerId == c.Id).GroupBy(x => x.FundCode);
                 cta = cta.Where(x => x.Sum(y => y.ShareChange()) > 0);
+                var hasposition = cta.Any();
 
-                if (cta.Any() && c.Identity is not null)
+                if (c.Identity is not null)
                 {
                     if (pfmap.FindById(c.Id) is PfidAccount pac)
                         sheet.Cell(row, 1).Value = pac.Account;
+                    else if (!hasposition) continue; // 如果无仓位，也没有账号，跳过
+
                     else sheet.Cell(row, 1).Value = c.EntityType switch
                     {
                         EntityType.Product => c.Identity.Id[^6..], //S 码
@@ -144,7 +158,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
                     sheet.Cell(row, 8).Value = c.Email;
                     if (string.IsNullOrWhiteSpace(c.Email))
                         sheet.Cell(row, 7).Value = c.Phone;
-                    sheet.Cell(row, 9).Value = "启用";
+                    sheet.Cell(row, 9).Value = hasposition ? "启用":"关闭" ;
                     sheet.Cell(row, 10).Value = string.Join(",", cta.Select(x => x.Key));
                     ++row;
                 }
@@ -176,7 +190,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
             string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "投资者账号.xlsx");
             workbook.SaveAs(path);
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true });
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(new FileInfo(path).Directory!.FullName) { UseShellExecute = true });
         }
         catch (Exception e)
         {

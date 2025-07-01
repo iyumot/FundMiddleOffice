@@ -59,7 +59,7 @@ public partial class TabItemInfo : ObservableObject
 
 }
 
-public partial class MainWindowViewModel : ObservableRecipient, IRecipient<string>, IRecipient<OpenFundMessage>, IRecipient<OpenPageMessage>, IRecipient<ToastMessage>
+public partial class MainWindowViewModel : ObservableRecipient, IRecipient<string>, IRecipient<OpenFundMessage>, IRecipient<OpenPageMessage>, IRecipient<ToastMessage>, IRecipient<VerifyMessage>, IRecipient<VerifyResultMessage>
 {
 
     private PlatformPageViewModel? PlatformDataContext { get; set; }
@@ -168,6 +168,20 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
         OpenPage(message.Page);
     }
 
+
+    public void Receive(VerifyResultMessage message)
+    {
+        if (!message.IsSuccessed)
+            HandyControl.Controls.Growl.Warning(message.Error);
+    }
+
+    public void Receive(VerifyMessage message)
+    {
+        var wnd = new VerifyWindow();
+        wnd.DataContext = new VerifyWindowViewModel(message);
+        wnd.Owner = App.Current.MainWindow;
+        wnd.ShowDialog();
+    }
 
     [RelayCommand]
     public void OpenPage(string id)
@@ -360,6 +374,8 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
 
         return null;
     }
+
+
 }
 
 
