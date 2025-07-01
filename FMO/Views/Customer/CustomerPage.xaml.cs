@@ -113,19 +113,27 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
             using var db = DbHelper.Base();
             var customer = db.GetCollection<Investor>().FindAll().ToList();
             var ta = db.GetCollection<TransferRecord>().FindAll().ToList();
+            var pfmap = db.GetCollection<PfidAccount>();
 
             int row = 2;
 
             foreach (var c in customer)
             {
-                // 检查有无仓位
-                bool has = false;
+                // 检查有无仓位 
                 var cta = ta.Where(x => x.CustomerId == c.Id).GroupBy(x => x.FundCode);
                 cta = cta.Where(x => x.Sum(y => y.ShareChange()) > 0);
 
-                if (cta.Any())
+                if (cta.Any() && c.Identity is not null)
                 {
-                    sheet.Cell(row, 1).Value = $"xxsc{c.Identity.Id[^6..]}";
+                    if (pfmap.FindById(c.Id) is PfidAccount pac)
+                        sheet.Cell(row, 1).Value = pac.Account;
+                    else sheet.Cell(row, 1).Value = c.EntityType switch
+                    {
+                        EntityType.Product => c.Identity.Id[^6..], //S 码
+                        EntityType.Institution => c.Identity.Id[^9..], // 组织机构码
+                        _ => string.IsNullOrWhiteSpace(c.Phone) ? c.Email : c.Phone // 手机或邮箱
+                    };// $"xxsc{c.Identity.Id[^6..]}";
+
                     sheet.Cell(row, 2).Value = c.Name;
                     sheet.Cell(row, 3).Value = EnumDescriptionTypeConverter.GetEnumDescription(c.Type);
                     sheet.Cell(row, 4).Value = c.Identity.Type == IDType.IdentityCard ? "身份证" : EnumDescriptionTypeConverter.GetEnumDescription(c.Identity.Type);
@@ -166,7 +174,9 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
                 //}  
             }
 
-            workbook.SaveAs(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "投资者账号.xlsx"));
+            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "投资者账号.xlsx");
+            workbook.SaveAs(path);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true });
         }
         catch (Exception e)
         {
