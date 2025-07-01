@@ -6,6 +6,8 @@ using System.Security.Cryptography;
 using System.Text;
 namespace FMO.Utilities;
 
+internal record PatchRecord(int Id, DateTime Time);
+
 public static class DatabaseAssist
 {
     /// <summary>
@@ -48,13 +50,8 @@ public static class DatabaseAssist
                 db.GetCollection<TransferRecord>().Update(d);
             }
 
-            // 6.30 解决中信ta，有unset
-            var haser = db.GetCollection<TransferRecord>().Find(x => x.Source != null && x.Source.Contains("citics")).Any(x => x.CustomerName == "unset");
-            using (var pdf = DbHelper.Platform()) //删除记录
-                //1pdf.GetCollection("TrusteeMethodShotRange").Delete("trustee_citicsQueryTransferRecords");
-                pdf.GetCollection("TrusteeMethodShotRange").Delete("trustee_cmsQueryTransferRecords");
 
-            db.GetCollection<TransferRecord>().DeleteMany(x => x.Source == "" || x.Source == null);            
+            Patch();      
         }
 
 
@@ -83,6 +80,34 @@ public static class DatabaseAssist
         db.GetCollection(nameof(Manager)).Insert(objs);
 
     }
+
+
+    private static void Patch()
+    {
+        using var db = DbHelper.Base();
+        var col = db.GetCollection<PatchRecord>();
+
+
+        if(col.FindById(2) is null)
+        { 
+            // 6.30 解决中信ta，有unset
+            var haser = db.GetCollection<TransferRecord>().Find(x => x.Source != null && x.Source.Contains("citics")).Any(x => x.CustomerName == "unset");
+            using (var pdf = DbHelper.Platform()) //删除记录
+                //1pdf.GetCollection("TrusteeMethodShotRange").Delete("trustee_citicsQueryTransferRecords");
+                pdf.GetCollection("TrusteeMethodShotRange").Delete("trustee_cmsQueryTransferRecords");
+
+            db.GetCollection<TransferRecord>().DeleteMany(x => x.Source == "" || x.Source == null);
+
+            col.Insert(new PatchRecord(2, DateTime.Now));
+        }
+
+
+
+
+
+
+    }
+
 }
 
 
