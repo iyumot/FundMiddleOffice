@@ -545,6 +545,7 @@
 
 
 
+            <!-- 暂时不启用
             <ToggleButton
                 Name="apiReb"
                 hc:IconElement.Geometry="{StaticResource f.gears}"
@@ -565,7 +566,7 @@
                     Background="WhiteSmoke">
                     <local:TrusteeWorkerSettingView />
                 </Border>
-            </Popup>
+            </Popup>-->
 
 
             <!--  运行报告  -->
