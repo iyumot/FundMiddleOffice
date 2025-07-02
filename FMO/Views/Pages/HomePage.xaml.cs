@@ -274,6 +274,22 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
         }
     }
 
+    [RelayCommand]
+    public void OpenDbViewer()
+    {
+        try
+        {
+            var di = new DirectoryInfo(System.Diagnostics.Process.GetCurrentProcess().MainModule!.FileName).Parent!;
+
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = Path.Combine(di.FullName, "DatabaseViewer.exe"), WorkingDirectory = Directory.GetCurrentDirectory() });
+        }
+        catch (Exception e)
+        {
+
+            HandyControl.Controls.Growl.Error($"无法启动数据视图，{e.Message}");
+        }
+    }
+
 
     [RelayCommand]
     public void OpenDataFolder()

@@ -441,6 +441,7 @@ public partial class CITICS : TrusteeApiBase
         {
             for (int i = 0; i < 19; i++) // 防止无限循环，最多99次 
             {
+                LogRun(caller);
                 json = await Query(part, formatedParams);
 
                 try

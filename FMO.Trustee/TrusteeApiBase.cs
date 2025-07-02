@@ -129,6 +129,11 @@ public abstract class TrusteeApiBase : ITrustee
         _db.GetCollection<LogInfo>().Insert(new LogInfo { Identifier = Identifier, Log = message, Method = caller, Content = json, Time = DateTime.Now });
     }
 
+    protected void LogRun(string? caller)
+    {
+        _db.GetCollection<TrusteeCallHistory>().Insert(new TrusteeCallHistory(Identifier, caller??"unknown", DateTime.Now));
+    }
+
     public static LogInfo[]? GetLogs()
     {
         return _db.GetCollection<LogInfo>().FindAll().ToArray();
@@ -246,3 +251,5 @@ public abstract class TrusteeApiBase : ITrustee
 }
 
 public record ReturnWrap<T>(ReturnCode Code, T[]? Data);
+
+public record TrusteeCallHistory(string Identifier, string Method, DateTime Time);

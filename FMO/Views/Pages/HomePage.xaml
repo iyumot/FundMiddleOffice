@@ -101,6 +101,11 @@
                     Command="{Binding CalcFeeCommand}"
                     Content="费用计算"
                     Style="{StaticResource ButtonIcon}" />
+
+                <Button
+                    hc:IconElement.Geometry="{StaticResource f.database}"
+                    Command="{Binding OpenDbViewerCommand}"
+                    Style="{StaticResource ButtonIcon}" />
             </DockPanel>
         </GroupBox>
 

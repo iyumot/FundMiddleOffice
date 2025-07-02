@@ -16,8 +16,7 @@ namespace DatabaseViewer;
 public partial class MainWindow : Window
 {
     public MainWindow()
-    {
-        Directory.SetCurrentDirectory("e:\\fmo");
+    { 
         InitializeComponent();
     }
 }
