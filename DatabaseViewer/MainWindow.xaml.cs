@@ -2,10 +2,10 @@
 using FMO.Models;
 using FMO.Utilities;
 using LiteDB;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.Loader;
 using System.Windows;
-using FMO.Trustee;
 
 
 namespace DatabaseViewer;
@@ -16,7 +16,7 @@ namespace DatabaseViewer;
 public partial class MainWindow : Window
 {
     public MainWindow()
-    { 
+    {
         InitializeComponent();
     }
 }
@@ -29,16 +29,17 @@ public partial class MainWindowViewModel : ObservableObject
 {
     public MainWindowViewModel()
     {
-        Databases = [DbHelper.Base(), DbHelper.Platform()];
+        Directory.SetCurrentDirectory(@"e:\funds");
+        Databases = [new("主数据库", () => DbHelper.Base()), new("平台", () => DbHelper.Platform()), new("平台Log", () => new LiteDatabase(@$"FileName=data\platformlog.db;Connection=Shared"))];
 
         AssemblyLoadContext.Default.LoadFromAssemblyName(new System.Reflection.AssemblyName("FMO.Trustee"));
     }
 
-    public ILiteDatabase[] Databases { get; set; }
+    public DatabaseInfo[] Databases { get; set; }
 
 
     [ObservableProperty]
-    public partial ILiteDatabase? SelectedDatabase { get; set; }
+    public partial DatabaseInfo? SelectedDatabase { get; set; }
 
 
     [ObservableProperty]
@@ -53,15 +54,30 @@ public partial class MainWindowViewModel : ObservableObject
     public partial object? Data { get; set; }
 
 
-    partial void OnSelectedDatabaseChanged(ILiteDatabase? value)
+    partial void OnSelectedDatabaseChanged(DatabaseInfo? value)
     {
-        Tables = value?.GetCollectionNames().Where(x => !x.StartsWith("_"));
+        if (value is null)
+        {
+            Tables = null;
+            Data = null;
+            return;
+        }
+
+        using var db = value.GetDatabase();
+        Tables = db.GetCollectionNames().Where(x => !x.StartsWith("_"));
     }
 
 
     partial void OnSelectedTableChanged(string? value)
     {
-        var doc = value is null || SelectedDatabase is null ? null : SelectedDatabase.GetCollection(value).FindAll();
+        if (value is null || SelectedDatabase is null)
+        {
+            Data = null;
+            return;
+        }
+
+        using var db = SelectedDatabase.GetDatabase();
+        var doc = db.GetCollection(value).FindAll();
 
         if (doc is null)
         {
@@ -85,4 +101,21 @@ public partial class MainWindowViewModel : ObservableObject
 
 
     }
+}
+
+
+public class DatabaseInfo
+{
+    [SetsRequiredMembers]
+    public DatabaseInfo(string name, Func<ILiteDatabase> getDatabase)
+    {
+        Name = name;
+        GetDatabase = getDatabase;
+    }
+
+    public required string Name { get; set; }
+
+
+    public required Func<ILiteDatabase> GetDatabase { get; set; }
+
 }

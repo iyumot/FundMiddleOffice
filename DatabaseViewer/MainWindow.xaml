@@ -15,10 +15,16 @@
     </Window.DataContext>
     <DockPanel>
         <ListBox
-            DockPanel.Dock="Top"
+            DockPanel.Dock="Top" HorizontalAlignment="Left"
             ItemsPanel="{StaticResource UniformHorizontalItemsPanelTemplate}"
             ItemsSource="{Binding Databases}"
-            SelectedItem="{Binding SelectedDatabase}" />
+            SelectedItem="{Binding SelectedDatabase}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
 
         <ListBox ItemsSource="{Binding Tables}" SelectedItem="{Binding SelectedTable}" />
 
