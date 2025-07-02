@@ -103,14 +103,14 @@ public static class DatabaseAssist
         }
 
         // 清空work记录
-        var id = 3;
+        var id = 4;
         if (col.FindById(id) is null)
         {
-            using (var pdb = DbHelper.Platform())
-                pdb.DropCollection("TrusteeMethodShotRange");
+            using var pdb = DbHelper.Platform();
+            pdb.RenameCollection("TrusteeMethodShotRange", "TrusteeMethodShotRange2");
+            //    pdb.DropCollection("TrusteeMethodShotRange");
         }
-
-
+     
 
 
 

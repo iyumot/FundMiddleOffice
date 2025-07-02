@@ -93,9 +93,9 @@ public partial class CMS : TrusteeApiBase
         var tmp = begin.AddDays(30);
         if (tmp > end) tmp = end;
         List<FundDailyFee> transactions = new();
-        while (tmp <= end)
+        while (begin <= tmp)
         {
-            var data = await SyncWork<FundDailyFee, FundDailyFeeJson>(1020, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
+            var data = await SyncWork<FundDailyFee, FundDailyFeeJson>(1020, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{tmp:yyyyMMdd}" }, x => x.ToObject());
             if (data.Code != ReturnCode.Success)
                 return data;
 
@@ -104,6 +104,7 @@ public partial class CMS : TrusteeApiBase
 
             begin = tmp.AddDays(1);
             tmp = begin.AddDays(30);
+            if (tmp > end) tmp = end;
         }
 
         return new(ReturnCode.Success, transactions.ToArray());

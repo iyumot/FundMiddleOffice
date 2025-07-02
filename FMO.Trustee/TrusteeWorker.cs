@@ -195,7 +195,7 @@ public partial class TrusteeWorker : ObservableObject
         var StartDateOfAny = StartOfAnyWork();
         using var pdb = DbHelper.Platform();
         var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
-
+        var method = nameof(ITrustee.QueryTransferRequests);
 
         foreach (var tr in Trustees)
         {
@@ -208,7 +208,7 @@ public partial class TrusteeWorker : ObservableObject
             try
             {
                 // 获取历史区间
-                var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + nameof(tr.QueryTransferRequests));
+                var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + method);
 
                 DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
                 do
@@ -313,14 +313,13 @@ public partial class TrusteeWorker : ObservableObject
         }
 
         // 保存ret，程序加载时恢复，并生成消息
-        db.DropCollection(TableRaisingBalance);
-        db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
+        //db.DropCollection(TableRaisingBalance);
+        //db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
 
-        WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryRaisingBalance), ret));
-        RaisingBalanceConfig.Last = DateTime.Now;
-        Save(RaisingBalanceConfig);
-
-        DataTracker.CheckShareIsPair(funds);
+        WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(method, ret));
+        TransferRequestConfig.Last = DateTime.Now;
+        Save(TransferRequestConfig);
+         
     }
 
 
@@ -341,6 +340,7 @@ public partial class TrusteeWorker : ObservableObject
 
         using var pdb = DbHelper.Platform();
         var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
+        var method = nameof(ITrustee.QueryTransferRecords);
 
 
         foreach (var tr in Trustees)
@@ -354,7 +354,7 @@ public partial class TrusteeWorker : ObservableObject
             try
             {
                 // 获取历史区间
-                var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + nameof(tr.QueryTransferRecords));
+                var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + method);
 
                 DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
                 do
@@ -440,7 +440,7 @@ public partial class TrusteeWorker : ObservableObject
                         break;
 
                     // 更新进度
-                    if (range is null) range = new(tr.Identifier + nameof(tr.QueryTransferRecords), begin, end);
+                    if (range is null) range = new(tr.Identifier + method, begin, end);
                     else range.Merge(begin, end);
                     pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
 
@@ -460,12 +460,12 @@ public partial class TrusteeWorker : ObservableObject
         }
 
         // 保存ret，程序加载时恢复，并生成消息
-        db.DropCollection(TableRaisingBalance);
-        db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
+        //db.DropCollection(TableRaisingBalance);
+        //db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
 
-        WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryRaisingBalance), ret));
-        RaisingBalanceConfig.Last = DateTime.Now;
-        Save(RaisingBalanceConfig);
+        WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(method, ret));
+        TransferRecordConfig.Last = DateTime.Now;
+        Save(TransferRecordConfig);
 
         DataTracker.CheckShareIsPair(funds);
     }
@@ -539,12 +539,12 @@ public partial class TrusteeWorker : ObservableObject
         }
 
         // 保存ret，程序加载时恢复，并生成消息
-        db.DropCollection(TableRaisingBalance);
-        db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
+        //db.DropCollection(TableRaisingBalance);
+        //db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
 
-        WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryRaisingBalance), ret));
-        RaisingBalanceConfig.Last = DateTime.Now;
-        Save(RaisingBalanceConfig);
+        WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(method, ret));
+        DailyFeeConfig.Last = DateTime.Now;
+        Save(DailyFeeConfig);
 
     }
 
@@ -577,79 +577,23 @@ public partial class TrusteeWorker : ObservableObject
             try
             {
                 // 获取历史区间
-                var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + nameof(tr.QueryTransferRecords));
+                var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + nameof(tr.QueryRaisingAccountTransction));
 
                 DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
                 do
                 {
-                    var rc = await tr.QueryTransferRecords(begin, end);
+                    var rc = await tr.QueryRaisingAccountTransction(begin, end);
 
                     ///
                     // 保存数据库 
                     if (rc.Data is not null)
                     {
                         // 对齐数据   
-                        foreach (var r in rc.Data)
-                        {
-                            // code 匹配
-                            var f = funds.FirstOrDefault(x => x.Code == r.FundCode);
-                            if (f is not null)
-                            {
-                                r.FundId = f.Id;
-                                continue;
-                            }
 
-                            // 待完善
-
-                        }
-
-                        var customers = db.GetCollection<Investor>().FindAll().ToList();
-                        foreach (var r in rc.Data)
-                        {
-                            var c = customers.FirstOrDefault(x => x.Name == r.CustomerName && x.Identity?.Id == r.CustomerIdentity);
-                            if (c is not null)
-                            {
-                                r.CustomerId = c.Id;
-                                continue;
-                            }
-                            else // 添加数据
-                            {
-                                c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
-                                db.GetCollection<Investor>().Insert(c);
-                                r.CustomerId = c.Id;
-                            }
-                        }
-
-                        // 对齐id 
-                        var olds = db.GetCollection<TransferRecord>().Find(x => x.ConfirmedDate >= rc.Data.Min(x => x.ConfirmedDate));
-                        foreach (var r in rc.Data)
-                        {
-                            // 同日同名
-                            var exi = olds.Where(x => x.CustomerName == r.CustomerName && x.CustomerIdentity == r.CustomerIdentity && x.ConfirmedDate == r.ConfirmedDate).ToList();
-
-                            // 只有一个，替换
-                            if (exi.Count == 1)
-                            {
-                                r.Id = exi[0].Id;
-                                continue;
-                            }
-
-                            // > 1个
-                            // 存在同ex id，替换
-                            var old = exi.Where(x => x.ExternalId == r.ExternalId);
-                            if (old.Any())
-                                r.Id = old.First().Id;
-
-                            // 如果存在手动录入的，也删除
-                            foreach (var item in exi)
-                                db.GetCollection<TransferRecord>().DeleteMany(item => item.Source == "manual" || item.ExternalId == r.ExternalId);
-
-                        }
-
-                        db.GetCollection<TransferRecord>().Upsert(rc.Data);
+                        db.GetCollection<BankTransaction>().Upsert(rc.Data);
                     }
 
-                    if (range is null) range = new(tr.Identifier + nameof(tr.QueryTransferRecords), begin, end);
+                    if (range is null) range = new(tr.Identifier + nameof(tr.QueryRaisingAccountTransction), begin, end);
                     else range.Merge(begin, end);
                     pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
 
@@ -669,14 +613,12 @@ public partial class TrusteeWorker : ObservableObject
         }
 
         // 保存ret，程序加载时恢复，并生成消息
-        db.DropCollection(TableRaisingBalance);
-        db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
+        //db.DropCollection(TableRaisingBalance);
+        //db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
 
-        WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryRaisingBalance), ret));
-        RaisingBalanceConfig.Last = DateTime.Now;
-        Save(RaisingBalanceConfig);
-
-        DataTracker.CheckShareIsPair(funds);
+        WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryRaisingAccountTransction), ret));
+        RaisingAccountTransctionConfig.Last = DateTime.Now;
+        Save(RaisingAccountTransctionConfig);
     }
 
 
@@ -706,7 +648,7 @@ public partial class TrusteeWorker : ObservableObject
                 // 检验是否与上次运行时间不一样
                 //if (t.Hour != RaisingBalanceConfig.Last.Hour || t.Minute != RaisingBalanceConfig.Last.Minute)
                 if (minute / RaisingBalanceConfig.Interval != RaisingBalanceConfig.GetLastRunIndex())
-                    await Application.Current.Dispatcher.BeginInvoke(()=> QueryRaisingBalanceOnceCommand.Execute(null));
+                     await QueryRaisingBalanceOnceCommand.ExecuteAsync(null);
             }
             catch { }
             finally { RaisingBalanceConfig.Semaphore.Release(); }
@@ -719,7 +661,7 @@ public partial class TrusteeWorker : ObservableObject
             try
             {
                 if (minute / RaisingAccountTransctionConfig.Interval != RaisingAccountTransctionConfig.GetLastRunIndex())
-                     await Application.Current.Dispatcher.BeginInvoke(() => QueryRaisingAccountTransctionOnceCommand.Execute(null));
+                     await QueryRaisingAccountTransctionOnceCommand.ExecuteAsync(null);
             }
             catch { }
             finally { RaisingAccountTransctionConfig.Semaphore.Release(); }
@@ -732,7 +674,7 @@ public partial class TrusteeWorker : ObservableObject
             try
             {
                 if (minute / TransferRequestConfig.Interval != TransferRequestConfig.GetLastRunIndex())
-                    await Application.Current.Dispatcher.BeginInvoke(() => QueryTransferRequestOnceCommand.Execute(null));
+                    await QueryTransferRequestOnceCommand.ExecuteAsync(null);
             }
             catch { }
             finally { TransferRequestConfig.Semaphore.Release(); }
@@ -745,7 +687,7 @@ public partial class TrusteeWorker : ObservableObject
             try
             {
                 if (minute / TransferRecordConfig.Interval != TransferRecordConfig.GetLastRunIndex())
-                    await Application.Current.Dispatcher.BeginInvoke(() => QueryTransferRecordOnceCommand.Execute(null));
+                    await QueryTransferRecordOnceCommand.ExecuteAsync(null);
             }
             catch { }
             finally { TransferRecordConfig.Semaphore.Release(); }
@@ -759,7 +701,7 @@ public partial class TrusteeWorker : ObservableObject
             try
             {
                 if (minute / DailyFeeConfig.Interval != DailyFeeConfig.GetLastRunIndex())
-                    await Application.Current.Dispatcher.BeginInvoke(() => QueryDailyFeeOnceCommand.Execute(null));
+                    await QueryDailyFeeOnceCommand.ExecuteAsync(null);
             }
             catch { }
             finally { DailyFeeConfig.Semaphore.Release(); }

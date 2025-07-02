@@ -169,9 +169,24 @@ public partial class CITICS : TrusteeApiBase
     public override async Task<ReturnWrap<BankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end)
     {
         var part = "/v1/fs/queryRaiseAccFlowForApi";
-        var result = await SyncWork<BankTransaction, BankTransactionJson>(part, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
 
-        return result;
+        var tmp = begin.AddDays(90);
+        if (tmp > end) tmp = end;
+        List<BankTransaction> transactions = new();
+        while (begin <= tmp)
+        {
+            var result = await SyncWork<BankTransaction, BankTransactionJson>(part, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{tmp:yyyyMMdd}" }, x => x.ToObject());
+            if (result.Code != ReturnCode.Success) return result;
+
+            if (result.Data is not null)
+                transactions.AddRange(result.Data);
+
+            begin = tmp.AddDays(1);
+            tmp = begin.AddDays(90);
+            if (tmp > end) tmp = end;
+        }
+
+        return new(ReturnCode.Success, transactions.ToArray());
     }
 
     public override async Task<ReturnWrap<BankTransaction>> QueryCustodialAccountTransction(DateOnly begin, DateOnly end = default)

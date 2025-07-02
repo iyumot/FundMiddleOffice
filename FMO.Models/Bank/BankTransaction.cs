@@ -17,7 +17,7 @@ public class BankTransaction
     public TransctionDirection Direction { get; set; }
 
     /// <summary>
-    /// 付款账号
+    /// 本方账号
     /// </summary>
     public required string AccountNo { get; set; }
 
@@ -27,7 +27,7 @@ public class BankTransaction
 
 
     /// <summary>
-    /// 收款账号
+    /// 对方账号
     /// id 为BankAccount id
     /// </summary>
     public required string CounterNo { get; set; }
