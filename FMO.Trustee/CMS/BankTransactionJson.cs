@@ -101,6 +101,10 @@ public partial class CMS
 
         internal BankTransaction ToObject()
         {
+            // 判断 OurAccountName 中是否有基金名 
+            if (OurAccountName == "招商证券股份有限公司基金运营外包服务募集专户")
+                OurAccountName = $"{ProductName}募集专户";
+
             return new BankTransaction
             {
                 Id = TransactionId,

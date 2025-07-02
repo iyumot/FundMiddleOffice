@@ -4,8 +4,7 @@ using FMO.Utilities;
 using LiteDB;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
-using static FMO.Trustee.CSC;
+using System.Reflection; 
 
 namespace FMO.Trustee;
 
@@ -129,9 +128,9 @@ public abstract class TrusteeApiBase : ITrustee
         _db.GetCollection<LogInfo>().Insert(new LogInfo { Identifier = Identifier, Log = message, Method = caller, Content = json, Time = DateTime.Now });
     }
 
-    protected void LogRun(string? caller)
+    protected void LogRun(string? caller, Dictionary<string, object> formatedParams)
     {
-        _db.GetCollection<TrusteeCallHistory>().Insert(new TrusteeCallHistory(Identifier, caller??"unknown", DateTime.Now));
+        _db.GetCollection<TrusteeCallHistory>().Insert(new TrusteeCallHistory(Identifier, caller??"unknown", DateTime.Now, System.Text.Json.JsonSerializer.Serialize(formatedParams)));
     }
 
     public static LogInfo[]? GetLogs()
@@ -255,4 +254,4 @@ public abstract class TrusteeApiBase : ITrustee
 
 public record ReturnWrap<T>(ReturnCode Code, T[]? Data);
 
-public record TrusteeCallHistory(string Identifier, string Method, DateTime Time);
+public record TrusteeCallHistory(string Identifier, string Method, DateTime Time, string Params);

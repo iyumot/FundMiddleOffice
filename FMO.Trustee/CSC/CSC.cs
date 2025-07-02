@@ -231,7 +231,7 @@ public partial class CSC : TrusteeApiBase
         {
             for (int i = 0; i < 19; i++) // 防止无限循环，最多99次 
             {
-                LogRun(caller);
+                LogRun(caller, formatedParams);
                 var json = await Query(part, formatedParams);
 
                 try
