@@ -83,7 +83,7 @@ public partial class CITICS : TrusteeApiBase
 
     public override async Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end)
     {
-        var part = "/v1/ta/queryTradeApplyForApi";
+        var part = "/v2/ta/queryTradeApplyForApi";
         var result = await SyncWork<TransferRequest, TransferRequestJson>(part, new { ackBeginDate = $"{begin:yyyyMMdd}", ackEndDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
 
         return result;
