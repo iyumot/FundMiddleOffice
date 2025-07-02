@@ -586,7 +586,30 @@
                 PlacementTarget="{Binding ElementName=apiRepBtn}"
                 StaysOpen="False">
                 <Border Background="WhiteSmoke" CornerRadius="10">
-                    <ListBox
+                    <DataGrid
+                        MaxHeight="700"
+                        AutoGenerateColumns="False"
+                        EnableRowVirtualization="True"
+                        IsReadOnly="True"
+                        ItemsSource="{Binding TrusteeWorkLogSource.View}"
+                        Style="{StaticResource DataGrid.Small}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding Identifier}" Header="托管" />
+                            <DataGridTextColumn Binding="{Binding Method}" Header="方法" />
+                            <DataGridTextColumn Binding="{Binding Time, StringFormat=HH:mm:ss}" Header="时间" />
+
+                            <DataGridTextColumn MaxWidth="700">
+                                <DataGridTextColumn.Binding>
+                                    <MultiBinding StringFormat="{}{0} {1}">
+                                        <Binding Path="Log" />
+                                        <Binding Path="Content" />
+                                    </MultiBinding>
+                                </DataGridTextColumn.Binding>
+                            </DataGridTextColumn>
+
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <!--<ListBox
                         MaxHeight="500"
                         Margin="5"
                         Background="Transparent"
@@ -606,12 +629,14 @@
                                     <TextBlock Width="90" Text="{Binding Identifier}" />
                                     <TextBlock Text="{Binding Method}" />
                                     <TextBlock Margin="6,0" Text="{Binding Time, StringFormat=HH:mm}" />
-                                    <TextBlock Text="{Binding Log}" TextWrapping="WrapWithOverflow" />
-                                    <TextBlock Margin="10,0,0,0" Text="{Binding Content}" />
+                                    <DockPanel MaxWidth="700">
+                                        <TextBlock Text="{Binding Log}" TextWrapping="WrapWithOverflow" />
+                                        <TextBlock Margin="10,0,0,0" Text="{Binding Content}" />
+                                    </DockPanel>
                                 </DockPanel>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
-                    </ListBox>
+                    </ListBox>-->
                 </Border>
             </Popup>
         </DockPanel>

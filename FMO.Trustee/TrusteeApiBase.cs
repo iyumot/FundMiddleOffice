@@ -136,7 +136,10 @@ public abstract class TrusteeApiBase : ITrustee
 
     public static LogInfo[]? GetLogs()
     {
-        return _db.GetCollection<LogInfo>().FindAll().ToArray();
+        var dic = _db.GetCollection<LogInfo>().FindAll().GroupBy(x => x.Identifier).ToDictionary(x => x.Key, x => x.GroupBy(y => y.Method??"").ToDictionary(y => y.Key, y => y.Take(5)));
+        return dic.SelectMany(x => x.Value.SelectMany(y => y.Value)).OrderByDescending(x=>x.Time).ToArray();
+
+       // return _db.GetCollection<LogInfo>().FindAll().GroupBy(x=>x.Identifier).Select(x=> (x.Key, x.GroupBy(x=>x.Method).Select(y=> (y.Key, y.Take(5))))).ToArray();
     }
 
 
