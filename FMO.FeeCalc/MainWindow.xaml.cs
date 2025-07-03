@@ -334,61 +334,20 @@ public partial class MainWindowViewModel : ObservableObject
         foreach (var f in col)
         {
             f.IsWorking = true;
-            using var db = new LiteDatabase(@"FileName=data\feecalc.db;Connection=Shared");
+            using var db =  new LiteDatabase(@"FileName=data\feecalc.db;Connection=Shared");
             var begin = dates[0];
             var end = dates[^1];
+
+           // var dc = db.GetDailyCollection(f.Fund.Id);
+           // var fees = db.GetCollection<FundDailyFee>().Find(x => x.FundId == f.Fund.Id && x.Date >= begin && x.Date <= end).OrderBy(x => x.Date).Select(x => new ManageFeeDetail(0, x.Date, x.ManagerFeeAccrued, dc.FindOne(y=>y.Date == x.Date)?.Share??0)).ToList();
+            
             var fees = db.GetCollection<ManageFeeDetail>($"f{f.Fund.Id}").Find(x => x.Date >= begin && x.Date <= end).OrderBy(x => x.Date).ToList();
             var fdate = fees.Select(x => x.Date).ToArray();
 
-            //// 核验日期
-            //if (!dates.SequenceEqual(fdate))
-            //{
-            //    // 重新下载数据
-            //    if (col.Key is null)
-            //    {
-            //        f.Error = "托管未设置";
-            //        f.IsWorking = false;
-            //        continue;
-            //    }
 
-            //    var assist = Trustees.FirstOrDefault(x => x.Name == col.Key);
+            // 检验份额
 
-            //    if (assist is null)
-            //    {
-            //        f.Error = $"未找到{col.Key}托管平台插件";
-            //        f.IsWorking = false;
-            //        continue;
-            //    }
 
-            //    //获取数据
-            //    var mfd = await assist.GetManageFeeDetails(begin, end);
-            //    if (mfd.Count() == 0)
-            //    {
-            //        f.IsWorking = false;
-            //        continue;
-            //    }
-
-            //    using var db2 = DbHelper.Base();
-            //    var dict = db2.GetCollection<Fund>().FindAll().Select(x => new { x.Id, x.Code });
-
-            //    // 保存数据
-            //    foreach (var item in mfd)
-            //    {
-            //        var id = dict.FirstOrDefault(x => x.Code == item.Code);
-            //        if (id is null)
-            //        {
-            //            f.Error = $"未找到{col.Key}托管平台插件";
-            //            continue;
-            //        }
-
-            //        db.GetCollection<ManageFeeDetail>($"f{id.Id}").EnsureIndex(x => x.Date, true);
-            //        db.GetCollection<ManageFeeDetail>($"f{id.Id}").Upsert(item.Fee);
-            //    }
-
-            //    // 重新加载
-            //    fees = db.GetCollection<ManageFeeDetail>($"f{f.Fund.Id}").Find(x => x.Date >= begin && x.Date <= end).OrderBy(x => x.Date).ToList();
-            //    fdate = fees.Select(x => x.Date).ToArray();
-            //}
 
             // 再次核验日期
             if (!dates.SequenceEqual(fdate))
@@ -533,20 +492,22 @@ public partial class MainWindowViewModel : ObservableObject
                 // 写入业绩报酬 
                 using var db = DbHelper.Base();
                 var per = db.GetCollection<TransferRecord>().Find(x => x.FundId == f.Fund.Id && x.PerformanceFee > 0).Where(x => x.ConfirmedDate >= dd[0]).ToArray();
-                for (int i = 0; i < per.Length; i++)
+                if (per.Length > 0)
                 {
-                    sheet3.Cell(ar + i + 3, 2).Value = $"{per[i].CustomerName} {per[i].ConfirmedDate.ToString("yyyy-MM-dd")} {EnumDescriptionTypeConverter.GetEnumDescription(per[i].Type)}";
-                    sheet3.Cell(ar + i + 3, 3).Value = per[i].PerformanceFee;
+                    for (int i = 0; i < per.Length; i++)
+                    {
+                        sheet3.Cell(ar + i + 3, 2).Value = $"{per[i].CustomerName} {per[i].ConfirmedDate.ToString("yyyy-MM-dd")} {EnumDescriptionTypeConverter.GetEnumDescription(per[i].Type)}";
+                        sheet3.Cell(ar + i + 3, 3).Value = per[i].PerformanceFee;
+                    }
+                    sheet3.Cell(ar + 3, 1).Value = "业绩报酬";
+                    sheet3.Range(ar + 3, 1, ar + per.Length + 3, 1).Merge();
+                    sheet3.Range(ar + 3, 1, ar + per.Length + 3, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    sheet3.Range(ar + 3, 1, ar + per.Length + 3, 1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+                    //汇总
+                    sheet3.Cell(ar + per.Length + 3, 2).Value = "汇总";
+                    sheet3.Cell(ar + per.Length + 3, 3).FormulaR1C1 = $"SUM(R{ar + 3}C{3}:R{ar + per.Length + 2}C{3})";
                 }
-                sheet3.Cell(ar + 3, 1).Value = "业绩报酬";
-                sheet3.Range(ar + 3, 1, ar + per.Length + 3, 1).Merge();
-                sheet3.Range(ar + 3, 1, ar + per.Length + 3, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                sheet3.Range(ar + 3, 1, ar + per.Length + 3, 1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-
-                //汇总
-                sheet3.Cell(ar + per.Length + 3, 2).Value = "汇总";
-                sheet3.Cell(ar + per.Length + 3, 3).FormulaR1C1 = $"SUM(R{ar + 3}C{3}:R{ar + per.Length + 2}C{3})";
-
 
                 string path = $"files/fee/{f.Fund.ShortName}_{dates[0]:yyyy.MM.dd}-{dates[^1]:yyyy.MM.dd}.xlsx";
                 workbook.SaveAs(path);
@@ -610,5 +571,18 @@ public partial class FundInfo : ObservableObject
         IsDataValid = dates.SequenceEqual(fdate);
         if (!IsDataValid)
             Error = $"费用数据{fdate.Length}个";
+
+        // 检验份额
+        List<DateOnly> unpair = new();
+        var ta = pdb.GetCollection<TransferRecord>().Find(x => x.FundId == Fund.Id).ToArray();
+        foreach (var item in fees)
+        {
+            var share = ta.Where(x => x.ConfirmedDate <= item.Date).Sum(x => x.ShareChange());
+            if (item.Share != share)
+                unpair.Add(item.Date);
+        }
+        if (unpair.Count > 0)
+            Error += $"份额不一致：{string.Join('、', unpair)}";
+
     }
 }
