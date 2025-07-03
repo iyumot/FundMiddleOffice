@@ -29,7 +29,7 @@ public partial class MainWindowViewModel : ObservableObject
 {
     public MainWindowViewModel()
     {
-        Directory.SetCurrentDirectory(@"e:\funds");
+        //Directory.SetCurrentDirectory(@"e:\funds");
         Databases = [new("主数据库", () => DbHelper.Base()), new("平台", () => DbHelper.Platform()), new("平台Log", () => new LiteDatabase(@$"FileName=data\platformlog.db;Connection=Shared"))];
 
         AssemblyLoadContext.Default.LoadFromAssemblyName(new System.Reflection.AssemblyName("FMO.Trustee"));
@@ -64,7 +64,7 @@ public partial class MainWindowViewModel : ObservableObject
         }
 
         using var db = value.GetDatabase();
-        Tables = db.GetCollectionNames().Where(x => !x.StartsWith("_"));
+        Tables = db.GetCollectionNames().Where(x => !x.StartsWith("_")).Order();
     }
 
 
@@ -88,17 +88,15 @@ public partial class MainWindowViewModel : ObservableObject
 
         if (value?.StartsWith("fv_") ?? false)
         {
-            Data = doc!.Select(x => BsonMapper.Global.ToObject<DailyValue>(x));
+            Data = doc!.Select(x => BsonMapper.Global.ToObject<DailyValue>(x)).Reverse();
             return;
         }
 
         var types = AssemblyLoadContext.Default.Assemblies.Where(x => x.FullName!.Contains("FMO")).SelectMany(x => x.GetTypes());
 
         if (types.FirstOrDefault(x => x.Name == value) is Type type)
-            Data = doc.Select(x => BsonMapper.Global.ToObject(type, x));
-        else Data = doc;
-
-
+            Data = doc.Select(x => BsonMapper.Global.ToObject(type, x)).Reverse();
+        else Data = doc.Reverse();
 
     }
 }
