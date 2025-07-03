@@ -2,7 +2,6 @@
 using FMO.Models;
 using Serilog;
 using System.Collections;
-using System.Security.Cryptography;
 
 namespace FMO.Utilities;
 
@@ -89,18 +88,21 @@ public static class DataTracker
             if (last is null) continue;
 
             var c = db.GetCollection<FundShareRecord>().Find(x => x.FundId == fund.Id);
-            var lta = db.GetCollection<TransferRecord>().Find(x => x.FundId == fund.Id).Max(x => x.ConfirmedDate);
+            var ta = db.GetCollection<TransferRecord>().Find(x => x.FundId == fund.Id);
+            if (c is null || !c.Any() || !ta.Any())
+            {
+                FundTips.Add(new FundTip(fund.Id, fund.Name, TipType.FundNoTARecord, "没有TA数据"));
+                continue;
+            }
+
+            var lta = ta.Max(x => x.ConfirmedDate);
             if (c is null || !c.Any() || c.Max(x => x.Date < lta))
             {
                 db.BuildFundShareRecord(fund.Id);
                 c = db.GetCollection<FundShareRecord>().Find(x => x.FundId == fund.Id);
             }
 
-            if (c is null || !c.Any())
-            {
-                FundTips.Add(new FundTip(fund.Id, fund.Name, TipType.FundNoTARecord, "没有TA数据"));
-                continue;
-            }
+
 
             var sh = c.OrderBy(x => x.Date).LastOrDefault(x => x.Date < last.Date);
 
