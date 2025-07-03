@@ -182,6 +182,9 @@ public partial class TrusteeWorker : ObservableObject
 
     /// <summary>
     /// 获取交易确认记录
+    /// 
+    /// 中信不返回当日数据
+    /// 
     /// </summary>
     /// <returns></returns>
     [RelayCommand]
