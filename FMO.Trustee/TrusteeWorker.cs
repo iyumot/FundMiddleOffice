@@ -246,18 +246,17 @@ public partial class TrusteeWorker : ObservableObject
                         var customers = db.GetCollection<Investor>().FindAll().ToList();
                         foreach (var r in rc.Data)
                         {
-                            var c = customers.FirstOrDefault(x => x.Name == r.CustomerName && x.Identity?.Id == r.CustomerIdentity);
-                            if (c is not null)
-                            {
-                                r.CustomerId = c.Id;
-                                continue;
-                            }
-                            else // 添加数据
+                            // 此项可能存在重复Id的bug，不用name是因为名字中有（）-等，在不同情景下，全角半角不一样
+                            var c = customers.FirstOrDefault(x => /*x.Name == r.CustomerName &&*/ x.Identity?.Id == r.CustomerIdentity);
+                            if (c is null)
                             {
                                 c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
                                 db.GetCollection<Investor>().Insert(c);
-                                r.CustomerId = c.Id;
                             }
+
+
+                            // 添加数据 
+                            r.CustomerId = c.Id;
                         }
 
                         // 对齐id 

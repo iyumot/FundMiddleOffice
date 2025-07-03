@@ -152,6 +152,41 @@ public static class DatabaseAssist
             col.Upsert(new PatchRecord(id, DateTime.Now));
         }
 
+
+        id = 9;
+        if (col.FindById(id) is null)
+        {
+            db.GetCollection<Investor>().DeleteMany(x => x.Name == "unset" || x.Name.Contains("test"));
+            // 异常投资人数据
+            var bad = db.GetCollection<Investor>().FindAll().ToArray();
+            foreach (var (i,item) in bad.Index())
+            {
+                var exi = bad[..i].FirstOrDefault(y => y.Identity?.Id == item.Identity?.Id);
+                if (exi is null)
+                    continue;
+
+
+                var ta = db.GetCollection<TransferRecord>().Find(x => x.CustomerId == item.Id).ToArray();
+                foreach (var t in ta)
+                    t.CustomerId = exi.Id;
+
+                var tq = db.GetCollection<TransferRequest>().Find(x => x.CustomerId == item.Id).ToArray();
+                foreach (var t in tq)
+                    t.CustomerId = exi.Id;
+
+                if(ta.Length > 0)
+                    db.GetCollection<TransferRecord>().Update(ta);
+                if (tq.Length > 0)
+                    db.GetCollection<TransferRequest>().Update(tq);
+
+                db.GetCollection<Investor>().Delete(item.Id);
+            }
+
+            
+
+            col.Upsert(new PatchRecord(id, DateTime.Now));
+        }
+
     }
 
 }
