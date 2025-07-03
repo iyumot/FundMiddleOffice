@@ -104,13 +104,14 @@ public static class DataTracker
 
             var sh = c.OrderBy(x => x.Date).LastOrDefault(x => x.Date < last.Date);
 
+            //FundTips.Remove(x => x.Type == TipType.FundShareNotPair);
             if (sh?.Share != last.Share)
             {
                 FundTips.Add(new FundTip(fund.Id, fund.Name, TipType.FundShareNotPair, "基金份额与估值表不一致"));
+                WeakReferenceMessenger.Default.Send(new FundTipMessage(fund.Id));
                 continue;
             }
 
-            FundTips.Remove(x => x.Type == TipType.FundShareNotPair);
         }
 
     }
@@ -157,7 +158,6 @@ public static class DataTracker
 
     public static void CheckIsExpired(IEnumerable<Fund> funds)
     {
-        // 验证最新的净值中份额与share是否一致
         using var db = DbHelper.Base();
         var cur = DateOnly.FromDateTime(DateTime.Today);
 
