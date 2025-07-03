@@ -107,7 +107,7 @@ public static class DatabaseAssist
         if (col.FindById(id) is null)
         {
             using var pdb = DbHelper.Platform();
-            pdb.RenameCollection("TrusteeMethodShotRange", "TrusteeMethodShotRange2");
+            pdb.RenameCollection("TrusteeMethodShotRange", $"TrusteeMethodShotRange{id}");
             //    pdb.DropCollection("TrusteeMethodShotRange");
         }
      
