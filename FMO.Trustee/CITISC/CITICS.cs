@@ -599,7 +599,7 @@ public partial class CITICS : TrusteeApiBase
             url = $"{url}?" + string.Join('&', param.Select(x => $"{x.Key}={HttpUtility.UrlEncode(x.Value?.ToString() ?? "")}"));
 
 
-        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        var request = new HttpRequestMessage(HttpMethod.Post, url);
         request.Headers.Add("consumerAuth", CustomerAuth);
         if (!string.IsNullOrWhiteSpace(Token))
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Token);

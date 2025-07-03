@@ -119,7 +119,35 @@ public static class DatabaseAssist
         if (col.FindById(id) is null)
         {
             using var pdb = DbHelper.Platform();
-            pdb.GetCollection("TrusteeMethodShotRange").Delete("trustee_citicsQueryTransferRecords");         
+            pdb.GetCollection("TrusteeMethodShotRange").Delete("trustee_citicsQueryTransferRecords");
+
+            col.Upsert(new PatchRecord(id, DateTime.Now));
+        }
+
+        // 修复 citics ta 认购类型错误
+        id = 7;
+        if (col.FindById(id) is null)
+        {
+            using var pdb = DbHelper.Base();
+            var old = pdb.GetCollection<TransferRecord>().Find(x => x.Source == "api").ToArray();
+
+            foreach (var item in old.Where(x => x.Type == TransferRecordType.Subscription && x.ConfirmedShare == 0))
+            {
+                var r = old.FirstOrDefault(x => x.ExternalId!.StartsWith(item.ExternalId!));
+                if (r is not null)
+                {
+                    r.Type = TransferRecordType.Subscription;
+                    pdb.GetCollection<TransferRecord>().Update(r);
+                }
+            }
+
+            col.Upsert(new PatchRecord(id, DateTime.Now));
+        }
+
+        id = 8;
+        if (col.FindById(id) is null)
+        {
+            var old = db.GetCollection<TransferRecord>().DeleteMany(x=>x.ConfirmedShare == 0 && (x.Type == TransferRecordType.UNK || x.Type == TransferRecordType.Subscription));
 
             col.Upsert(new PatchRecord(id, DateTime.Now));
         }

@@ -1379,7 +1379,7 @@ public partial class CITICS
     {
         return businessTypeCode switch
         {
-            "01" => TransferRecordType.Subscription,         // 认购
+            //"01" => TransferRecordType.Subscription,         // 认购 此项 确认份额是0
             "02" => TransferRecordType.Purchase,             // 申购
             "03" => TransferRecordType.Redemption,           // 赎回
             "04" => TransferRecordType.MoveOut,              // 转托管（转出）
@@ -1405,7 +1405,7 @@ public partial class CITICS
             "47" => TransferRecordType.UNK,                  // 联名卡开通（无对应）
             "48" => TransferRecordType.UNK,                  // 联名卡取消（无对应）
             "49" => TransferRecordType.UNK,                  // 联名卡还款（无对应）
-            "50" => TransferRecordType.UNK,                  // 基金成立（通常不是单笔记录）
+            "50" => TransferRecordType.Subscription,                  // 基金成立（通常不是单笔记录） 这里算认购
             "51" => TransferRecordType.UNK,                  // 基金终止（通常不是单笔记录）
             "52" => TransferRecordType.Clear,                // 基金清盘
             "54" => TransferRecordType.RaisingFailed,        // 发行失败
