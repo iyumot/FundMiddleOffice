@@ -3,6 +3,7 @@ using FMO.Models;
 using FMO.Plugin;
 using FMO.Utilities;
 using Serilog;
+using System;
 using System.IO;
 using System.Windows;
 
@@ -19,6 +20,21 @@ public partial class App : Application
 
     public App()
     {
+        // 处理所有 AppDomain 的未处理异常（包括非 UI 线程）
+        AppDomain.CurrentDomain.UnhandledException += (s, args) =>
+        {
+            var exception = (Exception)args.ExceptionObject;
+            Log.Error($"{exception}");
+        };
+
+        // 处理 Task 内部未处理的异常
+        TaskScheduler.UnobservedTaskException += (s, args) =>
+        {
+            Log.Error($"{s}");
+            args.SetObserved(); // 避免后续崩溃
+        };
+
+
 #if RELEASE
         // 单例模式
         string mutexName = "FundMiddleOfficeSingleton";
@@ -89,6 +105,6 @@ public partial class App : Application
     private void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
     {
         Log.Error(e.Exception.Message);
-        MessageBox.Show("出错了，请查看Log");
+        //MessageBox.Show("出错了，请查看Log");
     }
 }

@@ -51,7 +51,7 @@ public static class DatabaseAssist
             }
 
 
-            Patch();      
+            Patch();
         }
 
 
@@ -88,8 +88,8 @@ public static class DatabaseAssist
         var col = db.GetCollection<PatchRecord>();
 
 
-        if(col.FindById(2) is null)
-        { 
+        if (col.FindById(2) is null)
+        {
             // 6.30 解决中信ta，有unset
             var haser = db.GetCollection<TransferRecord>().Find(x => x.Source != null && x.Source.Contains("citics")).Any(x => x.CustomerName == "unset");
             using (var pdb = DbHelper.Platform()) //删除记录
@@ -103,14 +103,17 @@ public static class DatabaseAssist
         }
 
         // 清空work记录
-        var id = 4;
+        var id = 5;
         if (col.FindById(id) is null)
         {
             using var pdb = DbHelper.Platform();
-            pdb.RenameCollection("TrusteeMethodShotRange", $"TrusteeMethodShotRange{id}");
+            if (!pdb.GetCollectionNames().Contains($"TrusteeMethodShotRange{id}"))
+                pdb.RenameCollection("TrusteeMethodShotRange", $"TrusteeMethodShotRange{id}");
             //    pdb.DropCollection("TrusteeMethodShotRange");
+
+            col.Upsert(new PatchRecord(id, DateTime.Now));
         }
-     
+
 
 
 
