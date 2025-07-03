@@ -164,7 +164,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         using var db = DbHelper.Base();
         db.GetCollection<TransferRequest>().Delete(r.Id);
 
-        Requests?.Remove(r); 
+        Requests?.Remove(r);
     }
 
     [RelayCommand]
@@ -186,8 +186,14 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         if (old is not null)
             old.UpdateFrom(message);
         else Records!.Add(new TransferRecordViewModel(message) { File = new FileInfo(@$"files\tac\{message.Id}.pdf") });
+    }
 
-
+    public void Receive(TransferRequest message)
+    {
+        var old = Requests!.FirstOrDefault(x => x.Id == message.Id);
+        if (old is not null)
+            Requests!.Remove(old);
+        Requests!.Add(message);
     }
 
     public void Receive(PageTAMessage message)

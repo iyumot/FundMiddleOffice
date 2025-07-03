@@ -5,7 +5,6 @@ using FMO.Models;
 using FMO.Utilities;
 using LiteDB;
 using System.Diagnostics.CodeAnalysis;
-using System.Windows;
 
 namespace FMO.Trustee;
 
@@ -288,6 +287,14 @@ public partial class TrusteeWorker : ObservableObject
                         }
 
                         db.GetCollection<TransferRequest>().Upsert(rc.Data);
+
+                        // 通知
+                        try
+                        {
+                            foreach (var item in rc.Data)
+                                WeakReferenceMessenger.Default.Send(item);
+                        }
+                        catch { }
                     }
 
 
@@ -325,7 +332,7 @@ public partial class TrusteeWorker : ObservableObject
         WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(method, ret));
         TransferRequestConfig.Last = DateTime.Now;
         Save(TransferRequestConfig);
-         
+
     }
 
 
@@ -437,6 +444,14 @@ public partial class TrusteeWorker : ObservableObject
                         }
 
                         db.GetCollection<TransferRecord>().Upsert(rc.Data);
+
+                        // 通知
+                        try
+                        {
+                            foreach (var item in rc.Data)
+                                WeakReferenceMessenger.Default.Send(item);
+                        }
+                        catch { }
                     }
 
 
@@ -654,7 +669,7 @@ public partial class TrusteeWorker : ObservableObject
                 // 检验是否与上次运行时间不一样
                 //if (t.Hour != RaisingBalanceConfig.Last.Hour || t.Minute != RaisingBalanceConfig.Last.Minute)
                 if (minute / RaisingBalanceConfig.Interval != RaisingBalanceConfig.GetLastRunIndex())
-                     await QueryRaisingBalanceOnceCommand.ExecuteAsync(null);
+                    await QueryRaisingBalanceOnceCommand.ExecuteAsync(null);
             }
             catch { }
             finally { RaisingBalanceConfig.Semaphore.Release(); }
@@ -667,7 +682,7 @@ public partial class TrusteeWorker : ObservableObject
             try
             {
                 if (minute / RaisingAccountTransctionConfig.Interval != RaisingAccountTransctionConfig.GetLastRunIndex())
-                     await QueryRaisingAccountTransctionOnceCommand.ExecuteAsync(null);
+                    await QueryRaisingAccountTransctionOnceCommand.ExecuteAsync(null);
             }
             catch { }
             finally { RaisingAccountTransctionConfig.Semaphore.Release(); }

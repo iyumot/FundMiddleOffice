@@ -15,7 +15,8 @@
     </Window.DataContext>
     <DockPanel>
         <ListBox
-            DockPanel.Dock="Top" HorizontalAlignment="Left"
+            HorizontalAlignment="Left"
+            DockPanel.Dock="Top"
             ItemsPanel="{StaticResource UniformHorizontalItemsPanelTemplate}"
             ItemsSource="{Binding Databases}"
             SelectedItem="{Binding SelectedDatabase}">
