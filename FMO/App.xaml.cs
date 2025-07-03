@@ -59,13 +59,8 @@ public partial class App : Application
 
 
         Log.Logger = new LoggerConfiguration().WriteTo.File("log.txt").CreateLogger();
-        DatabaseAssist.Miggrate();
 
-        ///数据库自检等操作
-        DatabaseAssist.SystemValidation();
-
-       
-
+         
         if (CheckIsFirstRun())
             StartupUri = new Uri("InitWindow.xaml", UriKind.Relative);
         else
