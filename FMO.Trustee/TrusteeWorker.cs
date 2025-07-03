@@ -290,8 +290,11 @@ public partial class TrusteeWorker : ObservableObject
 
                     // 如果有unset，表示数据异常，不保存进度
                     if (rc.Data?.Any(x => x.CustomerName == "unset" || x.FundName == "unset" || x.CustomerIdentity == "unset") ?? false)
+                    {
+                        ret.Add(new(tr.Title, ReturnCode.DataIsNotWellFormed, rc.Data));
+                        WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Error, $"{tr.Title} 获取的交易申请记录数据异常"));
                         break;
-
+                    }
                     // 更新进度
                     if (range is null) range = new(tr.Identifier + nameof(tr.QueryTransferRequests), begin, end);
                     else range.Merge(begin, end);

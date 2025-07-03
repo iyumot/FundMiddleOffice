@@ -123,17 +123,26 @@ public partial class CITICS : TrusteeApiBase
             }
 
             List<TransferRecord> list = new();
-            foreach (var item in result.Data)
+            // Ó³Éä»ù½ðÃû
+            using (var b = DbHelper.Base())
             {
-                var r = item.ToObject();
-                list.Add(r);
-
-                if (map.FirstOrDefault(x => x.Id == item.FundAcco) is InvestorAccountMapping m)
+                foreach (var item in result.Data)
                 {
-                    r.CustomerName = m.Name;
-                    r.CustomerIdentity = m.Indentity;
+                    var r = item.ToObject();
+                    if (b.FindFund(r.FundCode) is Fund f)
+                        r.FundName = f.Name;
+
+                    list.Add(r);
+
+                    if (map.FirstOrDefault(x => x.Id == item.FundAcco) is InvestorAccountMapping m)
+                    {
+                        r.CustomerName = m.Name;
+                        r.CustomerIdentity = m.Indentity;
+                    }
                 }
             }
+
+
             return new(result.Code, list.ToArray());
         }
 

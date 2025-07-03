@@ -24,6 +24,11 @@ public enum ReturnCode
     EmptyResponse,
 
     /// <summary>
+    /// 数据异常
+    /// </summary>
+    DataIsNotWellFormed,
+
+    /// <summary>
     /// 返回的json无法正常解析成对应的类
     /// </summary>
     JsonNotPairToEntity,

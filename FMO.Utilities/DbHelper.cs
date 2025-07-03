@@ -114,8 +114,15 @@ public static class DatabaseAssist
             col.Upsert(new PatchRecord(id, DateTime.Now));
         }
 
+        // citics QueryTransferRecords 数据不全，清除记录
+        id = 6;
+        if (col.FindById(id) is null)
+        {
+            using var pdb = DbHelper.Platform();
+            pdb.GetCollection("TrusteeMethodShotRange").Delete("trustee_citicsQueryTransferRecords");         
 
-
+            col.Upsert(new PatchRecord(id, DateTime.Now));
+        }
 
     }
 

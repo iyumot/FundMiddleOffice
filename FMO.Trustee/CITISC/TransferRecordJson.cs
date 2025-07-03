@@ -191,6 +191,7 @@ public partial class CITICS
                 ExternalRequestId = ExRequestNo,
                 Type = ParseRecordType(Apkind),
                 FundCode = FundCode,
+                FundName = "unset",
                 Agency = AgencyName,
                 RequestDate = DateOnly.ParseExact(ApplyDate, "yyyyMMdd"),
                 RequestAmount = ParseDecimal(SubAmt),

@@ -135,7 +135,7 @@ public abstract class TrusteeApiBase : ITrustee
 
     public static LogInfo[]? GetLogs()
     {
-        var dic = _db.GetCollection<LogInfo>().FindAll().GroupBy(x => x.Identifier).ToDictionary(x => x.Key, x => x.GroupBy(y => y.Method??"").ToDictionary(y => y.Key, y => y.Take(5)));
+        var dic = _db.GetCollection<LogInfo>().FindAll().OrderByDescending(x=>x.Time).GroupBy(x => x.Identifier).ToDictionary(x => x.Key, x => x.GroupBy(y => y.Method??"").ToDictionary(y => y.Key, y => y.Take(5)));
         return dic.SelectMany(x => x.Value.SelectMany(y => y.Value)).OrderByDescending(x=>x.Time).ToArray();
 
        // return _db.GetCollection<LogInfo>().FindAll().GroupBy(x=>x.Identifier).Select(x=> (x.Key, x.GroupBy(x=>x.Method).Select(y=> (y.Key, y.Take(5))))).ToArray();
@@ -150,7 +150,7 @@ public abstract class TrusteeApiBase : ITrustee
     /// <param name="info"></param>
     protected static void ReportJsonUnexpected(string identifier, string method, string info)
     {
-        _db.GetCollection<LogInfo>().Insert(new LogInfo { Identifier = identifier, Log = info, Method = method, Content = "", Time = DateTime.Now });
+        _db.GetCollection<LogInfo>().Insert(new LogInfo { Identifier = identifier, Log = info, Method = method, Content = "Ω‚Œˆ“Ï≥£", Time = DateTime.Now });
     }
     protected virtual Dictionary<string, object> GenerateParams(object? obj)
     {
