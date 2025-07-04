@@ -4,7 +4,10 @@ using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
 using LiteDB;
+using Serilog;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Windows;
 
 namespace FMO.Trustee;
 
@@ -654,7 +657,7 @@ public partial class TrusteeWorker : ObservableObject
 
 
 
-    private async void OnTimer(object? state)
+    private async void OnTimer2(object? state)
     {
         var t = DateTime.Now;
 
@@ -728,6 +731,67 @@ public partial class TrusteeWorker : ObservableObject
         }
     }
 
+    private async void OnTimer(object? state)
+    {
+        var now = DateTime.Now;
+        var minuteIndex = now.Ticks / TimeSpan.TicksPerMinute;
+
+        (WorkConfig Config, IAsyncRelayCommand Command)[] tasks = [
+                                                                    // 募集余额查询任务：
+                                                                    // 使用 RaisingBalanceConfig 配置（如执行间隔、上次运行时间等）
+                                                                    // 触发 QueryRaisingBalanceOnceCommand 命令执行单次查询
+                                                                    (Config: RaisingBalanceConfig, Command: QueryRaisingBalanceOnceCommand),
+
+                                                                    // 募集户流水查询任务：
+                                                                    // 使用 RaisingAccountTransctionConfig 配置
+                                                                    // 触发 QueryRaisingAccountTransctionOnceCommand 命令执行单次查询
+                                                                    (Config: RaisingAccountTransctionConfig, Command: QueryRaisingAccountTransctionOnceCommand),
+
+                                                                    // 交易申请查询任务：
+                                                                    // 使用 TransferRequestConfig 配置
+                                                                    // 触发 QueryTransferRequestOnceCommand 命令执行单次查询
+                                                                    (Config: TransferRequestConfig, Command: QueryTransferRequestOnceCommand),
+
+                                                                    // 交易确认查询任务：
+                                                                    // 使用 TransferRecordConfig 配置
+                                                                    // 触发 QueryTransferRecordOnceCommand 命令执行单次查询
+                                                                    (Config: TransferRecordConfig, Command: QueryTransferRecordOnceCommand),
+
+                                                                    // 日常费用查询任务：
+                                                                    // 使用 DailyFeeConfig 配置
+                                                                    // 触发 QueryDailyFeeOnceCommand 命令执行单次查询
+                                                                    (Config: DailyFeeConfig, Command: QueryDailyFeeOnceCommand)
+        ];
+
+
+        foreach (var (Config, Command) in tasks)
+        {
+            if (minuteIndex % Config.Interval == 0)
+            {
+                await Config.Semaphore.WaitAsync();
+                try
+                {
+                    if (minuteIndex / Config.Interval != Config.GetLastRunIndex())
+                    {
+                        // 调度到 UI 线程执行
+                        await Application.Current.Dispatcher.InvokeAsync(async () =>
+                        {
+                            if (Command.CanExecute(null))
+                                await Command.ExecuteAsync(null);
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Trustee Worker Error executing command: {ex.Message}");
+                }
+                finally
+                {
+                    Config.Semaphore.Release();
+                }
+            }
+        }
+    }
 
     internal void Start() => timer.Change(0, 15000);
 
