@@ -6,6 +6,7 @@ using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Windows.Controls;
@@ -98,7 +99,6 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
     public FileViewModel<InvestorQualification> TaxDeclaration { get; }
 
 
-    public FileViewModel<InvestorQualification> CertificationMaterials { get; }
 
     public MultiFileViewModel<InvestorQualification> CertificationFiles { get; set; }
 
@@ -181,6 +181,8 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
     public QualificationViewModel(int id)
     {
         Id = id;
+        if (id == -1) return;
+        
         using var db = DbHelper.Base();
         var obj = db.GetCollection<InvestorQualification>().FindById(Id);
 
@@ -188,7 +190,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         Name = obj.InvestorName;
 
 
-        InfomationSheet = new()
+        InfomationSheet = new ()
         {
             Label = "基本信息表",
             GetProperty = x => x.InfomationSheet,

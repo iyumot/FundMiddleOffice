@@ -1,12 +1,14 @@
-﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Windows.Controls;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
+using Microsoft.Win32;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
+using System.Windows.Controls;
 
 namespace FMO;
 
@@ -30,7 +32,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 {
     [TypeConverter(typeof(EnumDescriptionTypeConverter))] public enum NaturalType { [Description("非员工")] NonEmployee, [Description("员工")] Employee };
 
-
+    public static RiskEvaluation[] RiskEvaluations { get; } = [RiskEvaluation.C1, RiskEvaluation.C2, RiskEvaluation.C3, RiskEvaluation.C4, RiskEvaluation.C5];
 
     public static EntityType[] EntityTypes { get; } = [Models.EntityType.Natural, Models.EntityType.Institution, Models.EntityType.Product,];
 
@@ -93,8 +95,30 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
     public ObservableCollection<QualificationViewModel> Qualifications { get; }
 
+
+    public ObservableCollection<RiskAssessmentViewModel> RiskAssessments { get; }
+
+
     [ObservableProperty]
     public partial QualificationViewModel? SelectedQualification { get; set; }
+
+
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AddRiskAssessmentCommand))]
+    public partial RiskEvaluation? NewEvaluation { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(RiskConflict))]
+    [NotifyCanExecuteChangedFor(nameof(AddRiskAssessmentCommand))]
+    public partial DateTime? NewDate { get; set; }
+
+
+    public bool RiskConflict => RiskAssessments.Any(x => x.Date.Year == NewDate?.Year && x.Date.Month == NewDate?.Month && x.Date.Day == NewDate?.Day);
+
+    public bool CanAddRiskAssessment => NewDate != default && NewEvaluation != default;
+
+
 
     //public CustomerViewModel()
     //{
@@ -129,7 +153,9 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
         using var db = DbHelper.Base();
         var iq = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == Id || (x.InvestorId == 0 && x.InvestorName == investor.Name && x.IdentityCode == investor.Identity.Id)).ToArray();
-        Qualifications = new(iq.Select(x => QualificationViewModel.From(x, investor.Type, investor.EntityType)));
+        Qualifications = [.. iq.Select(x => QualificationViewModel.From(x, investor.Type, investor.EntityType))];
+
+        RiskAssessments = [.. db.GetCollection<RiskAssessment>().Find(x => x.InvestorId == Id).Select(x => new RiskAssessmentViewModel(x))];
     }
 
     private void Type_PropertyChanged(object? sender, PropertyChangedEventArgs? e)
@@ -284,6 +310,41 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
         Qualifications.Add(QualificationViewModel.From(entity, Type.OldValue, EntityType.OldValue));
     }
 
+
+    [RelayCommand(CanExecute = nameof(CanAddRiskAssessment))]
+    public void AddRiskAssessment()
+    {
+        var fd = new OpenFileDialog();
+        fd.Filter = "文档|*.pdf;*.jpg;*.png;*.jpeg";
+        if (!fd.ShowDialog() ?? true) return;
+
+        var r = new RiskAssessment
+        {
+            Date = DateOnly.FromDateTime(NewDate!.Value),
+            Level = NewEvaluation!.Value,
+            InvestorId = Id,
+        };
+
+        using var db = DbHelper.Base();
+        db.GetCollection<RiskAssessment>().DeleteMany(x => x.InvestorId == Id && x.Date == DateOnly.FromDateTime(NewDate.Value));
+
+        db.GetCollection<RiskAssessment>().Insert(r);
+
+        string destFileName = $"{r.Id}{Path.GetExtension(fd.FileName)}";
+        File.Copy(fd.FileName, @$"files\evaluation\" + destFileName);
+        r.Path = destFileName;
+        db.GetCollection<RiskAssessment>().Update(r);
+
+        foreach (var item in RiskAssessments.ToArray())
+        {
+            if (item.InvestorId == Id && item.Date == DateOnly.FromDateTime(NewDate.Value))
+                RiskAssessments.Remove(item);
+        }
+        RiskAssessments.Add(new RiskAssessmentViewModel(r));        
+    }
+
+
+
     [RelayCommand]
     public void DeleteQualification(QualificationViewModel v)
     {
@@ -410,5 +471,38 @@ public partial class DateEfficientViewModel : ObservableObject, IEquatable<DateE
         if (Begin >= End) return string.Empty;
 
         return $"{Begin?.ToString("yyyy-MM-dd")}-{(IsLongTerm ? "长期" : End?.ToString("yyyy-MM-dd"))}";
+    }
+}
+
+
+public partial class RiskAssessmentViewModel : ObservableObject
+{
+    public int Id { get; set; }
+
+    public int InvestorId { get; set; }
+
+    public DateOnly Date { get; set; }
+
+    public RiskEvaluation Level { get; set; }
+
+    public string? Path { get; }
+
+    public RiskAssessmentViewModel(RiskAssessment risk)
+    {
+        Id = risk.Id;
+        InvestorId = risk.InvestorId;
+        Date = risk.Date;
+        Level = risk.Level;
+        Path = risk.Path;
+    }
+
+
+    [RelayCommand]
+    public void ViewFile()
+    {
+        var file = new FileInfo(@$"files\evaluation\" + Path);
+        if (Path is not null && file.Exists)
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(file.FullName) { UseShellExecute = true });
+        else WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "风险调查问卷不存在"));
     }
 }

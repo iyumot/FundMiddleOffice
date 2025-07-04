@@ -64,6 +64,7 @@ public partial class App : Application
         Directory.CreateDirectory("data");
         Directory.CreateDirectory("config");
         Directory.CreateDirectory("files\\funds");
+        Directory.CreateDirectory("files\\evaluation");
         Directory.CreateDirectory("plugins");
         Directory.CreateDirectory("files\\tac");
         Directory.CreateDirectory("files\\accounts");
