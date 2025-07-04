@@ -239,11 +239,10 @@ public partial class TrusteeWorker : ObservableObject
                                 r.FundName = f.Name;
                                 continue;
                             }
+                            else Log.Error($"QueryTransferRequests 发现未知的产品{r.FundName} {r.FundCode}");
 
-                            // 子份额
+                            // 子份额 在各api中完成
 
-
-                            // 待完善
                         }
 
                         var customers = db.GetCollection<Investor>().FindAll().ToList();
@@ -394,12 +393,10 @@ public partial class TrusteeWorker : ObservableObject
                                 r.FundId = f.Id;
                                 r.FundName = f.Name;
                                 continue;
-                            }
+                            } 
+                            else Log.Error($"QueryTransferRequests 发现未知的产品{r.FundName} {r.FundCode}");
 
-                            // 子份额
-
-
-                            // 待完善
+                            // 子份额 在各api中完成
                         }
 
                         var customers = db.GetCollection<Investor>().FindAll().ToList();

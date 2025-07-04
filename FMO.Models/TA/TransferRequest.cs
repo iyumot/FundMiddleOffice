@@ -96,5 +96,7 @@ public class TransferRequest
     /// 销售机构
     /// </summary>
     public string? Agency { get; set; }
+
+    public string? ShareClass { get; set; }
 }
 

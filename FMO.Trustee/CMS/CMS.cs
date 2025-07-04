@@ -57,6 +57,24 @@ public partial class CMS : TrusteeApiBase
     public override async Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end)
     {
         var data = await SyncWork<TransferRequest, TransferRequestJson>(1006, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
+
+        // ×Ó²úÆ· Ó³Éä
+        if (FundsInfo is null)
+            await QuerySubjectFundMappings();
+
+        if (data.Code == ReturnCode.Success && data.Data is not null)
+        {
+            foreach (var item in data.Data)
+            {
+                if (FundsInfo?.FirstOrDefault(x => x.FundCode == item.FundCode) is SubjectFundMapping sfm && sfm.MasterCode is not null)
+                {
+                    item.FundCode = sfm.MasterCode;
+                    item.FundName = sfm.MasterName!;
+                    if (!string.IsNullOrWhiteSpace(sfm.ShareClass))
+                        item.ShareClass = sfm.ShareClass;
+                }
+            }
+        }
         return data;
     }
 
@@ -74,7 +92,7 @@ public partial class CMS : TrusteeApiBase
         {
             foreach (var item in data.Data)
             {
-                if (FundsInfo?.FirstOrDefault(x => x.FundCode == item.FundCode) is SubjectFundMapping sfm)
+                if (FundsInfo?.FirstOrDefault(x => x.FundCode == item.FundCode) is SubjectFundMapping sfm && sfm.MasterCode is not null)
                 {
                     item.FundCode = sfm.MasterCode;
                     item.FundName = sfm.MasterName;

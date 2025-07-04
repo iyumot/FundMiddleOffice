@@ -84,9 +84,41 @@ public partial class CITICS : TrusteeApiBase
     public override async Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end)
     {
         var part = "/v2/ta/queryTradeApplyForApi";
-        var result = await SyncWork<TransferRequest, TransferRequestJson>(part, new { ackBeginDate = $"{begin:yyyyMMdd}", ackEndDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
+        var result = await SyncWork<TransferRequestJson, TransferRequestJson>(part, new { ackBeginDate = $"{begin:yyyyMMdd}", ackEndDate = $"{end:yyyyMMdd}" }, x => x);
 
-        return result;
+
+        // 后处理
+        if (result.Data?.Length > 0)
+        {
+            List<TransferRequest> list = new();
+            // 映射基金名、投资人
+            using (var b = DbHelper.Base())
+            {
+                foreach (var item in result.Data)
+                {
+                    var r = item.ToObject();
+                    if (b.FindFund(r.FundCode) is Fund f)
+                    {
+                        // 检查子份额 SABCDE  ABCDEA/B/C..
+                        if (f.Code != r.FundCode)
+                        {
+                            r.FundName = f.Name + r.FundCode![5..];
+                            r.FundCode = f.Code;
+                        }
+                        else
+                            r.FundName = f.Name;
+                    }
+                    else Log($"CITICS QueryTransferRequests 未知的基金{item.FundCode}");
+
+                    list.Add(r);
+                }
+            }
+
+
+            return new(result.Code, list.ToArray());
+        }
+
+        return new(result.Code, null);
     }
 
 
@@ -123,14 +155,23 @@ public partial class CITICS : TrusteeApiBase
             }
 
             List<TransferRecord> list = new();
-            // 映射基金名
+            // 映射基金名、投资人
             using (var b = DbHelper.Base())
             {
                 foreach (var item in result.Data)
                 {
                     var r = item.ToObject();
                     if (b.FindFund(r.FundCode) is Fund f)
-                        r.FundName = f.Name;
+                    {
+                        // 检查子份额 SABCDE  ABCDEA/B/C..
+                        if (f.Code != r.FundCode)
+                        {
+                            r.FundName = f.Name + r.FundCode![5..];
+                            r.FundCode = f.Code;
+                        }
+                        else
+                            r.FundName = f.Name;
+                    }
 
                     list.Add(r);
 

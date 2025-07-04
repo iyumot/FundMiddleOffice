@@ -1164,6 +1164,7 @@ public partial class CITICS
 
         /// <summary>
         /// 申请时间（格式：HHMMSS）
+        /// 可能为null
         /// </summary>
         [JsonPropertyName("requestTime")]
         public string RequestTime { get; set; }
@@ -1209,13 +1210,13 @@ public partial class CITICS
         /// 申请金额
         /// </summary>
         [JsonPropertyName("balance")]
-        public decimal ApplyAmount { get; set; }
+        public decimal? ApplyAmount { get; set; }
 
         /// <summary>
         /// 申请份额
         /// </summary>
         [JsonPropertyName("shares")]
-        public decimal ApplyShares { get; set; }
+        public decimal? ApplyShares { get; set; }
 
         /// <summary>
         /// 银行账号
@@ -1245,7 +1246,7 @@ public partial class CITICS
         /// 指定费用
         /// </summary>
         [JsonPropertyName("definedFee")]
-        public decimal DefinedFee { get; set; }
+        public decimal? DefinedFee { get; set; }
 
         /// <summary>
         /// 折扣
@@ -1306,11 +1307,11 @@ public partial class CITICS
                 ExternalId = RequestNo,
                 Agency = AgencyName,
                 FeeDiscount = ParseDecimal(DiscountRate),
-                LargeRedemptionFlag = ExceedFlag switch { "0" => LargeRedemptionFlag.CancelRemaining, _ => LargeRedemptionFlag.RollOver },
+                LargeRedemptionFlag = ExceedFlag switch { "0" or null => LargeRedemptionFlag.CancelRemaining, _ => LargeRedemptionFlag.RollOver },
                 Source = "api",
-                RequestAmount = ApplyAmount,
-                RequestShare = ApplyShares,
-                Fee = DefinedFee,
+                RequestAmount = ApplyAmount ?? 0,
+                RequestShare = ApplyShares ?? 0,
+                Fee = DefinedFee ?? 0,
                 CreateDate = DateOnly.FromDateTime(DateTime.Now),
             };
         }
