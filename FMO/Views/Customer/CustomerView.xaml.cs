@@ -8,6 +8,7 @@ using Microsoft.Win32;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows.Controls;
 
 namespace FMO;
@@ -102,7 +103,12 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
     [ObservableProperty]
     public partial QualificationViewModel? SelectedQualification { get; set; }
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsAssessmentFileChoosed))]
+    public partial string? AssessmentFile { get; set; }
 
+
+    public bool IsAssessmentFileChoosed => File.Exists(AssessmentFile);
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AddRiskAssessmentCommand))]
@@ -116,7 +122,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
     public bool RiskConflict => RiskAssessments.Any(x => x.Date.Year == NewDate?.Year && x.Date.Month == NewDate?.Month && x.Date.Day == NewDate?.Day);
 
-    public bool CanAddRiskAssessment => NewDate != default && NewEvaluation != default;
+    public bool CanAddRiskAssessment => IsAssessmentFileChoosed && NewDate != default && NewEvaluation != default;
 
 
 
@@ -310,13 +316,34 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
         Qualifications.Add(QualificationViewModel.From(entity, Type.OldValue, EntityType.OldValue));
     }
 
-
-    [RelayCommand(CanExecute = nameof(CanAddRiskAssessment))]
-    public void AddRiskAssessment()
+    [RelayCommand]
+    public void ChooseAssessmentFile()
     {
         var fd = new OpenFileDialog();
         fd.Filter = "文档|*.pdf;*.jpg;*.png;*.jpeg";
         if (!fd.ShowDialog() ?? true) return;
+
+        AssessmentFile = fd.FileName;
+
+        // 判断文件名中是否有日期和评估等级
+        var m = Regex.Match(fd.FileName, @"(\d{8}).*?(C\d)");
+        if(m.Success)
+        {
+            try
+            {
+                NewDate = DateTime.TryParseExact(m.Groups[1].Value, "yyyyMMdd", null, System.Globalization.DateTimeStyles.None, out var date) ? date : null;
+                NewEvaluation = Enum.Parse<RiskEvaluation>(m.Groups[2].Value, true);
+            }
+            catch { }
+        }
+
+    }
+
+
+    [RelayCommand(CanExecute = nameof(CanAddRiskAssessment))]
+    public void AddRiskAssessment()
+    {
+        var fd = new FileInfo(AssessmentFile!);
 
         var r = new RiskAssessment
         {
@@ -330,8 +357,8 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
         db.GetCollection<RiskAssessment>().Insert(r);
 
-        string destFileName = $"{r.Id}{Path.GetExtension(fd.FileName)}";
-        File.Copy(fd.FileName, @$"files\evaluation\" + destFileName);
+        string destFileName = $"{r.Id}{Path.GetExtension(fd.Name)}";
+        File.Copy(fd.FullName, @$"files\evaluation\" + destFileName);
         r.Path = destFileName;
         db.GetCollection<RiskAssessment>().Update(r);
 
@@ -340,10 +367,16 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
             if (item.InvestorId == Id && item.Date == DateOnly.FromDateTime(NewDate.Value))
                 RiskAssessments.Remove(item);
         }
-        RiskAssessments.Add(new RiskAssessmentViewModel(r));        
+        RiskAssessments.Add(new RiskAssessmentViewModel(r));
     }
 
-
+    [RelayCommand]
+    public void CancelRiskAssessment()
+    {
+        AssessmentFile = null;
+        NewDate = null;
+        NewEvaluation = null;
+    }
 
     [RelayCommand]
     public void DeleteQualification(QualificationViewModel v)

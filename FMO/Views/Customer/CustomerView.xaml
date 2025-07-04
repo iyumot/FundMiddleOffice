@@ -180,22 +180,33 @@
                                         Padding="5"
                                         HorizontalAlignment="Left"
                                         hc:IconElement.Geometry="{StaticResource AddGeometry}"
-                                        Command="{Binding AddRiskAssessmentCommand}"
+                                        Command="{Binding ChooseAssessmentFileCommand}"
                                         Content="风测"
                                         Style="{StaticResource ButtonPrimary}" />
-                                    <DatePicker
-                                        Name="a"
-                                        Width="100"
-                                        IsEnabled="False"
-                                        SelectedDate="{Binding NewDate}" />
-                                    <ListBox
-                                        Name="b"
-                                        IsEnabled="False"
-                                        ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus.Small}"
-                                        ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
-                                        ItemsSource="{Binding RiskEvaluations}"
-                                        SelectedItem="{Binding NewEvaluation}" />
+                                    <DockPanel LastChildFill="False" Visibility="{Binding IsAssessmentFileChoosed, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                        <DatePicker
+                                            Name="a"
+                                            Width="100"
+                                            IsEnabled="False"
+                                            SelectedDate="{Binding NewDate}" />
+                                        <ListBox
+                                            Name="b"
+                                            IsEnabled="False"
+                                            ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus.Small}"
+                                            ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
+                                            ItemsSource="{Binding RiskEvaluations}"
+                                            SelectedItem="{Binding NewEvaluation}" />
 
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.check}"
+                                            Command="{Binding AddRiskAssessmentCommand}"
+                                            Style="{StaticResource ButtonIcon.Small}" />
+
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.reply}"
+                                            Command="{Binding CancelRiskAssessmentCommand}"
+                                            Style="{StaticResource ButtonIcon.Small}" />
+                                    </DockPanel>
                                 </DockPanel>
 
                                 <ControlTemplate.Triggers>
