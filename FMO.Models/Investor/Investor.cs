@@ -1,4 +1,6 @@
-﻿namespace FMO.Models;
+﻿using System.Text.RegularExpressions;
+
+namespace FMO.Models;
 
 public class Investor
 {
@@ -36,6 +38,17 @@ public class Investor
 
     public string? Phone { get; set; }
 
+
+    public static bool IsNamePair(string a, string b)
+    {
+        if(a == b) return true;
+
+        // 清除符号
+        Regex regex = new Regex(@"[\(\)（）-]");
+        var aa = regex.Replace(a, "");
+        var bb = regex.Replace(b, "");
+        return aa == bb;
+    }
 }
 
 

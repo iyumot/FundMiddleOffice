@@ -5,10 +5,12 @@ using CommunityToolkit.Mvvm.Messaging;
 using FMO.IO.AMAC;
 using FMO.Models;
 using FMO.Utilities;
+using Microsoft.Win32;
 using Serilog;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Threading.Tasks;
+using System.IO.Compression;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -118,7 +120,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
             var pfmap = db.GetCollection<PfidAccount>();
 
 
-            if(pfmap.Count() == 0)
+            if (pfmap.Count() == 0)
             {
                 var acc = db.GetCollection<AmacAccount>().FindById("xinpi");
                 var ad = await PfidAssist.QueryInvestorAccounts(acc);
@@ -158,7 +160,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
                     sheet.Cell(row, 8).Value = c.Email;
                     if (string.IsNullOrWhiteSpace(c.Email))
                         sheet.Cell(row, 7).Value = c.Phone;
-                    sheet.Cell(row, 9).Value = hasposition ? "启用":"关闭" ;
+                    sheet.Cell(row, 9).Value = hasposition ? "启用" : "关闭";
                     sheet.Cell(row, 10).Value = string.Join(",", cta.Select(x => x.Key));
                     ++row;
                 }
@@ -198,6 +200,37 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         }
     }
 
+
+    [RelayCommand]
+    public async Task ImportQualificationData()
+    {
+        var fd = new OpenFileDialog();
+        if (!fd.ShowDialog() ?? true) return;
+
+        var file = fd.FileName;
+
+        //await Task.Run(() =>
+        //{
+            using var fs = new FileStream(file, FileMode.Open, FileAccess.Read);
+            ZipArchive zip = new ZipArchive(fs, ZipArchiveMode.Read);
+
+            var info = zip.Entries.Where(x => string.IsNullOrWhiteSpace(x.Name)).Select(x => (x, Regex.Match(x.FullName, @"投资者数据库列表文件/([\w\(\)（）]+)/([^/]+)/$"))).
+                            Where(x => x.Item2.Success).Select(x => (Fund: x.Item2.Groups[1].Value, Investor: x.Item2.Groups[2].Value, Folder: x.x.FullName));
+
+        foreach (var fund in info.GroupBy(x=>x.Fund))
+        {
+            foreach (var customer in fund)
+            {
+                // 风险测评材料/
+                var riskf = zip.Entries.Where(x => x.Name?.Length > 0 && x.FullName.StartsWith(customer.Folder + "风险测评材料/"));
+
+                
+
+            }
+        }  
+
+        //});
+    }
 
     partial void OnSelectedChanged(InvestorReadOnlyViewModel? oldValue, InvestorReadOnlyViewModel? newValue)
     {

@@ -163,7 +163,7 @@
     </UserControl.Resources>
     <DockPanel>
         <DockPanel Margin="0,5" DockPanel.Dock="Top">
-            <DockPanel DockPanel.Dock="Right" LastChildFill="False">
+            <hc:UniformSpacingPanel DockPanel.Dock="Right" Spacing="10">
                 <Button
                     hc:IconElement.Geometry="{StaticResource f.plus}"
                     Command="{Binding AddInvestorCommand}"
@@ -182,7 +182,15 @@
                     Command="{Binding GeneratePfidSheetCommand}"
                     Content="生成pfid账号"
                     Style="{StaticResource ButtonDefault.Small}" />
-            </DockPanel>
+
+                <Button
+                    hc:IconElement.Geometry="{StaticResource f.file-import}"
+                    Command="{Binding ImportQualificationDataCommand}"
+                    Content="批量导入适当性资料"
+                    Style="{StaticResource ButtonDefault.Small}" />
+
+
+            </hc:UniformSpacingPanel>
         </DockPanel>
 
         <local:CustomerView
