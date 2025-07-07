@@ -100,6 +100,9 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
     public ObservableCollection<RiskAssessmentViewModel> RiskAssessments { get; }
 
 
+    public IEnumerable<TransferRecordByFund>? TransferRecords { get; set; }
+
+
     [ObservableProperty]
     public partial QualificationViewModel? SelectedQualification { get; set; }
 
@@ -162,6 +165,30 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
         Qualifications = [.. iq.Select(x => QualificationViewModel.From(x, investor.Type, investor.EntityType))];
 
         RiskAssessments = [.. db.GetCollection<RiskAssessment>().Find(x => x.InvestorId == Id).Select(x => new RiskAssessmentViewModel(x))];
+
+        var ta = db.GetCollection<TransferRecord>().Find(x => x.CustomerId == Id).GroupBy(x => x.FundName!);
+        List<TransferRecordByFund> trbf = new();
+        foreach (var tf in ta)
+        {
+            var fund = tf.Key;
+            var Share = tf.Sum(x => x.ShareChange());
+            var Deposit = tf.Where(x => x.Type switch { TransferRecordType.Subscription or TransferRecordType.Purchase or TransferRecordType.MoveIn => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
+            var Withdraw = tf.Where(x => x.Type switch { TransferRecordType.Redemption or TransferRecordType.Redemption or TransferRecordType.MoveOut or TransferRecordType.Distribution => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
+
+            var daily = db.GetDailyCollection(tf.First().FundId).Find(x => x.NetValue > 0).OrderByDescending(x => x.Date).First();
+            var nv = daily?.NetValue ?? 0;
+            var Asset = Share * nv;
+
+            trbf.Add(new TransferRecordByFund
+            {
+                FundId = tf.First().FundId,
+                FundName = tf.Key,
+                Asset = Asset,
+                Records = tf as IEnumerable<TransferRecord>
+            });
+        }
+
+        TransferRecords = trbf;
     }
 
     private void Type_PropertyChanged(object? sender, PropertyChangedEventArgs? e)
@@ -327,7 +354,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
         // 判断文件名中是否有日期和评估等级
         var m = Regex.Match(fd.FileName, @"(\d{8}).*?(C\d)");
-        if(m.Success)
+        if (m.Success)
         {
             try
             {
@@ -395,6 +422,21 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
     }
 
     protected override Investor InitNewEntity() => new Investor { Name = string.Empty };
+
+
+
+    public class TransferRecordByFund
+    {
+        public int FundId { get; set; }
+
+        public string? FundName { get; set; }
+
+        public decimal Asset { get; set; }
+
+
+
+        public IEnumerable<TransferRecord>? Records { get; set; }
+    }
 }
 
 
@@ -520,6 +562,8 @@ public partial class RiskAssessmentViewModel : ObservableObject
 
     public string? Path { get; }
 
+    public bool FileIsExists => string.IsNullOrWhiteSpace(Path) ? false : File.Exists(Path);
+
     public RiskAssessmentViewModel(RiskAssessment risk)
     {
         Id = risk.Id;
@@ -530,10 +574,12 @@ public partial class RiskAssessmentViewModel : ObservableObject
     }
 
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(FileIsExists))]
     public void ViewFile()
     {
-        var file = new FileInfo(@$"files\evaluation\" + Path);
+        if (Path is null) return;
+
+        var file = new FileInfo(Path);
         if (Path is not null && file.Exists)
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(file.FullName) { UseShellExecute = true });
         else WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "风险调查问卷不存在"));

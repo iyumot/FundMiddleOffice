@@ -63,7 +63,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
             App.Current.Dispatcher.BeginInvoke(() =>
             {
-                Records = new ObservableCollection<TransferRecordViewModel>(tr.Select(x => new TransferRecordViewModel(x) { File = new FileInfo(@$"files\tac\{x.Id}.pdf") }));
+                Records = new ObservableCollection<TransferRecordViewModel>(tr.Select(x => new TransferRecordViewModel(x)));
                 Requests = new ObservableCollection<TransferRequest>(tr2);
 
                 RecordsSource.Source = Records;
@@ -185,7 +185,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         var old = Records!.FirstOrDefault(x => x.Id == message.Id);
         if (old is not null)
             old.UpdateFrom(message);
-        else Records!.Add(new TransferRecordViewModel(message) { File = new FileInfo(@$"files\tac\{message.Id}.pdf") });
+        else Records!.Add(new TransferRecordViewModel(message));
     }
 
     public void Receive(TransferRequest message)
@@ -206,7 +206,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 [AutoChangeableViewModel(typeof(TransferRecord))]
 partial class TransferRecordViewModel
 {
-    public required FileInfo File { get; set; }
+    public FileInfo File => new FileInfo(@$"files\tac\{Id}.pdf");
 
 
     public bool FileExists => System.IO.File.Exists(File.FullName);

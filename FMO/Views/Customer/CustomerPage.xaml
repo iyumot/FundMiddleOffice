@@ -183,11 +183,18 @@
                     Content="生成pfid账号"
                     Style="{StaticResource ButtonDefault.Small}" />
 
-                <Button
-                    hc:IconElement.Geometry="{StaticResource f.file-import}"
-                    Command="{Binding ImportQualificationDataCommand}"
-                    Content="批量导入适当性资料"
-                    Style="{StaticResource ButtonDefault.Small}" />
+                <hc:SimplePanel>
+                    <Button
+                        hc:IconElement.Geometry="{StaticResource f.file-import}"
+                        Command="{Binding ImportQualificationDataCommand}"
+                        Content="批量导入适当性资料"
+                        Style="{StaticResource ButtonDefault.Small}" />
+                    <ProgressBar
+                        Height="10"
+                        VerticalAlignment="Bottom"
+                        Visibility="{Binding ImportQualificationDataCommand.IsRunning, Converter={StaticResource Boolean2VisibilityConverter}}"
+                        Value="{Binding ImportQualificationProgress}" />
+                </hc:SimplePanel>
 
 
             </hc:UniformSpacingPanel>

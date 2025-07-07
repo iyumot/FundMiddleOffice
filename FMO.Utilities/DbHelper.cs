@@ -187,6 +187,16 @@ public static class DatabaseAssist
             col.Upsert(new PatchRecord(id, DateTime.Now));
         }
 
+
+        id = 10;
+        if (col.FindById(id) is null)
+        {
+            db.GetCollection<InvestorQualification>().DeleteMany(x => x.Date == default);
+
+            col.Upsert(new PatchRecord(id, DateTime.Now));
+        }
+
+
     }
 
 }

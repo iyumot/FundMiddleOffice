@@ -235,6 +235,12 @@ public class InvestorQualification
             info.Add("无日期");
         }
 
+        if(ProofType == QualificationFileType.None)
+        {
+            er = true;
+            info.Add("无认证类型");
+        }
+
         if (!IsFileExists(InfomationSheet))
         {
             er = true;

@@ -6,9 +6,7 @@ using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Reflection;
 using System.Windows.Controls;
 
 namespace FMO;
@@ -182,7 +180,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
     {
         Id = id;
         if (id == -1) return;
-        
+
         using var db = DbHelper.Base();
         var obj = db.GetCollection<InvestorQualification>().FindById(Id);
 
@@ -190,7 +188,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         Name = obj.InvestorName;
 
 
-        InfomationSheet = new ()
+        InfomationSheet = new()
         {
             Label = "基本信息表",
             GetProperty = x => x.InfomationSheet,
@@ -261,6 +259,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         Agent.Init(obj);
 
 
+        (HasError, Statement) = obj.Check();
     }
 
 
@@ -345,10 +344,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         obj.FinancialAssets = FinancialAssets;
 
 
-        var (a, b) = obj.Check();
-
-        HasError = a;
-        Statement = b;
+        (HasError, Statement) = obj.Check();
 
         db.GetCollection<InvestorQualification>().Update(obj);
 
@@ -517,9 +513,38 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
     }
 
 
+    [RelayCommand]
+    public void ChooseFile(IFileSelector obj)
+    {
+        if (obj is not FileViewModel<InvestorQualification> v) return;
+
+        var fd = new OpenFileDialog();
+        fd.Filter = v.Filter;
+        if (fd.ShowDialog() != true)
+            return;
+
+        var old = v.File;
+
+        var fi = new FileInfo(fd.FileName);
+        if (fi is not null)
+            SetFile(v, fi);
+
+        try { if (old is not null) File.Delete(old.FullName); } catch { }
+    }
 
 
-
+    [RelayCommand]
+    public void Clear(IFileSelector obj)
+    {
+        if (obj is FileViewModel<InvestorQualification> fvm)
+        {
+            using var db = DbHelper.Base();
+            var q = db.GetCollection<InvestorQualification>().FindById(Id);
+            fvm.SetProperty(q, null);
+            db.GetCollection<InvestorQualification>().Update(q);
+            fvm.File = null;
+        }
+    }
 
     protected override InvestorQualification InitNewEntity() => new InvestorQualification();
 }

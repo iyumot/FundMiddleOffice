@@ -8,6 +8,7 @@ using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Text.RegularExpressions;
@@ -43,8 +44,8 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
     [ObservableProperty]
     public partial CustomerViewModel? Detail { get; set; }
 
-
-
+    [ObservableProperty]
+    public partial double ImportQualificationProgress { get; set; }
 
     public CustomerPageViewModel()
     {
@@ -209,27 +210,139 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
         var file = fd.FileName;
 
-        //await Task.Run(() =>
-        //{
+        await Task.Run(() =>
+        {
+            ImportQualificationProgress = 0;
+
             using var fs = new FileStream(file, FileMode.Open, FileAccess.Read);
             ZipArchive zip = new ZipArchive(fs, ZipArchiveMode.Read);
 
             var info = zip.Entries.Where(x => string.IsNullOrWhiteSpace(x.Name)).Select(x => (x, Regex.Match(x.FullName, @"投资者数据库列表文件/([\w\(\)（）]+)/([^/]+)/$"))).
                             Where(x => x.Item2.Success).Select(x => (Fund: x.Item2.Groups[1].Value, Investor: x.Item2.Groups[2].Value, Folder: x.x.FullName));
 
-        foreach (var fund in info.GroupBy(x=>x.Fund))
-        {
-            foreach (var customer in fund)
+            using var db = DbHelper.Base();
+            var customers = db.GetCollection<Investor>().FindAll().ToArray();
+
+            var unit = 100.0 / info.Count();
+
+            foreach (var fund in info.GroupBy(x => x.Fund))
             {
-                // 风险测评材料/
-                var riskf = zip.Entries.Where(x => x.Name?.Length > 0 && x.FullName.StartsWith(customer.Folder + "风险测评材料/"));
+                foreach (var customer in fund)
+                {
+                    ImportQualificationProgress += unit;
+                    //
+                    var m = Regex.Match(customer.Investor, @"(.*?)\(([a-zA-Z0-9]+)\)-\((\w+)\)");
+                    if (!m.Success)
+                    {
+                        Debug.WriteLine($"{customer.Investor} 解析失败");
+                        continue;
+                    }
 
-                
+                    var name = m.Groups[1].Value;
+                    var idend = m.Groups[2].Value;
+                    var type = m.Groups[3].Value;
 
+                    // 匹配id 
+                    var cus = customers.Where(x => x.Identity?.Id.EndsWith(idend) ?? false).FirstOrDefault(x => Investor.IsNamePair(x.Name, name));
+                    if (cus is null)
+                    {
+                        Debug.WriteLine($"{customer.Investor} 未找到");
+                        continue;
+                    }
+
+
+                    // 风险测评材料/
+                    var riskf = zip.Entries.Where(x => x.Name?.Length > 0 && x.FullName.StartsWith(customer.Folder + "风险测评材料/"));
+                    foreach (var item in riskf)
+                    {
+                        try
+                        {
+                            // 解析20250510-C5
+                            m = Regex.Match(item.Name, @"(\d{8})-(C\d)");
+                            if (!m.Success)
+                                continue;
+
+                            var date = DateOnly.ParseExact(m.Groups[1].Value, "yyyyMMdd");
+                            var ra = Enum.Parse<RiskEvaluation>(m.Groups[2].Value);
+                            // 检查是否已存在
+                            var old = db.GetCollection<RiskAssessment>().FindOne(x => x.InvestorId == cus.Id && x.Date == date);
+                            if (old is null)
+                                old = new RiskAssessment { Date = date, InvestorId = cus.Id, Level = ra };
+                            db.GetCollection<RiskAssessment>().Upsert(old);
+
+                            string savePath = @$"files\evaluation\{old.Id}{Path.GetExtension(item.Name)}";
+                            using var sw = new FileStream(savePath, FileMode.Create);
+                            using var ffs = item.Open();
+                            ffs.CopyTo(sw);
+                            sw.Flush();
+                            old.Path = savePath;
+                            db.GetCollection<RiskAssessment>().Upsert(old);
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Error($"ImportQualificationData {e}");
+                        }
+                    }
+
+
+                    // 合投
+                    var qs = zip.Entries.Where(x => string.IsNullOrWhiteSpace(x.Name) && x.FullName.StartsWith(customer.Folder + "合格投资者认定材料/"));
+                    foreach (var item in qs)
+                    {
+                        m = Regex.Match(item.FullName, @"\d{8}");
+                        if (!m.Success) continue;
+
+                        var date = DateOnly.ParseExact(m.Value, "yyyyMMdd");
+
+                        var old = db.GetCollection<InvestorQualification>().FindOne(x => x.InvestorId == cus.Id && x.Date == date);
+                        if (old is null)
+                        {
+                            old = new InvestorQualification { InvestorId = cus.Id, InvestorName = cus.Name, Date = date };
+                            db.GetCollection<InvestorQualification>().Insert(old);
+                        }
+
+                        // 所有文件
+                        var files = zip.Entries.Where(x => !string.IsNullOrWhiteSpace(x.Name) && x.FullName.StartsWith(item.FullName));
+                        foreach (var qf in files)
+                        {
+                            string path = @$"files\qualification\{old.Id}\{qf.Name}";
+                            Directory.CreateDirectory(@$"files\qualification\{old.Id}");
+
+                            using var ffs = new FileStream(path, FileMode.Create);
+                            using var tmp = qf.Open();
+                            tmp.CopyTo(ffs);
+                            ffs.Flush();
+                            var fsi = new FileStorageInfo(path, FileHelper.ComputeHash(ffs)!, File.GetLastWriteTime(path));
+
+                            if (qf.Name.Contains("基本信息表"))
+                                old.InfomationSheet = fsi;
+                            else if (qf.Name.Contains("税收居民身份声明"))
+                                old.TaxDeclaration = fsi;
+                            else if (qf.Name.Contains("投资者告知书"))
+                                old.Notice = fsi;
+                            else if (qf.Name.Contains("投资经历"))
+                                old.ProofOfExperience = fsi;
+                            else if (qf.Name.Contains("合格投资者承诺函"))
+                                old.CommitmentLetter = fsi;
+                            else if (qf.Name.Contains("证明"))
+                            {
+                                if (old.CertificationFiles is null)
+                                    old.CertificationFiles = new();
+
+                                if (!old.CertificationFiles.Any(x => x.Path == fsi.Path))
+                                    old.CertificationFiles.Add(fsi);
+                            }
+                            else Log.Warning($"未识别的合投文件 {cus.Name}:{qf.Name}");
+                        }
+
+                        db.GetCollection<InvestorQualification>().Upsert(old);
+                    }
+
+
+                }
             }
-        }  
 
-        //});
+        });
     }
 
     partial void OnSelectedChanged(InvestorReadOnlyViewModel? oldValue, InvestorReadOnlyViewModel? newValue)
@@ -303,7 +416,7 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
         Name = investor.Name;
         Type = investor.Type;
 
-        Identity = investor.Identity;
+        Identity = investor.Identity ?? new Identity { Id = "" };
         Efficient = investor.Efficient;
 
         RiskLevel = investor.RiskLevel;

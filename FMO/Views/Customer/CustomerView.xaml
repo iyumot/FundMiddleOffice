@@ -33,6 +33,7 @@
             <Grid>
                 <TextBlock VerticalAlignment="Center" Text="{Binding Date.OldValue, StringFormat=yyyy-MM-dd, TargetNullValue=未设置日期}" />
                 <Border
+                    x:Name="pro"
                     Width="12"
                     Height="12"
                     Margin="-14,-5"
@@ -40,7 +41,7 @@
                     VerticalAlignment="Top"
                     Background="RoyalBlue"
                     CornerRadius="10"
-                    Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    Visibility="Collapsed">
                     <TextBlock
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
@@ -48,262 +49,397 @@
                         Foreground="White"
                         Text="专" />
                 </Border>
+                <!--<Viewbox
+                    Width="12"
+                    Height="12"
+                    Margin="-8,-5"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top">
+                    <Path
+                        Data="{StaticResource f.exclamation}"
+                        Fill="Red"
+                        Visibility="{Binding HasError, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                </Viewbox>-->
+                <Ellipse
+                    x:Name="err"
+                    Width="12"
+                    Height="12"
+                    Margin="-14,-5"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Fill="Red"
+                    Visibility="Collapsed" />
+
             </Grid>
+            <DataTemplate.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding IsProfessional}" Value="True" />
+                        <Condition Binding="{Binding HasError}" Value="False" />
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="pro" Property="Visibility" Value="Visible" />
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding IsProfessional}" Value="True" />
+                        <Condition Binding="{Binding HasError}" Value="True" />
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="pro" Property="Visibility" Value="Visible" />
+                    <Setter TargetName="pro" Property="Background" Value="Red" />
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding IsProfessional}" Value="False" />
+                        <Condition Binding="{Binding HasError}" Value="True" />
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="err" Property="Visibility" Value="Visible" />
+                </MultiDataTrigger>
+            </DataTemplate.Triggers>
         </DataTemplate>
 
         <ItemsPanelTemplate x:Key="IPT.QualificationItem">
             <WrapPanel IsItemsHost="True" />
         </ItemsPanelTemplate>
+
+        <Style x:Key="RightText" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
     </UserControl.Resources>
     <Grid>
         <DockPanel>
 
-            <StackPanel>
-                <!--  基本信息  -->
-                <StackPanel>
+            <!--  基本信息  -->
+            <StackPanel DockPanel.Dock="Top">
 
 
-                    <Border
-                        Margin="0,0,40,0"
-                        BorderBrush="{StaticResource PrimaryBrush}"
-                        BorderThickness="0,0,0,1">
-                        <shared:ChangeableContainer
-                            HorizontalContentAlignment="Center"
-                            Binding="{Binding Name}"
-                            ContentTemplate="{StaticResource DT.CenterText}"
-                            TextElement.FontWeight="Bold" />
-                    </Border>
-
-
-
-                    <!--  投资人类型  -->
-                    <DockPanel Margin="0,4" LastChildFill="False">
-                        <shared:ChangeableContainer Binding="{Binding EntityType}">
-                            <shared:ChangeableContainer.ContentTemplate>
-                                <DataTemplate>
-                                    <ComboBox
-                                        MinWidth="100"
-                                        ItemsSource="{x:Static local:CustomerViewModel.EntityTypes}"
-                                        SelectedItem="{Binding NewValue}" />
-                                </DataTemplate>
-                            </shared:ChangeableContainer.ContentTemplate>
-                        </shared:ChangeableContainer>
-
-                        <shared:ChangeableContainer Binding="{Binding Type}">
-                            <shared:ChangeableContainer.ContentTemplate>
-                                <DataTemplate>
-                                    <ComboBox
-                                        MinWidth="100"
-                                        ItemsSource="{Binding DataContext.InvestorTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}"
-                                        SelectedItem="{Binding NewValue}" />
-                                </DataTemplate>
-                            </shared:ChangeableContainer.ContentTemplate>
-                        </shared:ChangeableContainer>
-
-                    </DockPanel>
+                <Border
+                    Margin="0,0,40,0"
+                    BorderBrush="{StaticResource PrimaryBrush}"
+                    BorderThickness="0,0,0,1">
+                    <shared:ChangeableContainer
+                        HorizontalContentAlignment="Center"
+                        Binding="{Binding Name}"
+                        ContentTemplate="{StaticResource DT.CenterText}"
+                        TextElement.FontWeight="Bold" />
+                </Border>
 
 
 
-                    <!--  证件  -->
-                    <DockPanel Margin="0,4" LastChildFill="False">
-                        <shared:ChangeableContainer Binding="{Binding IDType}">
-                            <shared:ChangeableContainer.ContentTemplate>
-                                <DataTemplate>
-                                    <ComboBox
-                                        MinWidth="100"
-                                        ItemsSource="{Binding DataContext.IDTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}"
-                                        SelectedItem="{Binding NewValue}" />
-                                </DataTemplate>
-                            </shared:ChangeableContainer.ContentTemplate>
-                        </shared:ChangeableContainer>
-
-
-                        <shared:ChangeableContainer Binding="{Binding Identity}">
-                            <shared:ChangeableContainer.ContentTemplate>
-                                <DataTemplate>
-                                    <TextBox
-                                        MinWidth="200"
-                                        hc:InfoElement.Placeholder="证件号码"
-                                        IsReadOnly="{Binding OldValue, Converter={StaticResource Object2BooleanConverter}}"
-                                        Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=100}"
-                                        TextAlignment="Center" />
-                                </DataTemplate>
-                            </shared:ChangeableContainer.ContentTemplate>
-                        </shared:ChangeableContainer>
-                    </DockPanel>
-
-
-                    <shared:ChangeableContainer Binding="{Binding Efficient}">
+                <!--  投资人类型  -->
+                <DockPanel Margin="0,4" LastChildFill="False">
+                    <shared:ChangeableContainer Binding="{Binding EntityType}">
                         <shared:ChangeableContainer.ContentTemplate>
                             <DataTemplate>
-                                <DockPanel DataContext="{Binding NewValue}">
-                                    <DatePicker MinWidth="100" SelectedDate="{Binding Begin, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
-                                    <DockPanel Visibility="{Binding IsLongTerm, Converter={StaticResource Boolean2VisibilityReConverter}}">
-                                        <TextBlock
-                                            Margin="5,0"
-                                            VerticalAlignment="Center"
-                                            Text="-" />
-                                        <DatePicker MinWidth="100" SelectedDate="{Binding End, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
-                                    </DockPanel>
-                                    <CheckBox
-                                        Margin="5,0"
-                                        Content="长期"
-                                        IsChecked="{Binding IsLongTerm}" />
-                                </DockPanel>
+                                <ComboBox
+                                    MinWidth="100"
+                                    ItemsSource="{x:Static local:CustomerViewModel.EntityTypes}"
+                                    SelectedItem="{Binding NewValue}" />
                             </DataTemplate>
                         </shared:ChangeableContainer.ContentTemplate>
                     </shared:ChangeableContainer>
 
-                    <UniformGrid Margin="0,5" Rows="1">
-                        <shared:ChangeableContainer HorizontalContentAlignment="Stretch" Binding="{Binding Email}" />
+                    <shared:ChangeableContainer Binding="{Binding Type}">
+                        <shared:ChangeableContainer.ContentTemplate>
+                            <DataTemplate>
+                                <ComboBox
+                                    MinWidth="100"
+                                    ItemsSource="{Binding DataContext.InvestorTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}"
+                                    SelectedItem="{Binding NewValue}" />
+                            </DataTemplate>
+                        </shared:ChangeableContainer.ContentTemplate>
+                    </shared:ChangeableContainer>
 
-                        <shared:ChangeableContainer HorizontalContentAlignment="Stretch" Binding="{Binding Phone}" />
-                    </UniformGrid>
-
-                    <local:MultiFileDisplay
-                        Margin="0,5"
-                        Header="身份证明文件"
-                        IsReadOnly="{Binding IsReadOnly}" />
-
-
-                </StackPanel>
-
-
-                <!--  添加  -->
-                <DockPanel>
-                    <ContentControl Name="btnRisk" HorizontalAlignment="Left">
-                        <ContentControl.Template>
-                            <ControlTemplate TargetType="ContentControl">
-                                <DockPanel Background="Transparent">
-                                    <Button
-                                        Margin="2,0,0,0"
-                                        Padding="5"
-                                        HorizontalAlignment="Left"
-                                        hc:IconElement.Geometry="{StaticResource AddGeometry}"
-                                        Command="{Binding ChooseAssessmentFileCommand}"
-                                        Content="风测"
-                                        Style="{StaticResource ButtonPrimary}" />
-                                    <DockPanel LastChildFill="False" Visibility="{Binding IsAssessmentFileChoosed, Converter={StaticResource Boolean2VisibilityConverter}}">
-                                        <DatePicker
-                                            Name="a"
-                                            Width="100"
-                                            IsEnabled="False"
-                                            SelectedDate="{Binding NewDate}" />
-                                        <ListBox
-                                            Name="b"
-                                            IsEnabled="False"
-                                            ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus.Small}"
-                                            ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
-                                            ItemsSource="{Binding RiskEvaluations}"
-                                            SelectedItem="{Binding NewEvaluation}" />
-
-                                        <Button
-                                            hc:IconElement.Geometry="{StaticResource f.check}"
-                                            Command="{Binding AddRiskAssessmentCommand}"
-                                            Style="{StaticResource ButtonIcon.Small}" />
-
-                                        <Button
-                                            hc:IconElement.Geometry="{StaticResource f.reply}"
-                                            Command="{Binding CancelRiskAssessmentCommand}"
-                                            Style="{StaticResource ButtonIcon.Small}" />
-                                    </DockPanel>
-                                </DockPanel>
-
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="a" Property="IsEnabled" Value="True" />
-                                        <Setter TargetName="b" Property="IsEnabled" Value="True" />
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </ContentControl.Template>
-                    </ContentControl>
-
-
-
-                    <Button
-                        Margin="2,0,0,0"
-                        Padding="5"
-                        HorizontalAlignment="Left"
-                        hc:IconElement.Geometry="{StaticResource AddGeometry}"
-                        Command="{Binding AddQualificationCommand}"
-                        Content="合投"
-                        Style="{StaticResource ButtonPrimary}" />
                 </DockPanel>
 
-                <TextBlock
-                    Margin="0,2,0,0"
-                    FontSize="9"
-                    Foreground="Red"
-                    Text="存在同日风险测评，添加后将覆盖已有资料"
-                    Visibility="{Binding RiskConflict, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
 
-                <!--  风险测评  -->
-                <StackPanel Margin="0,6">
-                    <hc:SimplePanel>
-                        <ListBox ItemsSource="{Binding RiskAssessments}" Style="{StaticResource ListBoxCustom}">
+                <!--  证件  -->
+                <DockPanel Margin="0,4" LastChildFill="False">
+                    <shared:ChangeableContainer Binding="{Binding IDType}">
+                        <shared:ChangeableContainer.ContentTemplate>
+                            <DataTemplate>
+                                <ComboBox
+                                    MinWidth="100"
+                                    ItemsSource="{Binding DataContext.IDTypes, RelativeSource={RelativeSource AncestorType=local:CustomerView}}"
+                                    SelectedItem="{Binding NewValue}" />
+                            </DataTemplate>
+                        </shared:ChangeableContainer.ContentTemplate>
+                    </shared:ChangeableContainer>
+
+
+                    <shared:ChangeableContainer Binding="{Binding Identity}">
+                        <shared:ChangeableContainer.ContentTemplate>
+                            <DataTemplate>
+                                <TextBox
+                                    MinWidth="200"
+                                    hc:InfoElement.Placeholder="证件号码"
+                                    IsReadOnly="{Binding OldValue, Converter={StaticResource Object2BooleanConverter}}"
+                                    Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=100}"
+                                    TextAlignment="Center" />
+                            </DataTemplate>
+                        </shared:ChangeableContainer.ContentTemplate>
+                    </shared:ChangeableContainer>
+                </DockPanel>
+
+
+                <shared:ChangeableContainer Binding="{Binding Efficient}">
+                    <shared:ChangeableContainer.ContentTemplate>
+                        <DataTemplate>
+                            <DockPanel DataContext="{Binding NewValue}">
+                                <DatePicker MinWidth="100" SelectedDate="{Binding Begin, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
+                                <DockPanel Visibility="{Binding IsLongTerm, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                                    <TextBlock
+                                        Margin="5,0"
+                                        VerticalAlignment="Center"
+                                        Text="-" />
+                                    <DatePicker MinWidth="100" SelectedDate="{Binding End, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
+                                </DockPanel>
+                                <CheckBox
+                                    Margin="5,0"
+                                    Content="长期"
+                                    IsChecked="{Binding IsLongTerm}" />
+                            </DockPanel>
+                        </DataTemplate>
+                    </shared:ChangeableContainer.ContentTemplate>
+                </shared:ChangeableContainer>
+
+                <UniformGrid Margin="0,5" Rows="1">
+                    <shared:ChangeableContainer HorizontalContentAlignment="Stretch" Binding="{Binding Email}" />
+
+                    <shared:ChangeableContainer HorizontalContentAlignment="Stretch" Binding="{Binding Phone}" />
+                </UniformGrid>
+
+                <local:MultiFileDisplay
+                    Margin="0,5"
+                    Header="身份证明文件"
+                    IsReadOnly="{Binding IsReadOnly}" />
+
+
+            </StackPanel>
+
+
+            <ScrollViewer>
+                <StackPanel>
+                    <!--  添加  -->
+                    <DockPanel>
+                        <ContentControl Name="btnRisk" HorizontalAlignment="Left">
+                            <ContentControl.Template>
+                                <ControlTemplate TargetType="ContentControl">
+                                    <DockPanel Background="Transparent">
+                                        <Button
+                                            Margin="2,0,0,0"
+                                            Padding="5"
+                                            HorizontalAlignment="Left"
+                                            hc:IconElement.Geometry="{StaticResource AddGeometry}"
+                                            Command="{Binding ChooseAssessmentFileCommand}"
+                                            Content="风测"
+                                            Style="{StaticResource ButtonPrimary}" />
+                                        <DockPanel LastChildFill="False" Visibility="{Binding IsAssessmentFileChoosed, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                            <DatePicker
+                                                Name="a"
+                                                Width="100"
+                                                IsEnabled="False"
+                                                SelectedDate="{Binding NewDate}" />
+                                            <ListBox
+                                                Name="b"
+                                                IsEnabled="False"
+                                                ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus.Small}"
+                                                ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
+                                                ItemsSource="{Binding RiskEvaluations}"
+                                                SelectedItem="{Binding NewEvaluation}" />
+
+                                            <Button
+                                                hc:IconElement.Geometry="{StaticResource f.check}"
+                                                Command="{Binding AddRiskAssessmentCommand}"
+                                                Style="{StaticResource ButtonIcon.Small}" />
+
+                                            <Button
+                                                hc:IconElement.Geometry="{StaticResource f.reply}"
+                                                Command="{Binding CancelRiskAssessmentCommand}"
+                                                Style="{StaticResource ButtonIcon.Small}" />
+                                        </DockPanel>
+                                    </DockPanel>
+
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="a" Property="IsEnabled" Value="True" />
+                                            <Setter TargetName="b" Property="IsEnabled" Value="True" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </ContentControl.Template>
+                        </ContentControl>
+
+
+
+                        <Button
+                            Margin="2,0,0,0"
+                            Padding="5"
+                            HorizontalAlignment="Left"
+                            hc:IconElement.Geometry="{StaticResource AddGeometry}"
+                            Command="{Binding AddQualificationCommand}"
+                            Content="合投"
+                            Style="{StaticResource ButtonPrimary}" />
+                    </DockPanel>
+
+                    <TextBlock
+                        Margin="0,2,0,0"
+                        FontSize="9"
+                        Foreground="Red"
+                        Text="存在同日风险测评，添加后将覆盖已有资料"
+                        Visibility="{Binding RiskConflict, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+
+                    <!--  风险测评  -->
+                    <StackPanel Margin="0,6">
+                        <hc:SimplePanel>
+                            <ListBox ItemsSource="{Binding RiskAssessments}" Style="{StaticResource ListBoxCustom}">
+                                <ListBox.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel IsItemsHost="True" />
+                                    </ItemsPanelTemplate>
+                                </ListBox.ItemsPanel>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <DockPanel Margin="5,0">
+                                            <DockPanel
+                                                Margin="0,0,-10,0"
+                                                HorizontalAlignment="Center"
+                                                DockPanel.Dock="Top"
+                                                LastChildFill="False">
+                                                <TextBlock
+                                                    FontSize="16"
+                                                    FontWeight="Black"
+                                                    Text="{Binding Level}" />
+
+                                                <Button
+                                                    hc:IconElement.Geometry="{StaticResource f.street-view}"
+                                                    Command="{Binding ViewFileCommand}"
+                                                    Foreground="Green"
+                                                    Style="{StaticResource ButtonIcon.Small}" />
+                                            </DockPanel>
+
+                                            <TextBlock
+                                                FontSize="9"
+                                                Foreground="Gray"
+                                                Text="{Binding Date, StringFormat=yyyy/MM/dd}" />
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+
+
+                        </hc:SimplePanel>
+                    </StackPanel>
+
+                    <!--  合投  -->
+                    <StackPanel>
+                        <ListBox
+                            ItemTemplate="{StaticResource DT.QualificationItem}"
+                            ItemsSource="{Binding Qualifications}"
+                            SelectedItem="{Binding SelectedQualification}">
                             <ListBox.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <WrapPanel IsItemsHost="True" />
                                 </ItemsPanelTemplate>
                             </ListBox.ItemsPanel>
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <DockPanel Margin="5,0">
-                                        <DockPanel
-                                            Margin="0,0,-10,0"
-                                            HorizontalAlignment="Center"
-                                            DockPanel.Dock="Top"
-                                            LastChildFill="False">
-                                            <TextBlock
-                                                FontSize="16"
-                                                FontWeight="Black"
-                                                Text="{Binding Level}" />
-
-                                            <Button
-                                                hc:IconElement.Geometry="{StaticResource f.street-view}"
-                                                Command="{Binding ViewFileCommand}"
-                                                Style="{StaticResource ButtonIcon.Small}" />
-                                        </DockPanel>
-
-                                        <TextBlock
-                                            FontSize="9"
-                                            Foreground="Gray"
-                                            Text="{Binding Date, StringFormat=yyyy/MM/dd}" />
-                                    </DockPanel>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
                         </ListBox>
 
+                        <local:QualificationView
+                            Margin="0,5"
+                            DataContext="{Binding SelectedQualification}"
+                            Visibility="{Binding ., Converter={StaticResource Object2VisibilityConverter}}" />
+                    </StackPanel>
 
-
-                    </hc:SimplePanel>
-                </StackPanel>
-
-                <!--  合投  -->
-                <StackPanel>
+                    <!--  TA  -->
                     <ListBox
-                        ItemTemplate="{StaticResource DT.QualificationItem}"
-                        ItemsSource="{Binding Qualifications}"
-                        SelectedItem="{Binding SelectedQualification}">
-                        <ListBox.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel IsItemsHost="True" />
-                            </ItemsPanelTemplate>
-                        </ListBox.ItemsPanel>
+                        Margin="0,10,0,0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ItemsSource="{Binding TransferRecords}"
+                        Style="{StaticResource ListBoxCustom}">
+                        <ListBox.Template>
+                            <ControlTemplate>
+                                <ItemsPresenter />
+                            </ControlTemplate>
+                        </ListBox.Template>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel>
+                                    <DockPanel DockPanel.Dock="Top">
+                                        <TextBlock FontSize="14" Text="{Binding FundName}" />
+                                        <TextBlock
+                                            x:Name="asset"
+                                            Margin="10,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="{Binding Asset, StringFormat=N2}" />
+                                    </DockPanel>
+                                    <DataGrid
+                                        AutoGenerateColumns="False"
+                                        IsHitTestVisible="False"
+                                        IsReadOnly="True"
+                                        ItemsSource="{Binding Records}"
+                                        Style="{StaticResource DataGrid.NoSelect}">
+                                        <!--<DataGrid.Template>
+                                            <ControlTemplate>
+                                                <ItemsPresenter />
+                                            </ControlTemplate>
+                                        </DataGrid.Template>-->
+                                        <DataGrid.RowStyle>
+                                            <Style BasedOn="{StaticResource NoSelectDataGridRowStyle}" TargetType="DataGridRow">
+                                                <Setter Property="Margin" Value="0,-2" />
+                                            </Style>
+                                        </DataGrid.RowStyle>
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Binding="{Binding ConfirmedDate, StringFormat=yyyy-MM-dd}" />
+                                            <DataGridTextColumn Binding="{Binding Type}" Header="类型" />
+                                            <DataGridTextColumn
+                                                Binding="{Binding RequestAmount, Converter={StaticResource ZeroToBlankConverter}}"
+                                                ElementStyle="{StaticResource RightText}"
+                                                Header="申请金额" />
+                                            <DataGridTextColumn
+                                                Binding="{Binding RequestShare, Converter={StaticResource ZeroToBlankConverter}}"
+                                                ElementStyle="{StaticResource RightText}"
+                                                Header="申请份额" />
+                                            <DataGridTextColumn
+                                                Binding="{Binding ConfirmedAmount, Converter={StaticResource ZeroToBlankConverter}}"
+                                                ElementStyle="{StaticResource RightText}"
+                                                Header="确认金额" />
+                                            <DataGridTextColumn
+                                                Binding="{Binding ConfirmedShare, Converter={StaticResource ZeroToBlankConverter}}"
+                                                ElementStyle="{StaticResource RightText}"
+                                                Header="确认份额" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <!--<ListBox
+                                    Margin="10,0,0,0"
+                                    BorderThickness="0"
+                                    ItemsSource="{Binding}"
+                                    Style="{StaticResource ListBoxCustom}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate DataType="local:TransferRecordViewModel">
+                                            <DockPanel>
+                                                <TextBlock Text="{Binding ConfirmedDate, StringFormat=yyyy-MM-dd}" />
+                                                <TextBlock Margin="5,0" Text="{Binding Type}" />
+                                                <TextBlock Text="{Binding RequestAmount}" />
+                                                <TextBlock Text="{Binding RequestShare}" />
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>-->
+                                </DockPanel>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding Asset}" Value="0">
+                                        <Setter TargetName="asset" Property="Text" Value="无资产" />
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
                     </ListBox>
-
-                    <local:QualificationView
-                        Margin="0,5"
-                        DataContext="{Binding SelectedQualification}"
-                        Visibility="{Binding ., Converter={StaticResource Object2VisibilityConverter}}" />
                 </StackPanel>
+            </ScrollViewer>
 
-
-
-
-            </StackPanel>
 
         </DockPanel>
 

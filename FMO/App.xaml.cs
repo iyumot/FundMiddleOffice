@@ -75,7 +75,7 @@ public partial class App : Application
         Directory.CreateDirectory("files\\accounts\\other");
 
 
-        Log.Logger = new LoggerConfiguration().WriteTo.File("log.txt").CreateLogger();
+        Log.Logger = new LoggerConfiguration().WriteTo.File("log.txt", outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level}] ({SourceContext}.{Method}) {Message}{NewLine}{Exception}").CreateLogger();
 
          
         if (CheckIsFirstRun())
