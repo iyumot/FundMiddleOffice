@@ -29,6 +29,7 @@ public static class FileHelper
 
         using (var md5 = MD5.Create())
         {
+            if(stream.CanSeek) stream.Seek(0, SeekOrigin.Begin);
                 var hashc = md5.ComputeHash(stream);
                 return BitConverter.ToString(hashc).Replace("-", "").ToLowerInvariant();
         }
