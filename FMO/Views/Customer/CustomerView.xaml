@@ -221,11 +221,12 @@
             <ScrollViewer>
                 <StackPanel>
                     <!--  添加  -->
-                    <DockPanel>
+                    <DockPanel LastChildFill="False">
                         <ContentControl Name="btnRisk" HorizontalAlignment="Left">
                             <ContentControl.Template>
                                 <ControlTemplate TargetType="ContentControl">
                                     <DockPanel Background="Transparent">
+
                                         <Button
                                             Margin="2,0,0,0"
                                             Padding="5"
@@ -257,7 +258,11 @@
                                                 hc:IconElement.Geometry="{StaticResource f.reply}"
                                                 Command="{Binding CancelRiskAssessmentCommand}"
                                                 Style="{StaticResource ButtonIcon.Small}" />
+
+
                                         </DockPanel>
+
+
                                     </DockPanel>
 
                                     <ControlTemplate.Triggers>
@@ -280,6 +285,31 @@
                             Command="{Binding AddQualificationCommand}"
                             Content="合投"
                             Style="{StaticResource ButtonPrimary}" />
+
+
+
+                        <ToggleButton
+                            Name="showQT"
+                            hc:IconElement.Geometry="{StaticResource f.lightbulb}"
+                            BorderThickness="0"
+                            Foreground="Orange"
+                            Style="{StaticResource ToggleButtonIcon}" />
+
+                        <Popup
+                            AllowsTransparency="True"
+                            IsOpen="{Binding ElementName=showQT, Path=IsChecked}"
+                            Placement="Left"
+                            StaysOpen="False">
+                            <Border
+                                Width="700"
+                                Background="WhiteSmoke"
+                                CornerRadius="8">
+                                <TextBlock
+                                    Margin="10"
+                                    Text="{Binding Source={x:Static local:CustomerViewModel.QualificationTips}}"
+                                    TextWrapping="Wrap" />
+                            </Border>
+                        </Popup>
                     </DockPanel>
 
                     <TextBlock
