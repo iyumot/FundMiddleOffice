@@ -62,7 +62,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         //        new Investor { Id = 3, Name = "某产品", EntityType = EntityType.Product},
         //    ];
 
-        Customers = new(cusomers.Select(x => new InvestorReadOnlyViewModel(x)));// new(cusomers.Select(x => new CustomerViewModel(x)));
+        Customers = new(cusomers.OrderBy(x=>x.EntityType).ThenBy(x=>x.Name).Select(x => new InvestorReadOnlyViewModel(x)));// new(cusomers.Select(x => new CustomerViewModel(x)));
 
 
 

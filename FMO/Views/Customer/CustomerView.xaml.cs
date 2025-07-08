@@ -176,7 +176,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
             var Deposit = tf.Where(x => x.Type switch { TransferRecordType.Subscription or TransferRecordType.Purchase or TransferRecordType.MoveIn => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
             var Withdraw = tf.Where(x => x.Type switch { TransferRecordType.Redemption or TransferRecordType.Redemption or TransferRecordType.MoveOut or TransferRecordType.Distribution => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
 
-            var daily = db.GetDailyCollection(tf.First().FundId).Find(x => x.NetValue > 0).OrderByDescending(x => x.Date).First();
+            var daily = db.GetDailyCollection(tf.First().FundId).Find(x => x.NetValue > 0).OrderByDescending(x => x.Date).FirstOrDefault();
             var nv = daily?.NetValue ?? 0;
             var Asset = Share * nv;
 

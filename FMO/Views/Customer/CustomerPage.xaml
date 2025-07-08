@@ -32,13 +32,13 @@
                     <Setter Property="BorderBrush" Value="Transparent" />
                 </Trigger>
             </Style.Triggers>
-
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="Black" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="Padding" Value="{StaticResource DefaultControlPadding}" />
+            <Setter Property="Padding" Value="0" />
             <Setter Property="hc:BorderElement.CornerRadius" Value="{StaticResource DefaultCornerRadius}" />
             <Setter Property="Template">
                 <Setter.Value>
@@ -76,19 +76,9 @@
                 <DataTrigger Binding="{Binding Type}" Value="Product">
                     <Setter Property="Background" Value="#dedede" />
                 </DataTrigger>
-                <!--<MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="DataGridRow.IsSelected" Value="true" />
-                        <Condition Property="Selector.IsSelectionActive" Value="false" />
-                    </MultiTrigger.Conditions>
-                    <Setter Property="Background" Value="{DynamicResource DarkDefaultBrush}" />
-                    <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
-                </MultiTrigger>-->
             </Style.Triggers>
-            <!--<Setter Property="Background" Value="{DynamicResource RegionBrush}" />
-            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />-->
             <Setter Property="UIElement.SnapsToDevicePixels" Value="true" />
-            <Setter Property="Margin" Value="0,0,0,4" />
+            <Setter Property="Margin" Value="0,2" />
             <Setter Property="Padding" Value="0,6" />
             <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
             <Setter Property="DataGridRow.ValidationErrorTemplate">
@@ -136,7 +126,6 @@
                             <DataGridRowHeader
                                 Grid.Row="0"
                                 Grid.Column="0"
-                                Margin="6,0"
                                 Visibility="{Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Row}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType=DataGrid}}" />
                         </SelectiveScrollingGrid>
                     </ControlTemplate>
@@ -210,7 +199,6 @@
         <DataGrid
             Name="datagrid"
             d:ItemsSource="{d:SampleData}"
-            hc:DataGridAttach.ShowRowNumber="True"
             AutoGenerateColumns="False"
             IsReadOnly="True"
             ItemsSource="{Binding Customers}"
@@ -231,14 +219,14 @@
                                 <Viewbox
                                     Width="10"
                                     Height="10"
-                                    VerticalAlignment="Top"
+                                    VerticalAlignment="Center"
                                     Visibility="{Binding LackEmail, Converter={StaticResource Boolean2VisibilityConverter}}">
                                     <Path Data="{StaticResource f.envelope}" Fill="Red" />
                                 </Viewbox>
                                 <Viewbox
                                     Width="12"
                                     Height="12"
-                                    VerticalAlignment="Top"
+                                    VerticalAlignment="Center"
                                     Visibility="{Binding LackPhone, Converter={StaticResource Boolean2VisibilityConverter}}">
                                     <Path Data="{StaticResource f.mobile-retro}" Fill="Red" />
                                 </Viewbox>
@@ -305,7 +293,7 @@
                         <DataTemplate>
                             <DockPanel>
                                 <TextBlock Text="{Binding QualificationDate, StringFormat=yyyy-MM-dd}" />
-                                <Viewbox Width="24" Visibility="{Binding QualificationAbnormal, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                <Viewbox Width="16" Visibility="{Binding QualificationAbnormal, Converter={StaticResource Boolean2VisibilityConverter}}">
                                     <Path Data="{StaticResource f.triangle-exclamation}" Fill="Red" />
                                 </Viewbox>
                             </DockPanel>
