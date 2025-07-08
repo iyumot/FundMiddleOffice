@@ -300,23 +300,18 @@
                     Header="风险等级" />
 
 
-                <!--<DataGridTemplateColumn Header="合格投资者认定">
+                <DataGridTemplateColumn Header="合格投资者认定">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <DockPanel>
-                                <Button
-                                    hc:IconElement.Geometry="{StaticResource f.eye}"
-                                    Foreground="Green"
-                                    Style="{StaticResource ButtonIcon.Small}" />
-
-                                <Button
-                                    hc:IconElement.Geometry="{StaticResource f.file-circle-plus}"
-                                    Foreground="{StaticResource DarkPrimaryBrush}"
-                                    Style="{StaticResource ButtonIcon.Small}" />
+                                <TextBlock Text="{Binding QualificationDate, StringFormat=yyyy-MM-dd}" />
+                                <Viewbox Width="24" Visibility="{Binding QualificationAbnormal, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                    <Path Data="{StaticResource f.triangle-exclamation}" Fill="Red" />
+                                </Viewbox>
                             </DockPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>-->
+                </DataGridTemplateColumn>
 
             </DataGrid.Columns>
         </DataGrid>

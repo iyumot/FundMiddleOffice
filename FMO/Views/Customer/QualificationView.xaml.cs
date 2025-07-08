@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
@@ -347,6 +348,8 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         (HasError, Statement) = obj.Check();
 
         db.GetCollection<InvestorQualification>().Update(obj);
+
+        WeakReferenceMessenger.Default.Send(obj);
 
         IsReadOnly = true;
     }

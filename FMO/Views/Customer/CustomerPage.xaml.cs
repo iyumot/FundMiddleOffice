@@ -32,7 +32,7 @@ public partial class CustomerPage : UserControl
     }
 }
 
-public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Investor>
+public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Investor>, IRecipient<InvestorQualification>
 {
 
     public ObservableCollection<InvestorReadOnlyViewModel> Customers { get; }
@@ -373,6 +373,12 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
         }));
     }
+
+    public void Receive(InvestorQualification message)
+    {
+         var c = Customers.FirstOrDefault(x => x.Id == message.InvestorId);
+        c.RecheckQualification();
+    }
 }
 
 
@@ -408,6 +414,12 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
     public partial bool LackPhone { get; set; }
 
 
+    [ObservableProperty]
+    public partial DateOnly? QualificationDate { get; set; }
+
+    [ObservableProperty]
+    public partial bool QualificationAbnormal { get; set; }
+
     public Investor Investor { get; set; }
 
     public InvestorReadOnlyViewModel(Investor investor)
@@ -424,6 +436,13 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
         LackPhone = string.IsNullOrWhiteSpace(investor.Phone);
         LackEmail = string.IsNullOrWhiteSpace(investor.Email);
         Investor = investor;
+
+        // 合投日期
+        using var db = DbHelper.Base();
+        var qs = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == Id).OrderByDescending(x => x.Date).FirstOrDefault();
+        QualificationDate = qs?.Date switch { null => null, DateOnly d when d == default => null, var n => n };
+
+        QualificationAbnormal = qs?.Check().HasError ?? true;
     }
 
     public void Update(Investor investor)
@@ -440,4 +459,13 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
         Investor = investor;
     }
 
+    internal void RecheckQualification()
+    {
+        // 合投日期
+        using var db = DbHelper.Base();
+        var qs = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == Id).OrderByDescending(x => x.Date).FirstOrDefault();
+        QualificationDate = qs?.Date switch { null => null, DateOnly d when d == default => null, var n => n };
+
+        QualificationAbnormal = qs?.Check().HasError ?? true;
+    }
 }
