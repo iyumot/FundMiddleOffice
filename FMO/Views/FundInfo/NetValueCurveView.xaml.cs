@@ -478,7 +478,7 @@ public class DailyValueCurveDrawing : FrameworkElement
 
         var xd = new List<decimal>();
         xd.Add(data.Min(x => x.Share)); xd.Add(data.Max(x => x.Share));
-        if (vm.DrawNetAssets) xd.Add(data.Min(x => x.NetAsset));
+        if (vm.DrawNetAssets) xd.Add(data.Max(x => x.NetAsset));
         if (vm.DrawAssets) xd.Add(data.Max(x => x.Asset));
 
 
