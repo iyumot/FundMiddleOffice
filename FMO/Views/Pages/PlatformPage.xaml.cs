@@ -93,7 +93,7 @@ public partial class ProxyViewModel : ObservableObject
         }
         catch (Exception e)
         {
-            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, $"连接失败"));
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, $"连接失败，请检查端口、用户名密码是否正确"));
             Log.Error($"连接Proxy  {e}");
         }
     }
