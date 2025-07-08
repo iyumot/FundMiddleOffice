@@ -350,7 +350,7 @@
                                             Visibility="{Binding IdFile, TargetNullValue=Collapsed, Converter={StaticResource FileExistsToVisibilityConverter}}" />
 
                                         <Button
-                                            Margin="-5"
+                                            Margin="0"
                                             hc:IconElement.Geometry="{DynamicResource f.gear}"
                                             Command="{Binding SetFileCommand}"
                                             CommandParameter="{Binding .}"
