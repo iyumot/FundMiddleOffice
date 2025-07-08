@@ -372,56 +372,68 @@
     <DataTemplate x:Key="DT.MultiFile">
 
         <DockPanel Background="Transparent" LastChildFill="False">
-            <TextBlock
-                x:Name="lb"
-                VerticalAlignment="Center"
-                Text="{Binding DisplayName}" />
 
+
+            <hc:SimplePanel>
+                <local:AbbreviationText
+                    x:Name="file"
+                    VerticalContentAlignment="Center"
+                    Text="{Binding File.Name}" />
+
+                <hc:SimplePanel
+                    x:Name="p"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Stretch"
+                    Background="White"
+                    Visibility="Collapsed">
+                    <hc:SimplePanel.Resources>
+                        <Style BasedOn="{StaticResource ButtonIcon.Small}" TargetType="Button">
+                            <Setter Property="Margin" Value="2,-5" />
+                        </Style>
+                    </hc:SimplePanel.Resources>
+                    <DockPanel Margin="5,2" LastChildFill="False">
+                        <DockPanel LastChildFill="False">
+                            <Button
+                                hc:IconElement.Geometry="{DynamicResource f.book-open-reader}"
+                                Command="{Binding ViewCommand}"
+                                Foreground="Lime"
+                                ToolTip="查看" />
+
+                            <Button
+                                hc:IconElement.Geometry="{DynamicResource f.clone}"
+                                Command="{Binding CopyCommand}"
+                                Foreground="RoyalBlue"
+                                ToolTip="复制" />
+
+                            <Button
+                                hc:IconElement.Geometry="{DynamicResource f.file-export}"
+                                Command="{Binding SaveAsCommand}"
+                                ToolTip="另存为" />
+
+
+                        </DockPanel>
+
+                        <Button
+                            Margin="-5"
+                            hc:IconElement.Geometry="{DynamicResource f.xmark}"
+                            Command="{Binding DataContext.DeleteFileCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                            CommandParameter="{Binding .}"
+                            Foreground="Red"
+                            Style="{DynamicResource ButtonIcon.Small}"
+                            ToolTip="删除"
+                            Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=ListBox}, Converter={StaticResource BooleanToVisibilityReverseConverter}}" />
+                    </DockPanel>
+                </hc:SimplePanel>
+
+            </hc:SimplePanel>
             <TextBlock
-                Margin="5,0"
+                Margin="6,0,0,0"
                 VerticalAlignment="Center"
                 FontSize="8"
                 Foreground="Red"
                 Text="文件已被删除"
                 Visibility="{Binding Deleted, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
-            <DockPanel
-                x:Name="btns"
-                Margin="5,0,0,0"
-                Visibility="Collapsed">
-                <DockPanel LastChildFill="False">
-                    <Button
-                        Margin="-5"
-                        hc:IconElement.Geometry="{DynamicResource f.book-open-reader}"
-                        Command="{Binding ViewCommand}"
-                        Foreground="Lime"
-                        Style="{DynamicResource ButtonIcon.Small}"
-                        ToolTip="查看" />
-                    <Button
-                        Margin="-5"
-                        hc:IconElement.Geometry="{DynamicResource f.file-export}"
-                        Command="{Binding SaveAsCommand}"
-                        Style="{DynamicResource ButtonIcon.Small}"
-                        ToolTip="另存为" />
-
-                    <Button
-                        Margin="-5"
-                        hc:IconElement.Geometry="{DynamicResource f.print}"
-                        Command="{Binding PrintCommand}"
-                        Style="{DynamicResource ButtonIcon.Small}"
-                        ToolTip="打印" />
-                </DockPanel>
-
-                <Button
-                    Margin="-5"
-                    hc:IconElement.Geometry="{DynamicResource f.xmark}"
-                    Command="{Binding DataContext.DeleteFileCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
-                    CommandParameter="{Binding .}"
-                    Foreground="Red"
-                    Style="{DynamicResource ButtonIcon.Small}"
-                    ToolTip="删除"
-                    Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=ListBox}, Converter={StaticResource BooleanToVisibilityReverseConverter}}" />
-            </DockPanel>
         </DockPanel>
         <DataTemplate.Triggers>
             <MultiDataTrigger>
@@ -429,8 +441,12 @@
                     <Condition Binding="{Binding Exists, TargetNullValue=False}" Value="True" />
                     <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
                 </MultiDataTrigger.Conditions>
-                <Setter TargetName="btns" Property="Visibility" Value="Visible" />
+                <Setter TargetName="p" Property="Visibility" Value="Visible" />
             </MultiDataTrigger>
+
+            <DataTrigger Binding="{Binding Deleted, TargetNullValue=False}" Value="True">
+                <Setter TargetName="file" Property="Foreground" Value="Gray" />
+            </DataTrigger>
 
         </DataTemplate.Triggers>
     </DataTemplate>
