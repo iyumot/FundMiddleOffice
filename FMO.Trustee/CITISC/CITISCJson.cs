@@ -64,6 +64,9 @@ public partial class CITICS
         [JsonPropertyName("size")]
         public int Size { get; set; }
 
+        [JsonPropertyName("total")]
+        public int Total { get; set; }
+
         /// <summary>
         /// ½á¹û
         /// </summary>

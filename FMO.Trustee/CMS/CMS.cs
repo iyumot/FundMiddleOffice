@@ -108,23 +108,18 @@ public partial class CMS : TrusteeApiBase
     public override async Task<ReturnWrap<FundDailyFee>> QueryFundDailyFee(DateOnly begin, DateOnly end)
     {
         // 查询区间大于1个月，需要多次查询 
-        var tmp = begin.AddDays(30);
-        if (tmp > end) tmp = end;
+        var ts = Split(begin, end, 30);
+
         List<FundDailyFee> transactions = new();
-        while (begin <= tmp)
+        foreach (var (b, e) in ts)
         {
-            var data = await SyncWork<FundDailyFee, FundDailyFeeJson>(1020, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{tmp:yyyyMMdd}" }, x => x.ToObject());
+            var data = await SyncWork<FundDailyFee, FundDailyFeeJson>(1020, new { beginDate = $"{b:yyyyMMdd}", endDate = $"{e:yyyyMMdd}" }, x => x.ToObject());
             if (data.Code != ReturnCode.Success)
                 return data;
 
             if (data.Data?.Length > 0)
                 transactions.AddRange(data.Data);
-
-            begin = tmp.AddDays(1);
-            tmp = begin.AddDays(30);
-            if (tmp > end) tmp = end;
         }
-
         return new(ReturnCode.Success, transactions.ToArray());
     }
 
@@ -147,19 +142,18 @@ public partial class CMS : TrusteeApiBase
     public override async Task<ReturnWrap<BankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end)
     {
         // 查询区间大于1个月，需要多次查询 
-        var tmp = begin.AddDays(30);
+        var ts = Split(begin, end, 30);
+
         List<BankTransaction> transactions = new();
-        while (tmp < end)
+
+        foreach (var (b, e) in ts)
         {
-            var data = await SyncWork<BankTransaction, BankTransactionJson>(1002, new { ksrq = $"{begin:yyyyMMdd}", jsrq = $"{tmp:yyyyMMdd}" }, x => x.ToObject());
+            var data = await SyncWork<BankTransaction, BankTransactionJson>(1002, new { ksrq = $"{b:yyyyMMdd}", jsrq = $"{e:yyyyMMdd}" }, x => x.ToObject());
             if (data.Code != ReturnCode.Success)
                 return data;
 
             if (data.Data?.Length > 0)
                 transactions.AddRange(data.Data);
-
-            begin = tmp.AddDays(1);
-            tmp = begin.AddDays(30);
         }
 
         return new(ReturnCode.Success, transactions.ToArray());
@@ -249,9 +243,9 @@ public partial class CMS : TrusteeApiBase
         {
             for (int i = 0; i < 19; i++) // 防止无限循环，最多99次 
             {
-                LogRun(caller, formatedParams);
-                
+
                 var json = await Query(interfaceId, formatedParams);
+                LogRun(caller, formatedParams,json);
 
                 try
                 {

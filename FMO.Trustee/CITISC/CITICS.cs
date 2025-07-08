@@ -220,20 +220,15 @@ public partial class CITICS : TrusteeApiBase
     {
         var part = "/v1/fs/queryRaiseAccFlowForApi";
 
-        var tmp = begin.AddDays(90);
-        if (tmp > end) tmp = end;
+        var ts = Split(begin, end, 90); 
         List<BankTransaction> transactions = new();
-        while (begin <= tmp)
+        foreach (var (b, e) in ts)
         {
-            var result = await SyncWork<BankTransaction, BankTransactionJson>(part, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{tmp:yyyyMMdd}" }, x => x.ToObject());
+            var result = await SyncWork<BankTransaction, BankTransactionJson>(part, new { beginDate = $"{b:yyyyMMdd}", endDate = $"{e:yyyyMMdd}" }, x => x.ToObject());
             if (result.Code != ReturnCode.Success) return result;
 
             if (result.Data is not null)
-                transactions.AddRange(result.Data);
-
-            begin = tmp.AddDays(1);
-            tmp = begin.AddDays(90);
-            if (tmp > end) tmp = end;
+                transactions.AddRange(result.Data); 
         }
 
         return new(ReturnCode.Success, transactions.ToArray());
@@ -506,8 +501,8 @@ public partial class CITICS : TrusteeApiBase
         {
             for (int i = 0; i < 19; i++) // 防止无限循环，最多99次 
             {
-                LogRun(caller, formatedParams);
                 json = await Query(part, formatedParams);
+                LogRun(caller, formatedParams,json);
 
                 try
                 {
@@ -536,10 +531,12 @@ public partial class CITICS : TrusteeApiBase
                     var data = ret.Data.Deserialize<QueryRoot<TJSON>>()!;
                     list.AddRange(data.List!);
 
+                    if (data.Total == 0) break; 
+
                     var page = data.PageNum;// (int)formatedParams["pageNum"];
 
                     // 数据获取全 
-                    if (page >= data.PageCount)
+                    if (page >= data.Pages)
                         break;
 
                     // 下一页

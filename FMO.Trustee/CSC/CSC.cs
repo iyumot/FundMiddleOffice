@@ -131,8 +131,8 @@ public partial class CSC : TrusteeApiBase
             if (result.Code != ReturnCode.Success)
                 return result;
 
-            if(result.Data?.Length > 0)
-            list.AddRange(result.Data);
+            if (result.Data?.Length > 0)
+                list.AddRange(result.Data);
         }
 
         return new(ReturnCode.Success, list.ToArray());
@@ -269,8 +269,8 @@ public partial class CSC : TrusteeApiBase
         {
             for (int i = 0; i < 19; i++) // 防止无限循环，最多99次 
             {
-                LogRun(caller, formatedParams);
                 var json = await Query(part, formatedParams);
+                LogRun(caller, formatedParams, json);
 
                 try
                 {

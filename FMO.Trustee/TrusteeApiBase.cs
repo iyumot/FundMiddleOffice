@@ -4,7 +4,7 @@ using FMO.Utilities;
 using LiteDB;
 using System.Net;
 using System.Net.Http;
-using System.Reflection; 
+using System.Reflection;
 
 namespace FMO.Trustee;
 
@@ -40,7 +40,7 @@ public abstract class TrusteeApiBase : ITrustee
 
     private static ILiteDatabase _db { get; } = new LiteDatabase(@$"FileName=data\platformlog.db;Connection=Shared");
 
-     
+
 
 
     public abstract Task<ReturnWrap<Investor>> QueryInvestors();
@@ -50,7 +50,7 @@ public abstract class TrusteeApiBase : ITrustee
     public abstract Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end);
 
 
- 
+
     /// <summary>
     /// 映射子基金关系
     /// </summary>
@@ -128,17 +128,17 @@ public abstract class TrusteeApiBase : ITrustee
         _db.GetCollection<LogInfo>().Insert(new LogInfo { Identifier = Identifier, Log = message, Method = caller, Content = json, Time = DateTime.Now });
     }
 
-    protected void LogRun(string? caller, Dictionary<string, object> formatedParams)
+    protected void LogRun(string? caller, Dictionary<string, object> formatedParams, string? json)
     {
-        _db.GetCollection<TrusteeCallHistory>().Insert(new TrusteeCallHistory(Identifier, caller??"unknown", DateTime.Now, System.Text.Json.JsonSerializer.Serialize(formatedParams)));
+        _db.GetCollection<TrusteeCallHistory>().Insert(new TrusteeCallHistory(Identifier, caller ?? "unknown", DateTime.Now, System.Text.Json.JsonSerializer.Serialize(formatedParams), json));
     }
 
     public static LogInfo[]? GetLogs()
     {
-        var dic = _db.GetCollection<LogInfo>().FindAll().OrderByDescending(x=>x.Time).GroupBy(x => x.Identifier).ToDictionary(x => x.Key, x => x.GroupBy(y => y.Method??"").ToDictionary(y => y.Key, y => y.Take(5)));
-        return dic.SelectMany(x => x.Value.SelectMany(y => y.Value)).OrderByDescending(x=>x.Time).ToArray();
+        var dic = _db.GetCollection<LogInfo>().FindAll().OrderByDescending(x => x.Time).GroupBy(x => x.Identifier).ToDictionary(x => x.Key, x => x.GroupBy(y => y.Method ?? "").ToDictionary(y => y.Key, y => y.Take(5)));
+        return dic.SelectMany(x => x.Value.SelectMany(y => y.Value)).OrderByDescending(x => x.Time).ToArray();
 
-       // return _db.GetCollection<LogInfo>().FindAll().GroupBy(x=>x.Identifier).Select(x=> (x.Key, x.GroupBy(x=>x.Method).Select(y=> (y.Key, y.Take(5))))).ToArray();
+        // return _db.GetCollection<LogInfo>().FindAll().GroupBy(x=>x.Identifier).Select(x=> (x.Key, x.GroupBy(x=>x.Method).Select(y=> (y.Key, y.Take(5))))).ToArray();
     }
 
 
@@ -207,7 +207,6 @@ public abstract class TrusteeApiBase : ITrustee
     }
 
 
-
     protected static decimal ParseDecimal(string value)
     {
         if (string.IsNullOrEmpty(value))
@@ -217,6 +216,37 @@ public abstract class TrusteeApiBase : ITrustee
             return result;
 
         throw new FormatException($"无法将 '{value}' 解析为decimal类型");
+    }
+
+    /// <summary>
+    /// 如果间隔超过days，分隔
+    /// </summary>
+    /// <param name="begin"></param>
+    /// <param name="end"></param>
+    /// <param name="days"></param>
+    /// <returns></returns>
+    protected static (DateOnly b, DateOnly e)[] Split(DateOnly begin, DateOnly end, int days)
+    {
+        if (begin == end) return [(begin, end)];
+        if (begin < end) return [];
+
+        int total = end.DayNumber - begin.DayNumber;
+        int cnt = (int)Math.Ceiling((double)total / days);
+        int unit = total / cnt;
+
+        var tmp = begin.AddDays(unit);
+        List<(DateOnly b, DateOnly e)> list = new();
+
+        do
+        {
+            if (tmp > end) tmp = end;
+            list.Add((begin, tmp));
+
+            begin = tmp.AddDays(1);
+            tmp = begin.AddDays(unit);
+        } while (begin <= end);
+
+        return list.ToArray();
     }
 
 
@@ -254,4 +284,4 @@ public abstract class TrusteeApiBase : ITrustee
 
 public record ReturnWrap<T>(ReturnCode Code, T[]? Data);
 
-public record TrusteeCallHistory(string Identifier, string Method, DateTime Time, string Params);
+public record TrusteeCallHistory(string Identifier, string Method, DateTime Time, string Params, string? Json);
