@@ -1,8 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.IO;
 using FMO.IO.AMAC;
 using FMO.IO.DS;
+using FMO.Models;
 using FMO.Trustee;
 using FMO.Utilities;
 using Serilog;
@@ -70,20 +72,30 @@ public partial class ProxyViewModel : ObservableObject
 
     public async Task CheckAccessImpl()
     {
-        using var client = new HttpClient(new HttpClientHandler
+        try
         {
-            UseProxy = true,
-            Proxy = new WebProxy(Address)
+            using var client = new HttpClient(new HttpClientHandler
             {
-                Credentials = string.IsNullOrWhiteSpace(User) ? null : new NetworkCredential(User, Password)
-            }
-        });
+                UseProxy = true,
+                Proxy = new WebProxy(Address)
+                {
+                    Credentials = string.IsNullOrWhiteSpace(User) ? null : new NetworkCredential(User, Password)
+                }
+            });
 
-        var resp = await client.GetAsync("https://www.baidu.com");
-        //var cont = await resp.Content.ReadAsStringAsync();
+            var resp = await client.GetAsync("https://www.baidu.com");
+            //var cont = await resp.Content.ReadAsStringAsync();
 
-        IsAvailiable = resp.StatusCode == HttpStatusCode.OK;
-        ProxyChecked?.Invoke(IsAvailiable);
+            IsAvailiable = resp.StatusCode == HttpStatusCode.OK;
+            ProxyChecked?.Invoke(IsAvailiable);
+
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Success, $"代理连接成功")); 
+        }
+        catch (Exception e)
+        {
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, $"连接失败"));
+            Log.Error($"连接Proxy  {e}");
+        }
     }
 
 
@@ -220,6 +232,7 @@ public partial class PlatformPageViewModel : ObservableObject
         ProxyViewModel.ProxyChecked += (e) =>
         {
             IsTrusteeProxyAvailiable = e;
+            if (e) ShowProxyConfig = false;
 
             if (e) UpdateProxy();
         };
