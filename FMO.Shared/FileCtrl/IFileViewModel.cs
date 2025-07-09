@@ -254,14 +254,20 @@ public partial class MultiFileViewModel<T> : ObservableObject, IFileSelector
 }
 
 
-public partial class SingleFileViewModel : ObservableObject, IFileSelector
+public partial class SingleFileViewModel : ObservableObject, IFileSelector//,IFileViewModel
 {
     [ObservableProperty]
     public partial string Label { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Exists))]
+    [NotifyPropertyChangedFor(nameof(Deleted))]
     [NotifyCanExecuteChangedFor(nameof(DeleteFileCommand))]
     public partial FileStorageInfo? File { get; set; }
+
+    public bool Exists => File?.Exists ?? false;
+
+    public bool Deleted => File is not null && !File.Exists;
 
     public bool CanDelete => File is null ? false : System.IO.File.Exists(File?.Path);
 
@@ -288,7 +294,48 @@ public partial class SingleFileViewModel : ObservableObject, IFileSelector
     [RelayCommand(CanExecute = nameof(CanDelete))]
     public void DeleteFile()
     {
-        try { if (File is not null) OnDeleteFile(File); } catch { }
+        try { if (File is not null) OnDeleteFile(File); File = null; } catch { }
+    }
+
+
+    [RelayCommand]
+    public void View()
+    {
+        if (File?.Exists ?? false)
+            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(File.Path!) { UseShellExecute = true }); } catch { }
+    }
+
+     
+
+
+    [RelayCommand]
+    public void Copy()
+    {
+        if (File?.Path is null || !File.Exists) return;
+
+
+        var obj = new DataObject(DataFormats.FileDrop, new string[] { File.Path });
+        obj.SetText(File.Path);
+        Clipboard.SetDataObject(obj);
+    }
+
+
+    [RelayCommand]
+    public void SaveAs()
+    {
+        if (File?.Path is null || !File.Exists) return;
+
+        try
+        {
+            var d = new SaveFileDialog();
+            d.FileName = File.Name;
+            if (d.ShowDialog() == true) ;
+            //    System.IO.File.Copy(File.Path, d.FileName);
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"文件另存为失败: {ex.Message}");
+        }
     }
 }
 
@@ -380,13 +427,6 @@ public partial class MultipleFileViewModel : ObservableObject, IFileSelector
 }
 
 
-
-public class VersionedFileView : MultipleFileViewModel
-{
-
-}
-
-
-
+ 
 
 

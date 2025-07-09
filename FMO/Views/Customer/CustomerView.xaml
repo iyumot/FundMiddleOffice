@@ -205,7 +205,7 @@
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
 
-        <Style TargetType="shared:MultipleFileView">
+        <Style x:Key="VersionedFile" TargetType="shared:MultipleFileView">
             <Setter Property="MaxHeight" Value="21" />
             <Setter Property="Template">
                 <Setter.Value>
@@ -406,7 +406,10 @@
                     Header="身份证明文件"
                     IsReadOnly="{Binding IsReadOnly}" />-->
 
-                <shared:MultipleFileView Binding="{Binding IDCards}" IsReadOnly="{Binding IsReadOnly}" />
+                <shared:MultipleFileView
+                    Binding="{Binding IDCards}"
+                    IsReadOnly="{Binding IsReadOnly}"
+                    Style="{StaticResource VersionedFile}" />
 
             </StackPanel>
 

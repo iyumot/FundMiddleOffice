@@ -64,30 +64,30 @@
 
 
 
-            <shared:FileControl Binding="{Binding InfomationSheet}" IsReadOnly="{Binding IsReadOnly}" />
+            <shared:SingleFileView Binding="{Binding InfomationSheet}" IsReadOnly="{Binding IsReadOnly}" />
 
-            <shared:FileControl Binding="{Binding CommitmentLetter}" IsReadOnly="{Binding IsReadOnly}" />
-
-
+            <shared:SingleFileView Binding="{Binding CommitmentLetter}" IsReadOnly="{Binding IsReadOnly}" />
 
 
-            <shared:FileControl Binding="{Binding Notice}" IsReadOnly="{Binding IsReadOnly}" />
+
+
+            <shared:SingleFileView Binding="{Binding Notice}" IsReadOnly="{Binding IsReadOnly}" />
 
             <Grid Visibility="{Binding ShowTax, Converter={StaticResource Boolean2VisibilityConverter}}">
-                <shared:FileControl Binding="{Binding TaxDeclaration}" IsReadOnly="{Binding IsReadOnly}" />
+                <shared:SingleFileView Binding="{Binding TaxDeclaration}" IsReadOnly="{Binding IsReadOnly}" />
             </Grid>
 
-            <shared:MultiFileControl Binding="{Binding CertificationFiles}" IsReadOnly="{Binding IsReadOnly}" />
+            <shared:MultipleFileView Binding="{Binding CertificationFiles}" IsReadOnly="{Binding IsReadOnly}" />
 
 
             <StackPanel Visibility="{Binding ShowAgent, Converter={StaticResource Boolean2VisibilityConverter}}">
-                <shared:FileControl Binding="{Binding Authorization}" IsReadOnly="{Binding IsReadOnly}" />
+                <shared:SingleFileView Binding="{Binding Authorization}" IsReadOnly="{Binding IsReadOnly}" />
 
-                <shared:FileControl Binding="{Binding Agent}" IsReadOnly="{Binding IsReadOnly}" />
+                <shared:SingleFileView Binding="{Binding Agent}" IsReadOnly="{Binding IsReadOnly}" />
             </StackPanel>
             <Grid Visibility="{Binding NeedExperience, Converter={StaticResource Boolean2VisibilityConverter}}">
 
-                <shared:FileControl
+                <shared:SingleFileView
                     Binding="{Binding ProofOfExperience}"
                     IsReadOnly="{Binding IsReadOnly}"
                     Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}" />

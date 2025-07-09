@@ -7,6 +7,7 @@ using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Windows.Controls;
 
@@ -88,24 +89,28 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
     [ObservableProperty]
     public partial decimal? Income { get; set; }
 
-    public FileViewModel<InvestorQualification> InfomationSheet { get; }
+    // public FileViewModel<InvestorQualification> InfomationSheet { get; }
+    public SingleFileViewModel InfomationSheet { get; }
+
+    public SingleFileViewModel CommitmentLetter { get; }
+
+    public SingleFileViewModel Notice { get; }
+
+    public SingleFileViewModel TaxDeclaration { get; }
 
 
-    public FileViewModel<InvestorQualification> CommitmentLetter { get; }
 
-    public FileViewModel<InvestorQualification> Notice { get; }
+    //public MultiFileViewModel<InvestorQualification> CertificationFiles { get; set; }
 
-    public FileViewModel<InvestorQualification> TaxDeclaration { get; }
-
+    public MultipleFileViewModel CertificationFiles { get; }
 
 
-    public MultiFileViewModel<InvestorQualification> CertificationFiles { get; set; }
 
-    public FileViewModel<InvestorQualification> ProofOfExperience { get; }
+    public SingleFileViewModel ProofOfExperience { get; }
 
-    public FileViewModel<InvestorQualification> Authorization { get; }
+    public SingleFileViewModel Authorization { get; }
 
-    public FileViewModel<InvestorQualification> Agent { get; }
+    public SingleFileViewModel Agent { get; }
 
     /// <summary>
     /// 代理人是法代
@@ -177,6 +182,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
     //    InfomationSheet = new FileViewModel { Id = nameof(InfomationSheet), Label = "基本信息表", SaveFunc = x => Save(x) };
     //}
 
+    [SetsRequiredMembers]
     public QualificationViewModel(int id)
     {
         Id = id;
@@ -192,74 +198,74 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         InfomationSheet = new()
         {
             Label = "基本信息表",
-            GetProperty = x => x.InfomationSheet,
-            SetProperty = (x, y) => x.InfomationSheet = y,
-
+            File = obj.InfomationSheet,
+            OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.InfomationSheet = b),
+            OnDeleteFile = (x) => DeleteFile(a => a.InfomationSheet = null)
         };
-        InfomationSheet.Init(obj);
+        //InfomationSheet.Init(obj);
 
         CommitmentLetter = new()
         {
             Label = "合格投资者承诺函",
-            GetProperty = x => x.CommitmentLetter,
-            SetProperty = (x, y) => x.CommitmentLetter = y,
+            File = obj.CommitmentLetter,
+            OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.CommitmentLetter = b),
+            OnDeleteFile = (x) => DeleteFile(a => a.CommitmentLetter = null)
         };
-        CommitmentLetter.Init(obj);
 
         Notice = new()
         {
             Label = "普通/专业投资者告知书",
-            GetProperty = x => x.Notice,
-            SetProperty = (x, y) => x.Notice = y,
+            File = obj.Notice,
+            OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.Notice = b),
+            OnDeleteFile = (x) => DeleteFile(a => a.Notice = null)
         };
-        Notice.Init(obj);
 
         TaxDeclaration = new()
         {
             Label = "普通/税收文件",
-            GetProperty = x => x.TaxDeclaration,
-            SetProperty = (x, y) => x.TaxDeclaration = y,
+            File = obj.TaxDeclaration,
+            OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.TaxDeclaration = b),
+            OnDeleteFile = (x) => DeleteFile(a => a.TaxDeclaration = null)
         };
-        TaxDeclaration.Init(obj);
 
-        CertificationFiles = new MultiFileViewModel<InvestorQualification>
+
+        CertificationFiles = new()
         {
             Label = "证明文件",
-            GetProperty = x => x.CertificationFiles,
-            SetProperty = (x, y) => x.CertificationFiles = y,
+            Files = [.. (obj.CertificationFiles ?? new())],
+            OnAddFile = (x, y) => SetCertFile(Id, x),
+            OnDeleteFile = x => DeleteCertFile(x),
         };
-        //CertificationFiles.Files = obj.CertificationFiles is null ? new() : new(obj.CertificationFiles.Select(x => new PartFileViewModel { MultiFile = CertificationFiles, File = new FileInfo(x.Path!) }));
-        CertificationFiles.Init(obj);
-         
+
+
 
         ProofOfExperience = new()
         {
             Label = "投资经历",
-            GetProperty = x => x.ProofOfExperience,
-            SetProperty = (x, y) => x.ProofOfExperience = y,
+            File = obj.ProofOfExperience,
+            OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.ProofOfExperience = b),
+            OnDeleteFile = (x) => DeleteFile(a => a.ProofOfExperience = null)
         };
-        ProofOfExperience.Init(obj);
 
         Authorization = new()
         {
             Label = "代理人授权书",
-            GetProperty = x => x.Authorization,
-            SetProperty = (x, y) => x.Authorization = y,
+            File = obj.Authorization,
+            OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.Authorization = b),
+            OnDeleteFile = (x) => DeleteFile(a => a.Authorization = null)
         };
-        Authorization.Init(obj);
 
         Agent = new()
         {
             Label = "代理人证件",
-            GetProperty = x => x.Agent,
-            SetProperty = (x, y) => x.Agent = y,
+            File = obj.Agent,
+            OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.Agent = b),
+            OnDeleteFile = (x) => DeleteFile(a => a.Agent = null)
         };
-        Agent.Init(obj);
 
 
         (HasError, Statement) = obj.Check();
     }
-
 
 
     public static QualificationViewModel From(InvestorQualification x, AmacInvestorType investor, EntityType entityType)
@@ -544,6 +550,101 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
             db.GetCollection<InvestorQualification>().Update(q);
             fvm.File = null;
         }
+    }
+
+
+
+    private FileStorageInfo? SetFile(FileInfo fi, string label, Action<InvestorQualification, FileStorageInfo> func)
+    {
+        string hash = fi.ComputeHash()!;
+
+        // 保存副本
+        var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "qualification", Id.ToString()));
+
+        var tar = FileHelper.CopyFile2(fi, dir.FullName);
+        if (tar is null)
+        {
+            Log.Error($"保存合投文件出错，{fi.Name}");
+            HandyControl.Controls.Growl.Error($"无法保存{fi.Name}，文件名异常或者存在过多重名文件");
+            return null;
+        }
+
+        var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
+
+        var fsi = new FileStorageInfo
+        {
+            Title = label,
+            Path = path,
+            Hash = hash,
+            Time = fi.LastWriteTime
+        };
+
+        using var db = DbHelper.Base();
+        var q = db.GetCollection<InvestorQualification>().FindById(Id);
+        func(q, fsi);
+        db.GetCollection<InvestorQualification>().Update(q);
+        return fsi;
+    }
+
+
+    private void DeleteFile(Action<InvestorQualification> func)
+    {
+        using var db = DbHelper.Base();
+        var q = db.GetCollection<InvestorQualification>().FindById(Id);
+        func(q);
+        db.GetCollection<InvestorQualification>().Update(q);
+    }
+
+    private FileStorageInfo? SetCertFile(int id, FileInfo fi)
+    {
+        string hash = fi.ComputeHash()!;
+
+        // 保存副本
+        var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "qualification", id.ToString()));
+
+        var tar = FileHelper.CopyFile2(fi, dir.FullName);
+        if (tar is null)
+        {
+            Log.Error($"保存文件出错，{fi.Name}");
+            HandyControl.Controls.Growl.Error($"无法保存{fi.Name}，文件名异常或者存在过多重名文件");
+            return null;
+        }
+
+        var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
+
+        using var db = DbHelper.Base();
+        var q = db.GetCollection<InvestorQualification>().FindById(Id);
+        if (q.CertificationFiles is null) q.CertificationFiles = new();
+
+        var l = q.CertificationFiles;
+        FileStorageInfo fsi = new()
+        {
+            Title = "",
+            Path = path,
+            Hash = hash,
+            Time = DateTime.Now
+        };
+        l!.Add(fsi);
+        db.GetCollection<InvestorQualification>().Update(q);
+        return fsi;
+    }
+
+
+    private void DeleteCertFile(FileStorageInfo file)
+    {
+        using var db = DbHelper.Base();
+        var q = db.GetCollection<InvestorQualification>().FindById(Id);
+
+        var l = q.CertificationFiles;
+        if (l is null) return;
+        var old = l.Find(x => x.Path is not null && file.Path is not null && Path.GetFullPath(x.Path) == Path.GetFullPath(file.Path));
+        if (old is not null)
+        {
+            l.Remove(old);
+
+            try { File.Delete(old.Path!); } catch (Exception e) { Log.Error($"delete file failed {e}"); }
+        }
+        db.GetCollection<InvestorQualification>().Update(q);
     }
 
     protected override InvestorQualification InitNewEntity() => new InvestorQualification();

@@ -102,6 +102,67 @@ public class MultiFileControl : Control
 }
 
 
+
+
+
+
+public class SingleFileView : HeaderedContentControl
+{
+    static SingleFileView()
+    {
+        DefaultStyleKeyProperty.OverrideMetadata(typeof(SingleFileView), new FrameworkPropertyMetadata(typeof(SingleFileView)));
+    }
+
+
+
+    //protected override void OnDrop(DragEventArgs e)
+    //{
+    //    if (DataContext is IFileSetter setter && Binding is not null && e.Data.GetData(DataFormats.FileDrop) is string[] ss)
+    //    {
+    //        // 如果有旧文件
+    //        if (Binding.File is not null)
+    //            try { Binding.File.Delete(); } catch { }
+
+    //        setter.SetFile(Binding, ss[0]);
+    //    }
+    //}
+
+    public bool IsReadOnly
+    {
+        get { return (bool)GetValue(IsReadOnlyProperty); }
+        set { SetValue(IsReadOnlyProperty, value); }
+    }
+
+    // Using a DependencyProperty as the backing store for IsReadOnly.  This enables animation, styling, binding, etc...
+    public static readonly DependencyProperty IsReadOnlyProperty =
+        DependencyProperty.Register("IsReadOnly", typeof(bool), typeof(SingleFileView), new PropertyMetadata(false));
+
+
+
+    public SingleFileViewModel Binding
+    {
+        get { return (SingleFileViewModel)GetValue(BindingProperty); }
+        set { SetValue(BindingProperty, value); }
+    }
+
+    // Using a DependencyProperty as the backing store for Binding.  This enables animation, styling, binding, etc...
+    public static readonly DependencyProperty BindingProperty =
+        DependencyProperty.Register("Binding", typeof(SingleFileViewModel), typeof(SingleFileView), new PropertyMetadata(null));
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
 public class MultipleFileView:Control
 {
     static MultipleFileView()

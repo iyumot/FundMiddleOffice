@@ -79,6 +79,8 @@ public class AbbreviationText : Control
             Foreground,
             dpi.PixelsPerDip);
 
+        double desiredHeight = formattedText.Height + pad.Top + pad.Bottom;
+
         // 考虑约束条件
         double availableWidth = constraint.Width;
         if (!double.IsInfinity(availableWidth))
@@ -92,7 +94,6 @@ public class AbbreviationText : Control
 
         // 计算所需大小，包括内边距
         double desiredWidth = formattedText.Width + pad.Left + pad.Right;
-        double desiredHeight = formattedText.Height + pad.Top + pad.Bottom;
 
         // 确保不超过约束的最大值（如果不是无限大）
         if (!double.IsInfinity(constraint.Width))
