@@ -7,12 +7,13 @@
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
+    d:DataContext="{d:DesignInstance local:CustomerPageViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
-    <UserControl.DataContext>
+    <!--<UserControl.DataContext>
         <local:CustomerPageViewModel />
-    </UserControl.DataContext>
+    </UserControl.DataContext>-->
     <UserControl.Resources>
 
         <Style
@@ -201,6 +202,7 @@
             Name="datagrid"
             d:ItemsSource="{d:SampleData}"
             AutoGenerateColumns="False"
+            EnableRowVirtualization="True"
             IsReadOnly="True"
             ItemsSource="{Binding Customers}"
             SelectedItem="{Binding Selected}"

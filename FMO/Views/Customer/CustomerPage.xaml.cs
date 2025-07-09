@@ -28,14 +28,21 @@ public partial class CustomerPage : UserControl
 
     public CustomerPage()
     {
+        Task.Run(async () =>
+        {
+            var obj = new CustomerPageViewModel();
+            await Dispatcher.BeginInvoke(() => DataContext = obj);
+        });
+
         InitializeComponent();
+
+        //Loaded += (s, e) => DataContext = new CustomerPageViewModel();
     }
 }
 
 public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Investor>, IRecipient<InvestorQualification>
 {
-
-    public ObservableCollection<InvestorReadOnlyViewModel> Customers { get; }
+    public  ObservableCollection<InvestorReadOnlyViewModel> Customers { get; }
 
     [ObservableProperty]
     public partial InvestorReadOnlyViewModel? Selected { get; set; }
@@ -62,9 +69,12 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         //        new Investor { Id = 3, Name = "某产品", EntityType = EntityType.Product},
         //    ];
 
-        Customers = new(cusomers.OrderBy(x=>x.EntityType).ThenBy(x=>x.Name).Select(x => new InvestorReadOnlyViewModel(x)));// new(cusomers.Select(x => new CustomerViewModel(x)));
+        // 合投日期 
+        var qs = db.GetCollection<InvestorQualification>().FindAll().ToList();
 
-
+        // Task.Run(() => App.Current.Dispatcher.BeginInvoke(() =>
+        Customers = new(cusomers.OrderBy(x => x.EntityType).ThenBy(x => x.Name).Select(x => new InvestorReadOnlyViewModel(x, qs.Where(y => y.InvestorId == x.Id).OrderByDescending(x => x.Date).FirstOrDefault())));
+       // ));
 
 
     }
@@ -73,7 +83,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
     [RelayCommand]
     public void AddInvestor(DataGrid grid)
     {
-        InvestorReadOnlyViewModel item = new(new Investor { Name = "" });
+        InvestorReadOnlyViewModel item = new(new Investor { Name = "" }, null);
         Customers.Add(item);
         grid.ScrollIntoView(item);
     }
@@ -376,7 +386,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
     public void Receive(InvestorQualification message)
     {
-         var c = Customers.FirstOrDefault(x => x.Id == message.InvestorId);
+        var c = Customers.FirstOrDefault(x => x.Id == message.InvestorId);
         c.RecheckQualification();
     }
 }
@@ -422,7 +432,7 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
 
     public Investor Investor { get; set; }
 
-    public InvestorReadOnlyViewModel(Investor investor)
+    public InvestorReadOnlyViewModel(Investor investor, InvestorQualification? qs)
     {
         Id = investor.Id;
         Name = investor.Name;
@@ -437,12 +447,10 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
         LackEmail = string.IsNullOrWhiteSpace(investor.Email);
         Investor = investor;
 
-        // 合投日期
-        using var db = DbHelper.Base();
-        var qs = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == Id).OrderByDescending(x => x.Date).FirstOrDefault();
+
         QualificationDate = qs?.Date switch { null => null, DateOnly d when d == default => null, var n => n };
 
-        QualificationAbnormal = qs?.Check().HasError ?? true;
+        QualificationAbnormal = qs?.HasError ?? true;//?.Check().HasError ?? true;
     }
 
     public void Update(Investor investor)
