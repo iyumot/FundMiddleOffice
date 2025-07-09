@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
+using Serilog;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -71,38 +72,45 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
             });
         });
 
-
-        // 增加文件监控
-        watcher = new FileSystemWatcher("files\\tac");
-        watcher.EnableRaisingEvents = true;
-        watcher.Created += (s, e) =>
+        try
         {
-            if (e?.Name is null || Records is null) return;
 
-            var m = Regex.Match(e.Name, @"\d+");
-            if (m.Success && int.Parse(m.Value) is int id)
+            // 增加文件监控
+            watcher = new FileSystemWatcher("files\\tac");
+            watcher.EnableRaisingEvents = true;
+            watcher.Created += (s, e) =>
             {
-                Records.FirstOrDefault(x => x.Id == id)?.OnPropertyChanged(nameof(TransferRecordViewModel.FileExists));
-            }
-        };
-        watcher.Renamed += (s, e) =>
+                if (e?.Name is null || Records is null) return;
+
+                var m = Regex.Match(e.Name, @"\d+");
+                if (m.Success && int.Parse(m.Value) is int id)
+                {
+                    Records.FirstOrDefault(x => x.Id == id)?.OnPropertyChanged(nameof(TransferRecordViewModel.FileExists));
+                }
+            };
+            watcher.Renamed += (s, e) =>
+            {
+                if (e?.Name is null || Records is null) return;
+
+                var m = Regex.Match(e.Name, @"\d+");
+                if (m.Success && int.Parse(m.Value) is int id)
+                {
+                    var v = Records.FirstOrDefault(x => x.Id == id);
+                    v?.OnPropertyChanged(nameof(TransferRecordViewModel.FileExists));
+                }
+
+                m = Regex.Match(e.OldName!, @"\d+");
+                if (m.Success && int.Parse(m.Value) is int id2)
+                {
+                    var v = Records.FirstOrDefault(x => x.Id == id2);
+                    v?.OnPropertyChanged(nameof(TransferRecordViewModel.FileExists));
+                }
+            };
+        }
+        catch (Exception e)
         {
-            if (e?.Name is null || Records is null) return;
-
-            var m = Regex.Match(e.Name, @"\d+");
-            if (m.Success && int.Parse(m.Value) is int id)
-            {
-                var v = Records.FirstOrDefault(x => x.Id == id);
-                v?.OnPropertyChanged(nameof(TransferRecordViewModel.FileExists));
-            }
-
-            m = Regex.Match(e.OldName!, @"\d+");
-            if (m.Success && int.Parse(m.Value) is int id2)
-            {
-                var v = Records.FirstOrDefault(x => x.Id == id2);
-                v?.OnPropertyChanged(nameof(TransferRecordViewModel.FileExists));
-            }
-        };
+            Log.Error($"{e}");
+        }
     }
 
 
