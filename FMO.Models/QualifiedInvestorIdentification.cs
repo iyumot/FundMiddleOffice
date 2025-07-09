@@ -132,6 +132,10 @@ public class InvestorQualification
     /// </summary>
     public bool IsSealed { get; set; }
 
+    public bool IsSettled { get; set; }
+
+    public bool IsManualSettled { get; set; }
+
     /// <summary>
     /// 来源
     /// </summary>
@@ -222,6 +226,7 @@ public class InvestorQualification
     /// </summary>
     public string? Error { get; set; }
 
+    public bool HasError => Check().HasError;
 
     private bool IsFileExists(FileStorageInfo? info) => string.IsNullOrWhiteSpace(info?.Path) ? false : File.Exists(info.Path);
 
