@@ -28,11 +28,11 @@ public partial class CustomerPage : UserControl
 
     public CustomerPage()
     {
-        Task.Run(async () =>
-        {
-            var obj = new CustomerPageViewModel();
-            await Dispatcher.BeginInvoke(() => DataContext = obj);
-        });
+        //Task.Run(async () =>
+        //{
+        //    var obj = new CustomerPageViewModel();
+        //    await Dispatcher.BeginInvoke(() => DataContext = obj);
+        //});
 
         InitializeComponent();
 
@@ -40,9 +40,9 @@ public partial class CustomerPage : UserControl
     }
 }
 
-public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Investor>, IRecipient<InvestorQualification>
+public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Investor>, IRecipient<InvestorQualification>, IRecipient<RiskAssessment>
 {
-    public  ObservableCollection<InvestorReadOnlyViewModel> Customers { get; }
+    public ObservableCollection<InvestorReadOnlyViewModel> Customers { get; }
 
     [ObservableProperty]
     public partial InvestorReadOnlyViewModel? Selected { get; set; }
@@ -53,6 +53,22 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
     [ObservableProperty]
     public partial double ImportQualificationProgress { get; set; }
+
+
+
+    [ObservableProperty]
+    public partial int CountofInvestorsHoldingPositions { get; set; }
+
+
+    [ObservableProperty]
+    public partial int CountOfNoRiskAssessment { get; set; }
+
+
+    [ObservableProperty]
+    public partial int CountOfRiskAssessmentExpired { get; set; }
+
+
+
 
     public CustomerPageViewModel()
     {
@@ -74,11 +90,26 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
         // Task.Run(() => App.Current.Dispatcher.BeginInvoke(() =>
         Customers = new(cusomers.OrderBy(x => x.EntityType).ThenBy(x => x.Name).Select(x => new InvestorReadOnlyViewModel(x, qs.Where(y => y.InvestorId == x.Id).OrderByDescending(x => x.Date).FirstOrDefault())));
-       // ));
+        // ));
 
+        // 持仓客户
+        var ib = db.GetCollection<InvestorBalance>().FindAll().ToArray();
+        CountofInvestorsHoldingPositions = ib.Where(x => x.Share > 0).DistinctBy(x => x.InvestorId).Count();
+
+        RefreshRiskAssessmentData(db, ib);
 
     }
 
+    private void RefreshRiskAssessmentData(BaseDatabase db, InvestorBalance[] ib)
+    {
+        // 风测失效或缺失
+        var ra = db.GetCollection<RiskAssessment>().FindAll().ToArray();
+        // 持有过产品，但是没有风测
+        CountOfNoRiskAssessment = ib.ExceptBy(ra.Select(x => x.InvestorId), x => x.InvestorId).DistinctBy(x => x.InvestorId).Count();
+        // 过期
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        CountOfRiskAssessmentExpired = ra.GroupBy(x => x.InvestorId).Select(x => new { id = x.Key, date = x.Max(y => y.Date) }).Where(x => today.DayNumber - x.date.DayNumber > 180).Count();
+    }
 
     [RelayCommand]
     public void AddInvestor(DataGrid grid)
@@ -389,6 +420,25 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         var c = Customers.FirstOrDefault(x => x.Id == message.InvestorId);
         c.RecheckQualification();
     }
+
+    public void Receive(RiskAssessment message)
+    {
+        using var db = DbHelper.Base();
+        var ra = db.GetCollection<RiskAssessment>().Find(x => x.InvestorId == message.InvestorId).OrderByDescending(x => x.Date).FirstOrDefault();
+
+        var c = Customers.FirstOrDefault(x => x.Id == message.InvestorId);
+        if (c is null) return;
+
+        c.RiskEvaluation = ra?.Level??message.Level;
+        var cus = db.GetCollection<Investor>().FindById(message.InvestorId);
+        if (cus is not null)
+        {
+            cus.RiskEvaluation = c.RiskEvaluation;
+            db.GetCollection<Investor>().Upsert(cus);
+        }
+
+        RefreshRiskAssessmentData(db, db.GetCollection<InvestorBalance>().FindAll().ToArray());
+    }
 }
 
 
@@ -414,7 +464,7 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
     public partial DateEfficient Efficient { get; set; }
 
     [ObservableProperty]
-    public partial RiskLevel RiskLevel { get; set; }
+    public partial RiskEvaluation RiskEvaluation { get; set; }
 
 
     [ObservableProperty]
@@ -441,7 +491,7 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
         Identity = investor.Identity ?? new Identity { Id = "" };
         Efficient = investor.Efficient;
 
-        RiskLevel = investor.RiskLevel;
+        RiskEvaluation = investor.RiskEvaluation;
 
         LackPhone = string.IsNullOrWhiteSpace(investor.Phone);
         LackEmail = string.IsNullOrWhiteSpace(investor.Email);
@@ -461,7 +511,7 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
         Identity = investor.Identity;
         Efficient = investor.Efficient;
 
-        RiskLevel = investor.RiskLevel;
+        RiskEvaluation = investor.RiskEvaluation;
         LackPhone = string.IsNullOrWhiteSpace(investor.Phone);
         LackEmail = string.IsNullOrWhiteSpace(investor.Email);
         Investor = investor;

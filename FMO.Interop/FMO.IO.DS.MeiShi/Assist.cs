@@ -187,7 +187,7 @@ public class Assist : AssistBase
                         if (old.Identity.Type == IDType.Unknown)
                             old.Identity = item.Identity;
 
-                        old.RiskLevel = item.RiskLevel;
+                        old.RiskEvaluation = item.RiskEvaluation;
 
                         if (old.Type == default) old.Type = item.Type;
                         list.Add(old);
@@ -205,7 +205,7 @@ public class Assist : AssistBase
                     if (old.Identity.Type == IDType.Unknown)
                         old.Identity = item.Identity;
 
-                    old.RiskLevel = item.RiskLevel;
+                    old.RiskEvaluation = item.RiskEvaluation;
 
                     if (old.Type == default) old.Type = item.Type;
                     if (item.Name == manager?.Name) old.Type = AmacInvestorType.Manager;

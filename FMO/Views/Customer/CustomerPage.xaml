@@ -11,9 +11,9 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
-    <!--<UserControl.DataContext>
+    <UserControl.DataContext>
         <local:CustomerPageViewModel />
-    </UserControl.DataContext>-->
+    </UserControl.DataContext>
     <UserControl.Resources>
 
         <Style
@@ -188,6 +188,12 @@
                 </hc:SimplePanel>
 
 
+                <TextBlock Text="{Binding CountofInvestorsHoldingPositions, StringFormat=持仓客户数：{0}}" />
+
+                <TextBlock Text="{Binding CountOfNoRiskAssessment, StringFormat=风险测评缺失：{0}}" />
+
+                <TextBlock Text="{Binding CountOfRiskAssessmentExpired, StringFormat=过期：{0}}" />
+
             </hc:UniformSpacingPanel>
         </DockPanel>
 
@@ -286,7 +292,7 @@
                 </DataGridTemplateColumn>
 
                 <DataGridTextColumn
-                    Binding="{Binding RiskLevel}"
+                    Binding="{Binding RiskEvaluation}"
                     ElementStyle="{StaticResource BaseText}"
                     Header="风险等级" />
 

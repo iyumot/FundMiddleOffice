@@ -434,6 +434,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
         File.Copy(fd.FullName, @$"files\evaluation\" + destFileName);
         r.Path = destFileName;
         db.GetCollection<RiskAssessment>().Update(r);
+        db.Dispose();
 
         foreach (var item in RiskAssessments.ToArray())
         {
@@ -441,6 +442,13 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
                 RiskAssessments.Remove(item);
         }
         RiskAssessments.Add(new RiskAssessmentViewModel(r));
+
+        // 通知
+        WeakReferenceMessenger.Default.Send(r);
+
+        AssessmentFile = null;
+        NewDate = null;
+        NewEvaluation = null;
     }
 
     [RelayCommand]

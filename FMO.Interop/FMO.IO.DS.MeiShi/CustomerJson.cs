@@ -495,7 +495,7 @@ public class ListItem
             Identity = GetIdentity(),
             Phone = mobile,
             Email = email,
-            RiskLevel = riskType switch { >= 5 => RiskLevel.R5, > 0 => (RiskLevel)riskType, _ => RiskLevel.Unk }
+            RiskEvaluation = riskType switch { >= 5 => RiskEvaluation.C5, > 0 => (RiskEvaluation)riskType, _ => RiskEvaluation.Unk }
         };
 
 
