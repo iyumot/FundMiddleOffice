@@ -596,11 +596,24 @@
                                 <DockPanel>
                                     <DockPanel DockPanel.Dock="Top">
                                         <TextBlock FontSize="14" Text="{Binding FundName}" />
+
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.square-arrow-up-right}"
+                                            Command="{Binding OpenFundCommand}"
+                                            Foreground="RoyalBlue"
+                                            Style="{StaticResource ButtonIcon.Small}" />
+
                                         <TextBlock
                                             x:Name="asset"
                                             Margin="10,0,0,0"
                                             VerticalAlignment="Center"
                                             Text="{Binding Asset, StringFormat=N2}" />
+
+
+                                        <TextBlock
+                                            Margin="10,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="{Binding Profit, StringFormat=盈亏：{0:N2}}" />
                                     </DockPanel>
                                     <DataGrid
                                         AutoGenerateColumns="False"

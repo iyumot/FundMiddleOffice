@@ -221,12 +221,14 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
             var daily = db.GetDailyCollection(tf.First().FundId).Find(x => x.NetValue > 0).OrderByDescending(x => x.Date).FirstOrDefault();
             var nv = daily?.NetValue ?? 0;
             var Asset = Share * nv;
+            var profit = Asset + Withdraw - Deposit;
 
             trbf.Add(new TransferRecordByFund
             {
                 FundId = tf.First().FundId,
                 FundName = tf.Key,
                 Asset = Asset,
+                Profit = profit,
                 Records = tf as IEnumerable<TransferRecord>
             });
         }
@@ -614,7 +616,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
 
 
-    public class TransferRecordByFund
+    public partial class TransferRecordByFund:ObservableObject
     {
         public int FundId { get; set; }
 
@@ -625,6 +627,14 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
 
         public IEnumerable<TransferRecord>? Records { get; set; }
+
+        public decimal Profit { get; internal set; }
+
+        [RelayCommand]
+        public void OpenFund()
+        {
+            WeakReferenceMessenger.Default.Send(new OpenFundMessage(FundId));
+        }
     }
 }
 
