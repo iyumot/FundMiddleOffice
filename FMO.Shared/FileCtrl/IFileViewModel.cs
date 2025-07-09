@@ -213,46 +213,7 @@ public partial class FileViewModel<T> : FileViewModelBase, IFileSelector
 
 }
 
-
-public partial class PartFileViewModel : FileViewModelBase, IFileViewModel
-{
-    public required IFileSelector MultiFile { get; set; }
-}
-
-public partial class MultiFileViewModel<T> : ObservableObject, IFileSelector
-{
-
-    [ObservableProperty]
-    public partial ObservableCollection<PartFileViewModel>? Files { get; set; }
-
-    [ObservableProperty]
-    public partial bool Exists { get; set; }
-
-    [ObservableProperty]
-    public partial string Label { get; set; }
-
-    public string? Filter { get; set; }
-
-    public required Func<T, List<FileStorageInfo>?> GetProperty { get; set; }
-
-    public required Action<T, List<FileStorageInfo>> SetProperty { get; set; }
-
-
-
-
-
-    public void Init(T entity)
-    {
-        var p = GetProperty(entity);
-
-        if (p is not null)
-        {
-            Files = new(p.Where(x => x.Path is not null).Select(x => new PartFileViewModel { MultiFile = this, File = new FileInfo(x.Path!) }));
-        }
-    }
-
-}
-
+ 
 
 public partial class SingleFileViewModel : ObservableObject, IFileSelector//,IFileViewModel
 {
