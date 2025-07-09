@@ -232,7 +232,7 @@ public partial class SingleFileViewModel : ObservableObject, IFileSelector//,IFi
 
     public bool CanDelete => File is null ? false : System.IO.File.Exists(File?.Path);
 
-    public string? Filter { get; set; }
+    public string? Filter { get; set; } = "文件|*.*";
 
     public required Func<FileInfo, string, FileStorageInfo?> OnSetFile { get; set; }
 
@@ -290,8 +290,10 @@ public partial class SingleFileViewModel : ObservableObject, IFileSelector//,IFi
         {
             var d = new SaveFileDialog();
             d.FileName = File.Name;
-            if (d.ShowDialog() == true) ;
-            //    System.IO.File.Copy(File.Path, d.FileName);
+            d.Filter = Filter;
+            d.DefaultExt = Path.GetExtension(File.Path);
+            if (d.ShowDialog() == true)
+                System.IO.File.Copy(File.Path, d.FileName!);
         }
         catch (Exception ex)
         {
