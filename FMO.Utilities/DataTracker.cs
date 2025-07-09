@@ -180,6 +180,34 @@ public static class DataTracker
         }
     }
 
+
+    public static void CheckInvestorBalance()
+    {
+        using var db = DbHelper.Base();
+        var coll = db.GetCollection<InvestorBalance>().FindAll().OrderBy(x=>x.Id).ToList();
+        var tas = db.GetCollection<TransferRecord>().FindAll().ToList();
+        IEnumerable<(long key, DateOnly date)> ta = tas.Select(x => new { id = InvestorBalance.MakeId(x.CustomerId, x.FundId), date = x.ConfirmedDate }).
+            GroupBy(x => x.id).Select(x => (key: x.Key, date: x.Max(y => y.date))).OrderBy(x => x.key);
+
+        foreach (var item in ta)
+        {
+            var o = coll.FirstOrDefault(x => x.Id == item.key);
+            if (o is null || o.Date != item.date)
+            {
+                var (c, f) = InvestorBalance.ParseId(item.key);
+                var tf = tas.Where(x => x.CustomerId == c && x.FundId == f);
+                var share = tf.Sum(x => x.ShareChange());
+                var deposit = tf.Where(x => x.Type switch { TransferRecordType.Subscription or TransferRecordType.Purchase or TransferRecordType.MoveIn or TransferRecordType.SwitchIn or TransferRecordType.TransferIn => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
+                var withdraw = tf.Where(x => x.Type switch { TransferRecordType.Redemption or TransferRecordType.Redemption or TransferRecordType.MoveOut or TransferRecordType.SwitchOut or TransferRecordType.TransferOut or TransferRecordType.Distribution => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
+
+                db.GetCollection<InvestorBalance>().Upsert(new InvestorBalance { FundId = f, InvestorId = c, Share = share, Deposit = deposit, Withdraw = withdraw, Date = tf.Max(x => x.ConfirmedDate) });
+            }
+        }
+
+
+    }
+
+
     public static void OnFundCleared(Fund f)
     {
         foreach (var m in FundTips.Where(x => x.FundId == f.Id && x.Type == TipType.OverDue))
@@ -187,6 +215,32 @@ public static class DataTracker
 
         WeakReferenceMessenger.Default.Send(new FundTipMessage(f.Id));
     }
+
+
+    public static void OnNewTransferRecord(TransferRecord r)
+    {
+
+    }
+
+
+    public static void OnBatchTransferRecord(IEnumerable<TransferRecord> records)
+    {
+        using var db = DbHelper.Base();
+        var dc = db.GetCollection<TransferRecord>();
+        // 分类
+        var da = records.GroupBy(x => (x.CustomerId, x.FundId)).Select(x => x.Key);
+        foreach (var (c, f) in da)
+        {
+            var tf = dc.Find(x => x.CustomerId == c && x.FundId == f);
+            var share = tf.Sum(x => x.ShareChange());
+            var deposit = tf.Where(x => x.Type switch { TransferRecordType.Subscription or TransferRecordType.Purchase or TransferRecordType.MoveIn or TransferRecordType.SwitchIn or TransferRecordType.TransferIn => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
+            var withdraw = tf.Where(x => x.Type switch { TransferRecordType.Redemption or TransferRecordType.Redemption or TransferRecordType.MoveOut or TransferRecordType.SwitchOut or TransferRecordType.TransferOut or TransferRecordType.Distribution => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
+
+            db.GetCollection<InvestorBalance>().Upsert(new InvestorBalance { FundId = f, InvestorId = c, Share = share, Deposit = deposit, Withdraw = withdraw, Date = tf.Max(x => x.ConfirmedDate) });
+        }
+
+    }
+
 }
 public class ThreadSafeList<T> : IEnumerable<T>
 {

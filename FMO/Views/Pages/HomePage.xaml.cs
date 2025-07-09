@@ -119,6 +119,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
                     Task.Run(() => DataTracker.CheckFundFolder(c)),
                     Task.Run(()=> DataTracker.CheckShareIsPair(c)),
                     Task.Run(()=> DataTracker.CheckIsExpired(c)),
+                    Task.Run(()=> DataTracker.CheckInvestorBalance())
         ];
 
         Task.WaitAll(t);
