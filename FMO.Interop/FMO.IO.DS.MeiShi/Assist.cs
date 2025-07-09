@@ -539,7 +539,7 @@ public class Assist : AssistBase
 
         var fi = qfiles.FirstOrDefault(x => x.Name.Contains("合格投资者承诺函"));
         if (fi is not null)
-            q.CommitmentLetter = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+            q.CommitmentLetter = new FileStorageInfo { Title = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
 
 
         fi = qfiles.FirstOrDefault(x => x.Name.Contains("基本信息表"));
@@ -549,28 +549,28 @@ public class Assist : AssistBase
             {
                 q.Result = QualifiedInvestorType.Professional;
             }
-            q.InfomationSheet = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+            q.InfomationSheet = new FileStorageInfo { Title = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
             qfiles.Remove(fi);
         }
 
         fi = qfiles.FirstOrDefault(x => x.Name.Contains("告知书"));
         if (fi is not null)
         {
-            q.Notice = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+            q.Notice = new FileStorageInfo { Title = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
             qfiles.Remove(fi);
         }
 
         fi = qfiles.FirstOrDefault(x => x.Name.Contains("税收居民身份声明"));
         if (fi is not null)
         {
-            q.TaxDeclaration = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+            q.TaxDeclaration = new FileStorageInfo { Title = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
             qfiles.Remove(fi);
         }
 
         fi = qfiles.FirstOrDefault(x => x.Name.Contains("经办人身份证件") || x.Name.Contains("法人"));
         if (fi is not null)
         {
-            q.Agent = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+            q.Agent = new FileStorageInfo { Title = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
             qfiles.Remove(fi);
         }
 
@@ -580,14 +580,14 @@ public class Assist : AssistBase
         fi = qfiles.FirstOrDefault(x => x.Name.Contains("授权委托书"));
         if (fi is not null)
         {
-            q.Authorization = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+            q.Authorization = new FileStorageInfo { Title = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
             qfiles.Remove(fi);
         }
 
         fi = qfiles.FirstOrDefault(x => x.Name.Contains("投资经历"));
         if (fi is not null)
         {
-            q.ProofOfExperience = new FileStorageInfo { Name = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+            q.ProofOfExperience = new FileStorageInfo { Title = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
             qfiles.Remove(fi);
         }
 
@@ -598,7 +598,7 @@ public class Assist : AssistBase
 
             foreach (var item in prof)
             {
-                q.CertificationFiles.Add(new FileStorageInfo { Name = item.Name, Time = item.LastWriteTime, Path = item.Name, Hash = FileHelper.ComputeHash(item) });
+                q.CertificationFiles.Add(new FileStorageInfo { Title = item.Name, Time = item.LastWriteTime, Path = item.Name, Hash = FileHelper.ComputeHash(item) });
                 qfiles.Remove(item);
             }
         }

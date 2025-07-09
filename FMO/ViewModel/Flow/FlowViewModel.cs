@@ -71,7 +71,7 @@ public partial class FlowViewModel : ObservableObject, IFileSetter
 
         Date = flow.Date?.ToDateTime(default) ?? null;
 
-        CustomFiles = flow.CustomFiles is not null ? new(flow.CustomFiles.Select(x => new FileViewModelBase { Label = x.Name, File = x.Path is null ? null : new FileInfo(x.Path) })) : new();
+        CustomFiles = flow.CustomFiles is not null ? new(flow.CustomFiles.Select(x => new FileViewModelBase { Label = x.Title, File = x.Path is null ? null : new FileInfo(x.Path) })) : new();
         foreach (var item in CustomFiles)
             item.PropertyChanged += CustomFile_PropertyChanged;
 
