@@ -5,6 +5,7 @@ using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
 using Microsoft.Win32;
+using Serilog;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
@@ -92,8 +93,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
     public ChangeableViewModel<Investor, string> Phone { get; } = new() { InitFunc = x => x.Phone, UpdateFunc = (x, y) => x.Phone = y, ClearFunc = x => x.Phone = null, Label = "联系方式" };
 
-
-
+    public MultipleFileViewModel IDCards { get; }
 
 
     [ObservableProperty]
@@ -168,9 +168,11 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
     //}
 
 
-    public CustomerViewModel(Investor investor)
+    public CustomerViewModel(int id)
     {
-        Id = investor.Id;
+        using var db = DbHelper.Base();
+        var investor = db.GetCollection<Investor>().FindById(id);
+        Id = id;
 
         Name = new ChangeableViewModel<Investor, string>(investor, init: x => x.Name, update: (x, y) => x.Name = y ?? string.Empty, clear: x => x.Name = string.Empty);
 
@@ -190,10 +192,17 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
         Email.Init(investor);
         Phone.Init(investor);
 
+        IDCards = new()
+        {
+            Label = "身份证明",
+            Files = [.. (investor.IDCards ?? new())],
+            OnAddFile = (x, y) => SetFile<Investor>(Id, x => { if (x.IDCards is null) x.IDCards = new(); return x.IDCards; }, x),
+            OnDeleteFile = x => DeleleFile<Investor>(Id, x => x.IDCards, x),
+        };
+
 
         Efficient.Init(investor);
 
-        using var db = DbHelper.Base();
         var iq = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == Id || (x.InvestorId == 0 && x.InvestorName == investor.Name && x.IdentityCode == investor.Identity.Id)).ToArray();
         Qualifications = [.. iq.Select(x => QualificationViewModel.From(x, investor.Type, investor.EntityType))];
 
@@ -224,6 +233,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
         TransferRecords = trbf;
     }
+
 
     private void Type_PropertyChanged(object? sender, PropertyChangedEventArgs? e)
     {
@@ -454,6 +464,151 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
             db.GetCollection<InvestorQualification>().Delete(v.Id);
         }
     }
+
+
+
+    //[RelayCommand]
+    //public void AddFile(IFileSelector obj)
+    //{
+    //    if (obj is not MultiFileViewModel<Investor> v) return;
+
+    //    var fd = new OpenFileDialog();
+    //    fd.Filter = v.Filter;
+    //    if (fd.ShowDialog() != true)
+    //        return;
+
+    //    var fi = new FileInfo(fd.FileName);
+    //    if (fi is not null)
+    //        SetFile(v, fi);
+
+    //}
+
+    private FileStorageInfo? SetFile<T>(int id, Func<T, List<FileStorageInfo>> func, FileInfo fi)
+    {
+        string hash = fi.ComputeHash()!;
+
+        // 保存副本
+        var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "investor", Id.ToString(), "cards"));
+
+        var tar = FileHelper.CopyFile2(fi, dir.FullName);
+        if (tar is null)
+        {
+            Log.Error($"保存文件出错，{fi.Name}");
+            HandyControl.Controls.Growl.Error($"无法保存{fi.Name}，文件名异常或者存在过多重名文件");
+            return null;
+        }
+
+        var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
+
+        using var db = DbHelper.Base();
+        var q = db.GetCollection<T>().FindById(Id);
+        var l = func(q);
+        FileStorageInfo fsi = new()
+        {
+            Title = "",
+            Path = path,
+            Hash = hash,
+            Time = DateTime.Now
+        };
+        l!.Add(fsi);
+        db.GetCollection<T>().Update(q);
+        return fsi;
+    }
+
+
+    private void DeleleFile<T>(int id, Func<T, List<FileStorageInfo>?> func, FileStorageInfo file)
+    {
+        using var db = DbHelper.Base();
+        var q = db.GetCollection<T>().FindById(Id);
+
+        var l = func(q);
+        if (l is null) return;
+        var old = l.Find(x => x.Path is not null && file.Path is not null && Path.GetFullPath(x.Path) == Path.GetFullPath(file.Path));
+        if (old is not null)
+        {
+            l.Remove(old);
+
+            try { File.Delete(old.Path!); } catch(Exception e) { Log.Error($"delete file failed {e}"); }
+        }
+        db.GetCollection<T>().Update(q);
+    }
+    //private void SetFile(MultiFileViewModel<Investor> v, FileInfo fi)
+    //{
+    //    string hash = fi.ComputeHash()!;
+
+    //    // 保存副本
+    //    var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "qualification", Id.ToString()));
+
+    //    var tar = FileHelper.CopyFile2(fi, dir.FullName);
+    //    if (tar is null)
+    //    {
+    //        Log.Error($"保存合投文件出错，{fi.Name}");
+    //        HandyControl.Controls.Growl.Error($"无法保存{fi.Name}，文件名异常或者存在过多重名文件");
+    //        return;
+    //    }
+
+    //    var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
+
+    //    if (v is MultiFileViewModel<Investor> vm)
+    //    {
+    //        v.Files!.Add(new PartFileViewModel { MultiFile = vm, File = new FileInfo(tar), });
+    //        v.Exists = true;
+    //        using var db = DbHelper.Base();
+    //        var q = db.GetCollection<Investor>().FindById(Id);
+
+    //        var l = vm.GetProperty(q);
+    //        if (l is null)
+    //        {
+    //            vm.SetProperty(q, new());
+    //            l = vm.GetProperty(q);
+    //        }
+
+    //        l!.Add(new FileStorageInfo
+    //        {
+    //            Name = vm.Label,
+    //            Path = path,
+    //            Hash = hash,
+    //            Time = fi.LastWriteTime
+    //        });
+    //        db.GetCollection<Investor>().Update(q);
+    //    }
+    //}
+
+    //[RelayCommand]
+    //public void DeleteFile(IFileViewModel v)
+    //{
+    //    if (v is PartFileViewModel m && m.MultiFile is MultiFileViewModel<Investor> multi)
+    //    {
+    //        if (m.File is null) return;
+
+    //        try
+    //        {
+    //            using var db = DbHelper.Base();
+    //            var q = db.GetCollection<Investor>().FindById(Id);
+
+    //            var l = multi.GetProperty(q);
+    //            if (l is null) return;
+    //            var old = l.Find(x => new FileInfo(x.Path!).FullName == m.File.FullName);
+    //            if (old is not null) l.Remove(old);
+    //            db.GetCollection<Investor>().Update(q);
+
+    //            multi.Files!.Remove(m);
+    //        }
+    //        catch (Exception e)
+    //        {
+    //            Log.Error($"删除【{Id}】合投文件失败{e.Message}");
+    //            HandyControl.Controls.Growl.Error("无法删除文件");
+    //        }
+    //    }
+    //}
+
+
+
+
+
+
+
+
 
     protected override Investor InitNewEntity() => new Investor { Name = string.Empty };
 

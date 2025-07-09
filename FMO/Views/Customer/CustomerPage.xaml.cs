@@ -347,7 +347,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
     partial void OnSelectedChanged(InvestorReadOnlyViewModel? oldValue, InvestorReadOnlyViewModel? newValue)
     {
-        Detail = newValue is null ? null : new CustomerViewModel(newValue.Investor);
+        Detail = newValue is null ? null : new CustomerViewModel(newValue.Id);
     }
 
     public void Receive(Investor message)

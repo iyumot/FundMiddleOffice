@@ -35,7 +35,7 @@ namespace FMO.Shared;
 ///     <MyNamespace:AbbreviationText/>
 ///
 /// </summary>
-internal class AbbreviationText : Control
+public class AbbreviationText : Control
 {
     static AbbreviationText()
     {

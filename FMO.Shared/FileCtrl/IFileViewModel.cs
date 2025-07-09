@@ -81,7 +81,7 @@ public partial class FileViewModelBase : ObservableObject, IFileViewModel
     /// <returns></returns>
     public FileStorageInfo? Build(string? file = null)
     {
-        var fi = file is null ? File : new FileInfo(file); 
+        var fi = file is null ? File : new FileInfo(file);
 
         if (fi is null || !fi.Exists || SaveFolder is null) return null;
         var di = new DirectoryInfo(SaveFolder);
@@ -166,7 +166,7 @@ public partial class FileViewModelBase : ObservableObject, IFileViewModel
 /// <summary>
 /// 非泛型
 /// </summary>
-public partial class FileViewModel : FileViewModelBase,IFileViewModel, IFileSelector
+public partial class FileViewModel : FileViewModelBase, IFileViewModel, IFileSelector
 {
 
 
@@ -174,7 +174,7 @@ public partial class FileViewModel : FileViewModelBase,IFileViewModel, IFileSele
     public required Func<object, FileStorageInfo?> GetProperty { get; set; }
 
     public required Action<object, FileStorageInfo?> SetProperty { get; set; }
-     
+
 
     public void Init(object entity)
     {
@@ -192,7 +192,7 @@ public partial class FileViewModel : FileViewModelBase,IFileViewModel, IFileSele
 /// <typeparam name="T"></typeparam>
 public partial class FileViewModel<T> : FileViewModelBase, IFileSelector
 {
-     
+
 
     public required Func<T, FileStorageInfo?> GetProperty { get; set; }
 
@@ -252,3 +252,141 @@ public partial class MultiFileViewModel<T> : ObservableObject, IFileSelector
     }
 
 }
+
+
+public partial class SingleFileViewModel : ObservableObject, IFileSelector
+{
+    [ObservableProperty]
+    public partial string Label { get; set; }
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DeleteFileCommand))]
+    public partial FileStorageInfo? File { get; set; }
+
+    public bool CanDelete => File is null ? false : System.IO.File.Exists(File?.Path);
+
+    public string? Filter { get; set; }
+
+    public required Func<FileInfo, string, FileStorageInfo?> OnSetFile { get; set; }
+
+    public required Action<FileStorageInfo> OnDeleteFile { get; set; }
+
+    [RelayCommand]
+    public void SetFile()
+    {
+        var fd = new OpenFileDialog();
+        fd.Filter = Filter ?? "";
+        if (fd.ShowDialog() != true)
+            return;
+
+        var fi = new FileInfo(fd.FileName);
+        if (fi is not null)
+            File = OnSetFile(fi, Label);
+    }
+
+
+    [RelayCommand(CanExecute = nameof(CanDelete))]
+    public void DeleteFile()
+    {
+        try { if (File is not null) OnDeleteFile(File); } catch { }
+    }
+}
+
+
+
+
+public partial class MultipleFileViewModel : ObservableObject, IFileSelector
+{
+    public required string Label { get; set; }
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DeleteFileCommand))]
+    public partial ObservableCollection<FileStorageInfo>? Files { get; set; }
+
+    public string? Filter { get; set; }
+
+    public required Func<FileInfo, string, FileStorageInfo?> OnAddFile { get; set; }
+
+    public required Action<FileStorageInfo> OnDeleteFile { get; set; }
+
+    [RelayCommand]
+    public void AddFile()
+    {
+        var fd = new OpenFileDialog();
+        fd.Filter = Filter ?? "";
+        if (fd.ShowDialog() != true)
+            return;
+
+        var fi = new FileInfo(fd.FileName);
+        var nf = OnAddFile(fi, Label);
+        if (nf is null) return;
+
+        if (Files is null) Files = [nf];
+        else Files.Add(nf);
+    }
+
+
+    [RelayCommand]
+    public void DeleteFile(FileStorageInfo? file)
+    {
+        if (file is not null)
+        {
+            OnDeleteFile(file);
+
+            Files?.Remove(file);
+        }
+    }
+
+
+    [RelayCommand]
+    public void View(FileStorageInfo file)
+    {
+        if (file?.Path is not null)
+            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(file.Path) { UseShellExecute = true }); } catch { }
+    }
+
+
+
+    [RelayCommand]
+    public void Copy(FileStorageInfo file)
+    {
+        if (file?.Path is null) return;
+
+
+        var obj = new DataObject(DataFormats.FileDrop, new string[] { file.Path });
+        obj.SetText(file.Path);
+        Clipboard.SetDataObject(obj);
+    }
+
+
+
+    [RelayCommand]
+    public void SaveAs(FileStorageInfo file)
+    {
+        if (file?.Path is null) return;
+
+        try
+        {
+            var d = new SaveFileDialog();
+            d.FileName = file.Title;
+            if (d.ShowDialog() == true)
+                System.IO.File.Copy(file.Path, d.FileName);
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"文件另存为失败: {ex.Message}");
+        }
+    }
+}
+
+
+
+public class VersionedFileView : MultipleFileViewModel
+{
+
+}
+
+
+
+
+

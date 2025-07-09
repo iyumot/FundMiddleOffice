@@ -228,12 +228,9 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
             GetProperty = x => x.CertificationFiles,
             SetProperty = (x, y) => x.CertificationFiles = y,
         };
-        CertificationFiles.Files = obj.CertificationFiles is null ? new() : new(obj.CertificationFiles.Select(x => new PartFileViewModel { MultiFile = CertificationFiles, File = new FileInfo(x.Path!) }));
+        //CertificationFiles.Files = obj.CertificationFiles is null ? new() : new(obj.CertificationFiles.Select(x => new PartFileViewModel { MultiFile = CertificationFiles, File = new FileInfo(x.Path!) }));
         CertificationFiles.Init(obj);
-
-
-
-
+         
 
         ProofOfExperience = new()
         {
@@ -422,7 +419,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
 
             l!.Add(new FileStorageInfo
             {
-                Name = vm.Label,
+                Title = vm.Label,
                 Path = path,
                 Hash = hash,
                 Time = fi.LastWriteTime
@@ -442,7 +439,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
                 var q = db.GetCollection<InvestorQualification>().FindById(Id);
                 vm.SetProperty(q, new FileStorageInfo
                 {
-                    Name = vm.Label,
+                    Title = vm.Label,
                     Path = null,
                     Hash = null,
                     Time = default
@@ -506,7 +503,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
             var q = db.GetCollection<InvestorQualification>().FindById(Id);
             vm.SetProperty(q, new FileStorageInfo
             {
-                Name = vm.Label,
+                Title = vm.Label,
                 Path = path,
                 Hash = hash,
                 Time = fi.LastWriteTime
