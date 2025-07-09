@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Web;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -521,12 +522,15 @@ public partial class CITICS : TrusteeApiBase
                     // ÓÐ´íÎó
                     if (code != 0)
                     {
-                        if (ret.Data?.ContainsKey("reason") ?? false)
+                        if (ret.Data is JsonObject obj && obj.ContainsKey("reason"))
                             ret.Msg = ret.Data["reason"]?.ToString();
 
                         Log(caller, json, ret.Msg);
                         return new(TransferReturnCode(code, ret.Msg), null);
                     }
+
+                    if (ret.Data is JsonValue jv && jv.TryGetValue<string>(out var s) && s.Contains("No Data", StringComparison.OrdinalIgnoreCase))
+                        break;
 
                     var data = ret.Data.Deserialize<QueryRoot<TJSON>>()!;
                     list.AddRange(data.List!);

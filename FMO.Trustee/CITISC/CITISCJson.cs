@@ -11,7 +11,7 @@ public partial class CITICS
     public class RootJson
     {
         [JsonPropertyName("data")]
-        public JsonObject? Data { get; set; }
+        public JsonNode? Data { get; set; }
 
         [JsonPropertyName("code")]
         public int Code { get; set; } = -1;
