@@ -594,7 +594,7 @@
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <DockPanel>
-                                    <DockPanel DockPanel.Dock="Top">
+                                    <DockPanel Margin="0,8,0,0" DockPanel.Dock="Top">
                                         <TextBlock FontSize="14" Text="{Binding FundName}" />
 
                                         <Button

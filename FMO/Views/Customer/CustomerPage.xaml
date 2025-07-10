@@ -225,9 +225,11 @@
                                 <Viewbox
                                     Width="12"
                                     Height="12"
-                                    VerticalAlignment="Center"
-                                    Visibility="{Binding HasPosition, Converter={StaticResource BooleanToVisibility2Converter}}">
-                                    <Path Data="{StaticResource f.web-awesome}" Fill="Green" />
+                                    VerticalAlignment="Center">
+                                    <Path
+                                        x:Name="posi"
+                                        Data="{StaticResource f.web-awesome}"
+                                        Fill="Transparent" />
                                 </Viewbox>
                                 <Viewbox
                                     Width="12"
@@ -253,6 +255,14 @@
                                     <Path Data="{StaticResource f.mobile-retro}" Fill="Red" />
                                 </Viewbox>
                             </hc:UniformSpacingPanel>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding PreviouslyHasPosition}" Value="True">
+                                    <Setter TargetName="posi" Property="Fill" Value="DarkGray" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding HasPosition}" Value="True">
+                                    <Setter TargetName="posi" Property="Fill" Value="Green" />
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

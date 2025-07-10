@@ -99,7 +99,8 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         // 更新到customers
         foreach (var item in Customers.IntersectBy(ib.Where(x => x.Share > 0).Select(x=>x.InvestorId), x=>x.Id))
             item.HasPosition = true;
-
+        foreach (var item in Customers.IntersectBy(ib.Where(x => x.Share == 0).Select(x => x.InvestorId), x => x.Id))
+            item.PreviouslyHasPosition = true;
 
         RefreshRiskAssessmentData(db, ib);
 
@@ -493,6 +494,12 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
     /// </summary>
     [ObservableProperty]
     public partial bool HasPosition { get; set; }
+
+    /// <summary>
+    /// 曾经持有过
+    /// </summary>
+    [ObservableProperty]
+    public partial bool PreviouslyHasPosition { get; set; }
 
     /// <summary>
     /// 风测过期
