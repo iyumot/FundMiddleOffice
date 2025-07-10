@@ -96,6 +96,11 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         var ib = db.GetCollection<InvestorBalance>().FindAll().ToArray();
         CountofInvestorsHoldingPositions = ib.Where(x => x.Share > 0).DistinctBy(x => x.InvestorId).Count();
 
+        // 更新到customers
+        foreach (var item in Customers.IntersectBy(ib.Where(x => x.Share > 0).Select(x=>x.InvestorId), x=>x.Id))
+            item.HasPosition = true;
+
+
         RefreshRiskAssessmentData(db, ib);
 
     }
@@ -107,8 +112,13 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         // 持有过产品，但是没有风测
         CountOfNoRiskAssessment = ib.ExceptBy(ra.Select(x => x.InvestorId), x => x.InvestorId).DistinctBy(x => x.InvestorId).Count();
         // 过期
-        var today = DateOnly.FromDateTime(DateTime.Now);
-        CountOfRiskAssessmentExpired = ra.GroupBy(x => x.InvestorId).Select(x => new { id = x.Key, date = x.Max(y => y.Date) }).Where(x => today.DayNumber - x.date.DayNumber > 180).Count();
+        var limitday = DateOnly.FromDateTime(DateTime.Now).AddYears(-3);
+        var expired = ra.GroupBy(x => x.InvestorId).Select(x => new { id = x.Key, date = x.Max(y => y.Date) }).Where(x => limitday > x.date).ToArray();
+        // 更新到customers
+        foreach (var item in Customers.IntersectBy(expired.Select(x => x.id), x => x.Id))
+            item.EvaluationExpired = true;
+
+        CountOfRiskAssessmentExpired = expired.Length;
     }
 
     [RelayCommand]
@@ -466,12 +476,30 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
     [ObservableProperty]
     public partial RiskEvaluation RiskEvaluation { get; set; }
 
-
+    /// <summary>
+    /// 缺失email
+    /// </summary>
     [ObservableProperty]
     public partial bool LackEmail { get; set; }
 
+    /// <summary>
+    /// 缺少联系方式
+    /// </summary>
     [ObservableProperty]
     public partial bool LackPhone { get; set; }
+
+    /// <summary>
+    /// 持有产品
+    /// </summary>
+    [ObservableProperty]
+    public partial bool HasPosition { get; set; }
+
+    /// <summary>
+    /// 风测过期
+    /// </summary>
+    [ObservableProperty]
+    public partial bool EvaluationExpired { get; set; }
+
 
 
     [ObservableProperty]

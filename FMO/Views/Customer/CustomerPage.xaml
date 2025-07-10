@@ -215,6 +215,47 @@
             SelectionUnit="FullRow"
             Style="{StaticResource DataGrid.ReadOnly}">
             <DataGrid.Columns>
+                <DataGridTemplateColumn>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="local:InvestorReadOnlyViewModel">
+                            <hc:UniformSpacingPanel Spacing="2">
+
+                                <Viewbox
+                                    Width="12"
+                                    Height="12"
+                                    VerticalAlignment="Center"
+                                    Visibility="{Binding HasPosition, Converter={StaticResource BooleanToVisibility2Converter}}">
+                                    <Path Data="{StaticResource f.web-awesome}" Fill="Green" />
+                                </Viewbox>
+                                <Viewbox
+                                    Width="12"
+                                    Height="12"
+                                    VerticalAlignment="Center"
+                                    ToolTip="风险测评过期"
+                                    Visibility="{Binding EvaluationExpired, Converter={StaticResource BooleanToVisibility2Converter}}">
+                                    <Path Data="{StaticResource f.umbrella}" Fill="Red" />
+                                </Viewbox>
+
+                                <Viewbox
+                                    Width="10"
+                                    Height="10"
+                                    VerticalAlignment="Center"
+                                    Visibility="{Binding LackEmail, Converter={StaticResource BooleanToVisibility2Converter}}">
+                                    <Path Data="{StaticResource f.envelope}" Fill="Red" />
+                                </Viewbox>
+                                <Viewbox
+                                    Width="12"
+                                    Height="12"
+                                    VerticalAlignment="Center"
+                                    Visibility="{Binding LackPhone, Converter={StaticResource BooleanToVisibility2Converter}}">
+                                    <Path Data="{StaticResource f.mobile-retro}" Fill="Red" />
+                                </Viewbox>
+                            </hc:UniformSpacingPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+
                 <DataGridTemplateColumn Header="名称">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -225,20 +266,7 @@
                                         Text="{Binding Name}"
                                         TextWrapping="Wrap" />
                                 </local:CopyableControl>
-                                <Viewbox
-                                    Width="10"
-                                    Height="10"
-                                    VerticalAlignment="Center"
-                                    Visibility="{Binding LackEmail, Converter={StaticResource Boolean2VisibilityConverter}}">
-                                    <Path Data="{StaticResource f.envelope}" Fill="Red" />
-                                </Viewbox>
-                                <Viewbox
-                                    Width="12"
-                                    Height="12"
-                                    VerticalAlignment="Center"
-                                    Visibility="{Binding LackPhone, Converter={StaticResource Boolean2VisibilityConverter}}">
-                                    <Path Data="{StaticResource f.mobile-retro}" Fill="Red" />
-                                </Viewbox>
+
                             </DockPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
