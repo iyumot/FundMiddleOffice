@@ -1,4 +1,9 @@
-﻿using System;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using FMO.IO.AMAC;
+using FMO.Models;
+using FMO.Utilities;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -9,13 +14,6 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-using DocumentFormat.OpenXml.Spreadsheet;
-using FMO.IO.AMAC;
-using FMO.Models;
-using FMO.Utilities;
 
 namespace FMO;
 
@@ -54,6 +52,10 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
     [ObservableProperty]
     public partial int TotalCount { get; set; }
 
+
+    [ObservableProperty]
+    public partial int NormalCount { get; set; }
+
     /// <summary>
     /// 清盘基金总数
     /// </summary>
@@ -86,6 +88,7 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
         DataViewSource.Filter += DataViewSource_Filter;
 
         TotalCount = funds.Count();
+        NormalCount = funds.Count(x => x.Status == FundStatus.Normal);
         ClearCount = Funds.Count(x => x.IsCleared);
     }
 
@@ -124,6 +127,8 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
                 fvm.AuditDate = fund.AuditDate;
 
 
+            fvm.Status = fund.Status;
+
             fvm.IsCleared = fund.Status switch { FundStatus.Liquidation or FundStatus.EarlyLiquidation or FundStatus.LateLiquidation => true, _ => false };
         }
         else
@@ -135,7 +140,7 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
 
         /// 更新
         ClearCount = Funds.Count(x => x.IsCleared);
-
+        NormalCount = Funds.Count(x => x.Status == FundStatus.Normal);
     }
 
 
@@ -172,7 +177,7 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
                 var old = Funds.FirstOrDefault(x => x.Code == f.Code);
                 if (old is null) old = Funds.FirstOrDefault(x => string.IsNullOrWhiteSpace(x.Code) && x.Name == f.Name); // 未设置code
 
-                if (old is null)
+                if (old is null) //新增的
                 {
                     db.GetCollection<Fund>().Insert(f);
                     Funds.Add(FundViewModel.FromFund(f));
@@ -180,28 +185,35 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
                     if (f.Status > FundStatus.StartLiquidation)
                         ClearCount += 1;
                 }
-                else
+                else // 已存在的
                 {
                     //if (!old.IsCleared && f.Status > FundStatus.StartLiquidation)
-                   // { 
-                        old.IsCleared = true;
-                        var oldf = db.GetCollection<Fund>().FindById(old.Id);
-                        oldf.Status = f.Status;
-                        if (string.IsNullOrWhiteSpace(old.Code))
-                            old.Code = f.Code;
-                        oldf.SetupDate = f.SetupDate;
-                        oldf.AuditDate = f.AuditDate;
-                        oldf.Type = f.Type;
-                        oldf.Trustee = f.Trustee;
-                        oldf.LastUpdate = f.LastUpdate;
-                        db.GetCollection<Fund>().Update(oldf);
+                    // { 
+                    old.Status = f.Status;
 
-                        WeakReferenceMessenger.Default.Send(oldf);
+                    var oldf = db.GetCollection<Fund>().FindById(old.Id);
+                    oldf.Status = f.Status;
+                    if (string.IsNullOrWhiteSpace(old.Code))
+                        old.Code = f.Code;
+                    oldf.SetupDate = f.SetupDate;
+                    oldf.AuditDate = f.AuditDate;
+                    oldf.Type = f.Type;
+                    oldf.Trustee = f.Trustee;
+                    oldf.LastUpdate = f.LastUpdate;
+                    db.GetCollection<Fund>().Update(oldf);
+
+                    WeakReferenceMessenger.Default.Send(oldf);
+
+                    if (f.Status > FundStatus.StartLiquidation)
                         ClearCount += 1;
-                   // }
+                    else if (f.Status == FundStatus.Normal)
+                        NormalCount += 1;
+                    // }
                 }
                 await Task.Delay(200);
             }
+
+            NormalCount = Funds.Count(x => x.Status == FundStatus.Normal);
 
             HandyControl.Controls.Growl.Success($"更新基金信息完成");
         }
@@ -348,6 +360,10 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
         [ObservableProperty]
         public partial bool IsCleared { get; set; }
 
+
+        [ObservableProperty]
+        public partial FundStatus Status { get; set; }
+
         /// <summary>
         /// 成立日期
         /// </summary>
@@ -371,7 +387,7 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
         public partial ObservableCollection<FundTip>? Tips { get; set; }
 
         [ObservableProperty]
-        public partial bool ShowTips { get; set; } = false; 
+        public partial bool ShowTips { get; set; } = false;
 
         public bool HasTip => Tips?.Count > 0;
 
@@ -387,7 +403,7 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
         public static FundViewModel FromFund(Fund fund)
         {
             var m = Regex.Match(fund.Name, @"(\w+?)((?:私募|证券|期货|集合)\w+(?:基金|计划))");
-             
+
             return new FundViewModel
             {
                 Id = fund.Id,
@@ -398,6 +414,7 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
                 IsCleared = fund.Status switch { FundStatus.Liquidation or FundStatus.EarlyLiquidation or FundStatus.LateLiquidation or FundStatus.AdvisoryTerminated => true, _ => false },
                 SetupDate = fund.SetupDate,
                 AuditDate = fund.AuditDate,
+                Status = fund.Status,
                 Code = fund.Code,
                 Tips = new(DataTracker.FundTips.Where(x => x.FundId == fund.Id))
             };

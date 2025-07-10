@@ -30,6 +30,7 @@
                 </Style>
             </DockPanel.Resources>
             <TextBlock FontWeight="Bold" Text="{Binding TotalCount, StringFormat=管理基金共 {0} 只，}" />
+            <TextBlock FontWeight="Bold" Text="{Binding NormalCount, StringFormat=运行中 {0} 只，}" />
             <TextBlock FontWeight="Bold" Text="{Binding ClearCount, StringFormat=已清算 {0} 只}" />
             <Viewbox
                 Width="12"
