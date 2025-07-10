@@ -274,48 +274,48 @@ public class InvestorQualification
             info.Add("投资经历");
         }
 
-        string s = "";
-        switch (ProofType)
-        {
-            case QualificationFileType.Financial:
-                s = FinancialAssets switch { >= 500 => "500万金融资产证明", >= 300 => "300万金融资产证明", > 0 => "金融资产证明(无效金额)", _ => "金融资产证明(请填写金额)" };
-                break;
-            case QualificationFileType.Income:
-                s = Income switch { >= 50 => "50万年均收入证明", > 0 => "年均收入证明(无效金额)", _ => "年均收入证明(请填写金额)" };
-                break;
-            case QualificationFileType.Employee:
-                s = "管理人员工";
-                break;
-            case QualificationFileType.NetAssets:
-                s = Result == QualifiedInvestorType.Professional ? (NetAssets switch { >= 2000 => "年末净资产>2000万", > 0 => "年末净资产(无效金额)", _ => "年末净资产(请填写金额)" } + FinancialAssets switch { >= 1000 => "1000万金融资产证明", > 0 => "金融资产证明(无效金额)", _ => "金融资产证明(请填写金额)" }) : NetAssets switch { >= 1000 => "年末净资产>1000万", _ => "年末净资产(请填写金额)" };
-                break;
-            case QualificationFileType.FinancialInstitution:
-                s = "金融机构";
-                break;
-            case QualificationFileType.Product:
-                s = "基金产品";
-                break;
-            default:
-                break;
-        }
+        //string s = "";
+        //switch (ProofType)
+        //{
+        //    case QualificationFileType.Financial:
+        //        s = FinancialAssets switch { >= 500 => "500万金融资产证明", >= 300 => "300万金融资产证明", > 0 => "金融资产证明(无效金额)", _ => "金融资产证明(请填写金额)" };
+        //        break;
+        //    case QualificationFileType.Income:
+        //        s = Income switch { >= 50 => "50万年均收入证明", > 0 => "年均收入证明(无效金额)", _ => "年均收入证明(请填写金额)" };
+        //        break;
+        //    case QualificationFileType.Employee:
+        //        s = "管理人员工";
+        //        break;
+        //    case QualificationFileType.NetAssets:
+        //        s = Result == QualifiedInvestorType.Professional ? (NetAssets switch { >= 2000 => "年末净资产>2000万", > 0 => "年末净资产(无效金额)", _ => "年末净资产(请填写金额)" } + FinancialAssets switch { >= 1000 => "1000万金融资产证明", > 0 => "金融资产证明(无效金额)", _ => "金融资产证明(请填写金额)" }) : NetAssets switch { >= 1000 => "年末净资产>1000万", _ => "年末净资产(请填写金额)" };
+        //        break;
+        //    case QualificationFileType.FinancialInstitution:
+        //        s = "金融机构";
+        //        break;
+        //    case QualificationFileType.Product:
+        //        s = "基金产品";
+        //        break;
+        //    default:
+        //        break;
+        //}
 
-        switch (ExperienceType)
-        {
-            case QualificationExperienceType.Invest:
-                s += " + 2年投资经历";
-                break;
-            case QualificationExperienceType.Work:
-                s += " + 2年以上金融产品设计、投资、风险管理及相关工作经历";
-                break;
-            case QualificationExperienceType.Senior:
-                s += " + 特殊专业机构投资者的高级管理人员";
-                break;
-            case QualificationExperienceType.Lawyer:
-                s += " + 获得职业资格认证的从事金融相关业务的注册会计师和律师";
-                break;
-        }
+        //switch (ExperienceType)
+        //{
+        //    case QualificationExperienceType.Invest:
+        //        s += " + 2年投资经历";
+        //        break;
+        //    case QualificationExperienceType.Work:
+        //        s += " + 2年以上金融产品设计、投资、风险管理及相关工作经历";
+        //        break;
+        //    case QualificationExperienceType.Senior:
+        //        s += " + 特殊专业机构投资者的高级管理人员";
+        //        break;
+        //    case QualificationExperienceType.Lawyer:
+        //        s += " + 获得职业资格认证的从事金融相关业务的注册会计师和律师";
+        //        break;
+        //}
 
 
-        return (er, s + "  " + string.Join(',', info));
+        return (er,  "缺少：" + string.Join(',', info));
     }
 }

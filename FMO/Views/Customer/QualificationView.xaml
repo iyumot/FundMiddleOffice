@@ -96,16 +96,23 @@
             <DockPanel>
                 <TextBlock Margin="{StaticResource marg}" Text="认定方式" />
 
-                <ContentControl>
+                <ContentControl Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}">
                     <ContentControl.Template>
                         <ControlTemplate TargetType="ContentControl">
-                            <TextBlock
-                                x:Name="tb"
-                                Margin="20,0,0,0"
-                                VerticalAlignment="Center"
-                                Foreground="Blue"
-                                Text="{Binding Statement}"
-                                Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                            <DockPanel>
+                                <TextBlock
+                                    Margin="20,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontWeight="Bold"
+                                    Foreground="RoyalBlue"
+                                    Text="{Binding MethodNotice}" />
+                                <TextBlock
+                                    x:Name="tb"
+                                    Margin="5,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Foreground="Blue"
+                                    Text="{Binding Statement}" />
+                            </DockPanel>
                             <ControlTemplate.Triggers>
                                 <DataTrigger Binding="{Binding HasError}" Value="True">
                                     <Setter TargetName="tb" Property="Foreground" Value="Red" />
