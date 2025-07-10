@@ -161,6 +161,9 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
     public bool CanAddRiskAssessment => IsAssessmentFileChoosed && NewDate != default && NewEvaluation != default;
 
 
+    [ObservableProperty]
+    public partial decimal? TotalProfit { get; set; }
+
 
     //public CustomerViewModel()
     //{
@@ -233,6 +236,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
             });
         }
 
+        TotalProfit = trbf.Sum(x => x.Profit) switch { 0 => null, var n => n };
         TransferRecords = trbf;
     }
 
@@ -538,7 +542,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
         {
             l.Remove(old);
 
-            try { File.Delete(old.Path!); } catch(Exception e) { Log.Error($"delete file failed {e}"); }
+            try { File.Delete(old.Path!); } catch (Exception e) { Log.Error($"delete file failed {e}"); }
         }
         db.GetCollection<T>().Update(q);
     }
@@ -624,7 +628,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
 
 
-    public partial class TransferRecordByFund:ObservableObject
+    public partial class TransferRecordByFund : ObservableObject
     {
         public int FundId { get; set; }
 

@@ -419,6 +419,14 @@
                 <StackPanel>
                     <!--  添加  -->
                     <DockPanel LastChildFill="False">
+
+
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            DockPanel.Dock="Right"
+                            Text="{Binding TotalProfit, StringFormat=总盈亏：{0:N2}, TargetNullValue=''}" />
+
+
                         <ContentControl Name="btnRisk" HorizontalAlignment="Left">
                             <ContentControl.Template>
                                 <ControlTemplate TargetType="ContentControl">
@@ -459,7 +467,6 @@
 
                                         </DockPanel>
 
-
                                     </DockPanel>
 
                                     <ControlTemplate.Triggers>
@@ -471,8 +478,6 @@
                                 </ControlTemplate>
                             </ContentControl.Template>
                         </ContentControl>
-
-
 
                         <Button
                             Margin="2,0,0,0"
@@ -491,6 +496,7 @@
                             BorderThickness="0"
                             Foreground="Orange"
                             Style="{StaticResource ToggleButtonIcon}" />
+
 
                         <Popup
                             AllowsTransparency="True"
