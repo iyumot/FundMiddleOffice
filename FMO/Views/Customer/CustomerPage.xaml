@@ -188,11 +188,13 @@
                 </hc:SimplePanel>
 
 
-                <TextBlock Text="{Binding CountofInvestorsHoldingPositions, StringFormat=持仓客户数：{0}}" />
+                <hc:UniformSpacingPanel VerticalAlignment="Center" Spacing="8">
+                    <TextBlock Text="{Binding CountofInvestorsHoldingPositions, StringFormat=持仓客户数：{0}}" />
 
-                <TextBlock Text="{Binding CountOfNoRiskAssessment, StringFormat=风险测评缺失：{0}}" />
+                    <TextBlock Text="{Binding CountOfNoRiskAssessment, StringFormat=风险测评缺失：{0}}" />
 
-                <TextBlock Text="{Binding CountOfRiskAssessmentExpired, StringFormat=过期：{0}}" />
+                    <TextBlock Text="{Binding CountOfRiskAssessmentExpired, StringFormat=过期：{0}}" />
+                </hc:UniformSpacingPanel>
 
             </hc:UniformSpacingPanel>
         </DockPanel>
