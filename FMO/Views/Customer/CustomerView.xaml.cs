@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace FMO;
@@ -123,6 +124,11 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
     [ObservableProperty]
     public partial RiskLevel? RiskLevel { get; set; }
 
+    /// <summary>
+    /// 允许豁免风测
+    /// </summary>
+    public bool CanSkipRiskEvaluation => Type.OldValue switch { AmacInvestorType.Employee or AmacInvestorType.Manager => true, _ => false } | Qualifications.Any(x => x.IsProfessional);
+
     [ObservableProperty]
     public partial Enum[]? DetailTypes { get; set; }
 
@@ -159,6 +165,10 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
     public bool RiskConflict => RiskAssessments.Any(x => x.Date.Year == NewDate?.Year && x.Date.Month == NewDate?.Month && x.Date.Day == NewDate?.Day);
 
     public bool CanAddRiskAssessment => IsAssessmentFileChoosed && NewDate != default && NewEvaluation != default;
+
+
+    [ObservableProperty]
+    public partial bool IsRiskEvaluationSkiped { get; set; }
 
 
     [ObservableProperty]
@@ -208,6 +218,8 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
         var iq = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == Id || (x.InvestorId == 0 && x.InvestorName == investor.Name && x.IdentityCode == investor.Identity.Id)).ToArray();
         Qualifications = [.. iq.Select(x => QualificationViewModel.From(x, investor.Type, investor.EntityType))];
+        Qualifications.CollectionChanged += (s, e) => OnPropertyChanged(nameof(CanSkipRiskEvaluation));
+
 
         RiskAssessments = [.. db.GetCollection<RiskAssessment>().Find(x => x.InvestorId == Id).Select(x => new RiskAssessmentViewModel(x))];
 
@@ -243,6 +255,8 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
     private void Type_PropertyChanged(object? sender, PropertyChangedEventArgs? e)
     {
+        OnPropertyChanged(nameof(CanSkipRiskEvaluation));
+
         switch (Type.NewValue)
         {
             case AmacInvestorType.NonEmployee:
@@ -480,6 +494,20 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
     }
 
 
+    [RelayCommand]
+    public void SkipRiskEvaluation()
+    {
+        if(HandyControl.Controls.MessageBox.Show("仅管理人自身及员工和专业投资者可以豁免，是否确认", "提示", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+        {
+            using var db = DbHelper.Base();
+            if (db.GetCollection<Investor>().FindById(Id) is Investor investor)
+            {
+                investor.RiskEvaluation = RiskEvaluation.C5;
+                db.GetCollection<Investor>().Update(investor);
+                WeakReferenceMessenger.Default.Send(investor);
+            }
+        }
+    }
 
     //[RelayCommand]
     //public void AddFile(IFileSelector obj)

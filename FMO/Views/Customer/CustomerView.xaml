@@ -440,6 +440,13 @@
                                             Command="{Binding ChooseAssessmentFileCommand}"
                                             Content="风测"
                                             Style="{StaticResource ButtonPrimary}" />
+
+                                        <Button
+                                            Command="{Binding SkipRiskEvaluationCommand}"
+                                            Content="豁免"
+                                            Style="{StaticResource ButtonWarning}"
+                                            Visibility="{Binding CanSkipRiskEvaluation, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
                                         <DockPanel LastChildFill="False" Visibility="{Binding IsAssessmentFileChoosed, Converter={StaticResource Boolean2VisibilityConverter}}">
                                             <DatePicker
                                                 Name="a"
