@@ -684,6 +684,7 @@
                         <TextBlock
                             Name="lb"
                             VerticalAlignment="Center"
+                            Foreground="{DynamicResource LabelBrush}"
                             Text="{Binding Binding.Label, RelativeSource={RelativeSource AncestorType=local:SingleFileView}}" />
 
                         <Viewbox
