@@ -226,6 +226,13 @@
                                     Width="12"
                                     Height="12"
                                     VerticalAlignment="Center">
+                                    <Viewbox.ToolTip>
+                                        <TextBlock>
+                                            <Run Foreground="Green" Text="绿色：现在还有持仓" />
+                                            <LineBreak />
+                                            <Run Foreground="Gray" Text="灰色d：曾经有持仓" />
+                                        </TextBlock>
+                                    </Viewbox.ToolTip>
                                     <Path
                                         x:Name="posi"
                                         Data="{StaticResource f.web-awesome}"

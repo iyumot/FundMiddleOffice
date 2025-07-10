@@ -418,7 +418,8 @@
                         <TextBlock
                             VerticalAlignment="Center"
                             DockPanel.Dock="Right"
-                            Text="{Binding TotalProfit, StringFormat=总盈亏：{0:N2}, TargetNullValue=''}" />
+                            Text="{Binding TotalProfit, StringFormat=总盈亏：{0:N2}, TargetNullValue=''}"
+                            Visibility="{Binding IsAssessmentFileChoosed, Converter={StaticResource Boolean2VisibilityReConverter}}" />
 
 
                         <ContentControl Name="btnRisk" HorizontalAlignment="Left">
@@ -435,11 +436,15 @@
                                             Content="风测"
                                             Style="{StaticResource ButtonPrimary}" />
 
-                                        <Button
-                                            Command="{Binding SkipRiskEvaluationCommand}"
-                                            Content="豁免"
-                                            Style="{StaticResource ButtonWarning}"
-                                            Visibility="{Binding CanSkipRiskEvaluation, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                                        <hc:SimplePanel Visibility="{Binding IsAssessmentFileChoosed, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                                            <Button
+                                                Height="26"
+                                                Margin="1,0"
+                                                Command="{Binding SkipRiskEvaluationCommand}"
+                                                Content="豁免"
+                                                Style="{StaticResource ButtonWarning}"
+                                                Visibility="{Binding CanSkipRiskEvaluation, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                                        </hc:SimplePanel>
 
                                         <DockPanel LastChildFill="False" Visibility="{Binding IsAssessmentFileChoosed, Converter={StaticResource Boolean2VisibilityConverter}}">
                                             <DatePicker
