@@ -225,4 +225,15 @@ public class TACExistConveter : IValueConverter
 }
 
 
- 
+public class BooleanToVisibility2Converter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value switch { true => Visibility.Visible, _ => Visibility.Hidden };
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value switch { Visibility.Visible => true, _ => false };
+    }
+}
