@@ -7,6 +7,7 @@ using Serilog;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -31,7 +32,7 @@ public partial class MainWindow : HandyControl.Controls.Window
 
 
 
-
+        HelpService.Initialize(this);
     }
 
     private void DockPanel_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
@@ -40,15 +41,7 @@ public partial class MainWindow : HandyControl.Controls.Window
             this.DragMove();
     }
 
-    private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
-    {
-        if (DataContext is not MainWindowViewModel v)
-            return;
-
-        if (e.Key == Key.F1)
-            v.ShowHelp = !v.ShowHelp;
-        else v.ShowHelp = false;
-    }
+     
 }
 
 
@@ -89,9 +82,6 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
     [ObservableProperty]
     public partial ObservableCollection<TabItemInfo> Pages { get; private set; }
 
-
-    [ObservableProperty]
-    public partial bool ShowHelp { get; set; }
 
     public ObservableCollection<MainMenu> MenuItems { get; }
 
@@ -406,4 +396,4 @@ public partial class MainMenu
 
 
     public object? Parameter { get; set; }
-}
+} 

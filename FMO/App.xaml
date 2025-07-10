@@ -12,6 +12,7 @@
                 <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml" />
                 <ResourceDictionary Source="/Themes/Generic.xaml" />
+                <ResourceDictionary Source="/HelpTemplates.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

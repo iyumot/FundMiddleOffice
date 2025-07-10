@@ -209,6 +209,7 @@
         <DataGrid
             Name="datagrid"
             d:ItemsSource="{d:SampleData}"
+            local:HelpService.Help="{StaticResource Help.Investor.Tags}"
             AutoGenerateColumns="False"
             EnableRowVirtualization="True"
             IsReadOnly="True"
@@ -216,6 +217,12 @@
             SelectedItem="{Binding Selected}"
             SelectionUnit="FullRow"
             Style="{StaticResource DataGrid.ReadOnly}">
+            <local:HelpService.Offset>
+                <Point X="50" Y="50" />
+            </local:HelpService.Offset>
+
+
+
             <DataGrid.Columns>
                 <DataGridTemplateColumn>
                     <DataGridTemplateColumn.CellTemplate>

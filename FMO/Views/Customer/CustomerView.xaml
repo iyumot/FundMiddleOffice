@@ -432,6 +432,8 @@
                                             Padding="5"
                                             HorizontalAlignment="Left"
                                             hc:IconElement.Geometry="{StaticResource AddGeometry}"
+                                            local:HelpService.Help="{StaticResource Help.Investor.AddRisk}"
+                                            local:HelpService.Offset="-140,2"
                                             Command="{Binding ChooseAssessmentFileCommand}"
                                             Content="风测"
                                             Style="{StaticResource ButtonPrimary}" />
@@ -490,6 +492,9 @@
                             Padding="5"
                             HorizontalAlignment="Left"
                             hc:IconElement.Geometry="{StaticResource AddGeometry}"
+                            local:HelpService.Help="{StaticResource Help.Investor.AddQualification}"
+                            local:HelpService.Offset="20,2"
+                            local:HelpService.Placement="RightTop"
                             Command="{Binding AddQualificationCommand}"
                             Content="合投"
                             Style="{StaticResource ButtonPrimary}" />
@@ -704,7 +709,11 @@
             Grid.Column="2"
             HorizontalAlignment="Right"
             VerticalAlignment="Top"
+            local:HelpService.Help="{StaticResource Help.Investor.Modify}"
+            local:HelpService.Offset="-80,0"
+            local:HelpService.Placement="LeftBottom"
             IsChecked="{Binding IsReadOnly}"
             Style="{StaticResource EditSwitch}" />
+
     </Grid>
 </UserControl>
