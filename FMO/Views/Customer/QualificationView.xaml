@@ -96,7 +96,7 @@
             <DockPanel>
                 <TextBlock Margin="{StaticResource marg}" Text="认定方式" />
 
-                <ContentControl Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}">
+                <ContentControl>
                     <ContentControl.Template>
                         <ControlTemplate TargetType="ContentControl">
                             <DockPanel>
@@ -278,12 +278,29 @@
 
         <!--  右上角按键  -->
         <DockPanel HorizontalAlignment="Right" VerticalAlignment="Top">
+            <!--  保存并Settle  -->
+            <!--<Button
+                Margin="5,0"
+                hc:IconElement.Geometry="{StaticResource f.gavel}"
+                BorderBrush="{StaticResource AccentBrush}"
+                Command="{Binding SaveQualificationForceCommand}"
+                CommandParameter="{Binding .}"
+                Foreground="{StaticResource AccentBrush}"
+                Style="{StaticResource ButtonIconCircular.Small}"
+                ToolTip="保存并认定，忽略错误"
+                Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />-->
+            <CheckBox
+                Content="忽略错误项"
+                IsChecked="{Binding IgnoreError}"
+                Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
             <Button
                 Margin="5,0"
                 hc:IconElement.Geometry="{StaticResource f.floppy-disk}"
                 Command="{Binding SaveQualificationCommand}"
                 CommandParameter="{Binding .}"
                 Style="{StaticResource ButtonIconCircular.Small}"
+                ToolTip="保存"
                 Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
 
             <!--  删除合投  -->

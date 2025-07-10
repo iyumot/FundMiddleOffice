@@ -134,8 +134,6 @@ public class InvestorQualification
 
     public bool IsSettled { get; set; }
 
-    public bool IsManualSettled { get; set; }
-
     /// <summary>
     /// 来源
     /// </summary>
@@ -240,7 +238,7 @@ public class InvestorQualification
             info.Add("无日期");
         }
 
-        if(ProofType == QualificationFileType.None)
+        if (ProofType == QualificationFileType.None)
         {
             er = true;
             info.Add("无认证类型");
@@ -263,12 +261,12 @@ public class InvestorQualification
             er = true;
             info.Add("普通/专业投资者告知书");
         }
-        if (CertificationFiles?.Count == 0)
+        if (CertificationFiles is null || CertificationFiles?.Count == 0)
         {
             er = true;
             info.Add("证明文件");
         }
-        if ((Result == QualifiedInvestorType.Professional  && ProofType != QualificationFileType.Product && ProofType != QualificationFileType.FinancialInstitution && !IsFileExists(ProofOfExperience)))
+        if ((Result == QualifiedInvestorType.Professional && ProofType != QualificationFileType.Product && ProofType != QualificationFileType.FinancialInstitution && !IsFileExists(ProofOfExperience)))
         {
             er = true;
             info.Add("投资经历");
@@ -316,6 +314,6 @@ public class InvestorQualification
         //}
 
 
-        return (er,  "缺少：" + string.Join(',', info));
+        return (er, string.Join('，', info));
     }
 }

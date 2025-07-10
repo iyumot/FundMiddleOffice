@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
-using Microsoft.Win32;
 using Serilog;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -47,6 +46,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowTax))]
+    [NotifyPropertyChangedFor(nameof(MethodNotice))]
     public partial QualificationFileType? ProofType { get; set; }
 
     [ObservableProperty]
@@ -56,6 +56,9 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
     public partial bool IsProfessional { get; set; }
 
     // public EntityValueViewModel<InvestorQualification, bool> IsProfessional { get; } = new() { InitFunc = x => x.Result == QualifiedInvestorType.Professional, UpdateFunc = (x, y) => x.Result = y ?? false ? QualifiedInvestorType.Professional : QualifiedInvestorType.Normal, ClearFunc = x => x.Result = default };
+
+    [ObservableProperty]
+    public partial bool IgnoreError { get; set; }
 
 
     [ObservableProperty]
@@ -193,7 +196,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
 
         NeedExperience = obj.ProofType != QualificationFileType.Product && obj.ProofType != QualificationFileType.FinancialInstitution;
         Name = obj.InvestorName;
-
+        IgnoreError = obj.IsSettled;
 
         InfomationSheet = new()
         {
@@ -346,9 +349,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         obj.NetAssets = NetAssets;
         obj.Income = Income;
         obj.FinancialAssets = FinancialAssets;
-
-
-        (HasError, Statement) = obj.Check();
+        obj.IsSettled = IgnoreError;
 
         db.GetCollection<InvestorQualification>().Update(obj);
 
@@ -357,7 +358,9 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         IsReadOnly = true;
     }
 
-   
+ 
+
+
 
     private FileStorageInfo? SetFile(FileInfo fi, string label, Action<InvestorQualification, FileStorageInfo> func)
     {
@@ -388,6 +391,8 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         var q = db.GetCollection<InvestorQualification>().FindById(Id);
         func(q, fsi);
         db.GetCollection<InvestorQualification>().Update(q);
+
+        (HasError, Statement) = q.Check();
         return fsi;
     }
 
@@ -398,6 +403,8 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         var q = db.GetCollection<InvestorQualification>().FindById(Id);
         func(q);
         db.GetCollection<InvestorQualification>().Update(q);
+
+        (HasError, Statement) = q.Check();
     }
 
     private FileStorageInfo? SetCertFile(int id, FileInfo fi)
@@ -431,6 +438,9 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         };
         l!.Add(fsi);
         db.GetCollection<InvestorQualification>().Update(q);
+
+
+        (HasError, Statement) = q.Check();
         return fsi;
     }
 
@@ -450,6 +460,9 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
             try { File.Delete(old.Path!); } catch (Exception e) { Log.Error($"delete file failed {e}"); }
         }
         db.GetCollection<InvestorQualification>().Update(q);
+
+
+        (HasError, Statement) = q.Check();
     }
 
     protected override InvestorQualification InitNewEntity() => new InvestorQualification();

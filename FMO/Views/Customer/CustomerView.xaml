@@ -50,17 +50,7 @@
                         Foreground="White"
                         Text="专" />
                 </Border>
-                <!--<Viewbox
-                    Width="12"
-                    Height="12"
-                    Margin="-8,-5"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Top">
-                    <Path
-                        Data="{StaticResource f.exclamation}"
-                        Fill="Red"
-                        Visibility="{Binding HasError, Converter={StaticResource Boolean2VisibilityConverter}}" />
-                </Viewbox>-->
+
                 <Ellipse
                     x:Name="err"
                     Width="12"
@@ -68,6 +58,7 @@
                     Margin="-14,-5"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Top"
+                    Panel.ZIndex="99"
                     Fill="Red"
                     Visibility="Collapsed" />
 
@@ -95,6 +86,9 @@
                     </MultiDataTrigger.Conditions>
                     <Setter TargetName="err" Property="Visibility" Value="Visible" />
                 </MultiDataTrigger>
+                <DataTrigger Binding="{Binding IgnoreError}" Value="True">
+                    <Setter TargetName="err" Property="Fill" Value="Gray" />
+                </DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
 
@@ -581,9 +575,13 @@
                             SelectedItem="{Binding SelectedQualification}">
                             <ListBox.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <WrapPanel IsItemsHost="True" />
+                                    <hc:UniformSpacingPanel
+                                        ChildWrapping="Wrap"
+                                        IsItemsHost="True"
+                                        Spacing="5" />
                                 </ItemsPanelTemplate>
                             </ListBox.ItemsPanel>
+
                         </ListBox>
 
                         <local:QualificationView

@@ -240,6 +240,18 @@
                                     <Path Data="{StaticResource f.umbrella}" Fill="Red" />
                                 </Viewbox>
 
+
+                                <Viewbox
+                                    Width="12"
+                                    Height="12"
+                                    VerticalAlignment="Center"
+                                    ToolTip="合投">
+                                    <Path
+                                        x:Name="qual"
+                                        Data="{StaticResource f.triangle-exclamation}"
+                                        Fill="Transparent" />
+                                </Viewbox>
+
                                 <Viewbox
                                     Width="10"
                                     Height="10"
@@ -262,6 +274,17 @@
                                 <DataTrigger Binding="{Binding HasPosition}" Value="True">
                                     <Setter TargetName="posi" Property="Fill" Value="Green" />
                                 </DataTrigger>
+                                <DataTrigger Binding="{Binding QualificationAbnormal}" Value="True">
+                                    <Setter TargetName="qual" Property="Fill" Value="Red" />
+                                </DataTrigger>
+
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding QualificationAbnormal}" Value="True" />
+                                        <Condition Binding="{Binding QualificationSettled}" Value="True" />
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter TargetName="qual" Property="Fill" Value="Gray" />
+                                </MultiDataTrigger>
                             </DataTemplate.Triggers>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -343,9 +366,17 @@
                             <DockPanel>
                                 <TextBlock Text="{Binding QualificationDate, StringFormat=yyyy-MM-dd}" />
                                 <Viewbox Width="16" Visibility="{Binding QualificationAbnormal, Converter={StaticResource Boolean2VisibilityConverter}}">
-                                    <Path Data="{StaticResource f.triangle-exclamation}" Fill="Red" />
+                                    <Path
+                                        x:Name="qual"
+                                        Data="{StaticResource f.triangle-exclamation}"
+                                        Fill="Red" />
                                 </Viewbox>
                             </DockPanel>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding QualificationSettled}" Value="True">
+                                    <Setter TargetName="qual" Property="Fill" Value="Gray" />
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

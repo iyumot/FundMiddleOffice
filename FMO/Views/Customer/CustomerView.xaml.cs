@@ -401,6 +401,12 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
     [RelayCommand]
     public void AddQualification()
     {
+        if(Qualifications.Any(x=>x.Date.OldValue == default))
+        {
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Info, "存在未完成的合格投资者认定流程，请先完成！"));
+            return;
+        }
+
         using var db = DbHelper.Base();
         InvestorQualification entity = new InvestorQualification { InvestorId = Id };
         db.GetCollection<InvestorQualification>().Insert(entity);
