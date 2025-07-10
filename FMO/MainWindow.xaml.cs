@@ -39,6 +39,16 @@ public partial class MainWindow : HandyControl.Controls.Window
         if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
             this.DragMove();
     }
+
+    private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (DataContext is not MainWindowViewModel v)
+            return;
+
+        if (e.Key == Key.F1)
+            v.ShowHelp = !v.ShowHelp;
+        else v.ShowHelp = false;
+    }
 }
 
 
@@ -79,6 +89,9 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
     [ObservableProperty]
     public partial ObservableCollection<TabItemInfo> Pages { get; private set; }
 
+
+    [ObservableProperty]
+    public partial bool ShowHelp { get; set; }
 
     public ObservableCollection<MainMenu> MenuItems { get; }
 

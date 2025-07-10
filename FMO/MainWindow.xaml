@@ -11,6 +11,7 @@
     Height="450"
     d:Height="900"
     d:Width="1600"
+    PreviewKeyDown="Window_PreviewKeyDown"
     SnapsToDevicePixels="True"
     UseLayoutRounding="True"
     WindowStartupLocation="CenterScreen"
@@ -331,5 +332,93 @@
                 VerticalAlignment="Bottom"
                 hc:Growl.GrowlParent="True" />
         </ScrollViewer>
+
+
+        <hc:SimplePanel
+            Grid.RowSpan="9"
+            Grid.ColumnSpan="9"
+            Visibility="{Binding ShowHelp, Converter={StaticResource Boolean2VisibilityConverter}}">
+
+            <hc:SimplePanel Background="WhiteSmoke" Opacity="0.5" />
+
+            <Canvas HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+
+                <Border
+                    Canvas.Left="100"
+                    Canvas.Top="160"
+                    Background="White">
+                    <hc:UniformSpacingPanel
+                        Margin="10"
+                        Orientation="Vertical"
+                        VerticalSpacing="10">
+                        <DockPanel>
+                            <Viewbox Width="20">
+                                <Path Data="{StaticResource f.web-awesome}" Fill="Green" />
+                            </Viewbox>
+                            <TextBlock
+                                Margin="5,0"
+                                VerticalAlignment="Center"
+                                Text="当前持有产品" />
+
+                            <Viewbox Width="20">
+                                <Path Data="{StaticResource f.web-awesome}" Fill="DarkGray" />
+                            </Viewbox>
+                            <TextBlock
+                                Margin="5,0"
+                                VerticalAlignment="Center"
+                                Text="曾经持有产品" />
+                        </DockPanel>
+
+                        <DockPanel>
+                            <Viewbox Width="20">
+                                <Path Data="{StaticResource f.umbrella}" Fill="Red" />
+                            </Viewbox>
+                            <TextBlock
+                                Margin="5,0"
+                                VerticalAlignment="Center"
+                                Text="风险测评过期" />
+                        </DockPanel>
+
+                        <DockPanel>
+                            <Viewbox Width="20">
+                                <Path Data="{StaticResource f.triangle-exclamation}" Fill="Red" />
+                            </Viewbox>
+                            <TextBlock
+                                Margin="5,0"
+                                VerticalAlignment="Center"
+                                Text="没有合格投资者认定" />
+
+                            <Viewbox Width="20">
+                                <Path Data="{StaticResource f.triangle-exclamation}" Fill="Gray" />
+                            </Viewbox>
+                            <TextBlock
+                                Margin="5,0"
+                                VerticalAlignment="Center"
+                                Text="合格投资者认定资料不全" />
+                        </DockPanel>
+
+                        <DockPanel>
+                            <Viewbox Width="20">
+                                <Path Data="{StaticResource f.envelope}" Fill="Red" />
+                            </Viewbox>
+                            <TextBlock
+                                Margin="5,0"
+                                VerticalAlignment="Center"
+                                Text="没有填写Email" />
+                        </DockPanel>
+                        <DockPanel>
+                            <Viewbox Width="20">
+                                <Path Data="{StaticResource f.mobile-retro}" Fill="Red" />
+                            </Viewbox>
+                            <TextBlock
+                                Margin="5,0"
+                                VerticalAlignment="Center"
+                                Text="没有填写手机号" />
+                        </DockPanel>
+
+                    </hc:UniformSpacingPanel>
+                </Border>
+            </Canvas>
+        </hc:SimplePanel>
     </Grid>
 </hc:Window>
