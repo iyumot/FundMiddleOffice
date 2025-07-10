@@ -147,7 +147,7 @@ public static class DatabaseAssist
         id = 8;
         if (col.FindById(id) is null)
         {
-            var old = db.GetCollection<TransferRecord>().DeleteMany(x=>x.ConfirmedShare == 0 && (x.Type == TransferRecordType.UNK || x.Type == TransferRecordType.Subscription));
+            var old = db.GetCollection<TransferRecord>().DeleteMany(x => x.ConfirmedShare == 0 && (x.Type == TransferRecordType.UNK || x.Type == TransferRecordType.Subscription));
 
             col.Upsert(new PatchRecord(id, DateTime.Now));
         }
@@ -159,7 +159,7 @@ public static class DatabaseAssist
             db.GetCollection<Investor>().DeleteMany(x => x.Name == "unset" || x.Name.Contains("test"));
             // 异常投资人数据
             var bad = db.GetCollection<Investor>().FindAll().ToArray();
-            foreach (var (i,item) in bad.Index())
+            foreach (var (i, item) in bad.Index())
             {
                 var exi = bad[..i].FirstOrDefault(y => y.Identity?.Id == item.Identity?.Id);
                 if (exi is null)
@@ -174,7 +174,7 @@ public static class DatabaseAssist
                 foreach (var t in tq)
                     t.CustomerId = exi.Id;
 
-                if(ta.Length > 0)
+                if (ta.Length > 0)
                     db.GetCollection<TransferRecord>().Update(ta);
                 if (tq.Length > 0)
                     db.GetCollection<TransferRequest>().Update(tq);
@@ -182,7 +182,7 @@ public static class DatabaseAssist
                 db.GetCollection<Investor>().Delete(item.Id);
             }
 
-            
+
 
             col.Upsert(new PatchRecord(id, DateTime.Now));
         }
@@ -196,7 +196,30 @@ public static class DatabaseAssist
             col.Upsert(new PatchRecord(id, DateTime.Now));
         }
 
+        id = 11;
+        if (col.FindById(id) is null)
+        {
+            var da = db.GetCollection(nameof(Investor)).FindAll().ToArray();
+            foreach (var item in da)
+            {
+                //        if (item.TryGetValue("RiskLevel", out var riskLevelObj) &&
+                //Enum.IsDefined(typeof(RiskLevel), riskLevelObj))
+                //        {
+                //            // 将 RiskLevel 的值转为 int 再映射成 RiskEvaluation 枚举
+                //            var riskLevelValue = (int)riskLevelObj;
+                //            if (Enum.IsDefined(typeof(RiskEvaluation), riskLevelValue))
+                //            {
+                //                item[nameof(RiskEvaluation)] = (RiskEvaluation)riskLevelValue;
+                //            }
+                //        }
 
+                if (item.ContainsKey("RiskLevel"))
+                    item[nameof(RiskEvaluation)] = ((RiskEvaluation)(int)Enum.Parse<RiskLevel>(item[nameof(RiskLevel)].AsString)).ToString();
+            }
+            db.GetCollection(nameof(Investor)).Update(da);
+
+            col.Upsert(new PatchRecord(id, DateTime.Now));
+        }
     }
 
 }
