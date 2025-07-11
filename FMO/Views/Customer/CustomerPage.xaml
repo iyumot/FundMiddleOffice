@@ -230,7 +230,24 @@
                     Background="{StaticResource WarningBrush}"
                     Content="未绑定的银行账户"
                     Foreground="White"
-                    Style="{StaticResource ToggleButtonDefault.Small}" />
+                    Style="{StaticResource ToggleButtonDefault.Small}"
+                    Visibility="{Binding HasUndeservedAccount, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+
+                <hc:UniformSpacingPanel ChildWrapping="NoWrap" Spacing="8">
+                    <hc:UniformSpacingPanel.Resources>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Height" Value="15" />
+
+                        </Style>
+                    </hc:UniformSpacingPanel.Resources>
+                    <TextBlock Text="{Binding CountofInvestorsHoldingPositions, StringFormat=持仓客户数：{0}}" />
+
+                    <TextBlock Text="{Binding CountOfNoRiskAssessment, StringFormat=风险测评缺失：{0}}" />
+
+                    <TextBlock Text="{Binding CountOfRiskAssessmentExpired, StringFormat=过期：{0}}" />
+                </hc:UniformSpacingPanel>
+
 
                 <Popup
                     AllowsTransparency="True"
@@ -240,7 +257,7 @@
                     <Border>
                         <DataGrid
                             AutoGenerateColumns="False"
-                            ItemsSource="{Binding UnrecognizedAccount}"
+                            ItemsSource="{Binding Undeserved}"
                             Style="{StaticResource DataGrid.Small}">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Binding="{Binding Name}" />
@@ -250,18 +267,6 @@
                     </Border>
                 </Popup>
 
-                <hc:UniformSpacingPanel VerticalAlignment="Center" Spacing="8">
-                    <hc:UniformSpacingPanel.Resources>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="VerticalAlignment" Value="Center" />
-                        </Style>
-                    </hc:UniformSpacingPanel.Resources>
-                    <TextBlock Text="{Binding CountofInvestorsHoldingPositions, StringFormat=持仓客户数：{0}}" />
-
-                    <TextBlock Text="{Binding CountOfNoRiskAssessment, StringFormat=风险测评缺失：{0}}" />
-
-                    <TextBlock Text="{Binding CountOfRiskAssessmentExpired, StringFormat=过期：{0}}" />
-                </hc:UniformSpacingPanel>
 
             </hc:UniformSpacingPanel>
         </DockPanel>

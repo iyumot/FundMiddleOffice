@@ -76,7 +76,10 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
     public partial string? SearchKey { get; set; }
 
 
-    public ObservableCollection<BankAccountInfoViewModel> UnrecognizedAccount { get; }
+    public ObservableCollection<BankAccountInfoViewModel> UndeservedAccount { get; }
+
+
+    public bool HasUndeservedAccount => UndeservedAccount.Count > 0;
 
     public CustomerPageViewModel()
     {
@@ -115,7 +118,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         var fnames = db.GetCollection<FundElements>().FindAll().SelectMany(x => x.FullName.Changes.Select(x => x.Value)).Distinct().Union(db.GetCollection<Fund>().Query().Select(x => x.Name).ToArray()).ToList();
         var acc = db.GetCollection<BankAccount>("customer_accounts").Find(x => x.OwnerId == 0).Where(x => !Regex.IsMatch(x.Name!, "登记专户|子账户|募集专户|公共计息收费")).
                     Where(x => !tracc.Contains(x.Number)).Where(x => !fnames.Any(y => x.Name!.Contains(y))).ToArray();
-        UnrecognizedAccount = [.. acc.Select(x => new BankAccountInfoViewModel(x))];
+        UndeservedAccount = [.. acc.Select(x => new BankAccountInfoViewModel(x))];
     }
 
     private void CustomerSource_Filter(object sender, FilterEventArgs e)
