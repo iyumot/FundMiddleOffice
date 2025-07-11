@@ -140,6 +140,7 @@ public partial class CSC : TrusteeApiBase
 
     /// <summary>
     /// 中信建投不返回 本方户名和银行名
+    /// 手动根据产品名设置
     /// </summary>
     /// <param name="begin"></param>
     /// <param name="end"></param>
@@ -147,7 +148,7 @@ public partial class CSC : TrusteeApiBase
     public override async Task<ReturnWrap<BankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end)
     {
         var part = "/institution/tgpt/erp/raise/query/findRaiseAccountDetailList";
-        var result = await SyncWork<BankTransaction, BankTransactionJson>(part, new { beginDate = begin.ToString("yyyyMMdd"), endDate = end.ToString("yyyyMMdd") }, x => x.ToObject());
+        var result = await SyncWork<BankTransaction, RaisingBankTransactionJson>(part, new { beginDate = begin.ToString("yyyyMMdd"), endDate = end.ToString("yyyyMMdd") }, x => x.ToObject());
 
 
         return result;
