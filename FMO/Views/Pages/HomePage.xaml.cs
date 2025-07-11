@@ -271,6 +271,24 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
     }
 
+    /// <summary>
+    /// 检查交易申请与流水是否匹配
+    /// </summary>
+    private void DailyCheckRequestIsWell()
+    {
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        var limit = DateTime.Today.AddDays(-2);
+        using var db = DbHelper.Base();
+        // 2日内的request
+        var tq = db.GetCollection<TransferRequest>().Find(x => today.DayNumber - x.RequestDate.DayNumber < 2).ToArray();
+        var btrans = db.GetCollection<BankTransaction>().Find(x => x.Time > limit).ToArray();
+
+        foreach (var item in tq)
+        { 
+        }
+    }
+
+
 
     [RelayCommand]
     public void CalcFee()
@@ -453,7 +471,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
             InitPlot();
 
 
-
+            DailyCheckRequestIsWell();
 
 
 
