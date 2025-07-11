@@ -10,6 +10,37 @@ internal record PatchRecord(int Id, DateTime Time);
 
 public static class DatabaseAssist
 {
+    private static Dictionary<int, Action<BaseDatabase>> patchs = new()
+    {
+        {2, db=>{
+            // 6.30 解决中信ta，有unset
+            var haser = db.GetCollection<TransferRecord>().Find(x => x.Source != null && x.Source.Contains("citics")).Any(x => x.CustomerName == "unset");
+            using (var pdb = DbHelper.Platform()) //删除记录
+            {
+                pdb.GetCollection("TrusteeMethodShotRange").Delete("trustee_citicsQueryTransferRecords");
+                pdb.GetCollection("TrusteeMethodShotRange").Delete("trustee_cmsQueryTransferRecords");
+            }
+            db.GetCollection<TransferRecord>().DeleteMany(x => x.Source == "" || x.Source == null);
+        } },
+
+        {5, db=>{
+        using var pdb = DbHelper.Platform();
+            if (!pdb.GetCollectionNames().Contains($"TrusteeMethodShotRange{5}"))
+                pdb.RenameCollection("TrusteeMethodShotRange", $"TrusteeMethodShotRange{5}");
+        } },
+
+        {11, db=>{
+            var da = db.GetCollection(nameof(Investor)).FindAll().ToArray();
+            foreach (var item in da)
+            {
+                if (item.ContainsKey("RiskLevel"))
+                    item[nameof(RiskEvaluation)] = ((RiskEvaluation)(int)Enum.Parse<RiskLevel>(item[nameof(RiskLevel)].AsString)).ToString();
+            }
+            db.GetCollection(nameof(Investor)).Update(da);
+        } },
+    };
+
+
     /// <summary>
     /// 自检
     /// </summary>
@@ -81,146 +112,169 @@ public static class DatabaseAssist
 
     }
 
+    /// <summary>
+    /// 当首次初始化时
+    /// </summary>
+    public static void InitPatch()
+    {
+        using var db = DbHelper.Base();
+        var col = db.GetCollection<PatchRecord>();
+        col.Upsert(patchs.Select(x => new PatchRecord(x.Key, DateTime.Now)));
+    }
 
     private static void Patch()
     {
         using var db = DbHelper.Base();
         var col = db.GetCollection<PatchRecord>();
-
-
-        if (col.FindById(2) is null)
+        foreach (var (k,v) in patchs)
         {
-            // 6.30 解决中信ta，有unset
-            var haser = db.GetCollection<TransferRecord>().Find(x => x.Source != null && x.Source.Contains("citics")).Any(x => x.CustomerName == "unset");
-            using (var pdb = DbHelper.Platform()) //删除记录
+            if(col.FindById(k) is null)
             {
-                pdb.GetCollection("TrusteeMethodShotRange").Delete("trustee_citicsQueryTransferRecords");
-                pdb.GetCollection("TrusteeMethodShotRange").Delete("trustee_cmsQueryTransferRecords");
+                v.Invoke(db);
+                col.Upsert(new PatchRecord(k, DateTime.Now));
             }
-            db.GetCollection<TransferRecord>().DeleteMany(x => x.Source == "" || x.Source == null);
-
-            col.Insert(new PatchRecord(2, DateTime.Now));
-        }
-
-        // 清空work记录
-        var id = 5;
-        if (col.FindById(id) is null)
-        {
-            using var pdb = DbHelper.Platform();
-            if (!pdb.GetCollectionNames().Contains($"TrusteeMethodShotRange{id}"))
-                pdb.RenameCollection("TrusteeMethodShotRange", $"TrusteeMethodShotRange{id}");
-            //    pdb.DropCollection("TrusteeMethodShotRange");
-
-            col.Upsert(new PatchRecord(id, DateTime.Now));
-        }
-
-        // citics QueryTransferRecords 数据不全，清除记录
-        id = 6;
-        if (col.FindById(id) is null)
-        {
-            using var pdb = DbHelper.Platform();
-            pdb.GetCollection("TrusteeMethodShotRange").Delete("trustee_citicsQueryTransferRecords");
-
-            col.Upsert(new PatchRecord(id, DateTime.Now));
-        }
-
-        // 修复 citics ta 认购类型错误
-        id = 7;
-        if (col.FindById(id) is null)
-        {
-            using var pdb = DbHelper.Base();
-            var old = pdb.GetCollection<TransferRecord>().Find(x => x.Source == "api").ToArray();
-
-            foreach (var item in old.Where(x => x.Type == TransferRecordType.Subscription && x.ConfirmedShare == 0))
-            {
-                var r = old.FirstOrDefault(x => x.ExternalId!.StartsWith(item.ExternalId!));
-                if (r is not null)
-                {
-                    r.Type = TransferRecordType.Subscription;
-                    pdb.GetCollection<TransferRecord>().Update(r);
-                }
-            }
-
-            col.Upsert(new PatchRecord(id, DateTime.Now));
-        }
-
-        id = 8;
-        if (col.FindById(id) is null)
-        {
-            var old = db.GetCollection<TransferRecord>().DeleteMany(x => x.ConfirmedShare == 0 && (x.Type == TransferRecordType.UNK || x.Type == TransferRecordType.Subscription));
-
-            col.Upsert(new PatchRecord(id, DateTime.Now));
-        }
-
-
-        id = 9;
-        if (col.FindById(id) is null)
-        {
-            db.GetCollection<Investor>().DeleteMany(x => x.Name == "unset" || x.Name.Contains("test"));
-            // 异常投资人数据
-            var bad = db.GetCollection<Investor>().FindAll().ToArray();
-            foreach (var (i, item) in bad.Index())
-            {
-                var exi = bad[..i].FirstOrDefault(y => y.Identity?.Id == item.Identity?.Id);
-                if (exi is null)
-                    continue;
-
-
-                var ta = db.GetCollection<TransferRecord>().Find(x => x.CustomerId == item.Id).ToArray();
-                foreach (var t in ta)
-                    t.CustomerId = exi.Id;
-
-                var tq = db.GetCollection<TransferRequest>().Find(x => x.CustomerId == item.Id).ToArray();
-                foreach (var t in tq)
-                    t.CustomerId = exi.Id;
-
-                if (ta.Length > 0)
-                    db.GetCollection<TransferRecord>().Update(ta);
-                if (tq.Length > 0)
-                    db.GetCollection<TransferRequest>().Update(tq);
-
-                db.GetCollection<Investor>().Delete(item.Id);
-            }
-
-
-
-            col.Upsert(new PatchRecord(id, DateTime.Now));
-        }
-
-
-        id = 10;
-        if (col.FindById(id) is null)
-        {
-            db.GetCollection<InvestorQualification>().DeleteMany(x => x.Date == default);
-
-            col.Upsert(new PatchRecord(id, DateTime.Now));
-        }
-
-        id = 11;
-        if (col.FindById(id) is null)
-        {
-            var da = db.GetCollection(nameof(Investor)).FindAll().ToArray();
-            foreach (var item in da)
-            {
-                //        if (item.TryGetValue("RiskLevel", out var riskLevelObj) &&
-                //Enum.IsDefined(typeof(RiskLevel), riskLevelObj))
-                //        {
-                //            // 将 RiskLevel 的值转为 int 再映射成 RiskEvaluation 枚举
-                //            var riskLevelValue = (int)riskLevelObj;
-                //            if (Enum.IsDefined(typeof(RiskEvaluation), riskLevelValue))
-                //            {
-                //                item[nameof(RiskEvaluation)] = (RiskEvaluation)riskLevelValue;
-                //            }
-                //        }
-
-                if (item.ContainsKey("RiskLevel"))
-                    item[nameof(RiskEvaluation)] = ((RiskEvaluation)(int)Enum.Parse<RiskLevel>(item[nameof(RiskLevel)].AsString)).ToString();
-            }
-            db.GetCollection(nameof(Investor)).Update(da);
-
-            col.Upsert(new PatchRecord(id, DateTime.Now));
         }
     }
+
+    //private static void Patch()
+    //{
+    //    using var db = DbHelper.Base();
+    //    var col = db.GetCollection<PatchRecord>();
+
+
+    //    if (col.FindById(2) is null)
+    //    {
+    //        // 6.30 解决中信ta，有unset
+    //        var haser = db.GetCollection<TransferRecord>().Find(x => x.Source != null && x.Source.Contains("citics")).Any(x => x.CustomerName == "unset");
+    //        using (var pdb = DbHelper.Platform()) //删除记录
+    //        {
+    //            pdb.GetCollection("TrusteeMethodShotRange").Delete("trustee_citicsQueryTransferRecords");
+    //            pdb.GetCollection("TrusteeMethodShotRange").Delete("trustee_cmsQueryTransferRecords");
+    //        }
+    //        db.GetCollection<TransferRecord>().DeleteMany(x => x.Source == "" || x.Source == null);
+
+    //        col.Insert(new PatchRecord(2, DateTime.Now));
+    //    }
+
+    //    // 清空work记录
+    //    var id = 5;
+    //    if (col.FindById(id) is null)
+    //    {
+    //        using var pdb = DbHelper.Platform();
+    //        if (!pdb.GetCollectionNames().Contains($"TrusteeMethodShotRange{id}"))
+    //            pdb.RenameCollection("TrusteeMethodShotRange", $"TrusteeMethodShotRange{id}");
+    //        //    pdb.DropCollection("TrusteeMethodShotRange");
+
+    //        col.Upsert(new PatchRecord(id, DateTime.Now));
+    //    }
+
+    //    // citics QueryTransferRecords 数据不全，清除记录
+    //    id = 6;
+    //    if (col.FindById(id) is null)
+    //    {
+    //        using var pdb = DbHelper.Platform();
+    //        pdb.GetCollection("TrusteeMethodShotRange").Delete("trustee_citicsQueryTransferRecords");
+
+    //        col.Upsert(new PatchRecord(id, DateTime.Now));
+    //    }
+
+    //    // 修复 citics ta 认购类型错误
+    //    id = 7;
+    //    if (col.FindById(id) is null)
+    //    {
+    //        using var pdb = DbHelper.Base();
+    //        var old = pdb.GetCollection<TransferRecord>().Find(x => x.Source == "api").ToArray();
+
+    //        foreach (var item in old.Where(x => x.Type == TransferRecordType.Subscription && x.ConfirmedShare == 0))
+    //        {
+    //            var r = old.FirstOrDefault(x => x.ExternalId!.StartsWith(item.ExternalId!));
+    //            if (r is not null)
+    //            {
+    //                r.Type = TransferRecordType.Subscription;
+    //                pdb.GetCollection<TransferRecord>().Update(r);
+    //            }
+    //        }
+
+    //        col.Upsert(new PatchRecord(id, DateTime.Now));
+    //    }
+
+    //    id = 8;
+    //    if (col.FindById(id) is null)
+    //    {
+    //        var old = db.GetCollection<TransferRecord>().DeleteMany(x => x.ConfirmedShare == 0 && (x.Type == TransferRecordType.UNK || x.Type == TransferRecordType.Subscription));
+
+    //        col.Upsert(new PatchRecord(id, DateTime.Now));
+    //    }
+
+
+    //    id = 9;
+    //    if (col.FindById(id) is null)
+    //    {
+    //        db.GetCollection<Investor>().DeleteMany(x => x.Name == "unset" || x.Name.Contains("test"));
+    //        // 异常投资人数据
+    //        var bad = db.GetCollection<Investor>().FindAll().ToArray();
+    //        foreach (var (i, item) in bad.Index())
+    //        {
+    //            var exi = bad[..i].FirstOrDefault(y => y.Identity?.Id == item.Identity?.Id);
+    //            if (exi is null)
+    //                continue;
+
+
+    //            var ta = db.GetCollection<TransferRecord>().Find(x => x.CustomerId == item.Id).ToArray();
+    //            foreach (var t in ta)
+    //                t.CustomerId = exi.Id;
+
+    //            var tq = db.GetCollection<TransferRequest>().Find(x => x.CustomerId == item.Id).ToArray();
+    //            foreach (var t in tq)
+    //                t.CustomerId = exi.Id;
+
+    //            if (ta.Length > 0)
+    //                db.GetCollection<TransferRecord>().Update(ta);
+    //            if (tq.Length > 0)
+    //                db.GetCollection<TransferRequest>().Update(tq);
+
+    //            db.GetCollection<Investor>().Delete(item.Id);
+    //        }
+
+
+
+    //        col.Upsert(new PatchRecord(id, DateTime.Now));
+    //    }
+
+
+    //    id = 10;
+    //    if (col.FindById(id) is null)
+    //    {
+    //        db.GetCollection<InvestorQualification>().DeleteMany(x => x.Date == default);
+
+    //        col.Upsert(new PatchRecord(id, DateTime.Now));
+    //    }
+
+    //    id = 11;
+    //    if (col.FindById(id) is null)
+    //    {
+    //        var da = db.GetCollection(nameof(Investor)).FindAll().ToArray();
+    //        foreach (var item in da)
+    //        {
+    //            //        if (item.TryGetValue("RiskLevel", out var riskLevelObj) &&
+    //            //Enum.IsDefined(typeof(RiskLevel), riskLevelObj))
+    //            //        {
+    //            //            // 将 RiskLevel 的值转为 int 再映射成 RiskEvaluation 枚举
+    //            //            var riskLevelValue = (int)riskLevelObj;
+    //            //            if (Enum.IsDefined(typeof(RiskEvaluation), riskLevelValue))
+    //            //            {
+    //            //                item[nameof(RiskEvaluation)] = (RiskEvaluation)riskLevelValue;
+    //            //            }
+    //            //        }
+
+    //            if (item.ContainsKey("RiskLevel"))
+    //                item[nameof(RiskEvaluation)] = ((RiskEvaluation)(int)Enum.Parse<RiskLevel>(item[nameof(RiskLevel)].AsString)).ToString();
+    //        }
+    //        db.GetCollection(nameof(Investor)).Update(da);
+
+    //        col.Upsert(new PatchRecord(id, DateTime.Now));
+    //    }
+    //}
 
 }
 

@@ -248,6 +248,9 @@ public partial class InitWindowViewModel : ObservableRecipient, IRecipient<InitS
     {
         IsActive = true;
 
+        //首次运行，记录Patch，以防错误运行
+        DatabaseAssist.InitPatch();
+
         IsNetworkDisconnected = !NetworkInterface.GetIsNetworkAvailable();
         NetworkChange.NetworkAvailabilityChanged += NetworkChange_NetworkAvailabilityChanged;
     }
