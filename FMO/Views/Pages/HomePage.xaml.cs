@@ -97,7 +97,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
         });
 
         // 每小时运行一次，判断是不是新的一天
-        _dailyTimer = new Timer(x => OnNewDate(), null, 6000, 1000 * 60 * 60);
+        _dailyTimer = new Timer(x => OnNewDate(), null, 60000, 1000 * 60 * 60);
     }
 
     private void LoadTrusteeMessages()
