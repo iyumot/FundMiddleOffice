@@ -409,6 +409,99 @@
 
             <Separator Margin="4" DockPanel.Dock="Top" />
 
+            <Border Margin="0,4" DockPanel.Dock="Top">
+                <DockPanel>
+                    <Button
+                        Command="{Binding AddBankCommand}"
+                        Content="添加银行卡"
+                        Style="{StaticResource ButtonPrimary}" />
+                    <ListBox ItemsSource="{Binding Accounts}" Style="{StaticResource ListBoxCustom}">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <hc:UniformSpacingPanel
+                                    ChildWrapping="Wrap"
+                                    IsItemsHost="True"
+                                    Spacing="4" />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <hc:SimplePanel>
+                                    <ToggleButton
+                                        x:Name="tb"
+                                        Width="60"
+                                        Content="{Binding Number, Converter={StaticResource StringSubstringConverter}, ConverterParameter='[^4..]'}"
+                                        FontSize="14"
+                                        FontWeight="Black"
+                                        ToolTip="{Binding .}" />
+                                    <Popup
+                                        AllowsTransparency="True"
+                                        IsOpen="{Binding ElementName=tb, Path=IsChecked}"
+                                        Placement="Left"
+                                        PlacementTarget="{Binding ElementName=tb}"
+                                        StaysOpen="False">
+                                        <Border
+                                            Width="300"
+                                            Background="WhiteSmoke"
+                                            DataContext="{Binding .}">
+                                            <StackPanel Margin="10">
+                                                <StackPanel.Resources>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="MinWidth" Value="45" />
+                                                        <Setter Property="TextAlignment" Value="Right" />
+                                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                                        <Setter Property="Margin" Value="0,0,4,0" />
+                                                    </Style>
+
+                                                </StackPanel.Resources>
+                                                <DockPanel>
+                                                    <Button
+                                                        Width="24"
+                                                        Padding="4"
+                                                        hc:IconElement.Geometry="{StaticResource f.trash}"
+                                                        Command="{Binding RelativeSource={RelativeSource AncestorType=local:CustomerView}, Path=DataContext.DeleteBankCommand}"
+                                                        CommandParameter="{Binding .}"
+                                                        DockPanel.Dock="Right"
+                                                        Foreground="Red"
+                                                        Style="{StaticResource ButtonIcon}" />
+                                                    <Button
+                                                        hc:IconElement.Geometry="{StaticResource f.circle-check}"
+                                                        Command="{Binding RelativeSource={RelativeSource AncestorType=local:CustomerView}, Path=DataContext.UpdateBankCommand}"
+                                                        CommandParameter="{Binding .}"
+                                                        Content="更新"
+                                                        DockPanel.Dock="Right"
+                                                        Style="{StaticResource ButtonIcon}" />
+                                                    <TextBlock Text="账号" />
+                                                    <TextBox Text="{Binding Number, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                                                </DockPanel>
+                                                <DockPanel>
+                                                    <TextBlock Text="户名" />
+                                                    <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                                                </DockPanel>
+                                                <DockPanel>
+                                                    <TextBlock Text="开户行" />
+                                                    <TextBox Text="{Binding Deposit, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                                                </DockPanel>
+
+                                                <DockPanel>
+                                                    <TextBlock FontSize="9" Text="大额支付号" />
+                                                    <TextBox Text="{Binding LargePayNo, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                                                </DockPanel>
+                                                <DockPanel>
+                                                    <TextBlock Text="Swift" />
+                                                    <TextBox Text="{Binding SwiftCode, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                                                </DockPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </Popup>
+                                </hc:SimplePanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+
             <ScrollViewer>
                 <StackPanel>
                     <!--  添加  -->

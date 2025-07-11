@@ -225,7 +225,37 @@
                 </hc:SimplePanel>
 
 
+                <ToggleButton
+                    x:Name="showbank"
+                    Background="{StaticResource WarningBrush}"
+                    Content="未绑定的银行账户"
+                    Foreground="White"
+                    Style="{StaticResource ToggleButtonDefault.Small}" />
+
+                <Popup
+                    AllowsTransparency="True"
+                    IsOpen="{Binding ElementName=showbank, Path=IsChecked}"
+                    Placement="Bottom"
+                    PlacementTarget="{Binding ElementName=showbank}">
+                    <Border>
+                        <DataGrid
+                            AutoGenerateColumns="False"
+                            ItemsSource="{Binding UnrecognizedAccount}"
+                            Style="{StaticResource DataGrid.Small}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Binding="{Binding Name}" />
+                                <DataGridTextColumn Binding="{Binding Number}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Popup>
+
                 <hc:UniformSpacingPanel VerticalAlignment="Center" Spacing="8">
+                    <hc:UniformSpacingPanel.Resources>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                        </Style>
+                    </hc:UniformSpacingPanel.Resources>
                     <TextBlock Text="{Binding CountofInvestorsHoldingPositions, StringFormat=持仓客户数：{0}}" />
 
                     <TextBlock Text="{Binding CountOfNoRiskAssessment, StringFormat=风险测评缺失：{0}}" />
@@ -306,6 +336,16 @@
                                 <Viewbox
                                     Width="10"
                                     Height="10"
+                                    VerticalAlignment="Center">
+                                    <Path
+                                        x:Name="bank"
+                                        Data="{StaticResource f.credit-card}"
+                                        Fill="Transparent" />
+                                </Viewbox>
+
+                                <Viewbox
+                                    Width="10"
+                                    Height="10"
                                     VerticalAlignment="Center"
                                     Visibility="{Binding LackEmail, Converter={StaticResource BooleanToVisibility2Converter}}">
                                     <Path Data="{StaticResource f.envelope}" Fill="Red" />
@@ -327,6 +367,10 @@
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding QualificationAbnormal}" Value="True">
                                     <Setter TargetName="qual" Property="Fill" Value="Red" />
+                                </DataTrigger>
+
+                                <DataTrigger Binding="{Binding HasBankAccount}" Value="False">
+                                    <Setter TargetName="bank" Property="Fill" Value="Red" />
                                 </DataTrigger>
 
                                 <MultiDataTrigger>

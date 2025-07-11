@@ -175,6 +175,9 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
     public partial decimal? TotalProfit { get; set; }
 
 
+
+    public ObservableCollection<BankAccount> Accounts { get; }
+
     //public CustomerViewModel()
     //{
     //    Qualifications = new();
@@ -215,6 +218,11 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
 
         Efficient.Init(investor);
+
+
+        Accounts = [.. db.GetCollection<BankAccount>("customer_accounts").Find(x => x.OwnerId == investor.Id)];
+
+
 
         var iq = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == Id || (x.InvestorId == 0 && x.InvestorName == investor.Name && x.IdentityCode == investor.Identity.Id)).ToArray();
         Qualifications = [.. iq.Select(x => QualificationViewModel.From(x, investor.Type, investor.EntityType))];
@@ -401,7 +409,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
     [RelayCommand]
     public void AddQualification()
     {
-        if(Qualifications.Any(x=>x.Date.OldValue == default))
+        if (Qualifications.Any(x => x.Date.OldValue == default))
         {
             WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Info, "存在未完成的合格投资者认定流程，请先完成！"));
             return;
@@ -503,7 +511,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
     [RelayCommand]
     public void SkipRiskEvaluation()
     {
-        if(HandyControl.Controls.MessageBox.Show("仅管理人自身及员工和专业投资者可以豁免，是否确认", "提示", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+        if (HandyControl.Controls.MessageBox.Show("仅管理人自身及员工和专业投资者可以豁免，是否确认", "提示", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
         {
             using var db = DbHelper.Base();
             if (db.GetCollection<Investor>().FindById(Id) is Investor investor)
@@ -514,6 +522,49 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
             }
         }
     }
+
+
+    [RelayCommand]
+    public void AddBank()
+    {
+        Accounts.Add(new BankAccount { OwnerId = Id, Name = Name.OldValue });
+    }
+
+    [RelayCommand]
+    public void UpdateBank(BankAccount account)
+    {
+        try
+        {
+            using var db = DbHelper.Base();
+            db.GetCollection<BankAccount>("customer_accounts").Upsert(account);
+
+            WeakReferenceMessenger.Default.Send(account);
+        }
+        catch (Exception e)
+        {
+            Log.Error($"{nameof(CustomerViewModel)} {nameof(UpdateBank)} {e}");
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "更新银行账户出错"));
+        }
+    }
+
+    [RelayCommand]
+    public void DeleteBank(BankAccount account)
+    {
+        try
+        {
+            using var db = DbHelper.Base();
+            db.GetCollection<BankAccount>("customer_accounts").Delete(account.Id);
+            WeakReferenceMessenger.Default.Send(new EntityDeleted<BankAccount>(account));
+
+            Accounts.Remove(account);
+        }
+        catch (Exception e)
+        {
+            Log.Error($"{nameof(CustomerViewModel)} {nameof(DeleteBank)} {e}");
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "删除银行账户出错"));
+        }
+    }
+
 
     //[RelayCommand]
     //public void AddFile(IFileSelector obj)

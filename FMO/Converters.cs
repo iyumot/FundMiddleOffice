@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Globalization;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Data;
 
@@ -235,5 +236,69 @@ public class BooleanToVisibility2Converter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
         return value switch { Visibility.Visible => true, _ => false };
+    }
+}
+
+
+public class StringSubstringConverter : IValueConverter
+{
+    //public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    //{
+    //    if(parameter is string parm)
+    //    {
+    //        if (int.TryParse(parm, out int a))
+    //            return value switch { string s => s[a..], _ => value };
+
+    //        var array = parm.Split(',');
+    //        if (int.TryParse(array[0], out var b) && int.TryParse(array[1], out var c))
+    //            return value switch { string s => s[b..c], _ => value };
+    //    }
+    //    return value;
+    //}
+
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (!(value is string input)) return string.Empty;
+        if (!(parameter is string pattern) || string.IsNullOrWhiteSpace(pattern))
+            return input;
+
+        try
+        {
+            var rangeMatch = Regex.Match(pattern, @"\[(\^?\d+)(?:\.\.(\^?\d+)?)?\]");
+            if (!rangeMatch.Success)
+                return input;
+
+            var startStr = rangeMatch.Groups[1].Value.Trim();
+            Index startIndex = ParseToIndex(startStr);
+            if(rangeMatch.Groups.Count <= 1) return input[startIndex];
+
+            var endStr = rangeMatch.Groups[2].Value.Trim();
+            if (string.IsNullOrWhiteSpace(endStr))
+                return input[new Range(startIndex, Index.End)];
+
+
+            Index endIndex = ParseToIndex(endStr);
+            var range = new Range(startIndex, endIndex);
+
+            return input[range];
+        }
+        catch
+        {
+            return input; // 出错返回原值
+        }
+    }
+
+    private static Index ParseToIndex(string value)
+    {
+        bool end = value.StartsWith("^");
+        var vv = end ? value.Substring(1) : value;
+        int.TryParse(vv, out int offset);
+ 
+        return new Index(offset, end);
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
     }
 }

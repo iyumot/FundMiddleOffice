@@ -14,4 +14,5 @@
     <local:LongTextToShortConverter x:Key="LongTextToShortConverter" />
     <local:TACExistConveter x:Key="TACExistConveter" />
     <local:BooleanToVisibility2Converter x:Key="BooleanToVisibility2Converter" />
+    <local:StringSubstringConverter x:Key="StringSubstringConverter" />
 </ResourceDictionary>

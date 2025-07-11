@@ -39,3 +39,5 @@ public enum LogLevel
 /// 
 /// </summary>
 public record ToastMessage(LogLevel Level, string Message);
+
+public record EntityDeleted<T>(T Value);

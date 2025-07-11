@@ -41,7 +41,7 @@ public partial class CustomerPage : UserControl
     }
 }
 
-public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Investor>, IRecipient<InvestorQualification>, IRecipient<RiskAssessment>
+public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Investor>, IRecipient<InvestorQualification>, IRecipient<RiskAssessment>,IRecipient<BankAccount>, IRecipient<EntityDeleted<BankAccount>>
 {
     public ObservableCollection<InvestorReadOnlyViewModel> Customers { get; }
 
@@ -75,6 +75,9 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
     [ObservableProperty]
     public partial string? SearchKey { get; set; }
 
+
+    public ObservableCollection<BankAccountInfoViewModel> UnrecognizedAccount { get; }
+
     public CustomerPageViewModel()
     {
         IsActive = true;
@@ -83,19 +86,14 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
         var cusomers = db.GetCollection<Investor>().FindAll().ToArray();
 
-        //if (cusomers.Length == 0)
-        //    cusomers = [
-        //        new Investor { Id = 1, Name = "张三", EntityType = EntityType.Natural},
-        //        new Investor { Id = 2, Name = "某公司", EntityType = EntityType.Institution},
-        //        new Investor { Id = 3, Name = "某产品", EntityType = EntityType.Product},
-        //    ];
 
         // 合投日期 
         var qs = db.GetCollection<InvestorQualification>().FindAll().ToList();
+        var accounts = db.GetCollection<BankAccount>("customer_accounts").FindAll().ToList();
 
-        // Task.Run(() => App.Current.Dispatcher.BeginInvoke(() =>
-        Customers = new(cusomers.OrderBy(x => x.EntityType).ThenBy(x => x.Name).Select(x => new InvestorReadOnlyViewModel(x, qs.Where(y => y.InvestorId == x.Id).OrderByDescending(x => x.Date).FirstOrDefault())));
-        // ));
+        Customers = new(cusomers.OrderBy(x => x.EntityType).ThenBy(x => x.Name).Select(x => new InvestorReadOnlyViewModel(x,
+            qs.Where(y => y.InvestorId == x.Id).OrderByDescending(x => x.Date).FirstOrDefault(), accounts.Where(y => y.OwnerId == x.Id))));
+
         CustomerSource.Source = Customers;
         CustomerSource.Filter += CustomerSource_Filter;
 
@@ -111,12 +109,23 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
         RefreshRiskAssessmentData(db, ib);
 
+        // 未匹配的银行账号 排除产品、特殊账户
+        // 托管户
+        var tracc = db.GetCollection<FundElements>().FindAll().SelectMany(x => x.CollectionAccount.Changes.Select(y => y.Value.Number).Union(x.CustodyAccount.Changes.Select(y => y.Value.Number))).ToList();
+        var fnames = db.GetCollection<FundElements>().FindAll().SelectMany(x => x.FullName.Changes.Select(x => x.Value)).Distinct().Union(db.GetCollection<Fund>().Query().Select(x => x.Name).ToArray()).ToList();
+        var acc = db.GetCollection<BankAccount>("customer_accounts").Find(x => x.OwnerId == 0).Where(x => !Regex.IsMatch(x.Name!, "登记专户|子账户|募集专户|公共计息收费")).
+                    Where(x => !tracc.Contains(x.Number)).Where(x => !fnames.Any(y => x.Name!.Contains(y))).ToArray();
+        UnrecognizedAccount = [.. acc.Select(x => new BankAccountInfoViewModel(x))];
     }
 
     private void CustomerSource_Filter(object sender, FilterEventArgs e)
     {
-        e.Accepted = string.IsNullOrWhiteSpace(SearchKey) ? true : e.Item switch { InvestorReadOnlyViewModel v => 
-            (v.Name?.Contains(SearchKey) ?? false) || (v.Identity?.Id?.Contains(SearchKey, StringComparison.OrdinalIgnoreCase) ?? false), _ => false };
+        e.Accepted = string.IsNullOrWhiteSpace(SearchKey) ? true : e.Item switch
+        {
+            InvestorReadOnlyViewModel v =>
+            (v.Name?.Contains(SearchKey) ?? false) || (v.Identity?.Id?.Contains(SearchKey, StringComparison.OrdinalIgnoreCase) ?? false),
+            _ => false
+        };
     }
 
     private void RefreshRiskAssessmentData(BaseDatabase db, InvestorBalance[] ib)
@@ -138,7 +147,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
     [RelayCommand]
     public void AddInvestor(DataGrid grid)
     {
-        InvestorReadOnlyViewModel item = new(new Investor { Name = "" }, null);
+        InvestorReadOnlyViewModel item = new(new Investor { Name = "" }, null, null);
         Customers.Add(item);
         grid.ScrollIntoView(item);
     }
@@ -472,6 +481,21 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
         RefreshRiskAssessmentData(db, db.GetCollection<InvestorBalance>().FindAll().ToArray());
     }
+
+    public void Receive(BankAccount message)
+    {
+        if (Customers.FirstOrDefault(x => x.Id == message.OwnerId) is InvestorReadOnlyViewModel v && !v.HasBankAccount)
+            v.HasBankAccount = true;
+    }
+
+    public void Receive(EntityDeleted<BankAccount> message)
+    {
+        if (Customers.FirstOrDefault(x => x.Id == message.Value.OwnerId) is InvestorReadOnlyViewModel v)
+        {
+            using var db = DbHelper.Base();
+            v.HasBankAccount = db.GetCollection<BankAccount>("customer_accounts").Query().Where(x => x.OwnerId == v.Id).Count() > 0; 
+        }
+    }
 }
 
 
@@ -541,9 +565,12 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
     public partial bool QualificationSettled { get; set; }
 
 
+    [ObservableProperty]
+    public partial bool HasBankAccount { get; set; }
+
     public Investor Investor { get; set; }
 
-    public InvestorReadOnlyViewModel(Investor investor, InvestorQualification? qs)
+    public InvestorReadOnlyViewModel(Investor investor, InvestorQualification? qs, IEnumerable<BankAccount>? accounts)
     {
         Id = investor.Id;
         Name = investor.Name;
@@ -563,6 +590,8 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
 
         QualificationAbnormal = qs?.HasError ?? true;//?.Check().HasError ?? true;
         QualificationSettled = qs?.IsSettled ?? false;
+
+        HasBankAccount = accounts?.Any() ?? false;
     }
 
     public void Update(Investor investor)

@@ -43,12 +43,13 @@ public class Investor
     public string? Phone { get; set; }
 
 
-    public static bool IsNamePair(string a, string b)
+    public static bool IsNamePair(string? a, string? b)
     {
         if(a == b) return true;
+        if (a is null || b is null) return false;
 
         // 清除符号
-        Regex regex = new Regex(@"[\(\)（）-]");
+        Regex regex = new Regex(@"[\(\)（）\s－-]");
         var aa = regex.Replace(a, "");
         var bb = regex.Replace(b, "");
         return aa == bb;
