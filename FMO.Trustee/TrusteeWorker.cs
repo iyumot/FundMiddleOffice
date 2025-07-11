@@ -5,7 +5,6 @@ using FMO.Models;
 using FMO.Utilities;
 using LiteDB;
 using Serilog;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 
@@ -183,7 +182,7 @@ public partial class TrusteeWorker : ObservableObject
 
 
     /// <summary>
-    /// 获取交易确认记录
+    /// 获取交易申请记录
     /// 
     /// 中信不返回当日数据
     /// 
@@ -319,6 +318,7 @@ public partial class TrusteeWorker : ObservableObject
                     if (end.Year < 1970) break;
                     begin = end.AddYears(-1);
                 } while (begin > StartDateOfAny);
+
             }
             catch (Exception e)
             {
@@ -333,7 +333,6 @@ public partial class TrusteeWorker : ObservableObject
         WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(method, ret));
         TransferRequestConfig.Last = DateTime.Now;
         Save(TransferRequestConfig);
-
     }
 
 
@@ -393,7 +392,7 @@ public partial class TrusteeWorker : ObservableObject
                                 r.FundId = f.Id;
                                 r.FundName = f.Name;
                                 continue;
-                            } 
+                            }
                             else Log.Error($"QueryTransferRequests 发现未知的产品{r.FundName} {r.FundCode}");
 
                             // 子份额 在各api中完成
