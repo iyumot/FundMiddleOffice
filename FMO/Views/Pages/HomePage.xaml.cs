@@ -66,6 +66,11 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
     /// </summary> 
     public RaisingAccountWarning RaisingAccountTip { get; } = new();
 
+
+    public DateTime DailyUpdateTime { get; set; }
+
+    private Timer _dailyTimer;
+
     public HomePageViewModel()
     {
         WeakReferenceMessenger.Default.RegisterAll(this);
@@ -88,9 +93,11 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
             // 加载托管消息
             LoadTrusteeMessages();
 
-
-            InitPlot();
+            OnNewDate();
         });
+
+        // 每小时运行一次，判断是不是新的一天
+        _dailyTimer = new Timer(x => OnNewDate(), null, 6000, 1000 * 60 * 60);
     }
 
     private void LoadTrusteeMessages()
@@ -432,6 +439,40 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
         RaisingAccountTip.TotalBalance = list.Sum(x => x.v);
         RaisingAccountTip.BalanceDetail = list.Where(x => x.v > 0).ToDictionary(x => x.fc, x => x.v);
     }
+
+
+
+
+    private void OnNewDate()
+    {
+        if (DailyUpdateTime.Date == DateTime.Today) return;
+
+        try
+        {
+            // 更新规模图
+            InitPlot();
+
+
+
+
+
+
+
+
+
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Info, "更新每日数据完成"));
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"HomePage, OnNewDate {ex}");
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Info, "更新每日数据失败"));
+        }
+        DailyUpdateTime = DateTime.Now;
+    }
+
+
+
+
 
     public partial class HomePlotViewModel : ObservableObject
     {
