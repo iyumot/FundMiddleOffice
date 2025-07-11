@@ -118,12 +118,15 @@
                             IsEnabled="{Binding IsAvailable}"
                             Visibility="Collapsed" />
 
-                        <Button
+                        <ToggleButton
                             Name="info"
+                            Padding="5"
                             hc:IconElement.Geometry="{StaticResource f.circle-info}"
-                            Command="{Binding ShowLogCommand}"
+                            Background="Transparent"
+                            BorderThickness="0"
                             DockPanel.Dock="Right"
-                            Style="{StaticResource ButtonIcon}" />
+                            IsChecked="{Binding IsLogVisible}"
+                            Style="{StaticResource ToggleButtonIcon}" />
 
                         <Border
                             Name="id"
@@ -149,7 +152,10 @@
                             Placement="Left"
                             PlacementTarget="{Binding ElementName=info}"
                             StaysOpen="False">
-                            <Border Background="White">
+                            <Border
+                                Width="500"
+                                Height="300"
+                                Background="WhiteSmoke">
                                 <TextBlock
                                     Margin="10"
                                     Foreground="Gray"
@@ -238,7 +244,8 @@
                 <ContentPresenter
                     x:Name="content"
                     Margin="5,0"
-                    Content="{TemplateBinding Content}" />
+                    Content="{TemplateBinding Content}"
+                    IsEnabled="{Binding IsActivated, Converter={StaticResource Boolean2BooleanReConverter}}" />
             </DockPanel>
             <ControlTemplate.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
