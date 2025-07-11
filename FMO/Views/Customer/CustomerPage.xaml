@@ -168,6 +168,43 @@
                     Foreground="Red"
                     Style="{StaticResource ButtonDefault.Small}" />
 
+                <!--  搜索  -->
+                <ContentControl Content="{Binding .}">
+                    <ContentControl.ContentTemplate>
+                        <DataTemplate>
+                            <hc:SimplePanel Margin="10,0">
+                                <TextBox
+                                    MinWidth="200"
+                                    Padding="4"
+                                    HorizontalContentAlignment="Center"
+                                    Style="{StaticResource TextBox.Small}"
+                                    Text="{Binding SearchKey, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                                <Viewbox
+                                    x:Name="a"
+                                    Height="16"
+                                    Margin="5,0"
+                                    HorizontalAlignment="Right">
+                                    <Path Data="{StaticResource f.magnifying-glass}" Fill="Black" />
+                                </Viewbox>
+                                <Button
+                                    x:Name="b"
+                                    HorizontalAlignment="Right"
+                                    hc:IconElement.Geometry="{StaticResource f.xmark}"
+                                    Command="{Binding ClearSearchCommand}"
+                                    Style="{StaticResource ButtonIcon.Small}"
+                                    Visibility="Collapsed" />
+                            </hc:SimplePanel>
+                            <DataTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="b" Property="Visibility" Value="Visible" />
+                                    <Setter TargetName="a" Property="Visibility" Value="Collapsed" />
+                                </Trigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </ContentControl.ContentTemplate>
+                </ContentControl>
+
+
                 <Button
                     hc:IconElement.Geometry="{StaticResource f.circle-minus}"
                     Command="{Binding GeneratePfidSheetCommand}"
@@ -213,7 +250,7 @@
             AutoGenerateColumns="False"
             EnableRowVirtualization="True"
             IsReadOnly="True"
-            ItemsSource="{Binding Customers}"
+            ItemsSource="{Binding CustomerSource.View}"
             SelectedItem="{Binding Selected}"
             SelectionUnit="FullRow"
             Style="{StaticResource DataGrid.ReadOnly}">

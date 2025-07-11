@@ -14,6 +14,7 @@ using System.IO.Compression;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace FMO;
 
@@ -44,6 +45,9 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 {
     public ObservableCollection<InvestorReadOnlyViewModel> Customers { get; }
 
+    public CollectionViewSource CustomerSource { get; } = new();
+
+
     [ObservableProperty]
     public partial InvestorReadOnlyViewModel? Selected { get; set; }
 
@@ -68,7 +72,8 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
     public partial int CountOfRiskAssessmentExpired { get; set; }
 
 
-
+    [ObservableProperty]
+    public partial string? SearchKey { get; set; }
 
     public CustomerPageViewModel()
     {
@@ -91,19 +96,27 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         // Task.Run(() => App.Current.Dispatcher.BeginInvoke(() =>
         Customers = new(cusomers.OrderBy(x => x.EntityType).ThenBy(x => x.Name).Select(x => new InvestorReadOnlyViewModel(x, qs.Where(y => y.InvestorId == x.Id).OrderByDescending(x => x.Date).FirstOrDefault())));
         // ));
+        CustomerSource.Source = Customers;
+        CustomerSource.Filter += CustomerSource_Filter;
 
         // 持仓客户
         var ib = db.GetCollection<InvestorBalance>().FindAll().ToArray();
         CountofInvestorsHoldingPositions = ib.Where(x => x.Share > 0).DistinctBy(x => x.InvestorId).Count();
 
         // 更新到customers
-        foreach (var item in Customers.IntersectBy(ib.Where(x => x.Share > 0).Select(x=>x.InvestorId), x=>x.Id))
+        foreach (var item in Customers.IntersectBy(ib.Where(x => x.Share > 0).Select(x => x.InvestorId), x => x.Id))
             item.HasPosition = true;
         foreach (var item in Customers.IntersectBy(ib.Where(x => x.Share == 0).Select(x => x.InvestorId), x => x.Id))
             item.PreviouslyHasPosition = true;
 
         RefreshRiskAssessmentData(db, ib);
 
+    }
+
+    private void CustomerSource_Filter(object sender, FilterEventArgs e)
+    {
+        e.Accepted = string.IsNullOrWhiteSpace(SearchKey) ? true : e.Item switch { InvestorReadOnlyViewModel v => 
+            (v.Name?.Contains(SearchKey) ?? false) || (v.Identity?.Id?.Contains(SearchKey, StringComparison.OrdinalIgnoreCase) ?? false), _ => false };
     }
 
     private void RefreshRiskAssessmentData(BaseDatabase db, InvestorBalance[] ib)
@@ -397,6 +410,15 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         });
     }
 
+    [RelayCommand]
+    public void ClearSearch() => SearchKey = null;
+
+
+    partial void OnSearchKeyChanged(string? value)
+    {
+        CustomerSource.View.Refresh();
+    }
+
     partial void OnSelectedChanged(InvestorReadOnlyViewModel? oldValue, InvestorReadOnlyViewModel? newValue)
     {
         Detail = newValue is null ? null : new CustomerViewModel(newValue.Id);
@@ -440,7 +462,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         var c = Customers.FirstOrDefault(x => x.Id == message.InvestorId);
         if (c is null) return;
 
-        c.RiskEvaluation = ra?.Level??message.Level;
+        c.RiskEvaluation = ra?.Level ?? message.Level;
         var cus = db.GetCollection<Investor>().FindById(message.InvestorId);
         if (cus is not null)
         {
@@ -562,7 +584,7 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
         // 合投日期
         using var db = DbHelper.Base();
         var qs = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == Id).OrderByDescending(x => x.Date);
-        var qf = qs.FirstOrDefault(x=>x.IsSettled || !x.HasError);
+        var qf = qs.FirstOrDefault(x => x.IsSettled || !x.HasError);
         QualificationDate = qf?.Date switch { null => qs.FirstOrDefault()?.Date, DateOnly d when d == default => null, var n => n };
 
         QualificationAbnormal = qf?.Check().HasError ?? true;
