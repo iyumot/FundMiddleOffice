@@ -66,6 +66,18 @@
 
                 <DockPanel>
                     <Viewbox>
+                        <Path Data="{StaticResource f.credit-card}" Fill="Red" />
+                    </Viewbox>
+                    <TextBlock
+                        Margin="5,0"
+                        VerticalAlignment="Center"
+                        Text="没有银行账户" />
+                </DockPanel>
+
+
+
+                <DockPanel>
+                    <Viewbox>
                         <Path Data="{StaticResource f.envelope}" Fill="Red" />
                     </Viewbox>
                     <TextBlock

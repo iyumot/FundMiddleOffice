@@ -257,7 +257,7 @@
                     <Border>
                         <DataGrid
                             AutoGenerateColumns="False"
-                            ItemsSource="{Binding Undeserved}"
+                            ItemsSource="{Binding UndeservedAccount}"
                             Style="{StaticResource DataGrid.Small}">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Binding="{Binding Name}" />
