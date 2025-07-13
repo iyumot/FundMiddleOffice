@@ -30,8 +30,13 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     [ObservableProperty]
     public partial ObservableCollection<TransferRecordViewModel>? Records { get; set; }
 
+    [ObservableProperty]
+    public partial ObservableCollection<TransferOrderViewModel>? Orders { get; set; }
 
     public CollectionViewSource RecordsSource { get; } = new();
+    public CollectionViewSource OrderSource { get; } = new();
+
+
 
     [ObservableProperty]
     public partial string? SearchKeyword { get; set; }
@@ -44,7 +49,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
     public CollectionViewSource RequestsSource { get; set; } = new();
 
-    FileSystemWatcher watcher;
+    FileSystemWatcher? watcher;
 
     public TransferRecordPageViewModel()
     {
@@ -59,16 +64,19 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         {
             using var db = DbHelper.Base();
 
-            IOrderedEnumerable<TransferRecord> tr = db.GetCollection<TransferRecord>().FindAll().OrderByDescending(x => x.ConfirmedDate);
+            var tr = db.GetCollection<TransferRecord>().FindAll();
             IOrderedEnumerable<TransferRequest> tr2 = db.GetCollection<TransferRequest>().FindAll().OrderByDescending(x => x.RequestDate);
+            var t3 = db.GetCollection<TransferOrder>().FindAll();
 
             App.Current.Dispatcher.BeginInvoke(() =>
             {
-                Records = new ObservableCollection<TransferRecordViewModel>(tr.Select(x => new TransferRecordViewModel(x)));
+                Records = [..tr.Select(x => new TransferRecordViewModel(x))];
                 Requests = new ObservableCollection<TransferRequest>(tr2);
+                Orders = [..t3.Select(x => new TransferOrderViewModel(x))];
 
                 RecordsSource.Source = Records;
                 RequestsSource.Source = Requests;
+                OrderSource.Source = Orders;
             });
         });
 
@@ -178,14 +186,54 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     [RelayCommand]
     public void AddTARecord()
     {
+        switch (TabIndex)
+        {
+            case 0:
+                AddOrder(); break;
+
+            case 1:
+                AddRequest(); break;
+
+            case 2:
+                AddRecord(); break;
+            default:
+                break;
+        }
+    }
+
+    private void AddRecord()
+    {
         var wnd = new AddTAWindow();
         wnd.Owner = App.Current.MainWindow;
-        wnd.ShowDialog();
+        if (wnd.ShowDialog() switch { true => false, _ => true })
+            return;
+
 
         RecordsSource.View.Refresh();
 
         if (wnd.DataContext is AddTAWindowViewModel vm && vm.SelectedFund is not null)
             DataTracker.CheckShareIsPair(vm.SelectedFund.Id);
+    }
+
+    private void AddRequest()
+    {
+        throw new NotImplementedException();
+    }
+
+    private void AddOrder()
+    {
+        var wnd = new AddOrderWindow();
+        wnd.Owner = App.Current.MainWindow;
+        var context = new AddOrderWindowViewModel();
+        wnd.DataContext = context;
+        if (wnd.ShowDialog() switch { true => false, _ => true })
+            return;
+
+        var order = context.Order;
+        Orders?.Add(order);
+
+        using var db = DbHelper.Base();
+        db.GetCollection<TransferOrder>().Insert(order.Build());
     }
 
     public void Receive(TransferRecord message)
@@ -211,6 +259,8 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     }
 }
 
+
+
 [AutoChangeableViewModel(typeof(TransferRecord))]
 partial class TransferRecordViewModel
 {
@@ -218,4 +268,10 @@ partial class TransferRecordViewModel
 
 
     public bool FileExists => System.IO.File.Exists(File.FullName);
+}
+
+
+[AutoChangeableViewModel(typeof(TransferOrder))]
+partial class TransferOrderViewModel
+{
 }

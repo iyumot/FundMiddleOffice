@@ -6,9 +6,25 @@ using System.Threading.Tasks;
 
 namespace FMO.Models;
 
+
+
+/// <summary>
+/// 交易订单
+/// </summary>
 public class TransferOrder
 {
     public int Id { get; set; }
+
+    /// <summary>
+    /// 对应的申请
+    /// </summary>
+    public int RequestId { get; set; }
+
+    /// <summary>
+    /// 对应的记录
+    /// </summary>
+    public int RecordId { get; set; }
+
 
     public int InvestorId { get; set; }
 
@@ -25,7 +41,7 @@ public class TransferOrder
     /// 风险揭示
     /// </summary>
     public FileStorageInfo? RiskDiscloure { get; set; }
-
+                                                                                                                                 
     /// <summary>
     /// 认申购、赎回单
     /// </summary>
