@@ -3,7 +3,6 @@ using FMO.Models;
 using FMO.Plugin;
 using FMO.Utilities;
 using Serilog;
-using System;
 using System.IO;
 using System.Windows;
 
@@ -75,9 +74,9 @@ public partial class App : Application
         Directory.CreateDirectory("files\\accounts\\other");
 
 
-        Log.Logger = new LoggerConfiguration().WriteTo.File("log.txt", outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level}] ({SourceContext}.{Method}) {Message}{NewLine}{Exception}").CreateLogger();
+        //Log.Logger = new LoggerConfiguration().WriteTo.File("log.txt", outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level}] ({SourceContext}.{Method}) {Message}{NewLine}{Exception}").CreateLogger();
+        Log.Logger = new LoggerConfiguration().WriteTo.LiteDB(@"logs.db").CreateLogger();
 
-         
         if (CheckIsFirstRun())
             StartupUri = new Uri("InitWindow.xaml", UriKind.Relative);
         else
