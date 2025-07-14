@@ -70,9 +70,9 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
             App.Current.Dispatcher.BeginInvoke(() =>
             {
-                Records = [..tr.Select(x => new TransferRecordViewModel(x))];
+                Records = [.. tr.Select(x => new TransferRecordViewModel(x))];
                 Requests = new ObservableCollection<TransferRequest>(tr2);
-                Orders = [..t3.Select(x => new TransferOrderViewModel(x))];
+                Orders = [.. t3.Select(x => new TransferOrderViewModel(x))];
 
                 RecordsSource.Source = Records;
                 RequestsSource.Source = Requests;
@@ -268,6 +268,23 @@ partial class TransferRecordViewModel
 
 
     public bool FileExists => System.IO.File.Exists(File.FullName);
+
+    public bool HasOrder => OrderId != 0;
+
+
+    [RelayCommand]
+    public void ModifyOrder()
+    {
+        var wnd = new SupplementaryOrderWindow();
+        var context = new SupplementaryOrderWindowViewModel(Build());
+        wnd.DataContext = context;
+        wnd.Owner = App.Current.MainWindow;
+        if (wnd.ShowDialog() ?? false)
+        {
+            OrderId = context.Id;
+            OnPropertyChanged(nameof(HasOrder));
+        }
+    }
 }
 
 

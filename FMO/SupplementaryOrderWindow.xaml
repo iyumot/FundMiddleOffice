@@ -1,5 +1,5 @@
 ﻿<Window
-    x:Class="FMO.AddOrderWindow"
+    x:Class="FMO.SupplementaryOrderWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -9,7 +9,7 @@
     xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     Title="添加交易订单"
     Width="500"
-    Height="350"
+    Height="150"
     d:DataContext="{d:DesignInstance Type=local:AddOrderWindowViewModel}"
     SizeToContent="Height"
     WindowStartupLocation="CenterOwner"
@@ -70,20 +70,8 @@
                     VerticalAlignment="Center"
                     Text="签约日期" />
 
-                <DatePicker Width="100" SelectedDate="{Binding Date}" />
+                <DatePicker Width="110" SelectedDate="{Binding Date}" />
 
-
-                <ToggleButton
-                    Margin="10,0"
-                    Content="新增"
-                    IsChecked="{Binding SupplementaryMode}"
-                    Tag="补录"
-                    Template="{StaticResource CT.Toggle.Switch}" />
-
-
-            </DockPanel>
-
-            <DockPanel>
                 <Button
                     Height="auto"
                     Margin="6,0,0,0"
@@ -94,82 +82,55 @@
                     DockPanel.Dock="Right"
                     Style="{StaticResource ButtonSuccess}" />
 
-                <!--  产品列表  -->
-
-                <DockPanel DockPanel.Dock="Top">
-                    <TextBlock Width="60" Text="基金产品" />
-                    <ComboBox
-                        HorizontalContentAlignment="Center"
-                        hc:InfoElement.Placeholder="产品"
-                        DisplayMemberPath="Name"
-                        IsEditable="True"
-                        IsSynchronizedWithCurrentItem="False"
-                        IsTextSearchEnabled="False"
-                        ItemsSource="{Binding FundSource.View}"
-                        SelectedIndex="-1"
-                        SelectedItem="{Binding SelectedFund}"
-                        Style="{StaticResource SearchBox}"
-                        Text="{Binding SearchFundKey, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
-
-                </DockPanel>
+                <TextBlock Margin="5,0" Text="{Binding SelectedType, Converter={StaticResource EnumDescriptionConverter}}" />
 
 
-                <!--  投资人列表  -->
-                <DockPanel Visibility="{Binding SelectedFund, Converter={StaticResource Object2VisibilityConverter}}">
-                    <TextBlock Width="60" Text="投资人" />
 
-                    <ComboBox
-                        Margin="0,4"
-                        HorizontalContentAlignment="Center"
-                        DisplayMemberPath="Name"
-                        IsEditable="True"
-                        IsSynchronizedWithCurrentItem="False"
-                        IsTextSearchEnabled="False"
-                        ItemsSource="{Binding InvestorSource.View}"
-                        SelectedItem="{Binding SelectedInvestor}"
-                        Style="{StaticResource SearchBox}"
-                        Text="{Binding SearchInvestorKey, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
-                </DockPanel>
+                <!--  申请金额/份额  -->
+                <TextBox
+                    hc:InfoElement.Placeholder="金额/份额"
+                    Style="{StaticResource TextBoxExtend}"
+                    Text="{Binding Number, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
             </DockPanel>
 
 
-
-            <!--  申请  -->
-            <hc:SimplePanel Visibility="{Binding SupplementaryMode, Converter={StaticResource Boolean2VisibilityReConverter}}">
-                <DockPanel Visibility="{Binding SelectedInvestor, Converter={StaticResource Object2VisibilityConverter}}">
-
-                    <ListBox
-                        ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
-                        ItemsSource="{Binding Types}"
-                        SelectedItem="{Binding SelectedType}"
-                        Style="{StaticResource ListBox.Small}" />
-
-                    <!--  申请金额/份额  -->
-                    <TextBox
-                        hc:InfoElement.Placeholder="金额/份额"
-                        Style="{StaticResource TextBoxExtend}"
-                        Text="{Binding Number, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-                </DockPanel>
-            </hc:SimplePanel>
         </hc:UniformSpacingPanel>
 
+        <ListBox
+            Margin="0,1"
+            HorizontalAlignment="Left"
+            BorderThickness="0"
+            IsEnabled="{Binding IsSellTypeForzen, Converter={StaticResource Boolean2BooleanReConverter}}"
+            ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus.Small}"
+            ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
+            ItemsSource="{Binding SellTypes}"
+            SelectedItem="{Binding SellType}"
+            Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityConverter}}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
 
         <Separator Margin="0,4" />
 
         <hc:UniformSpacingPanel Orientation="Vertical" Spacing="4">
 
-            <shared:SingleFileView Binding="{Binding Contract}" />
-
-            <shared:SingleFileView Binding="{Binding RiskDisclosure}" />
-
             <shared:SingleFileView Binding="{Binding OrderFile}" />
 
-            <shared:SingleFileView Binding="{Binding Video}" />
+            <shared:SingleFileView Binding="{Binding Contract}" Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+            <shared:SingleFileView Binding="{Binding RiskDisclosure}" Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+            <shared:SingleFileView Binding="{Binding Video}" Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
         </hc:UniformSpacingPanel>
 
 
-
-        <TextBlock Foreground="Red" Text="{Binding Tips}" />
+        <TextBlock
+            Margin="0,8,0,0"
+            Foreground="Red"
+            Text="{Binding Tips}" />
 
 
     </StackPanel>

@@ -252,7 +252,12 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
                 FundName = tf.Key,
                 Asset = Asset,
                 Profit = profit,
-                Records = tf as IEnumerable<TransferRecord>
+                Records = tf.Where(x => x.Type switch
+                {
+                    TransferRecordType.Purchase or TransferRecordType.Subscription or
+                    TransferRecordType.Redemption or TransferRecordType.ForceRedemption => true,
+                    _ => false
+                }).Select(x => new TransferRecordViewModel(x))
             });
         }
 
@@ -723,7 +728,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
 
 
-        public IEnumerable<TransferRecord>? Records { get; set; }
+        public IEnumerable<TransferRecordViewModel>? Records { get; set; }
 
         public decimal Profit { get; internal set; }
 

@@ -3,9 +3,10 @@ using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
-using System.Collections.ObjectModel;
+using Serilog;
+using System.ComponentModel;
+using System.IO;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
 
 namespace FMO;
@@ -20,15 +21,214 @@ public partial class AddOrderWindow : Window
         InitializeComponent();
     }
 
-    private void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (sender is ListBox lb && DataContext is AddOrderWindowViewModel vm)
-            vm.SelectedRecords = lb.SelectedItems.OfType<TransferRecord>();
-    }
+
 }
 
 
-public partial class AddOrderWindowViewModel : ObservableObject
+
+public abstract partial class AddOrderWindowViewModelBase : ObservableObject
+{
+    public AddOrderWindowViewModelBase()
+    {
+        Contract = new()
+        {
+            Label = "基金合同",
+            OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.Contact = b),
+            OnDeleteFile = x => DeleteFile(x)
+        };
+        RiskDisclosure = new()
+        {
+            Label = "风险揭示书",
+            OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.RiskDiscloure = b),
+            OnDeleteFile = x => DeleteFile(x)
+        };
+        OrderFile = new()
+        {
+            Label = "认申赎单",
+            OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.OrderSheet = b),
+            OnDeleteFile = x => DeleteFile(x)
+        };
+        Video = new()
+        {
+            Label = "双录",
+            OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.Videotape = b),
+            OnDeleteFile = x => DeleteFile(x)
+        };
+
+
+        RiskPair = new()
+        {
+            Label = "风险匹配",
+            OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.RiskPair = b),
+            OnDeleteFile = x => DeleteFile(x)
+        };
+
+        Review = new()
+        {
+            Label = "回访",
+            OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.Review = b),
+            OnDeleteFile = x => DeleteFile(x)
+        };
+    }
+
+    public int Id { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsReadOnly { get; set; }
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
+    public partial DateTime? Date { get; set; }
+
+    [ObservableProperty]
+    public partial decimal Number { get; set; }
+
+
+    [ObservableProperty]
+    public partial TransferOrderType? SelectedType { get; set; }
+
+
+    public TransferOrderType[] Types { get; } = [TransferOrderType.Buy, TransferOrderType.Sell];
+
+
+    [ObservableProperty]
+    public partial TransferSellType? SellType { get; set; }
+
+    public TransferSellType[] SellTypes { get; } = [TransferSellType.Share, TransferSellType.Amount, TransferSellType.RemainAmout];
+
+
+
+    public SingleFileViewModel Contract { get; }
+
+    public SingleFileViewModel RiskDisclosure { get; }
+
+
+    public SingleFileViewModel OrderFile { get; }
+
+
+    public SingleFileViewModel Video { get; }
+
+
+    public SingleFileViewModel RiskPair { get; }
+
+
+    public SingleFileViewModel Review { get; }
+
+
+
+    //partial void OnDateChanged(DateTime? value)
+    //{
+    //    if (!SupplementaryMode) return;
+
+    //    var tip = "签约日期晚于申请日期";
+    //    var max = SelectedRecords?.Any() ?? false ? SelectedRecords.Max(x => x.RequestDate) : RecordSource.View.Cast<TransferRecord>().Max(x => x.RequestDate);
+
+    //    bool need = value is not null && DateOnly.FromDateTime(value.Value) > max;
+    //    if (!need)
+    //        Tips.Remove(tip);
+    //    else if (!Tips.Contains(tip))
+    //        Tips.Add(tip);
+    //}
+
+
+
+    //partial void OnSelectedRecordsChanged(IEnumerable<TransferRecord>? value)
+    //{
+    //    if (!SupplementaryMode || Date is null) return;
+
+    //    var tip = "签约日期晚于申请日期";
+    //    var max = SelectedRecords?.Any() ?? false ? SelectedRecords.Max(x => x.RequestDate) : RecordSource.View.Cast<TransferRecord>().Max(x => x.RequestDate);
+
+    //    bool need = value is not null && DateOnly.FromDateTime(Date.Value) > max;
+    //    if (!need)
+    //        Tips.Remove(tip);
+    //    else if (!Tips.Contains(tip))
+    //        Tips.Add(tip);
+    //}
+
+
+
+
+
+
+
+    public virtual bool CanConfirm => true;
+
+
+    [ObservableProperty]
+    public partial string? Tips { get; set; }
+
+
+
+
+
+
+    [RelayCommand(CanExecute = nameof(CanConfirm))]
+    public void Confirm(Window window)
+    {
+        ConfirmOverride();
+
+        window.DialogResult = true;
+        window.Close();
+    }
+
+
+    protected abstract void ConfirmOverride();
+
+
+    private void DeleteFile(FileStorageInfo x)
+    {
+        throw new NotImplementedException();
+    }
+
+
+    protected FileStorageInfo? SetFile(System.IO.FileInfo fi, string title, Action<TransferOrder, FileStorageInfo> func)
+    {
+        // 如果文件名中有日期
+        if (Date is null && DateTimeHelper.TryParse(fi.Name, out var date))
+            Date = new DateTime(date, default);
+
+        if (Id == 0) //新增加的
+        {
+            return new FileStorageInfo(fi.FullName, "", DateTime.Now);
+        }
+        else
+        {
+            string hash = fi.ComputeHash()!;
+
+            // 保存副本
+            var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "order", Id.ToString()));
+
+            var tar = FileHelper.CopyFile2(fi, dir.FullName);
+            if (tar is null)
+            {
+                Log.Error($"保存文件出错，{fi.Name}");
+                HandyControl.Controls.Growl.Error($"无法保存{fi.Name}，文件名异常或者存在过多重名文件");
+                return null;
+            }
+
+            var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
+
+            using var db = DbHelper.Base();
+            var q = db.GetCollection<TransferOrder>().FindById(Id);
+
+            FileStorageInfo fsi = new()
+            {
+                Title = "",
+                Path = path,
+                Hash = hash,
+                Time = DateTime.Now
+            };
+            func(q, fsi);
+            db.GetCollection<TransferOrder>().Update(q);
+            return fsi;
+        }
+    }
+
+}
+
+
+public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
 {
     public TransferOrderViewModel? Order { get; internal set; }
 
@@ -38,8 +238,6 @@ public partial class AddOrderWindowViewModel : ObservableObject
     public CollectionViewSource FundSource { get; } = new();
 
 
-    [ObservableProperty]
-    public partial bool IsReadOnly { get; set; }
 
     [ObservableProperty]
     public partial string? SearchFundKey { get; set; }
@@ -65,49 +263,6 @@ public partial class AddOrderWindowViewModel : ObservableObject
     public partial Investor? SelectedInvestor { get; set; }
 
 
-    [ObservableProperty]
-    public partial IEnumerable<TransferRecord>? SelectedRecords { get; set; }
-
-
-    [ObservableProperty]
-    public partial TransferRecordType? SelectedType { get; set; }
-
-    [ObservableProperty]
-    public partial DateTime? Date { get; set; }
-
-    [ObservableProperty]
-    public partial decimal Number { get; set; }
-
-
-    public TransferRecordType[] Types { get; } = [TransferRecordType.Subscription, TransferRecordType.Purchase, TransferRecordType.Redemption];
-
-
-    public CollectionViewSource RecordSource { get; }
-
-    private TransferRecord[] _records;
-
-    private int[]? _investorIdInSelectedFund;
-
-
-    public SingleFileViewModel Contract { get; }
-
-    public SingleFileViewModel RiskDisclosure { get; }
-
-
-    public SingleFileViewModel OrderFile { get; }
-
-
-    public SingleFileViewModel Video { get; }
-
-    /// <summary>
-    /// 补录
-    /// </summary>
-    [ObservableProperty]
-    public partial bool SupplementaryMode { get; set; }
-
-
-    public ObservableCollection<string> Tips { get; } = new();
-
     public AddOrderWindowViewModel()
     {
         using var db = DbHelper.Base();
@@ -121,132 +276,192 @@ public partial class AddOrderWindowViewModel : ObservableObject
         InvestorSource.Source = Investors;
         InvestorSource.Filter += (s, e) =>
         {
-            // 如果是补录模式，投资人只能是当前基金的投资人
-            var sel = !SupplementaryMode ? true : _investorIdInSelectedFund?.Contains((e.Item as Investor)?.Id ?? 0) ?? false;
-
-            e.Accepted = sel && (string.IsNullOrWhiteSpace(SearchInvestorKey) || SearchInvestorKey == SelectedInvestor?.Name ? true : e.Item switch { Investor f => f.Name.Contains(SearchInvestorKey), _ => true });
-        };
-
-        _records = db.GetCollection<TransferRecord>().FindAll().ToArray();
-        RecordSource = new() { Source = _records };
-        RecordSource.Filter += (s, e) => e.Accepted = e.Item switch
-        {
-            TransferRecord r => r.FundId == SelectedFund?.Id && r.CustomerId == SelectedInvestor?.Id && r.Type switch { TransferRecordType.Subscription or TransferRecordType.Purchase or TransferRecordType.ForceRedemption or TransferRecordType.Redemption => true, _ => false },
-            _ => true
+            e.Accepted = (string.IsNullOrWhiteSpace(SearchInvestorKey) || SearchInvestorKey == SelectedInvestor?.Name ? true : e.Item switch { Investor f => f.Name.Contains(SearchInvestorKey), _ => true });
         };
 
 
 
-        Contract = new()
-        {
-            Label = "基金合同",
-            OnSetFile = (x, y) => SetFile(),
-            OnDeleteFile = x => DeleteFile(x)
-        };
-        RiskDisclosure = new()
-        {
-            Label = "风险揭示书",
-            OnSetFile = (x, y) => SetFile(),
-            OnDeleteFile = x => DeleteFile(x)
-        };
-        OrderFile = new()
-        {
-            Label = "认申赎单",
-            OnSetFile = (x, y) => SetFile(),
-            OnDeleteFile = x => DeleteFile(x)
-        };
-        Video = new()
-        {
-            Label = "双录",
-            OnSetFile = (x, y) => SetFile(),
-            OnDeleteFile = x => DeleteFile(x)
-        };
+
     }
-
-    private FileStorageInfo? SetFile()
-    {
-        throw new NotImplementedException();
-    }
-
-    private void DeleteFile(FileStorageInfo x)
-    {
-        throw new NotImplementedException();
-    }
-
-
 
     partial void OnSearchFundKeyChanged(string? value) => FundSource.View.Refresh();
 
     partial void OnSearchInvestorKeyChanged(string? value) => InvestorSource.View.Refresh();
 
-
-    partial void OnSelectedFundChanged(Fund? value)
+    protected override void ConfirmOverride()
     {
-        _investorIdInSelectedFund = _records?.Where(x => x.FundId == value?.Id).Select(x => x.CustomerId).ToArray();
-        InvestorSource.View.Refresh();
+        throw new NotImplementedException();
     }
-
-    partial void OnSupplementaryModeChanged(bool value)
-    {
-        InvestorSource.View.Refresh();
-    }
-
-    partial void OnSelectedInvestorChanged(Investor? value)
-    {
-        RecordSource.View.Refresh();
-    }
-
-    partial void OnDateChanged(DateTime? value)
-    {
-        if (!SupplementaryMode) return;
-
-        var tip = "签约日期晚于申请日期";
-        var max = SelectedRecords?.Any() ?? false ? SelectedRecords.Max(x => x.RequestDate) : RecordSource.View.Cast<TransferRecord>().Max(x => x.RequestDate);
-
-        bool need = value is not null && DateOnly.FromDateTime(value.Value) > max;
-        if (!need)
-            Tips.Remove(tip);
-        else if (!Tips.Contains(tip))
-            Tips.Add(tip);
-    }
-
-
-
-    partial void OnSelectedRecordsChanged(IEnumerable<TransferRecord>? value)
-    {
-        if (!SupplementaryMode || Date is null) return;
-
-        var tip = "签约日期晚于申请日期";
-        var max = SelectedRecords?.Any() ?? false ? SelectedRecords.Max(x => x.RequestDate) : RecordSource.View.Cast<TransferRecord>().Max(x => x.RequestDate);
-
-        bool need = value is not null && DateOnly.FromDateTime(Date.Value) > max;
-        if (!need)
-            Tips.Remove(tip);
-        else if (!Tips.Contains(tip))
-            Tips.Add(tip);
-    }
-
-
-
-
-
-
-
-    public bool CanConfirm => SelectedFund is not null && SelectedInvestor is not null;
-
-
-
-
-
-
-    [RelayCommand(CanExecute = nameof(CanConfirm))]
-    public void Confirm()
-    {
-
-        App.Current.Windows[^1].Close();
-    }
-
-
-
 }
 
+public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModelBase
+{
+    public SupplementaryOrderWindowViewModel(TransferRecord record)
+    {
+        Record = record;
+
+        SelectedType = record.Type switch { TransferRecordType.Redemption or TransferRecordType.ForceRedemption => TransferOrderType.Sell, _ => TransferOrderType.Buy };
+
+
+        if (record.RequestAmount == 0)
+            SellType = TransferSellType.Share;
+        else if (Math.Abs(record.RequestAmount - record.ConfirmedNetAmount) < 10)
+            SellType = TransferSellType.Amount;
+        else SellType = TransferSellType.RemainAmout;
+
+        Number = record.RequestAmount > 0 ? record.RequestAmount : record.RequestShare;
+
+        IsSell = SelectedType == TransferOrderType.Sell;
+
+        IsSellTypeForzen = SellType == TransferSellType.Share;
+
+
+        // 检查是否存在已存在
+        using var db = DbHelper.Base();
+        var order = db.GetCollection<TransferOrder>().FindById(record.OrderId);
+
+        if(order is not null)
+        {
+            Id = order.Id;
+            Date = new DateTime( order.Date,default);
+            Contract.File = order.Contact;
+            OrderFile.File = order.OrderSheet;
+            RiskDisclosure.File = order.RiskDiscloure;
+            RiskPair.File = order.RiskPair;
+            Video.File = order.Videotape;
+            Review.File = order.Review;
+        }
+    }
+
+    public TransferRecord Record { get; }
+
+
+    public bool IsSell { get; set; }
+
+
+
+    [ObservableProperty]
+    public partial bool IsSellTypeForzen { get; set; }
+
+    public override bool CanConfirm => Date is not null && Number > 0;
+
+    protected override void ConfirmOverride()
+    {
+        using var db = DbHelper.Base();
+        db.BeginTrans();
+        try
+        {
+            // 如果是新增加的
+            if (Id == 0)
+            {
+                var obj = new TransferOrder();
+                db.GetCollection<TransferOrder>().Insert(obj);
+                Id = obj.Id;
+
+                // 移动文件
+                Contract.File = Move(Contract.File);
+                RiskDisclosure.File = Move(RiskDisclosure.File);
+                OrderFile.File = Move(OrderFile.File);
+                Video.File = Move(Video.File);
+                Contract.File = Move(Contract.File);
+            }
+
+
+
+
+
+            TransferOrder order = new TransferOrder
+            {
+                Id = Id,
+                Date = DateOnly.FromDateTime(Date ?? default),
+                FundId = Record.FundId,
+                InvestorId = Record.CustomerId,
+                Contact = Contract.File,
+                RiskDiscloure = RiskDisclosure.File,
+                OrderSheet = OrderFile.File,
+                Videotape = Video.File,
+                RiskPair = RiskPair.File,
+                Review = Review.File,
+            };
+            var rec = db.GetCollection<TransferRecord>().FindById(Record.Id);
+            rec.OrderId = Id;
+            db.GetCollection<TransferRecord>().Update(rec);
+            db.GetCollection<TransferOrder>().Upsert(order);
+            db.Commit();
+        }
+        catch (Exception e)
+        {
+            db.Rollback();
+            Log.Error($"添加交易订单失败，{e}");
+        }
+    }
+
+
+    private FileStorageInfo? Move(FileStorageInfo? fsi)
+    {
+        if (fsi?.Path is null) return null;
+
+        var fi = new FileInfo(fsi.Path);
+        string hash = fi.ComputeHash()!;
+
+        // 保存副本
+        var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "order", Id.ToString()));
+
+        var tar = FileHelper.CopyFile2(fi, dir.FullName);
+        if (tar is null)
+        {
+            Log.Error($"保存文件出错，{fi.Name}");
+            HandyControl.Controls.Growl.Error($"无法保存{fi.Name}，文件名异常或者存在过多重名文件");
+            return null;
+        }
+
+        var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
+        return new() { Title = "", Path = path, Hash = hash, Time = DateTime.Now };
+    }
+
+
+    protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+
+        switch (e.PropertyName)
+        {
+            case nameof(Date):
+                Check();
+                break;
+        }
+    }
+
+    private void Check()
+    {
+        var tip = "";
+
+        // 判断是否是首次
+        bool need = false;
+        bool needvideo = false;
+        if (SelectedType == TransferOrderType.Buy)
+        {
+            using var db = DbHelper.Base();
+            var early = db.GetCollection<TransferRecord>().Find(x => x.FundId == Record.FundId && x.CustomerId == Record.CustomerId).Min(x => x.RequestDate);
+            if (early == Record.RequestDate) need = true;
+
+            var q = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == Record.CustomerId).Where(x => x.Date <= Record.RequestDate).OrderBy(x => x.Date).LastOrDefault();
+            if (q is null || q.Result == QualifiedInvestorType.Normal) needvideo = true;
+        }
+
+        if (Date is not null && Record.RequestDate < DateOnly.FromDateTime(Date.Value))
+            tip += "签约日期晚于申请日期";
+
+        if (need && !Contract.Exists)
+            tip += " 缺少合同";
+
+        if (need && !RiskDisclosure.Exists)
+            tip += " 缺少风险揭示书";
+
+        if (needvideo && !Video.Exists)
+            tip += " 缺少双录";
+
+
+        Tips = tip;
+    }
+}

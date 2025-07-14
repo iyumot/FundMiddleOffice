@@ -137,7 +137,7 @@
             </TabControl.Template>
 
             <TabItem Header="订单">
-                <DataGrid />
+                <DataGrid ItemsSource="{Binding OrderSource.View}" />
             </TabItem>
 
             <TabItem Header="交易申请">

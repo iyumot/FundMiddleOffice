@@ -502,7 +502,7 @@
             </Border>
 
 
-            <ScrollViewer>
+            <ScrollViewer ScrollViewer.PanningMode="Both" VerticalScrollBarVisibility="Auto">
                 <StackPanel>
                     <!--  添加  -->
                     <DockPanel LastChildFill="False">
@@ -731,21 +731,48 @@
                                     </DockPanel>
                                     <DataGrid
                                         AutoGenerateColumns="False"
-                                        IsHitTestVisible="False"
                                         IsReadOnly="True"
                                         ItemsSource="{Binding Records}"
+                                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
                                         Style="{StaticResource DataGrid.NoSelect}">
-                                        <!--<DataGrid.Template>
+                                        <DataGrid.Template>
                                             <ControlTemplate>
-                                                <ItemsPresenter />
+                                                <DockPanel>
+                                                    <DataGridColumnHeadersPresenter
+                                                        Name="PART_ColumnHeadersPresenter"
+                                                        Grid.Row="0"
+                                                        Grid.Column="1"
+                                                        Grid.ColumnSpan="2"
+                                                        DockPanel.Dock="Top"
+                                                        Visibility="{Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Column}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType=DataGrid}}" />
+                                                    <ItemsPresenter />
+                                                </DockPanel>
                                             </ControlTemplate>
-                                        </DataGrid.Template>-->
+                                        </DataGrid.Template>
                                         <DataGrid.RowStyle>
                                             <Style BasedOn="{StaticResource NoSelectDataGridRowStyle}" TargetType="DataGridRow">
-                                                <Setter Property="Margin" Value="0,-2" />
+                                                <Setter Property="Margin" Value="0" />
                                             </Style>
                                         </DataGrid.RowStyle>
                                         <DataGrid.Columns>
+                                            <DataGridTemplateColumn>
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <Button
+                                                            x:Name="btn"
+                                                            hc:IconElement.Geometry="{StaticResource f.file}"
+                                                            BorderThickness="0"
+                                                            Command="{Binding ModifyOrderCommand}"
+                                                            Style="{StaticResource ButtonIcon.Small}" />
+                                                        <DataTemplate.Triggers>
+                                                            <DataTrigger Binding="{Binding HasOrder}" Value="False">
+                                                                <Setter TargetName="btn" Property="Foreground" Value="Red" />
+                                                            </DataTrigger>
+                                                        </DataTemplate.Triggers>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+
                                             <DataGridTextColumn Binding="{Binding ConfirmedDate, StringFormat=yyyy-MM-dd}" />
                                             <DataGridTextColumn Binding="{Binding Type}" Header="类型" />
                                             <DataGridTextColumn
