@@ -41,7 +41,7 @@ public partial class CustomerPage : UserControl
     }
 }
 
-public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Investor>, IRecipient<InvestorQualification>, IRecipient<RiskAssessment>, IRecipient<InvestorBankAccount>, IRecipient<EntityDeleted<InvestorBankAccount>>
+public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Investor>, IRecipient<InvestorQualification>, IRecipient<RiskAssessment>, IRecipient<InvestorBankAccount>, IRecipient<EntityDeleted<InvestorBankAccount>>, IRecipient<TransferOrder>
 {
     public ObservableCollection<InvestorReadOnlyViewModel> Customers { get; }
 
@@ -112,7 +112,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
         // 是否缺失订单
         var ta = db.GetCollection<TransferRecord>().FindAll().ToArray();
-        foreach (var item in Customers.IntersectBy(ta.Where(x => x.OrderId == 0).Select(x => x.CustomerId), x => x.Id))
+        foreach (var item in Customers.IntersectBy(ta.Where(x => x.OrderId == 0 && TransferRecord.IsManual(x.Type)).Select(x => x.CustomerId), x => x.Id))
             item.LackOrder = true;
 
 
@@ -505,6 +505,16 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
             v.HasBankAccount = db.GetCollection<InvestorBankAccount>().Query().Where(x => x.OwnerId == v.Id).Count() > 0;
         }
     }
+
+    public void Receive(TransferOrder message)
+    {
+        var c = Customers.FirstOrDefault(x => x.Id == message.InvestorId);
+        if (c is not null)
+        {
+            using var db = DbHelper.Base();
+            c.LackOrder = db.GetCollection<TransferRecord>().Find(x => x.CustomerId == c.Id).Any(x => x.OrderId == 0 && TransferRecord.IsManual(x.Type));
+        }
+    }
 }
 
 
@@ -548,7 +558,7 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
     /// 缺失订单
     /// </summary>
     [ObservableProperty]
-    public partial bool LackOrder { get;   set; }
+    public partial bool LackOrder { get; set; }
 
 
     /// <summary>
@@ -661,7 +671,7 @@ public partial class UndeservedAccountViewModel : ObservableObject
         Name = bank.Name;
         Number = bank.Number;
         Id = bank.Id;
-        Customers = customers.Where(x=> CheckNameSimiliar(x.Name, bank.Name));
+        Customers = customers.Where(x => CheckNameSimiliar(x.Name, bank.Name));
     }
 
     /// <summary>
@@ -673,7 +683,7 @@ public partial class UndeservedAccountViewModel : ObservableObject
     /// <returns></returns>
     private bool CheckNameSimiliar(string? a, string? b)
     {
-        if(string.IsNullOrWhiteSpace(a) || string.IsNullOrWhiteSpace(b)) return false;
+        if (string.IsNullOrWhiteSpace(a) || string.IsNullOrWhiteSpace(b)) return false;
 
         var regex = new Regex(@"股份|有限|责任|公司|证券|期货|私募\w{2}基金|单一|集合|资产管理计划|合伙企业|特殊");
         a = regex.Replace(a, "");

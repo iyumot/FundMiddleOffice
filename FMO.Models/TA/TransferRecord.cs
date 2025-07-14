@@ -167,5 +167,40 @@ public class TransferRecord : IEquatable<TransferRecord>
                 return 0;
         }
     }
+
+
+    public static bool IsManual(TransferRecordType t)
+    {
+        return IsManualIn(t) || IsManualOut(t);
+    }
+
+    public static bool IsManualIn(TransferRecordType t)
+    {
+        switch (t)
+        {
+            case TransferRecordType.Subscription: 
+            case TransferRecordType.Purchase:  
+            case TransferRecordType.MoveIn: 
+            case TransferRecordType.SwitchIn:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public static bool IsManualOut(TransferRecordType t)
+    {
+        switch (t)
+        { 
+            case TransferRecordType.Redemption:
+            case TransferRecordType.ForceRedemption:
+            case TransferRecordType.MoveOut:
+            case TransferRecordType.SwitchOut:
+                return true;
+
+            default:
+                return false;
+        }
+    }
 }
 

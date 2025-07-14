@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
@@ -353,6 +354,8 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
             };
             db.GetCollection<TransferOrder>().Upsert(order);
             db.Commit();
+
+            WeakReferenceMessenger.Default.Send(order);
         }
         catch (Exception e)
         {
@@ -456,6 +459,8 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
             db.GetCollection<TransferRecord>().Update(rec);
             db.GetCollection<TransferOrder>().Upsert(order);
             db.Commit();
+
+            WeakReferenceMessenger.Default.Send(order);
         }
         catch (Exception e)
         {
