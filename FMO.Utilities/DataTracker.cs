@@ -79,37 +79,47 @@ public static class DataTracker
 
     public static void CheckShareIsPair(IEnumerable<Fund> funds)
     {
-        // 验证最新的净值中份额与share是否一致
+        // 验证最新净值中的份额（Share）与 FundShareRecord 中的份额是否一致
         using var db = DbHelper.Base();
 
+        // 遍历所有的基金（funds）
         foreach (var fund in funds)
         {
+            // 获取该基金的每日净值数据中，净值大于0的记录，并找到最新日期的记录
             var last = db.GetDailyCollection(fund.Id).Find(x => x.NetValue > 0).MaxBy(x => x.Date);
+
+            // 如果没有找到有效的净值记录，则跳过当前基金
             if (last is null) continue;
 
+            // 获取基金的 FundShareRecord 记录和 TransferRecord 记录
             var c = db.GetCollection<FundShareRecord>().Find(x => x.FundId == fund.Id);
             var ta = db.GetCollection<TransferRecord>().Find(x => x.FundId == fund.Id);
+
+            // 如果没有 TA 记录或 FundShareRecord 数据为空，则添加提示：没有TA数据
             if (c is null || !c.Any() || !ta.Any())
             {
                 FundTips.Add(new FundTip(fund.Id, fund.Name, TipType.FundNoTARecord, "没有TA数据"));
                 continue;
             }
 
+            // 获取 TA 记录中确认日期（ConfirmedDate）最大的日期
             var lta = ta.Max(x => x.ConfirmedDate);
-            if (c is null || !c.Any() || c.Max(x => x.Date < lta))
+
+            // 如果 FundShareRecord 为空，或者最新记录的日期早于 TA 的最新确认日期，则重建 FundShareRecord
+            if (c is null || !c.Any() || c.Max(x => x.Date) < lta)
             {
-                db.BuildFundShareRecord(fund.Id);
-                c = db.GetCollection<FundShareRecord>().Find(x => x.FundId == fund.Id);
+                db.BuildFundShareRecord(fund.Id); // 重建该基金的份额记录
+                c = db.GetCollection<FundShareRecord>().Find(x => x.FundId == fund.Id); // 重新获取份额记录
             }
 
+            // 找到在 FundShareRecord 中，日期不晚于最新净值日期的最后一条记录
+            var sh = c.OrderBy(x => x.Date).LastOrDefault(x => x.Date <= last.Date);
 
-
-            var sh = c.OrderBy(x => x.Date).LastOrDefault(x => x.Date < last.Date);
-
-            //FundTips.Remove(x => x.Type == TipType.FundShareNotPair);
+            // 检查份额是否一致，如果不一致则添加提示：基金份额与估值表不一致
             if (sh?.Share != last.Share)
             {
                 FundTips.Add(new FundTip(fund.Id, fund.Name, TipType.FundShareNotPair, "基金份额与估值表不一致"));
+                // 发送基金提示消息（例如用于界面通知）
                 WeakReferenceMessenger.Default.Send(new FundTipMessage(fund.Id));
                 continue;
             }
@@ -184,7 +194,7 @@ public static class DataTracker
     public static void CheckInvestorBalance()
     {
         using var db = DbHelper.Base();
-        var coll = db.GetCollection<InvestorBalance>().FindAll().OrderBy(x=>x.Id).ToList();
+        var coll = db.GetCollection<InvestorBalance>().FindAll().OrderBy(x => x.Id).ToList();
         var tas = db.GetCollection<TransferRecord>().FindAll().ToList();
         IEnumerable<(long key, DateOnly date)> ta = tas.Select(x => new { id = InvestorBalance.MakeId(x.CustomerId, x.FundId), date = x.ConfirmedDate }).
             GroupBy(x => x.id).Select(x => (key: x.Key, date: x.Max(y => y.date))).OrderBy(x => x.key);
