@@ -94,11 +94,9 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         var qs = db.GetCollection<InvestorQualification>().FindAll().ToList();
         var accounts = db.GetCollection<InvestorBankAccount>().FindAll().ToList();
 
-        Customers = new(cusomers.OrderBy(x => x.EntityType).ThenBy(x => x.Name).Select(x => new InvestorReadOnlyViewModel(x,
+        Customers = new(cusomers.Select(x => new InvestorReadOnlyViewModel(x,
             qs.Where(y => y.InvestorId == x.Id).OrderByDescending(x => x.Date).FirstOrDefault(), accounts.Where(y => y.OwnerId == x.Id))));
 
-        CustomerSource.Source = Customers;
-        CustomerSource.Filter += CustomerSource_Filter;
 
         // 持仓客户
         var ib = db.GetCollection<InvestorBalance>().FindAll().ToArray();
@@ -106,14 +104,21 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
         // 更新到customers
         foreach (var item in Customers.IntersectBy(ib.Where(x => x.Share > 0).Select(x => x.InvestorId), x => x.Id))
-            item.HasPosition = true;
+            item.Holding = InvestorReadOnlyViewModel.HoldingMode.Current;
         foreach (var item in Customers.IntersectBy(ib.Where(x => x.Share == 0).Select(x => x.InvestorId), x => x.Id))
-            item.PreviouslyHasPosition = true;
+            item.Holding = InvestorReadOnlyViewModel.HoldingMode.Previous;
 
         // 是否缺失订单
         var ta = db.GetCollection<TransferRecord>().FindAll().ToArray();
         foreach (var item in Customers.IntersectBy(ta.Where(x => x.OrderId == 0 && TransferRecord.IsManual(x.Type)).Select(x => x.CustomerId), x => x.Id))
             item.LackOrder = true;
+
+        CustomerSource.Source = Customers;
+        CustomerSource.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(InvestorReadOnlyViewModel.Holding), System.ComponentModel.ListSortDirection.Descending));
+        CustomerSource.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(InvestorReadOnlyViewModel.Type), System.ComponentModel.ListSortDirection.Ascending)); 
+        CustomerSource.Filter += CustomerSource_Filter;
+        CustomerSource.IsLiveSortingRequested = true;
+        CustomerSource.LiveSortingProperties.Add(nameof(InvestorReadOnlyViewModel.Holding));
 
 
         RefreshRiskAssessmentData(db, ib);
@@ -561,17 +566,20 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
     public partial bool LackOrder { get; set; }
 
 
+    [ObservableProperty]
+    public partial HoldingMode Holding { get; set; }
+
     /// <summary>
     /// 持有产品
     /// </summary>
-    [ObservableProperty]
-    public partial bool HasPosition { get; set; }
+    //[ObservableProperty]
+    //public partial bool HasPosition { get; set; }
 
-    /// <summary>
-    /// 曾经持有过
-    /// </summary>
-    [ObservableProperty]
-    public partial bool PreviouslyHasPosition { get; set; }
+    ///// <summary>
+    ///// 曾经持有过
+    ///// </summary>
+    //[ObservableProperty]
+    //public partial bool PreviouslyHasPosition { get; set; }
 
     /// <summary>
     /// 风测过期
@@ -644,6 +652,15 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
 
         QualificationAbnormal = qf?.Check().HasError ?? true;
         QualificationSettled = qf?.IsSettled ?? false;
+    }
+
+
+
+    public enum HoldingMode
+    {
+        None,
+        Previous,
+        Current
     }
 }
 

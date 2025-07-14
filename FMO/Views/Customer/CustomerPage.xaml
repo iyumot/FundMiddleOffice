@@ -327,13 +327,6 @@
                                     Width="12"
                                     Height="12"
                                     VerticalAlignment="Center">
-                                    <Viewbox.ToolTip>
-                                        <TextBlock>
-                                            <Run Foreground="Green" Text="绿色：现在还有持仓" />
-                                            <LineBreak />
-                                            <Run Foreground="Gray" Text="灰色d：曾经有持仓" />
-                                        </TextBlock>
-                                    </Viewbox.ToolTip>
                                     <Path
                                         x:Name="posi"
                                         Data="{StaticResource f.web-awesome}"
@@ -395,10 +388,10 @@
                                 </Viewbox>
                             </hc:UniformSpacingPanel>
                             <DataTemplate.Triggers>
-                                <DataTrigger Binding="{Binding PreviouslyHasPosition}" Value="True">
+                                <DataTrigger Binding="{Binding Holding}" Value="Previous">
                                     <Setter TargetName="posi" Property="Fill" Value="DarkGray" />
                                 </DataTrigger>
-                                <DataTrigger Binding="{Binding HasPosition}" Value="True">
+                                <DataTrigger Binding="{Binding Holding}" Value="Current">
                                     <Setter TargetName="posi" Property="Fill" Value="Green" />
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding QualificationAbnormal}" Value="True">
