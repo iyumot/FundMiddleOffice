@@ -1,10 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 
 namespace FMO.Models;
+
+[TypeConverter(nameof(EnumDescriptionTypeConverter))]
+public enum TransferOrderType
+{
+    [Description("买入")] Buy,
+
+    [Description("赎回")] Sell
+}
+
+[TypeConverter(nameof(EnumDescriptionTypeConverter))]
+public enum TransferSellType
+{
+    [Description("份额赎回")] Share,
+
+    [Description("按金额赎回")] Amount,
+
+    [Description("赎回至指定金额")]RemainAmout,
+}
+
 
 
 
@@ -14,17 +29,7 @@ namespace FMO.Models;
 public class TransferOrder
 {
     public int Id { get; set; }
-
-    /// <summary>
-    /// 对应的申请
-    /// </summary>
-    public int RequestId { get; set; }
-
-    /// <summary>
-    /// 对应的记录
-    /// </summary>
-    public int RecordId { get; set; }
-
+  
 
     public int InvestorId { get; set; }
 
@@ -41,7 +46,7 @@ public class TransferOrder
     /// 风险揭示
     /// </summary>
     public FileStorageInfo? RiskDiscloure { get; set; }
-                                                                                                                                 
+
     /// <summary>
     /// 认申购、赎回单
     /// </summary>
@@ -56,5 +61,11 @@ public class TransferOrder
     /// 双录
     /// </summary>
     public FileStorageInfo? Videotape { get; set; }
+
+
+    /// <summary>
+    /// 回访
+    /// </summary>
+    public FileStorageInfo? Review { get; set; }
 
 }
