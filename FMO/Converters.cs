@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using FMO.Models;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -20,6 +21,9 @@ public class FileExistsToVisibilityConverter : IValueConverter
                 break;
             case FileInfo fi:
                 show = fi.Exists;
+                break;
+            case FileStorageInfo fsi:
+                show = fsi.Exists;
                 break;
             default:
                 show = false;
