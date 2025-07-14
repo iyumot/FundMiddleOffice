@@ -176,7 +176,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
 
 
-    public ObservableCollection<BankAccount> Accounts { get; }
+    public ObservableCollection<InvestorBankAccount> Accounts { get; }
 
     //public CustomerViewModel()
     //{
@@ -220,7 +220,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
         Efficient.Init(investor);
 
 
-        Accounts = [.. db.GetCollection<BankAccount>("customer_accounts").Find(x => x.OwnerId == investor.Id)];
+        Accounts = [.. db.GetCollection<InvestorBankAccount>().Find(x => x.OwnerId == investor.Id)];
 
 
 
@@ -527,16 +527,16 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
     [RelayCommand]
     public void AddBank()
     {
-        Accounts.Add(new BankAccount { OwnerId = Id, Name = Name.OldValue });
+        Accounts.Add(new InvestorBankAccount { OwnerId = Id, Name = Name.OldValue });
     }
 
     [RelayCommand]
-    public void UpdateBank(BankAccount account)
+    public void UpdateBank(InvestorBankAccount account)
     {
         try
         {
             using var db = DbHelper.Base();
-            db.GetCollection<BankAccount>("customer_accounts").Upsert(account);
+            db.GetCollection<InvestorBankAccount>().Upsert(account);
 
             WeakReferenceMessenger.Default.Send(account);
         }
@@ -548,13 +548,13 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
     }
 
     [RelayCommand]
-    public void DeleteBank(BankAccount account)
+    public void DeleteBank(InvestorBankAccount account)
     {
         try
         {
             using var db = DbHelper.Base();
-            db.GetCollection<BankAccount>("customer_accounts").Delete(account.Id);
-            WeakReferenceMessenger.Default.Send(new EntityDeleted<BankAccount>(account));
+            db.GetCollection<InvestorBankAccount>().Delete(account.Id);
+            WeakReferenceMessenger.Default.Send(new EntityDeleted<InvestorBankAccount>(account));
 
             Accounts.Remove(account);
         }

@@ -39,41 +39,9 @@ public static class DatabaseAssist
             db.GetCollection(nameof(Investor)).Update(da);
         } },
 
-        {21, db=>{
-            db.DropCollection("customer_accounts");
-            var accounts = db.GetCollection<BankTransaction>().FindAll().Select(x=> (x.CounterBank, x.CounterName, x.CounterNo)).DistinctBy(x=>x.CounterNo).ToList();
-            var entities = accounts.Select(x=> new BankAccount{ BankOfDeposit = x.CounterBank, Name  = x.CounterName, Number = x.CounterNo }).ToArray();
-            var customers = db.GetCollection<Investor>().FindAll().ToArray();
-
-            foreach (var ba in entities)
-            {
-                // 同名
-                var c = customers.Where(x=>x.Name == ba.Name).ToArray();
-                if(c.Length == 1)
-                {
-                    ba.OwnerId = c[0].Id;
-                    continue;
-                }
-
-                c = customers.Where(x=>Investor.IsNamePair(ba.Name, x.Name)).ToArray();
-                if(c.Length == 1)
-                {
-                    ba.OwnerId = c[0].Id;
-                    continue;
-                }
-
-                if(ba.Name?.Contains("基金")??false)
-                {
-                    c = customers.Where(x=>x.Name.Contains("基金") && ba.Name.Contains(x.Name)).ToArray();
-                    if(c.Length == 1)
-                    {
-                        ba.OwnerId = c[0].Id;
-                        continue;
-                    }
-                }
-            }
-
-            db.GetCollection<BankAccount>("customer_accounts").Upsert(entities);
+        {22, db=>{
+            db.GetCollection(nameof(InvestorBankAccount)).Insert(db.GetCollection("customer_accounts").FindAll().ToArray());
+            //db.RenameCollection("customer_accounts", nameof(InvestorBankAccount));
         }},
 
     };

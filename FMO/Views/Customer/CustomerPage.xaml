@@ -253,15 +253,37 @@
                     AllowsTransparency="True"
                     IsOpen="{Binding ElementName=showbank, Path=IsChecked}"
                     Placement="Bottom"
-                    PlacementTarget="{Binding ElementName=showbank}">
+                    PlacementTarget="{Binding ElementName=showbank}"
+                    StaysOpen="False">
                     <Border>
                         <DataGrid
                             AutoGenerateColumns="False"
+                            IsReadOnly="True"
                             ItemsSource="{Binding UndeservedAccount}"
-                            Style="{StaticResource DataGrid.Small}">
+                            Style="{StaticResource DataGrid.NoSelect}">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Binding="{Binding Name}" />
                                 <DataGridTextColumn Binding="{Binding Number}" />
+                                <DataGridTemplateColumn>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <DockPanel>
+                                                <Button
+                                                    hc:IconElement.Geometry="{StaticResource f.check}"
+                                                    Command="{Binding ConfirmCommand}"
+                                                    DockPanel.Dock="Right"
+                                                    Style="{StaticResource ButtonIcon.Small}"
+                                                    Visibility="{Binding ElementName=cbb, Path=SelectedItem, Converter={StaticResource Object2BooleanConverter}}" />
+                                                <ComboBox
+                                                    x:Name="cbb"
+                                                    DisplayMemberPath="Name"
+                                                    ItemsSource="{Binding Customers}"
+                                                    SelectedItem="{Binding DataContext.Customer, RelativeSource={RelativeSource Self}}"
+                                                    Style="{StaticResource ComboBox.Small}" />
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                             </DataGrid.Columns>
                         </DataGrid>
                     </Border>

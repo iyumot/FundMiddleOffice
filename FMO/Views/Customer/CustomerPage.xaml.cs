@@ -41,7 +41,7 @@ public partial class CustomerPage : UserControl
     }
 }
 
-public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Investor>, IRecipient<InvestorQualification>, IRecipient<RiskAssessment>,IRecipient<BankAccount>, IRecipient<EntityDeleted<BankAccount>>
+public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Investor>, IRecipient<InvestorQualification>, IRecipient<RiskAssessment>, IRecipient<InvestorBankAccount>, IRecipient<EntityDeleted<InvestorBankAccount>>
 {
     public ObservableCollection<InvestorReadOnlyViewModel> Customers { get; }
 
@@ -76,7 +76,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
     public partial string? SearchKey { get; set; }
 
 
-    public ObservableCollection<BankAccountInfoViewModel> UndeservedAccount { get; }
+    public ObservableCollection<UndeservedAccountViewModel> UndeservedAccount { get; }
 
 
     public bool HasUndeservedAccount => UndeservedAccount.Count > 0;
@@ -92,7 +92,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
         // 合投日期 
         var qs = db.GetCollection<InvestorQualification>().FindAll().ToList();
-        var accounts = db.GetCollection<BankAccount>("customer_accounts").FindAll().ToList();
+        var accounts = db.GetCollection<InvestorBankAccount>().FindAll().ToList();
 
         Customers = new(cusomers.OrderBy(x => x.EntityType).ThenBy(x => x.Name).Select(x => new InvestorReadOnlyViewModel(x,
             qs.Where(y => y.InvestorId == x.Id).OrderByDescending(x => x.Date).FirstOrDefault(), accounts.Where(y => y.OwnerId == x.Id))));
@@ -116,9 +116,9 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         // 托管户
         var tracc = db.GetCollection<FundElements>().FindAll().SelectMany(x => x.CollectionAccount.Changes.Select(y => y.Value.Number).Union(x.CustodyAccount.Changes.Select(y => y.Value.Number))).ToList();
         var fnames = db.GetCollection<FundElements>().FindAll().SelectMany(x => x.FullName.Changes.Select(x => x.Value)).Distinct().Union(db.GetCollection<Fund>().Query().Select(x => x.Name).ToArray()).ToList();
-        var acc = db.GetCollection<BankAccount>("customer_accounts").Find(x => x.OwnerId == 0).Where(x => !Regex.IsMatch(x.Name!, "登记专户|子账户|募集专户|公共计息收费")).
+        var acc = db.GetCollection<InvestorBankAccount>().Find(x => x.OwnerId == 0).Where(x => !Regex.IsMatch(x.Name!, "登记专户|子账户|募集专户|公共计息收费")).
                     Where(x => !tracc.Contains(x.Number)).Where(x => !fnames.Any(y => x.Name!.Contains(y))).ToArray();
-        UndeservedAccount = [.. acc.Select(x => new BankAccountInfoViewModel(x))];
+        UndeservedAccount = [.. acc.Select(x => new UndeservedAccountViewModel(x, Customers))];
     }
 
     private void CustomerSource_Filter(object sender, FilterEventArgs e)
@@ -485,18 +485,18 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         RefreshRiskAssessmentData(db, db.GetCollection<InvestorBalance>().FindAll().ToArray());
     }
 
-    public void Receive(BankAccount message)
+    public void Receive(InvestorBankAccount message)
     {
         if (Customers.FirstOrDefault(x => x.Id == message.OwnerId) is InvestorReadOnlyViewModel v && !v.HasBankAccount)
             v.HasBankAccount = true;
     }
 
-    public void Receive(EntityDeleted<BankAccount> message)
+    public void Receive(EntityDeleted<InvestorBankAccount> message)
     {
         if (Customers.FirstOrDefault(x => x.Id == message.Value.OwnerId) is InvestorReadOnlyViewModel v)
         {
             using var db = DbHelper.Base();
-            v.HasBankAccount = db.GetCollection<BankAccount>("customer_accounts").Query().Where(x => x.OwnerId == v.Id).Count() > 0; 
+            v.HasBankAccount = db.GetCollection<InvestorBankAccount>().Query().Where(x => x.OwnerId == v.Id).Count() > 0;
         }
     }
 }
@@ -573,7 +573,7 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
 
     public Investor Investor { get; set; }
 
-    public InvestorReadOnlyViewModel(Investor investor, InvestorQualification? qs, IEnumerable<BankAccount>? accounts)
+    public InvestorReadOnlyViewModel(Investor investor, InvestorQualification? qs, IEnumerable<InvestorBankAccount>? accounts)
     {
         Id = investor.Id;
         Name = investor.Name;
@@ -621,5 +621,64 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
 
         QualificationAbnormal = qf?.Check().HasError ?? true;
         QualificationSettled = qf?.IsSettled ?? false;
+    }
+}
+
+
+public partial class UndeservedAccountViewModel : ObservableObject
+{
+    public string? Name { get; }
+
+    public string? Number { get; }
+    public int Id { get; }
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
+    public partial InvestorReadOnlyViewModel? Customer { get; set; }
+
+    [ObservableProperty]
+    public partial int CustomerId { get; set; }
+
+    public IEnumerable<InvestorReadOnlyViewModel> Customers { get; set; }
+
+    public bool CanConfirm => Customer is not null;
+
+    public UndeservedAccountViewModel(InvestorBankAccount bank, IEnumerable<InvestorReadOnlyViewModel> customers)
+    {
+        Name = bank.Name;
+        Number = bank.Number;
+        Id = bank.Id;
+        Customers = customers.Where(x=> CheckNameSimiliar(x.Name, bank.Name));
+    }
+
+    /// <summary>
+    /// 检查2个名字有相似的字符
+    /// 排除 企业名的后缀、产品名后缀等相同字符
+    /// </summary>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    /// <returns></returns>
+    private bool CheckNameSimiliar(string? a, string? b)
+    {
+        if(string.IsNullOrWhiteSpace(a) || string.IsNullOrWhiteSpace(b)) return false;
+
+        var regex = new Regex(@"股份|有限|责任|公司|证券|期货|私募\w{2}基金|单一|集合|资产管理计划|合伙企业|特殊");
+        a = regex.Replace(a, "");
+        b = regex.Replace(b, "");
+
+        return a.ToArray().Intersect(b.ToArray()).Count() > 1;
+    }
+
+
+    [RelayCommand]
+    public void Confirm()
+    {
+        if (Customer is null) return;
+
+        Customer.HasBankAccount = true;
+        using var db = DbHelper.Base();
+        var bank = db.GetCollection<InvestorBankAccount>().FindById(Id);
+        bank.OwnerId = Customer.Id;
+        db.GetCollection<InvestorBankAccount>().Update(bank);
     }
 }

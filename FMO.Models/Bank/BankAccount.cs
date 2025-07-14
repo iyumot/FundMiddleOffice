@@ -42,7 +42,7 @@ public class BankAccount
     public int Id { get; set; }
 
 
-    public int OwnerId { get; set; }
+   // public int OwnerId { get; set; }
 
 
 
@@ -162,6 +162,21 @@ public class BankAccount
         return builder.ToString().Trim();
     }
 }
+
+
+
+public class InvestorBankAccount : BankAccount
+{
+
+    public int OwnerId { get; set; }
+
+}
+
+
+
+
+
+
 
 /// <summary>
 /// 账户余额
