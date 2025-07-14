@@ -252,12 +252,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
                 FundName = tf.Key,
                 Asset = Asset,
                 Profit = profit,
-                Records = tf.Where(x => x.Type switch
-                {
-                    TransferRecordType.Purchase or TransferRecordType.Subscription or
-                    TransferRecordType.Redemption or TransferRecordType.ForceRedemption => true,
-                    _ => false
-                }).Select(x => new TransferRecordViewModel(x))
+                Records = tf.Where(x => TransferRecord.IsManual(x.Type)).Select(x => new TransferRecordViewModel(x))
             });
         }
 
