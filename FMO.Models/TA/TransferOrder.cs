@@ -46,9 +46,22 @@ public class TransferOrder
     public decimal Number { get; set; }
 
     /// <summary>
+    /// 客户Id
+    /// </summary>
+    [Description("证件号码")]
+    public   string? InvestorIdentity { get; set; }
+
+    [Description("客户名称")]
+    public   string? InvestorName { get; set; }
+
+
+    public DateOnly CreateDate { get; set; }
+
+
+    /// <summary>
     /// 合同
     /// </summary>
-    public FileStorageInfo? Contact { get; set; }
+    public FileStorageInfo? Contract { get; set; }
 
     /// <summary>
     /// 风险揭示

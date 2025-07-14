@@ -149,21 +149,7 @@
         </hc:UniformSpacingPanel>
 
 
-        <ListBox
-            Margin="0,1"
-            HorizontalAlignment="Left"
-            BorderThickness="0"
-            ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus.Small}"
-            ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
-            ItemsSource="{Binding SellTypes}"
-            SelectedItem="{Binding SellType}"
-            Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityConverter}}">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+ 
 
         <Separator Margin="0,4" />
 

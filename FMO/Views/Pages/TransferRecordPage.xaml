@@ -137,7 +137,121 @@
             </TabControl.Template>
 
             <TabItem Header="订单">
-                <DataGrid ItemsSource="{Binding OrderSource.View}" />
+                <DataGrid
+                    AutoGenerateColumns="False"
+                    IsReadOnly="True"
+                    ItemsSource="{Binding OrderSource.View}"
+                    Style="{StaticResource DataGrid.NoSelect}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Binding="{Binding Id}" />
+                        <DataGridTextColumn Binding="{Binding Date, StringFormat=yyyy-MM-dd}" Header="日期" />
+                        <DataGridTextColumn Binding="{Binding InvestorName}" Header="投资人" />
+                        <DataGridTextColumn Binding="{Binding Type, Converter={StaticResource EnumDescriptionConverter}}" Header="类型" />
+                        <DataGridTextColumn Binding="{Binding Number}" Header="金额/份额" />
+
+                        <DataGridTemplateColumn Header="申请单">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button
+                                        hc:IconElement.Geometry="{StaticResource f.file}"
+                                        BorderThickness="0"
+                                        Command="{Binding DataContext.OpenFileCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
+                                        CommandParameter="{Binding OrderSheet}"
+                                        Style="{StaticResource ButtonIcon.Small}"
+                                        Visibility="{Binding OrderSheet, Converter={StaticResource FileExistsToVisibilityConverter}}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Header="基金合同">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button
+                                        hc:IconElement.Geometry="{StaticResource f.file}"
+                                        BorderThickness="0"
+                                        Command="{Binding DataContext.OpenFileCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
+                                        CommandParameter="{Binding Contract}"
+                                        Style="{StaticResource ButtonIcon.Small}"
+                                        Visibility="{Binding Contract, Converter={StaticResource FileExistsToVisibilityConverter}}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+
+                        <DataGridTemplateColumn Header="风险揭示书">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button
+                                        hc:IconElement.Geometry="{StaticResource f.file}"
+                                        BorderThickness="0"
+                                        Command="{Binding DataContext.OpenFileCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
+                                        CommandParameter="{Binding RiskDiscloure}"
+                                        Style="{StaticResource ButtonIcon.Small}"
+                                        Visibility="{Binding RiskDiscloure, Converter={StaticResource FileExistsToVisibilityConverter}}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Header="风险匹配告知">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button
+                                        hc:IconElement.Geometry="{StaticResource f.file}"
+                                        BorderThickness="0"
+                                        Command="{Binding DataContext.OpenFileCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
+                                        CommandParameter="{Binding RiskPair}"
+                                        Style="{StaticResource ButtonIcon.Small}"
+                                        Visibility="{Binding RiskPair, Converter={StaticResource FileExistsToVisibilityConverter}}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Header="双录">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button
+                                        hc:IconElement.Geometry="{StaticResource f.file}"
+                                        BorderThickness="0"
+                                        Command="{Binding DataContext.OpenFileCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
+                                        CommandParameter="{Binding Videotape}"
+                                        Style="{StaticResource ButtonIcon.Small}"
+                                        Visibility="{Binding Videotape, Converter={StaticResource FileExistsToVisibilityConverter}}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Header="回访">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button
+                                        hc:IconElement.Geometry="{StaticResource f.file}"
+                                        BorderThickness="0"
+                                        Command="{Binding DataContext.OpenFileCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
+                                        CommandParameter="{Binding Review}"
+                                        Style="{StaticResource ButtonIcon.Small}"
+                                        Visibility="{Binding Review, Converter={StaticResource FileExistsToVisibilityConverter}}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+
+                        <DataGridTemplateColumn>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button
+                                        hc:IconElement.Geometry="{StaticResource f.trash}"
+                                        BorderThickness="0"
+                                        Command="{Binding DataContext.DeleteOrderCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
+                                        CommandParameter="{Binding .}"
+                                        Foreground="Red"
+                                        Style="{StaticResource ButtonIcon.Small}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+
+                    </DataGrid.Columns>
+                </DataGrid>
             </TabItem>
 
             <TabItem Header="交易申请">

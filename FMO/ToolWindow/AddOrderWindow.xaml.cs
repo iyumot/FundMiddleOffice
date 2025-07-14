@@ -33,7 +33,7 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
         Contract = new()
         {
             Label = "基金合同",
-            OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.Contact = b),
+            OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.Contract = b),
             OnDeleteFile = x => DeleteFile(x)
         };
         RiskDisclosure = new()
@@ -340,8 +340,11 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
                 Date = DateOnly.FromDateTime(Date ?? default),
                 FundId = SelectedFund!.Id,
                 InvestorId = SelectedInvestor!.Id,
+                InvestorName = SelectedInvestor.Name,
+                InvestorIdentity = SelectedInvestor.Identity?.Id,
                 Type = SelectedType!.Value,
-                Contact = Contract.File,
+                Number = Number ?? 0,
+                Contract = Contract.File,
                 RiskDiscloure = RiskDisclosure.File,
                 OrderSheet = OrderFile.File,
                 Videotape = Video.File,
@@ -382,7 +385,7 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
         {
             Id = order.Id;
             Date = new DateTime(order.Date, default);
-            Contract.File = order.Contact;
+            Contract.File = order.Contract;
             OrderFile.File = order.OrderSheet;
             RiskDisclosure.File = order.RiskDiscloure;
             RiskPair.File = order.RiskPair;
@@ -437,8 +440,11 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
                 Date = DateOnly.FromDateTime(Date ?? default),
                 FundId = Record.FundId,
                 InvestorId = Record.CustomerId,
+                InvestorIdentity = Record.CustomerIdentity,
+                InvestorName = Record.CustomerName,
                 Type = SelectedType!.Value,
-                Contact = Contract.File,
+                Number = Number ?? 0,
+                Contract = Contract.File,
                 RiskDiscloure = RiskDisclosure.File,
                 OrderSheet = OrderFile.File,
                 Videotape = Video.File,

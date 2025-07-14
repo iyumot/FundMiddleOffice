@@ -157,6 +157,25 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
 
     [RelayCommand]
+    public void OpenFile(FileStorageInfo file)
+    {
+        if (file?.Path is null) return;
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(file.Path) { UseShellExecute = true }); } catch { }
+    }
+
+    [RelayCommand]
+    public void DeleteOrder(TransferOrderViewModel order)
+    {
+        if(HandyControl.Controls.MessageBox.Show("是否确认删除订单？", button: System.Windows.MessageBoxButton.YesNo) == System.Windows.MessageBoxResult.Yes)
+        {
+            using var db = DbHelper.Base();
+            db.GetCollection<TransferOrder>().Delete(order.Id);
+            Orders!.Remove(order);
+        }
+    }
+
+
+    [RelayCommand]
     public void OpenConfirmFile(FileInfo fi)
     {
         try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(fi.FullName) { UseShellExecute = true }); } catch { }
