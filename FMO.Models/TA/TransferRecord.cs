@@ -11,6 +11,8 @@ public class TransferRecord : IEquatable<TransferRecord>
 {
     public int Id { get; set; }
 
+    public int OrderId { get; set; }
+
     public int FundId { get; set; }
 
     public string? FundName { get; set; }
