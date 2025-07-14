@@ -110,6 +110,12 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         foreach (var item in Customers.IntersectBy(ib.Where(x => x.Share == 0).Select(x => x.InvestorId), x => x.Id))
             item.PreviouslyHasPosition = true;
 
+        // 是否缺失订单
+        var ta = db.GetCollection<TransferRecord>().FindAll().ToArray();
+        foreach (var item in Customers.IntersectBy(ta.Where(x => x.OrderId == 0).Select(x => x.CustomerId), x => x.Id))
+            item.LackOrder = true;
+
+
         RefreshRiskAssessmentData(db, ib);
 
         // 未匹配的银行账号 排除产品、特殊账户
@@ -537,6 +543,13 @@ public partial class InvestorReadOnlyViewModel : ObservableObject
     /// </summary>
     [ObservableProperty]
     public partial bool LackPhone { get; set; }
+
+    /// <summary>
+    /// 缺失订单
+    /// </summary>
+    [ObservableProperty]
+    public partial bool LackOrder { get;   set; }
+
 
     /// <summary>
     /// 持有产品

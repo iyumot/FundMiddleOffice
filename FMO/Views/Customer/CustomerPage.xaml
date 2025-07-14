@@ -360,6 +360,15 @@
                                         Fill="Transparent" />
                                 </Viewbox>
 
+
+                                <Viewbox
+                                    Width="10"
+                                    Height="12"
+                                    VerticalAlignment="Center"
+                                    Visibility="{Binding LackOrder, Converter={StaticResource BooleanToVisibility2Converter}}">
+                                    <Path Data="{StaticResource f.file-lines}" Fill="Red" />
+                                </Viewbox>
+
                                 <Viewbox
                                     Width="10"
                                     Height="10"
