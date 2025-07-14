@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     Title="添加交易订单"
-    Width="500"
+    Width="600"
     Height="350"
     d:DataContext="{d:DesignInstance Type=local:AddOrderWindowViewModel}"
     SizeToContent="Height"
@@ -63,25 +63,7 @@
 
 
         <hc:UniformSpacingPanel Orientation="Vertical" VerticalSpacing="8">
-            <DockPanel LastChildFill="False">
 
-                <TextBlock
-                    Width="60"
-                    VerticalAlignment="Center"
-                    Text="签约日期" />
-
-                <DatePicker Width="100" SelectedDate="{Binding Date}" />
-
-
-                <ToggleButton
-                    Margin="10,0"
-                    Content="新增"
-                    IsChecked="{Binding SupplementaryMode}"
-                    Tag="补录"
-                    Template="{StaticResource CT.Toggle.Switch}" />
-
-
-            </DockPanel>
 
             <DockPanel>
                 <Button
@@ -135,24 +117,53 @@
 
 
             <!--  申请  -->
-            <hc:SimplePanel Visibility="{Binding SupplementaryMode, Converter={StaticResource Boolean2VisibilityReConverter}}">
-                <DockPanel Visibility="{Binding SelectedInvestor, Converter={StaticResource Object2VisibilityConverter}}">
+            <DockPanel Visibility="{Binding SelectedInvestor, Converter={StaticResource Object2VisibilityConverter}}">
 
-                    <ListBox
-                        ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
-                        ItemsSource="{Binding Types}"
-                        SelectedItem="{Binding SelectedType}"
-                        Style="{StaticResource ListBox.Small}" />
+                <TextBlock
+                    Width="60"
+                    VerticalAlignment="Center"
+                    Text="签约日期" />
 
-                    <!--  申请金额/份额  -->
-                    <TextBox
-                        hc:InfoElement.Placeholder="金额/份额"
-                        Style="{StaticResource TextBoxExtend}"
-                        Text="{Binding Number, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-                </DockPanel>
-            </hc:SimplePanel>
+                <DatePicker Width="100" SelectedDate="{Binding Date}" />
+
+                <ListBox
+                    ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
+                    ItemsSource="{Binding Types}"
+                    SelectedItem="{Binding SelectedType}"
+                    Style="{StaticResource ListBox.Small}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+
+
+                <!--  申请金额/份额  -->
+                <TextBox
+                    hc:InfoElement.Placeholder="金额/份额"
+                    Style="{StaticResource TextBoxExtend}"
+                    Text="{Binding Number, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+            </DockPanel>
         </hc:UniformSpacingPanel>
 
+
+        <ListBox
+            Margin="0,1"
+            HorizontalAlignment="Left"
+            BorderThickness="0"
+            ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus.Small}"
+            ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
+            ItemsSource="{Binding SellTypes}"
+            SelectedItem="{Binding SellType}"
+            Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityConverter}}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
 
         <Separator Margin="0,4" />
 

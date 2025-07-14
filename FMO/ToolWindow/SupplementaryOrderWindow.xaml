@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     Title="添加交易订单"
-    Width="500"
+    Width="580"
     Height="150"
     d:DataContext="{d:DesignInstance Type=local:AddOrderWindowViewModel}"
     SizeToContent="Height"
@@ -63,7 +63,7 @@
 
 
         <hc:UniformSpacingPanel Orientation="Vertical" VerticalSpacing="8">
-            <DockPanel LastChildFill="False">
+            <DockPanel>
 
                 <TextBlock
                     Width="60"
@@ -82,8 +82,22 @@
                     DockPanel.Dock="Right"
                     Style="{StaticResource ButtonSuccess}" />
 
-                <TextBlock Margin="5,0" Text="{Binding SelectedType, Converter={StaticResource EnumDescriptionConverter}}" />
-
+                <ListBox
+                    Margin="0,1"
+                    HorizontalAlignment="Left"
+                    BorderThickness="0"
+                    IsEnabled="{Binding IsSellTypeForzen, Converter={StaticResource Boolean2BooleanReConverter}}"
+                    ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus.Small}"
+                    ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
+                    ItemsSource="{Binding Types}"
+                    SelectedItem="{Binding SelectedType}"
+                    Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
 
 
                 <!--  申请金额/份额  -->
@@ -96,22 +110,7 @@
 
         </hc:UniformSpacingPanel>
 
-        <ListBox
-            Margin="0,1"
-            HorizontalAlignment="Left"
-            BorderThickness="0"
-            IsEnabled="{Binding IsSellTypeForzen, Converter={StaticResource Boolean2BooleanReConverter}}"
-            ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus.Small}"
-            ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
-            ItemsSource="{Binding SellTypes}"
-            SelectedItem="{Binding SellType}"
-            Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityConverter}}">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+
 
         <Separator Margin="0,4" />
 

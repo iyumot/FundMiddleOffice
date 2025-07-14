@@ -7,7 +7,11 @@ public enum TransferOrderType
 {
     [Description("买入")] Buy,
 
-    [Description("赎回")] Sell
+    [Description("份额赎回")] Share,
+
+    [Description("按金额赎回")] Amount,
+
+    [Description("赎回至指定金额")] RemainAmout,
 }
 
 [TypeConverter(nameof(EnumDescriptionTypeConverter))]
@@ -36,6 +40,10 @@ public class TransferOrder
     public int FundId { get; set; }
 
     public DateOnly Date { get; set; }
+
+    public TransferOrderType Type { get; set; }
+
+    public decimal Number { get; set; }
 
     /// <summary>
     /// 合同

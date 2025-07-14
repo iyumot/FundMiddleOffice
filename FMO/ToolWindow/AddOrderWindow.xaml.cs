@@ -81,20 +81,16 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
     public partial DateTime? Date { get; set; }
 
     [ObservableProperty]
-    public partial decimal Number { get; set; }
+    public partial decimal? Number { get; set; }
 
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsSell))]
     public partial TransferOrderType? SelectedType { get; set; }
 
 
-    public TransferOrderType[] Types { get; } = [TransferOrderType.Buy, TransferOrderType.Sell];
+    public virtual TransferOrderType[] Types { get; } = [TransferOrderType.Buy, TransferOrderType.Share, TransferOrderType.Amount, TransferOrderType.RemainAmout];
 
-
-    [ObservableProperty]
-    public partial TransferSellType? SellType { get; set; }
-
-    public TransferSellType[] SellTypes { get; } = [TransferSellType.Share, TransferSellType.Amount, TransferSellType.RemainAmout];
 
 
 
@@ -157,6 +153,9 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
 
     [ObservableProperty]
     public partial string? Tips { get; set; }
+
+
+    public bool IsSell => SelectedType != TransferOrderType.Buy;
 
 
 
@@ -225,6 +224,28 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
         }
     }
 
+    protected FileStorageInfo? Move(FileStorageInfo? fsi)
+    {
+        if (fsi?.Path is null) return null;
+
+        var fi = new FileInfo(fsi.Path);
+        string hash = fi.ComputeHash()!;
+
+        // 保存副本
+        var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "order", Id.ToString()));
+
+        var tar = FileHelper.CopyFile2(fi, dir.FullName);
+        if (tar is null)
+        {
+            Log.Error($"保存文件出错，{fi.Name}");
+            HandyControl.Controls.Growl.Error($"无法保存{fi.Name}，文件名异常或者存在过多重名文件");
+            return null;
+        }
+
+        var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
+        return new() { Title = "", Path = path, Hash = hash, Time = DateTime.Now };
+    }
+
 }
 
 
@@ -288,9 +309,53 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
 
     partial void OnSearchInvestorKeyChanged(string? value) => InvestorSource.View.Refresh();
 
+    public override bool CanConfirm => SelectedFund is not null && SelectedInvestor is not null && Date is not null && SelectedType is not null && Number is not null;
+
     protected override void ConfirmOverride()
     {
-        throw new NotImplementedException();
+
+        using var db = DbHelper.Base();
+        db.BeginTrans();
+        try
+        {
+            // 如果是新增加的
+            if (Id == 0)
+            {
+                var obj = new TransferOrder();
+                db.GetCollection<TransferOrder>().Insert(obj);
+                Id = obj.Id;
+
+                // 移动文件
+                Contract.File = Move(Contract.File);
+                RiskDisclosure.File = Move(RiskDisclosure.File);
+                OrderFile.File = Move(OrderFile.File);
+                Video.File = Move(Video.File);
+                Contract.File = Move(Contract.File);
+            }
+
+
+            TransferOrder order = new TransferOrder
+            {
+                Id = Id,
+                Date = DateOnly.FromDateTime(Date ?? default),
+                FundId = SelectedFund!.Id,
+                InvestorId = SelectedInvestor!.Id,
+                Type = SelectedType!.Value,
+                Contact = Contract.File,
+                RiskDiscloure = RiskDisclosure.File,
+                OrderSheet = OrderFile.File,
+                Videotape = Video.File,
+                RiskPair = RiskPair.File,
+                Review = Review.File,
+            };
+            db.GetCollection<TransferOrder>().Upsert(order);
+            db.Commit();
+        }
+        catch (Exception e)
+        {
+            db.Rollback();
+            Log.Error($"添加交易订单失败，{e}");
+        }
     }
 }
 
@@ -300,50 +365,46 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
     {
         Record = record;
 
-        SelectedType = record.Type switch { TransferRecordType.Redemption or TransferRecordType.ForceRedemption => TransferOrderType.Sell, _ => TransferOrderType.Buy };
+        SelectedType = record.Type switch { TransferRecordType.Redemption or TransferRecordType.ForceRedemption => GetSellType(record), _ => TransferOrderType.Buy };
 
-
-        if (record.RequestAmount == 0)
-            SellType = TransferSellType.Share;
-        else if (Math.Abs(record.RequestAmount - record.ConfirmedNetAmount) < 10)
-            SellType = TransferSellType.Amount;
-        else SellType = TransferSellType.RemainAmout;
 
         Number = record.RequestAmount > 0 ? record.RequestAmount : record.RequestShare;
 
-        IsSell = SelectedType == TransferOrderType.Sell;
 
-        IsSellTypeForzen = SellType == TransferSellType.Share;
+        IsSellTypeForzen = SelectedType == TransferOrderType.Share;
 
 
         // 检查是否存在已存在
         using var db = DbHelper.Base();
         var order = db.GetCollection<TransferOrder>().FindById(record.OrderId);
 
-        if(order is not null)
+        if (order is not null)
         {
             Id = order.Id;
-            Date = new DateTime( order.Date,default);
+            Date = new DateTime(order.Date, default);
             Contract.File = order.Contact;
             OrderFile.File = order.OrderSheet;
             RiskDisclosure.File = order.RiskDiscloure;
             RiskPair.File = order.RiskPair;
             Video.File = order.Videotape;
             Review.File = order.Review;
+
         }
+
+        if (SelectedType == TransferOrderType.Amount || SelectedType == TransferOrderType.RemainAmout)
+            Types = [TransferOrderType.Amount, TransferOrderType.RemainAmout];
+        else Types = [TransferOrderType.Share, TransferOrderType.Amount, TransferOrderType.RemainAmout];
     }
 
     public TransferRecord Record { get; }
 
 
-    public bool IsSell { get; set; }
-
-
+    public override TransferOrderType[] Types { get; }
 
     [ObservableProperty]
     public partial bool IsSellTypeForzen { get; set; }
 
-    public override bool CanConfirm => Date is not null && Number > 0;
+    public override bool CanConfirm => Date is not null && Number > 0 && SelectedType is not null;
 
     protected override void ConfirmOverride()
     {
@@ -376,6 +437,7 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
                 Date = DateOnly.FromDateTime(Date ?? default),
                 FundId = Record.FundId,
                 InvestorId = Record.CustomerId,
+                Type = SelectedType!.Value,
                 Contact = Contract.File,
                 RiskDiscloure = RiskDisclosure.File,
                 OrderSheet = OrderFile.File,
@@ -397,28 +459,14 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
     }
 
 
-    private FileStorageInfo? Move(FileStorageInfo? fsi)
+    private TransferOrderType GetSellType(TransferRecord record)
     {
-        if (fsi?.Path is null) return null;
-
-        var fi = new FileInfo(fsi.Path);
-        string hash = fi.ComputeHash()!;
-
-        // 保存副本
-        var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "order", Id.ToString()));
-
-        var tar = FileHelper.CopyFile2(fi, dir.FullName);
-        if (tar is null)
-        {
-            Log.Error($"保存文件出错，{fi.Name}");
-            HandyControl.Controls.Growl.Error($"无法保存{fi.Name}，文件名异常或者存在过多重名文件");
-            return null;
-        }
-
-        var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
-        return new() { Title = "", Path = path, Hash = hash, Time = DateTime.Now };
+        if (record.RequestAmount == 0)
+            return TransferOrderType.Share;
+        else if (Math.Abs(record.RequestAmount - record.ConfirmedNetAmount) < 10)
+            return TransferOrderType.Amount;
+        else return TransferOrderType.RemainAmout;
     }
-
 
     protected override void OnPropertyChanged(PropertyChangedEventArgs e)
     {
