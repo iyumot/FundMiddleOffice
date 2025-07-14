@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
 namespace FMO.Utilities;
 
@@ -15,12 +16,27 @@ public static class DateTimeHelper
 
     public static bool TryParse(string? s, out DateOnly d)
     {
+        if (string.IsNullOrWhiteSpace(s))
+        {
+            d = default; 
+            return false;
+        }
+
         if (DateOnly.TryParse(s, out d))
             return true;
         else if (DateOnly.TryParseExact(s, "yyyyMMdd", out d))
             return true;
         else if (DateOnly.TryParseExact(s, "yyyy-MM-dd", out d))
             return true;
+
+
+         var m = Regex.Match(s, @"(\d{4})[\D]?(\d{2})[\D]?(\d{2})");
+        if (m.Success && int.Parse(m.Groups[1].Value) is int y && int.Parse(m.Groups[2].Value) is int mm && int.Parse(m.Groups[3].Value) is int dd)
+        {
+            d = new DateOnly(y, mm, dd);
+            return true;
+        }
+
         return false;
     }
 
