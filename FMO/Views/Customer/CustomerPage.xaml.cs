@@ -49,7 +49,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
 
     [ObservableProperty]
-    public partial InvestorReadOnlyViewModel? Selected { get; set; }
+    public partial InvestorReadOnlyViewModel? Selected { get; set; } 
 
 
     [ObservableProperty]
@@ -97,7 +97,6 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         Customers = new(cusomers.Select(x => new InvestorReadOnlyViewModel(x,
             qs.Where(y => y.InvestorId == x.Id).OrderByDescending(x => x.Date).FirstOrDefault(), accounts.Where(y => y.OwnerId == x.Id))));
 
-
         // 持仓客户
         var ib = db.GetCollection<InvestorBalance>().FindAll().ToArray();
         CountofInvestorsHoldingPositions = ib.Where(x => x.Share > 0).DistinctBy(x => x.InvestorId).Count();
@@ -119,7 +118,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         CustomerSource.Filter += CustomerSource_Filter;
         CustomerSource.IsLiveSortingRequested = true;
         CustomerSource.LiveSortingProperties.Add(nameof(InvestorReadOnlyViewModel.Holding));
-
+        CustomerSource.View.MoveCurrentTo(null);
 
         RefreshRiskAssessmentData(db, ib);
 
@@ -444,6 +443,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
     partial void OnSelectedChanged(InvestorReadOnlyViewModel? oldValue, InvestorReadOnlyViewModel? newValue)
     {
+        //if (oldValue is null) return;
         Detail = newValue is null ? null : new CustomerViewModel(newValue.Id);
     }
 

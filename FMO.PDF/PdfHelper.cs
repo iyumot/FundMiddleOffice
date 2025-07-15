@@ -1,12 +1,13 @@
-﻿using System.IO;
+﻿using FMO.Models;
+using FMO.Utilities;
+using PDFiumSharp;
+using PDFiumSharp.Enums;
+using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using FMO.Models;
-using PDFiumSharp;
-using PDFiumSharp.Enums;
 
 namespace FMO.PDF;
 
@@ -46,7 +47,7 @@ public static class PdfHelper
                 var str = PDFium.FPDFText_GetText(textpage, 0, charcnt);
 
                 str = Regex.Replace(str, @"(客户名称：.*?)\r\n(.*?)客户类型", "$1$2\n客户类型", RegexOptions.Singleline);
-                 
+
 
                 PDFium.FPDFText_ClosePage(textpage);
                 PDFium.FPDF_ClosePage(page);
@@ -390,4 +391,33 @@ public static class PdfHelper
             return BitmapFormats.Gray;
         throw new NotSupportedException($"Pixel format {pixelFormat} is not supported.");
     }
+     
+
+    public static string[] GetTexts(string? file)
+    {
+        if (string.IsNullOrWhiteSpace(file)) return [];
+
+        List<string> strings = [];
+        using var fs = new FileStream(file, FileMode.Open);
+        byte[] buf = new byte[fs.Length];
+        fs.ReadExactly(buf);
+        var d = PDFium.FPDF_LoadDocument(buf);
+        var cnt = PDFium.FPDF_GetPageCount(d);
+
+        for (int i = 0; i < cnt; i++)
+        {
+            var page = PDFium.FPDF_LoadPage(d, i);
+            var textpage = PDFium.FPDFText_LoadPage(page);
+            var charcnt = PDFium.FPDFText_CountChars(textpage);
+            if (charcnt == 0) continue;
+
+            var str = PDFium.FPDFText_GetText(textpage, 0, charcnt);
+
+            strings.Add(str);
+        }
+
+        PDFium.FPDF_CloseDocument(d);
+        return strings.ToArray();
+    }
+
 }

@@ -533,8 +533,10 @@
                                             hc:IconElement.Geometry="{StaticResource AddGeometry}"
                                             local:HelpService.Help="{StaticResource Help.Investor.AddRisk}"
                                             local:HelpService.Offset="-140,2"
+                                            AllowDrop="True"
                                             Command="{Binding ChooseAssessmentFileCommand}"
                                             Content="风测"
+                                            Drop="RiskDrop"
                                             Style="{StaticResource ButtonPrimary}" />
 
                                         <hc:SimplePanel Visibility="{Binding IsAssessmentFileChoosed, Converter={StaticResource Boolean2VisibilityReConverter}}">

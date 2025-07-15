@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
+using FMO.PDF;
 using FMO.Shared;
 using FMO.Utilities;
 using Microsoft.Win32;
@@ -23,6 +24,12 @@ public partial class CustomerView : UserControl
     public CustomerView()
     {
         InitializeComponent();
+    }
+
+    private void RiskDrop(object sender, DragEventArgs e)
+    {
+        if (DataContext is CustomerViewModel vm && e.Data.GetData(DataFormats.FileDrop) is string[] files && files.Length > 0)
+            vm.OnChooseAssessmentFile(files[0]);
     }
 }
 
@@ -428,13 +435,20 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
         fd.Filter = "文档|*.pdf;*.jpg;*.png;*.jpeg";
         if (!fd.ShowDialog() ?? true) return;
 
-        AssessmentFile = fd.FileName;
+        OnChooseAssessmentFile(fd.FileName);
+    }
+
+
+    public void OnChooseAssessmentFile(string s)
+    {
+        var fi = new FileInfo(s);
+        AssessmentFile = fi.FullName;
 
         // 判断文件名中是否有日期和评估等级
-        if (DateTimeHelper.TryParse(fd.SafeFileName, out var date))
+        if (DateTimeHelper.TryParse(fi.Name, out var date))
             NewDate = new DateTime(date, default);
 
-        var m = Regex.Match(fd.FileName, @"\bC\d\b");
+        var m = Regex.Match(fi.Name, @"\bC\d\b");
         if (m.Success)
         {
             try
@@ -442,6 +456,33 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
                 NewEvaluation = Enum.Parse<RiskEvaluation>(m.Value, true);
             }
             catch { }
+        }
+
+        // 解析评估结果
+        var texts = PdfHelper.GetTexts(s);
+        if (texts.Length == 0) return;
+        // 验证是否有投资人名
+        if (!texts.Any(x => x.Contains(Name.OldValue!)))
+        {
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, $"请确认是否为 [{Name.OldValue}] 的风险测评文件"));
+            return;
+        }
+        foreach (var str in texts)
+        {
+            if (DateTimeHelper.TryParse(str, out date))
+                NewDate = new DateTime(date, default);
+
+            m = Regex.Match(str, @"\b[CD](\d)\b", RegexOptions.IgnoreCase);
+            if (m.Success)
+                NewEvaluation = m.Groups[1].Value switch
+                {
+                    "1" => RiskEvaluation.C1,
+                    "2" => RiskEvaluation.C2,
+                    "3" => RiskEvaluation.C3,
+                    "4" => RiskEvaluation.C4,
+                    "5" => RiskEvaluation.C5,
+                    _ => RiskEvaluation.Unk
+                };
         }
 
     }
