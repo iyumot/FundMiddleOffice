@@ -431,13 +431,15 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
         AssessmentFile = fd.FileName;
 
         // 判断文件名中是否有日期和评估等级
-        var m = Regex.Match(fd.FileName, @"(\d{8}).*?(C\d)");
+        if (DateTimeHelper.TryParse(fd.SafeFileName, out var date))
+            NewDate = new DateTime(date, default);
+
+        var m = Regex.Match(fd.FileName, @"\bC\d\b");
         if (m.Success)
         {
             try
             {
-                NewDate = DateTime.TryParseExact(m.Groups[1].Value, "yyyyMMdd", null, System.Globalization.DateTimeStyles.None, out var date) ? date : null;
-                NewEvaluation = Enum.Parse<RiskEvaluation>(m.Groups[2].Value, true);
+                NewEvaluation = Enum.Parse<RiskEvaluation>(m.Value, true);
             }
             catch { }
         }
@@ -462,8 +464,8 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
         db.GetCollection<RiskAssessment>().Insert(r);
 
-        string destFileName = $"{r.Id}{Path.GetExtension(fd.Name)}";
-        File.Copy(fd.FullName, @$"files\evaluation\" + destFileName);
+        string destFileName = @$"files\evaluation\{r.Id}{Path.GetExtension(fd.Name)}";
+        File.Copy(fd.FullName, destFileName, true);
         r.Path = destFileName;
         db.GetCollection<RiskAssessment>().Update(r);
         db.Dispose();
