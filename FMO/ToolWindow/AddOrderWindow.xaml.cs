@@ -159,7 +159,7 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
     public bool IsSell => SelectedType != TransferOrderType.Buy;
 
 
-
+    protected abstract void Check();
 
 
 
@@ -187,6 +187,8 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
         // 如果文件名中有日期
         if (Date is null && DateTimeHelper.TryParse(fi.Name, out var date))
             Date = new DateTime(date, default);
+
+
 
         if (Id == 0) //新增加的
         {
@@ -363,6 +365,44 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
             Log.Error($"添加交易订单失败，{e}");
         }
     }
+
+
+    protected override void Check()
+    {
+        var tip = "";
+
+        // 判断是否是首次
+        bool need = false;
+        bool needvideo = false; 
+        DateOnly date = Date is null ? default : DateOnly.FromDateTime(Date.Value);
+        if (SelectedType == TransferOrderType.Buy)
+        {
+            using var db = DbHelper.Base();
+            int fundid = SelectedFund?.Id ?? 0;
+            var cid = SelectedInvestor?.Id ?? 0;
+            var early = db.GetCollection<TransferRecord>().Find(x => x.FundId == fundid && x.CustomerId == cid).Min(x => x.RequestDate);
+        
+            if (Date is not null && early >= date) need = true;
+
+            var q = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == cid).Where(x => x.Date <= date).OrderBy(x => x.Date).LastOrDefault();
+            if (q is null || q.Result == QualifiedInvestorType.Normal) needvideo = true;
+        }
+
+        if (Date is not null && date < DateOnly.FromDateTime(Date.Value))
+            tip += "签约日期晚于申请日期";
+
+        if (need && !Contract.Exists)
+            tip += " 缺少合同";
+
+        if (need && !RiskDisclosure.Exists)
+            tip += " 缺少风险揭示书";
+
+        if (needvideo && !Video.Exists)
+            tip += " 缺少双录";
+
+
+        Tips = tip;
+    }
 }
 
 public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModelBase
@@ -400,6 +440,8 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
         if (SelectedType == TransferOrderType.Amount || SelectedType == TransferOrderType.RemainAmout)
             Types = [TransferOrderType.Amount, TransferOrderType.RemainAmout];
         else Types = [TransferOrderType.Share, TransferOrderType.Amount, TransferOrderType.RemainAmout];
+
+        Check();
     }
 
     public TransferRecord Record { get; }
@@ -491,7 +533,7 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
         }
     }
 
-    private void Check()
+    protected override void Check()
     {
         var tip = "";
 
