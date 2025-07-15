@@ -58,6 +58,9 @@ public partial class CMS : TrusteeApiBase
     {
         var data = await SyncWork<TransferRequest, TransferRequestJson>(1006, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
 
+        // 无数据返回
+        if (data.Data?.Length == 0) return data;
+
         // 子产品 映射
         if (FundsInfo is null)
             await QuerySubjectFundMappings();
@@ -263,7 +266,7 @@ public partial class CMS : TrusteeApiBase
 
                     // 调用成功，实际无数据
                     if (string.IsNullOrWhiteSpace(ret.Data))
-                        return new(ReturnCode.Success, []);
+                        break;// return new(ReturnCode.Success, []);
 
                     // 解析实际数据
                     var data = JsonSerializer.Deserialize<TJSON[]>(ret.Data!);
