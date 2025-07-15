@@ -331,6 +331,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
             case nameof(NetAssets):
             case nameof(Income):
             case nameof(ProofType):
+            case nameof(ExperienceType):
                 Check();
                 break;
             default:

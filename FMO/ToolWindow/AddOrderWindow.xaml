@@ -149,19 +149,23 @@
         </hc:UniformSpacingPanel>
 
 
- 
+
 
         <Separator Margin="0,4" />
 
         <hc:UniformSpacingPanel Orientation="Vertical" Spacing="4">
-
-            <shared:SingleFileView Binding="{Binding Contract}" />
-
-            <shared:SingleFileView Binding="{Binding RiskDisclosure}" />
-
             <shared:SingleFileView Binding="{Binding OrderFile}" />
 
-            <shared:SingleFileView Binding="{Binding Video}" />
+            <shared:SingleFileView Binding="{Binding RiskPair}" Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+            <shared:SingleFileView Binding="{Binding Contract}" Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+            <shared:SingleFileView Binding="{Binding RiskDisclosure}" Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+            <shared:SingleFileView Binding="{Binding Video}" Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+            <shared:SingleFileView Binding="{Binding Review}" Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
         </hc:UniformSpacingPanel>
 
 

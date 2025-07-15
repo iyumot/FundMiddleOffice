@@ -178,6 +178,8 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
 
     private void DeleteFile(FileStorageInfo x)
     {
+        Check();
+
         if (Id == 0) //未保存
             return;
 
@@ -209,7 +211,7 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
             Date = new DateTime(date, default);
 
 
-
+        Check();
         if (Id == 0) //新增加的
         {
             return new FileStorageInfo(fi.FullName, "", DateTime.Now);
