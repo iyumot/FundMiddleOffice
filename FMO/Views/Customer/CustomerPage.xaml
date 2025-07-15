@@ -471,7 +471,7 @@
                 <DataGridTemplateColumn Header="证件有效期">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <local:CopyableControl>
+                            <local:CopyableControl HorizontalAlignment="Center">
                                 <TextBlock VerticalAlignment="Center" Text="{Binding Efficient}" />
                             </local:CopyableControl>
                         </DataTemplate>

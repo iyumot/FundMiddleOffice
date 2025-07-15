@@ -13,6 +13,11 @@
     <UserControl.DataContext>
         <local:TransferRecordPageViewModel />
     </UserControl.DataContext>
+    <UserControl.Resources>
+        <Style x:Key="CenterText" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Resources>
     <Grid>
 
         <!--  首部  -->
@@ -146,7 +151,10 @@
                         <DataGridTextColumn Binding="{Binding Id}" />
                         <DataGridTextColumn Binding="{Binding Date, StringFormat=yyyy-MM-dd}" Header="日期" />
                         <DataGridTextColumn Binding="{Binding InvestorName}" Header="投资人" />
-                        <DataGridTextColumn Binding="{Binding Type, Converter={StaticResource EnumDescriptionConverter}}" Header="类型" />
+                        <DataGridTextColumn
+                            Binding="{Binding Type, Converter={StaticResource EnumDescriptionConverter}}"
+                            ElementStyle="{StaticResource CenterText}"
+                            Header="类型" />
                         <DataGridTextColumn Binding="{Binding Number}" Header="金额/份额" />
 
                         <DataGridTemplateColumn Header="申请单">
