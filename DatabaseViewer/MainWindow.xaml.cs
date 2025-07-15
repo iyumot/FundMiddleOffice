@@ -29,7 +29,7 @@ public partial class MainWindowViewModel : ObservableObject
 {
     public MainWindowViewModel()
     {
-        Directory.SetCurrentDirectory(@"e:\fmo");
+        //Directory.SetCurrentDirectory(@"e:\fmo");
         Databases = [new("主数据库", () => DbHelper.Base()), new("平台", () => DbHelper.Platform()), new("平台Log", () => new LiteDatabase(@$"FileName=data\platformlog.db;Connection=Shared")), new("Log", ()=> new LiteDatabase($@"FileName=logs.db;Connection=Shared"))];
 
         AssemblyLoadContext.Default.LoadFromAssemblyName(new System.Reflection.AssemblyName("FMO.Trustee"));
