@@ -30,6 +30,11 @@
                 TextAlignment="Center" />
         </DataTemplate>
 
+        <DataTemplate x:Key="DT.CustomerName">
+            <TextBox BorderThickness="0" Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+        </DataTemplate>
+
+
         <DataTemplate x:Key="DT.QualificationItem" DataType="local:QualificationViewModel">
             <Grid>
                 <TextBlock VerticalAlignment="Center" Text="{Binding Date.OldValue, StringFormat=yyyy-MM-dd, TargetNullValue=未设置日期}" />
@@ -301,10 +306,11 @@
                     Margin="0,0,40,0"
                     BorderBrush="{StaticResource PrimaryBrush}"
                     BorderThickness="0,0,0,1">
-                    <shared:ChangeableContainer
+                    <shared:ChangeableControl
                         HorizontalContentAlignment="Center"
                         Binding="{Binding Name}"
-                        ContentTemplate="{StaticResource DT.CenterText}"
+                        EditTemplate="{StaticResource DT.CustomerName}"
+                        IsReadOnly="{Binding IsReadOnly}"
                         TextElement.FontWeight="Bold" />
                 </Border>
 
