@@ -29,8 +29,8 @@ public partial class MainWindowViewModel : ObservableObject
 {
     public MainWindowViewModel()
     {
-        //Directory.SetCurrentDirectory(@"e:\funds");
-        Databases = [new("主数据库", () => DbHelper.Base()), new("平台", () => DbHelper.Platform()), new("平台Log", () => new LiteDatabase(@$"FileName=data\platformlog.db;Connection=Shared"))];
+        Directory.SetCurrentDirectory(@"e:\fmo");
+        Databases = [new("主数据库", () => DbHelper.Base()), new("平台", () => DbHelper.Platform()), new("平台Log", () => new LiteDatabase(@$"FileName=data\platformlog.db;Connection=Shared")), new("Log", ()=> new LiteDatabase($@"FileName=logs.db;Connection=Shared"))];
 
         AssemblyLoadContext.Default.LoadFromAssemblyName(new System.Reflection.AssemblyName("FMO.Trustee"));
     }
@@ -91,6 +91,13 @@ public partial class MainWindowViewModel : ObservableObject
             Data = doc!.Select(x => BsonMapper.Global.ToObject<DailyValue>(x)).Reverse();
             return;
         }
+
+        if(value == "log")
+        {
+            Data = doc!.Select(x => BsonMapper.Global.ToObject<LogInfo>(x)).OrderByDescending(x => x.Time);
+            return;
+        }
+
 
         var types = AssemblyLoadContext.Default.Assemblies.Where(x => x.FullName!.Contains("FMO")).SelectMany(x => x.GetTypes());
 
