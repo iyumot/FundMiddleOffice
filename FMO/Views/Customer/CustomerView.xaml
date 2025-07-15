@@ -480,7 +480,7 @@
                                                 </DockPanel>
                                                 <DockPanel>
                                                     <TextBlock Text="开户行" />
-                                                    <TextBox Text="{Binding Deposit, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                                                    <TextBox Text="{Binding BankOfDeposit, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
                                                 </DockPanel>
 
                                                 <DockPanel>

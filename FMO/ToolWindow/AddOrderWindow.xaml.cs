@@ -178,7 +178,27 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
 
     private void DeleteFile(FileStorageInfo x)
     {
-        throw new NotImplementedException();
+        if (Id == 0) //未保存
+            return;
+
+        using var db = DbHelper.Base();
+        if( db.GetCollection<TransferOrder>().FindById(Id) is TransferOrder o)
+        {
+            if (Contract.File == x)
+                o.Contract = null;
+            else if (RiskDisclosure.File == x)
+                o.RiskDiscloure = null;
+            else if(RiskPair.File == x)
+                o.RiskPair = null;
+            else if(Review.File == x)
+                o.Review = null;
+            else if(Video.File == x)
+                o.Videotape = null;
+            else if(OrderFile .File == x)
+                o.OrderSheet = null;
+
+            db.GetCollection<TransferOrder>().Update(o);
+        }
     }
 
 
@@ -216,7 +236,7 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
 
             FileStorageInfo fsi = new()
             {
-                Title = "",
+                Title = title,
                 Path = path,
                 Hash = hash,
                 Time = DateTime.Now

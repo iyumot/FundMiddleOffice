@@ -256,11 +256,11 @@ public class InvestorQualification
             info.Add("承诺函");
         }
 
-        if (!IsFileExists(Notice))
-        {
-            er = true;
-            info.Add("普通/专业投资者告知书");
-        }
+        //if (!IsFileExists(Notice))
+        //{
+        //    er = true;
+        //    info.Add("普通/专业投资者告知书");
+        //}
         if (CertificationFiles is null || CertificationFiles?.Count == 0)
         {
             er = true;

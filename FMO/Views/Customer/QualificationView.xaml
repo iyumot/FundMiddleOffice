@@ -152,7 +152,7 @@
                                                         Width="60"
                                                         Margin="4,0"
                                                         DataContext="{Binding RelativeSource={RelativeSource AncestorType=local:QualificationView}, Path=DataContext}"
-                                                        Text="{Binding FinancialAssets}" />
+                                                        Text="{Binding FinancialAssets, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
                                                     <TextBlock VerticalAlignment="Center" Text="万" />
                                                 </DockPanel>
                                             </DataTemplate>

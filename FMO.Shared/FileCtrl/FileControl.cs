@@ -115,17 +115,17 @@ public class SingleFileView : HeaderedContentControl
 
 
 
-    //protected override void OnDrop(DragEventArgs e)
-    //{
-    //    if (DataContext is IFileSetter setter && Binding is not null && e.Data.GetData(DataFormats.FileDrop) is string[] ss)
-    //    {
-    //        // 如果有旧文件
-    //        if (Binding.File is not null)
-    //            try { Binding.File.Delete(); } catch { }
+    protected override void OnDrop(DragEventArgs e)
+    {
+        if (Binding is not null && e.Data.GetData(DataFormats.FileDrop) is string[] ss)
+        {
+            // 如果有旧文件
+            if (Binding.File is not null)
+                return; //try { Binding.File.Delete(); } catch { }
 
-    //        setter.SetFile(Binding, ss[0]);
-    //    }
-    //}
+            Binding.File = Binding.OnSetFile(new FileInfo(ss[0]), "");
+        }
+    }
 
     public bool IsReadOnly
     {
