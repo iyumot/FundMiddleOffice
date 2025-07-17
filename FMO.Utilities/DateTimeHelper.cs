@@ -30,7 +30,7 @@ public static class DateTimeHelper
             return true;
 
 
-         var m = Regex.Match(s, @"(\b\d{4})[\D]?(\d{2})[\D]?(\d{2})\b");
+         var m = Regex.Match(s, @"[\D]?(\d{4})[\D]?(\d{2})[\D]?(\d{2})[\D]?");
         if (m.Success && int.Parse(m.Groups[1].Value) is int y && int.Parse(m.Groups[2].Value) is int mm && mm <= 12 && int.Parse(m.Groups[3].Value) is int dd)
         {
             d = new DateOnly(y, mm, dd);
