@@ -35,40 +35,46 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
         {
             Label = "基金合同",
             OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.Contract = b),
-            OnDeleteFile = x => DeleteFile(x)
+            OnDeleteFile = x => DeleteFile(x),
+            FileChanged = ()=>Check()
         };
         RiskDisclosure = new()
         {
             Label = "风险揭示书",
             OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.RiskDiscloure = b),
-            OnDeleteFile = x => DeleteFile(x)
+            OnDeleteFile = x => DeleteFile(x),
+            FileChanged = () => Check()
         };
         OrderFile = new()
         {
             Label = "认申赎单",
             OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.OrderSheet = b),
-            OnDeleteFile = x => DeleteFile(x)
+            OnDeleteFile = x => DeleteFile(x),
+            FileChanged = () => Check()
         };
         Video = new()
         {
             Label = "双录",
             OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.Videotape = b),
-            OnDeleteFile = x => DeleteFile(x)
+            OnDeleteFile = x => DeleteFile(x),
+            FileChanged = () => Check()
         };
 
 
         RiskPair = new()
         {
-            Label = "风险匹配",
+            Label = "风险匹配告知书",
             OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.RiskPair = b),
-            OnDeleteFile = x => DeleteFile(x)
+            OnDeleteFile = x => DeleteFile(x),
+            FileChanged = () => Check()
         };
 
         Review = new()
         {
             Label = "回访",
             OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.Review = b),
-            OnDeleteFile = x => DeleteFile(x)
+            OnDeleteFile = x => DeleteFile(x),
+            FileChanged = () => Check()
         };
     }
 
@@ -177,9 +183,7 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
 
 
     private void DeleteFile(FileStorageInfo x)
-    {
-        Check();
-
+    { 
         if (Id == 0) //未保存
             return;
 
@@ -211,7 +215,6 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
             Date = new DateTime(date, default);
 
 
-        Check();
         if (Id == 0) //新增加的
         {
             return new FileStorageInfo(fi.FullName, "", DateTime.Now);
@@ -494,7 +497,8 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
                 RiskDisclosure.File = Move(RiskDisclosure.File);
                 OrderFile.File = Move(OrderFile.File);
                 Video.File = Move(Video.File);
-                Contract.File = Move(Contract.File);
+                Review.File = Move(Review.File);
+                RiskPair.File = Move(RiskPair.File); 
             }
 
 

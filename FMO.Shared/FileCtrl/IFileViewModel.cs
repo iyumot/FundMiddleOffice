@@ -213,7 +213,7 @@ public partial class FileViewModel<T> : FileViewModelBase, IFileSelector
 
 }
 
- 
+
 
 public partial class SingleFileViewModel : ObservableObject, IFileSelector//,IFileViewModel
 {
@@ -238,6 +238,9 @@ public partial class SingleFileViewModel : ObservableObject, IFileSelector//,IFi
 
     public required Action<FileStorageInfo> OnDeleteFile { get; set; }
 
+
+    public Action? FileChanged { get; set; }
+
     [RelayCommand]
     public void SetFile()
     {
@@ -248,14 +251,24 @@ public partial class SingleFileViewModel : ObservableObject, IFileSelector//,IFi
 
         var fi = new FileInfo(fd.FileName);
         if (fi is not null)
+        {
             File = OnSetFile(fi, Label);
+            FileChanged?.Invoke();
+        }
     }
 
 
     [RelayCommand(CanExecute = nameof(CanDelete))]
     public void DeleteFile()
     {
-        try { if (File is not null) OnDeleteFile(File); File = null; } catch { }
+        try
+        {
+            if (File is null) return;
+            OnDeleteFile(File); 
+            File = null;
+            FileChanged?.Invoke();
+        }
+        catch { }
     }
 
 
@@ -266,7 +279,7 @@ public partial class SingleFileViewModel : ObservableObject, IFileSelector//,IFi
             try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(File.Path!) { UseShellExecute = true }); } catch { }
     }
 
-     
+
 
 
     [RelayCommand]
@@ -390,6 +403,6 @@ public partial class MultipleFileViewModel : ObservableObject, IFileSelector
 }
 
 
- 
+
 
 

@@ -5,8 +5,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO"
-    xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     d:DataContext="{d:DesignInstance Type=local:FundInfoPageViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="1500"
@@ -281,12 +281,10 @@
 
             </StackPanel.Resources>
 
-            <shared:CopyableControl>
-                <TextBlock
-                    FontSize="16"
-                    FontWeight="Black"
-                    Text="{Binding FundName}" />
-            </shared:CopyableControl>
+            <shared:CopyableTextBlock
+                FontSize="16"
+                FontWeight="Black"
+                Text="{Binding FundName}" />
 
             <DockPanel Margin="0,0,0,10">
                 <Button
@@ -314,18 +312,15 @@
                     ToolTip="生成合同附件" />
 
 
-                <shared:CopyableControl>
-                    <TextBlock FontWeight="Bold" Text="{Binding FundCode}" />
-                </shared:CopyableControl>
-
-                <shared:CopyableControl>
-                    <TextBlock FontWeight="Bold" Text="{Binding RiskLevel}" />
-                </shared:CopyableControl>
+                <shared:CopyableTextBlock FontWeight="Bold" Text="{Binding FundCode}" />
 
 
-                <shared:CopyableControl>
-                    <TextBlock Text="{Binding FundShortName}" />
-                </shared:CopyableControl>
+                <shared:CopyableTextBlock FontWeight="Bold" Text="{Binding RiskLevel}" />
+
+
+
+                <shared:CopyableTextBlock Text="{Binding FundShortName}" />
+
             </DockPanel>
 
             <UniformGrid Rows="1">
