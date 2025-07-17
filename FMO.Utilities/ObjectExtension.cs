@@ -14,7 +14,7 @@ public static class ObjectExtension
     }
 
 
-    public static void UpdateFrom(this object des, object src)
+    public static void UpdateFrom(this object des, object src, bool ignoreDefault=false)
     {
         if (src is null) return;
 
@@ -29,7 +29,9 @@ public static class ObjectExtension
             var ps = pss.FirstOrDefault(x => x.Name == p.Name && x.CanRead);
             if (ps is null) continue;
 
-            p.SetValue(des, ps.GetValue(src));
+            var v = ps.GetValue(src);
+            if(!ignoreDefault || v != default)
+                p.SetValue(des, v);
         }
     }
 

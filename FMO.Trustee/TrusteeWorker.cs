@@ -370,6 +370,7 @@ public partial class TrusteeWorker : ObservableObject
                 var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + method);
 
                 DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
+
                 do
                 {
                     var rc = await tr.QueryTransferRecords(begin, end);
@@ -415,41 +416,8 @@ public partial class TrusteeWorker : ObservableObject
                             }
                         }
 
-                        // 对齐id 
-                        var olds = db.GetCollection<TransferRecord>().Find(x => x.ConfirmedDate >= rc.Data.Min(x => x.ConfirmedDate));
-                        foreach (var r in rc.Data)
-                        {
-                            // 同日同名
-                            var exi = olds.Where(x => x.ExternalId == r.ExternalId || (x.CustomerName == r.CustomerName && x.CustomerIdentity == r.CustomerIdentity && x.ConfirmedDate == r.ConfirmedDate)).ToList();
 
-                            // 只有一个，替换
-                            if (exi.Count == 1 && (exi[0].Source != "api" || exi[0].ExternalId == r.ExternalId))
-                            {
-                                r.Id = exi[0].Id;
-                                continue;
-                            }
-
-                            // > 1个
-                            // 存在同ex id，替换
-                            var old = exi.Where(x => x.ExternalId == r.ExternalId);
-                            if (old.Any())
-                                r.Id = old.First().Id;
-
-                            // 如果存在手动录入的，也删除
-                            foreach (var item in exi)
-                                db.GetCollection<TransferRecord>().DeleteMany(item => item.Source == "manual" || item.ExternalId == r.ExternalId);
-
-                        }
-
-                        db.GetCollection<TransferRecord>().Upsert(rc.Data);
-
-                        // 通知
-                        try
-                        {
-                            foreach (var item in rc.Data)
-                                WeakReferenceMessenger.Default.Send(item);
-                        }
-                        catch { }
+                        DataTracker.OnBatchTransferRecord(rc.Data);
                     }
 
 

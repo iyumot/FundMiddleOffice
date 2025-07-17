@@ -233,9 +233,53 @@ public static class DataTracker
     }
 
 
+
+
     public static void OnBatchTransferRecord(IEnumerable<TransferRecord> records)
     {
         using var db = DbHelper.Base();
+
+        // 对齐id 
+        var olds = db.GetCollection<TransferRecord>().Find(x => x.ConfirmedDate >= records.Min(x => x.ConfirmedDate));
+        foreach (var r in records)
+        {
+            // 同日同名
+            var exi = olds.Where(x => x.ExternalId == r.ExternalId || (x.CustomerName == r.CustomerName && x.CustomerIdentity == r.CustomerIdentity && x.ConfirmedDate == r.ConfirmedDate)).ToList();
+
+            // 只有一个，替换
+            if (exi.Count == 1 && (exi[0].Source != "api" || exi[0].ExternalId == r.ExternalId))
+            {
+                r.Id = exi[0].Id;
+                r.OrderId = exi[0].OrderId;
+                r.RequestId = exi[0].RequestId;
+                continue;
+            }
+
+            // > 1个
+            // 存在同ex id，替换
+            var old = exi.Where(x => x.ExternalId == r.ExternalId);
+            if (old.Any())
+            {
+                r.Id = old.First().Id;
+                r.OrderId = old.First().OrderId;
+                r.RequestId = old.First().RequestId;
+            }
+            // 如果存在手动录入的，也删除
+            foreach (var item in exi)
+                db.GetCollection<TransferRecord>().DeleteMany(item => item.Source == "manual" || item.ExternalId == r.ExternalId);
+
+        }
+
+        db.GetCollection<TransferRecord>().Upsert(records);
+
+        // 通知
+        try
+        {
+            foreach (var item in records)
+                WeakReferenceMessenger.Default.Send(item);
+        }
+        catch { }
+
         var dc = db.GetCollection<TransferRecord>();
         // 分类
         var da = records.GroupBy(x => (x.CustomerId, x.FundId)).Select(x => x.Key);
