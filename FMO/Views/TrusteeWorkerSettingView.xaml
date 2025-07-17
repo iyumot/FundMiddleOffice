@@ -5,31 +5,113 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DataContext="{d:DesignInstance Type=local:TrusteeWorkerSettingViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
     Background="White"
     mc:Ignorable="d">
+    <UserControl.Resources>
+
+        <DataTemplate x:Key="DT.View">
+            <DockPanel Margin="5,0">
+                <TextBlock Text="{Binding DateBegin, StringFormat=yyyy.MM.dd}" />
+                <TextBlock Text="-" />
+                <TextBlock Text="{Binding DateEnd, StringFormat=yyyy.MM.dd}" />
+            </DockPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DT.Edit">
+            <DockPanel>
+                <Button
+                    Margin="0,2,0,0"
+                    HorizontalAlignment="Stretch"
+                    Command="{Binding SaveCommand}"
+                    CommandParameter="{Binding .}"
+                    Content="保存"
+                    DockPanel.Dock="Bottom"
+                    Style="{StaticResource ButtonSuccess.Small}" />
+
+                <DatePicker DockPanel.Dock="Top" SelectedDate="{Binding DateBegin, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
+                <DatePicker SelectedDate="{Binding DateEnd, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
+
+
+            </DockPanel>
+        </DataTemplate>
+
+    </UserControl.Resources>
+
+
     <DockPanel>
 
 
+        <DataGrid
+            AutoGenerateColumns="False"
+            ItemsSource="{Binding Configs}"
+            RowHeight="100"
+            Style="{StaticResource DataGrid.NoSelect}">
+            <DataGrid.Columns>
 
-        <Border Background="AliceBlue" DockPanel.Dock="Top">
-            <Grid Name="head">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="50" />
-                    <RowDefinition />
-                </Grid.RowDefinitions>
-            </Grid>
-        </Border>
+                <DataGridTextColumn Binding="{Binding Identifier}" IsReadOnly="True" />
+
+                <DataGridTemplateColumn Header="交易申请">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ContentControl Content="{Binding QueryTransferRequest}" ContentTemplate="{StaticResource DT.View}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <ContentControl Content="{Binding QueryTransferRequest}" ContentTemplate="{StaticResource DT.Edit}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="交易确认">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ContentControl Content="{Binding QueryTransferRecord}" ContentTemplate="{StaticResource DT.View}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <ContentControl Content="{Binding QueryTransferRecord}" ContentTemplate="{StaticResource DT.Edit}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
 
 
-        <ScrollViewer Grid.Row="1" HorizontalAlignment="Stretch">
-            <Grid x:Name="grid" HorizontalAlignment="Stretch">
-                <Border
-                    Grid.Row="0"
-                    Grid.RowSpan="99"
-                    Background="AliceBlue" />
-            </Grid>
-        </ScrollViewer>
+
+                <DataGridTemplateColumn Header="募集户流水">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ContentControl Content="{Binding QueryRaisingAccountTransction}" ContentTemplate="{StaticResource DT.View}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <ContentControl Content="{Binding QueryRaisingAccountTransction}" ContentTemplate="{StaticResource DT.Edit}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
+
+
+
+                <DataGridTemplateColumn Header="每日费用明细">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ContentControl Content="{Binding QueryFundDailyFee}" ContentTemplate="{StaticResource DT.View}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <ContentControl Content="{Binding QueryFundDailyFee}" ContentTemplate="{StaticResource DT.Edit}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
+
+
+
+            </DataGrid.Columns>
+        </DataGrid>
     </DockPanel>
 </UserControl>

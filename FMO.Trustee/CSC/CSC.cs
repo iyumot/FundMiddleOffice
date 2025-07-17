@@ -15,6 +15,8 @@ namespace FMO.Trustee;
 /// </summary>
 public partial class CSC : TrusteeApiBase
 {
+    public const string _Identifier = "trustee_csc";
+
     private readonly int SizePerPage = 1000;
 
     public override string Identifier => "trustee_csc";

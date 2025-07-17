@@ -1,4 +1,7 @@
-﻿using FMO.Trustee;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using FMO.Trustee;
+using FMO.Utilities;
 using System.Windows.Controls;
 
 namespace FMO;
@@ -12,38 +15,107 @@ public partial class TrusteeWorkerSettingView : UserControl
     {
         InitializeComponent();
 
-        Task.Run(() => this.Dispatcher.BeginInvoke(() => Init()));
+        DataContext = new TrusteeWorkerSettingViewModel();
     }
 
     private void Init()
     {
-        int rows = TrusteeGallay.Trustees.Length;
-        int cols = 5;
+        using var pdb = DbHelper.Platform();
+        var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
 
-        for (int i = 0; i <= rows; i++)
-            grid.RowDefinitions.Add(new RowDefinition { Height = new(80) });
 
-        for (int i = 0; i <= cols; i++)
+
+    }
+}
+
+
+public partial class TrusteeWorkerSettingViewModel : ObservableObject
+{
+
+    public TrusteeWorkingConfigViewModel[] Configs { get; set; }
+
+
+    public TrusteeWorkerSettingViewModel()
+    {
+        using var pdb = DbHelper.Platform();
+        var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
+
+        var cms = new TrusteeWorkingConfigViewModel { Identifier = CMS._Identifier, };
+        cms.QueryTransferRecord = Create(ranges, CMS._Identifier, nameof(ITrustee.QueryTransferRecords));
+        cms.QueryTransferRequest = Create(ranges, CMS._Identifier, nameof(ITrustee.QueryTransferRequests));
+        cms.QueryRaisingAccountTransction = Create(ranges, CMS._Identifier, nameof(ITrustee.QueryRaisingAccountTransction));
+        cms.QueryRaisingBalance = Create(ranges, CMS._Identifier, nameof(ITrustee.QueryRaisingBalance));
+        cms.QueryFundDailyFee = Create(ranges, CMS._Identifier, nameof(ITrustee.QueryFundDailyFee));
+
+
+
+        var citics = new TrusteeWorkingConfigViewModel { Identifier = CITICS._Identifier, };
+        citics.QueryTransferRecord = Create(ranges, CITICS._Identifier, nameof(ITrustee.QueryTransferRecords)); 
+        citics.QueryTransferRequest = Create(ranges, CITICS._Identifier, nameof(ITrustee.QueryTransferRequests));
+        citics.QueryRaisingAccountTransction = Create(ranges, CITICS._Identifier, nameof(ITrustee.QueryRaisingAccountTransction));
+        citics.QueryRaisingBalance = Create(ranges, CITICS._Identifier, nameof(ITrustee.QueryRaisingBalance));
+        citics.QueryFundDailyFee = Create(ranges, CITICS._Identifier, nameof(ITrustee.QueryFundDailyFee));
+
+
+        var csc = new TrusteeWorkingConfigViewModel { Identifier = CSC._Identifier, };
+        csc.QueryTransferRecord = Create(ranges, CSC._Identifier, nameof(ITrustee.QueryTransferRecords));
+        csc.QueryTransferRequest = Create(ranges, CSC._Identifier, nameof(ITrustee.QueryTransferRequests));
+        csc.QueryRaisingAccountTransction = Create(ranges, CSC._Identifier, nameof(ITrustee.QueryRaisingAccountTransction));
+        csc.QueryRaisingBalance = Create(ranges, CSC._Identifier, nameof(ITrustee.QueryRaisingBalance));
+        csc.QueryFundDailyFee = Create(ranges, CSC._Identifier, nameof(ITrustee.QueryFundDailyFee));
+
+        Configs = [cms, citics, csc];
+    }
+
+
+    public TrusteeMethodConfigViewModel Create(TrusteeMethodShotRange[] ranges, string identifier, string method)
+    {
+        var range = ranges.FirstOrDefault(x => x.Id == identifier + method);
+        return new TrusteeMethodConfigViewModel
         {
-            head.ColumnDefinitions.Add(new ColumnDefinition());
-            grid.ColumnDefinitions.Add(new ColumnDefinition());
-        }
+            Method = method,
+            DateBegin = range?.Begin,
+            DateEnd = range?.End
+        };
+    }
 
 
-        for (int i = 0; i < rows; i++)
+}
+
+public partial class TrusteeMethodConfigViewModel : ObservableObject
+{
+    public required string Method { get; set; }
+
+    [ObservableProperty]
+    public partial DateOnly? DateBegin { get; set; }
+
+    [ObservableProperty]
+    public partial DateOnly? DateEnd { get; set; }
+
+
+}
+
+public partial class TrusteeWorkingConfigViewModel : ObservableObject
+{
+    public required string Identifier { get; set; }
+
+    public TrusteeMethodConfigViewModel? QueryTransferRequest { get; set; }
+
+    public TrusteeMethodConfigViewModel? QueryTransferRecord { get; set; }
+    public TrusteeMethodConfigViewModel? QueryRaisingAccountTransction { get; internal set; }
+    public TrusteeMethodConfigViewModel? QueryRaisingBalance { get; internal set; }
+    public TrusteeMethodConfigViewModel? QueryFundDailyFee { get; internal set; }
+
+    [RelayCommand]
+    public void Save(TrusteeMethodConfigViewModel v)
+    {
+        using var pdb = DbHelper.Platform();
+
+        if (v.DateBegin is not null && v.DateEnd is not null)
         {
+            var ran = new TrusteeMethodShotRange(Identifier + v.Method, v.DateBegin.Value, v.DateEnd.Value);
 
-            // 行首
-            var tb = new TextBlock
-            {
-                Text = TrusteeGallay.Trustees[i].Title,
-                VerticalAlignment = System.Windows.VerticalAlignment.Center,
-                HorizontalAlignment = System.Windows.HorizontalAlignment.Center
-            };
-            grid.Children.Add(tb);
-            Grid.SetRow(tb, i);
+            var ranges = pdb.GetCollection<TrusteeMethodShotRange>().Upsert(ran);
         }
-
-
     }
 }

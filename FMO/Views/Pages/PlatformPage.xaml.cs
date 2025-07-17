@@ -15,6 +15,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
@@ -254,6 +255,18 @@ public partial class PlatformPageViewModel : ObservableObject
         //只看3天内的
         TrusteeWorkLogs = TrusteeApiBase.GetLogs();//?.OrderByDescending(x => x.Time).Take(100);//.Where(x => (DateTime.Today - x.Time).Days < 3);
         TrusteeWorkLogSource.Source = TrusteeWorkLogs;
+    }
+
+
+    [RelayCommand]
+    public void ViewTrusteeConfig()
+    {
+        Window window = new Window();
+        window.Content = new TrusteeWorkerSettingView();
+        window.DataContext = new TrusteeWorkerSettingViewModel();
+        window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        window.Owner = App.Current.MainWindow;
+        window.ShowDialog();
     }
 
 

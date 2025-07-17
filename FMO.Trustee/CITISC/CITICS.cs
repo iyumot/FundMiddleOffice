@@ -13,6 +13,8 @@ namespace FMO.Trustee;
 
 public partial class CITICS : TrusteeApiBase
 {
+    public const string _Identifier = "trustee_citics";
+
 
     SemaphoreSlim tokenSlim = new SemaphoreSlim(1);
 

@@ -639,6 +639,26 @@
                     </ListBox>-->
                 </Border>
             </Popup>
+
+
+            <ToggleButton
+                Name="apiConfigBtn"
+                hc:IconElement.Geometry="{StaticResource f.gear}"
+                BorderThickness="0"
+                Command="{Binding ViewTrusteeConfigCommand}"
+                DockPanel.Dock="Right" />
+
+
+            <!--<Popup
+                AllowsTransparency="True"
+                IsOpen="{Binding ElementName=apiConfigBtn, Path=IsChecked}"
+                Placement="Left"
+                PlacementTarget="{Binding ElementName=apiConfigBtn}"
+                StaysOpen="False">
+                <Border>
+                    <local:TrusteeWorkerSettingView />
+                </Border>
+            </Popup>-->
         </DockPanel>
 
 
