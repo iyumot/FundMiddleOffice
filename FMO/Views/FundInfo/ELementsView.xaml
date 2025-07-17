@@ -59,9 +59,9 @@
                                 VerticalAlignment="Center"
                                 Foreground="{StaticResource LabelBrush}"
                                 Text="{Binding Label}" />
-                            <local:CopyableControl Margin="10,0,0,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <shared:CopyableControl Margin="10,0,0,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityConverter}}">
                                 <TextBlock Text="{Binding Display}" />
-                            </local:CopyableControl>
+                            </shared:CopyableControl>
 
 
                             <DockPanel Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityReConverter}}">
@@ -96,9 +96,9 @@
                                         VerticalAlignment="Center"
                                         Foreground="{StaticResource LabelBrush}"
                                         Text="{Binding Label}" />
-                                    <local:CopyableControl Margin="10,0,0,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                    <shared:CopyableControl Margin="10,0,0,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityConverter}}">
                                         <TextBlock Text="{Binding Display}" />
-                                    </local:CopyableControl>
+                                    </shared:CopyableControl>
 
                                     <DockPanel Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityReConverter}}">
                                         <Button DockPanel.Dock="Right" Style="{StaticResource SaveElement}" />
@@ -141,9 +141,9 @@
                     VerticalAlignment="Center"
                     Foreground="{StaticResource LabelBrush}"
                     Text="{Binding Label}" />
-                <local:CopyableControl Margin="10,0,0,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityConverter}}">
+                <shared:CopyableControl Margin="10,0,0,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityConverter}}">
                     <TextBlock Text="{Binding Display}" />
-                </local:CopyableControl>
+                </shared:CopyableControl>
                 <DockPanel Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityReConverter}}">
 
                     <ContentPresenter
@@ -162,9 +162,9 @@
                     Foreground="{StaticResource LabelBrush}"
                     Text="{Binding Label}" />
 
-                <local:CopyableControl Margin="10,0,0,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityConverter}}">
+                <shared:CopyableControl Margin="10,0,0,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityConverter}}">
                     <TextBlock Text="{Binding Data.Old}" />
-                </local:CopyableControl>
+                </shared:CopyableControl>
 
                 <DockPanel Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityReConverter}}">
                     <ContentPresenter
@@ -227,9 +227,9 @@
                     Foreground="{StaticResource LabelBrush}"
                     Text="{Binding Label}" />
 
-                <local:CopyableControl Margin="10,0,0,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityConverter}}">
+                <shared:CopyableControl Margin="10,0,0,0" Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityConverter}}">
                     <TextBlock Text="{Binding Data.Old}" />
-                </local:CopyableControl>
+                </shared:CopyableControl>
 
                 <DockPanel Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=local:ElementsView}, Converter={StaticResource Boolean2VisibilityReConverter}}">
                     <Button

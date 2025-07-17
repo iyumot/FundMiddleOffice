@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO"
+    xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DataContext="{d:DesignInstance Type=local:FundInfoPageViewModel}"
     d:DesignHeight="450"
@@ -274,18 +275,18 @@
                     <Setter Property="Padding" Value="12,0" />
                     <Setter Property="IsReadOnly" Value="{Binding IsEditable, Converter={StaticResource Boolean2BooleanReConverter}}" />
                 </Style>
-                <Style TargetType="local:CopyableControl">
+                <Style TargetType="shared:CopyableControl">
                     <Setter Property="TextElement.FontSize" Value="14" />
                 </Style>
 
             </StackPanel.Resources>
 
-            <local:CopyableControl>
+            <shared:CopyableControl>
                 <TextBlock
                     FontSize="16"
                     FontWeight="Black"
                     Text="{Binding FundName}" />
-            </local:CopyableControl>
+            </shared:CopyableControl>
 
             <DockPanel Margin="0,0,0,10">
                 <Button
@@ -313,18 +314,18 @@
                     ToolTip="生成合同附件" />
 
 
-                <local:CopyableControl>
+                <shared:CopyableControl>
                     <TextBlock FontWeight="Bold" Text="{Binding FundCode}" />
-                </local:CopyableControl>
+                </shared:CopyableControl>
 
-                <local:CopyableControl>
+                <shared:CopyableControl>
                     <TextBlock FontWeight="Bold" Text="{Binding RiskLevel}" />
-                </local:CopyableControl>
+                </shared:CopyableControl>
 
 
-                <local:CopyableControl>
+                <shared:CopyableControl>
                     <TextBlock Text="{Binding FundShortName}" />
-                </local:CopyableControl>
+                </shared:CopyableControl>
             </DockPanel>
 
             <UniformGrid Rows="1">
@@ -332,17 +333,17 @@
                     <BulletDecorator.Bullet>
                         <TextBlock Text="成立日期" />
                     </BulletDecorator.Bullet>
-                    <local:CopyableControl>
+                    <shared:CopyableControl>
                         <TextBlock Text="{Binding SetupDate, StringFormat=yyyy-MM-dd}" />
-                    </local:CopyableControl>
+                    </shared:CopyableControl>
                 </BulletDecorator>
                 <BulletDecorator>
                     <BulletDecorator.Bullet>
                         <TextBlock Text="备案日期" />
                     </BulletDecorator.Bullet>
-                    <local:CopyableControl>
+                    <shared:CopyableControl>
                         <TextBlock Text="{Binding RegistDate, StringFormat=yyyy-MM-dd}" />
-                    </local:CopyableControl>
+                    </shared:CopyableControl>
                 </BulletDecorator>
             </UniformGrid>
 
@@ -350,27 +351,27 @@
                 <BulletDecorator.Bullet>
                     <TextBlock Text="投资范围" />
                 </BulletDecorator.Bullet>
-                <local:CopyableControl>
+                <shared:CopyableControl>
                     <TextBlock Text="{Binding InvestmentScope, StringFormat=yyyy-MM-dd}" TextWrapping="Wrap" />
-                </local:CopyableControl>
+                </shared:CopyableControl>
             </BulletDecorator>-->
 
             <BulletDecorator Margin="0,5">
                 <BulletDecorator.Bullet>
                     <TextBlock Text="募集账户" />
                 </BulletDecorator.Bullet>
-                <local:CopyableControl>
+                <shared:CopyableControl>
                     <TextBlock Text="{Binding CollectionAccount}" />
-                </local:CopyableControl>
+                </shared:CopyableControl>
             </BulletDecorator>
 
             <BulletDecorator>
                 <BulletDecorator.Bullet>
                     <TextBlock Text="托管账户" />
                 </BulletDecorator.Bullet>
-                <local:CopyableControl>
+                <shared:CopyableControl>
                     <TextBlock Text="{Binding CustodyAccount}" />
-                </local:CopyableControl>
+                </shared:CopyableControl>
             </BulletDecorator>
 
 

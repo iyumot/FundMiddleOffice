@@ -427,12 +427,12 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <DockPanel LastChildFill="False">
-                                <local:CopyableControl>
+                                <shared:CopyableControl>
                                     <TextBlock
                                         VerticalAlignment="Center"
                                         Text="{Binding Name}"
                                         TextWrapping="Wrap" />
-                                </local:CopyableControl>
+                                </shared:CopyableControl>
 
                             </DockPanel>
                         </DataTemplate>
@@ -446,9 +446,7 @@
                 <DataGridTemplateColumn Header="类型">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <local:CopyableControl>
-                                <TextBlock VerticalAlignment="Center" Text="{Binding Type}" />
-                            </local:CopyableControl>
+                            <shared:CopyableTextBlock VerticalAlignment="Center" Text="{Binding Type}" />
                             <DataTemplate.Triggers>
                                 <DataTrigger Binding="{Binding Type}" Value="None">
                                     <Setter Property="TextElement.Foreground" Value="Red" />
@@ -461,9 +459,7 @@
                 <DataGridTemplateColumn Header="证件类型">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <local:CopyableControl>
-                                <TextBlock VerticalAlignment="Center" Text="{Binding Identity.Type}" />
-                            </local:CopyableControl>
+                            <shared:CopyableTextBlock VerticalAlignment="Center" Text="{Binding Identity.Type}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -479,12 +475,7 @@
                 <DataGridTemplateColumn Header="证件有效期">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <local:CopyableControl HorizontalAlignment="Center">
-                                <TextBlock
-                                    VerticalAlignment="Center"
-                                    FontSize="10"
-                                    Text="{Binding Efficient}" />
-                            </local:CopyableControl>
+                            <shared:CopyableTextBlock FontSize="10" Text="{Binding Efficient}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

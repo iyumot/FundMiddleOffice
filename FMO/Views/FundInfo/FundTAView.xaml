@@ -26,21 +26,21 @@
 
 
         <DataTemplate x:Key="DT.NameCell">
-            <local:CopyableControl>
+            <shared:CopyableControl>
                 <TextBlock Foreground="Black" Text="{Binding Name}" />
-            </local:CopyableControl>
+            </shared:CopyableControl>
         </DataTemplate>
 
         <DataTemplate x:Key="DT.ShareCell">
-            <local:CopyableControl HorizontalAlignment="Right">
+            <shared:CopyableControl HorizontalAlignment="Right">
                 <TextBlock Foreground="Black" Text="{Binding Share, StringFormat='###,###,###,###.##'}" />
-            </local:CopyableControl>
+            </shared:CopyableControl>
         </DataTemplate>
 
         <DataTemplate x:Key="DT.ProfitCell">
-            <local:CopyableControl HorizontalAlignment="Right">
+            <shared:CopyableControl HorizontalAlignment="Right">
                 <TextBlock Foreground="Black" Text="{Binding Profit, StringFormat='###,###,###,###.##'}" />
-            </local:CopyableControl>
+            </shared:CopyableControl>
         </DataTemplate>
 
         <Style x:Key="DataGridRowStyle" TargetType="{x:Type DataGridRow}">
