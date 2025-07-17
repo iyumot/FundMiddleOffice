@@ -13,6 +13,8 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace FMO;
 
@@ -608,6 +610,124 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
         }
     }
 
+
+    [RelayCommand]
+    public void MergeCardPhoto()
+    {
+        var ofd = new OpenFileDialog();
+        ofd.Filter = "图片|*.png;*.jpg;*.jpeg;";
+
+        ofd.Multiselect = true;
+
+        bool? result = ofd.ShowDialog();
+
+        if (result != true)
+            return;
+
+        string[] files = ofd.FileNames;
+
+        if (files.Length != 2)
+        {
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning,"请选择且仅选择两个图片文件"));
+            return;
+        }
+
+        try
+        {
+            // 加载图像
+            BitmapSource bitmap1 = LoadBitmapFromFile(files[0]);
+            BitmapSource bitmap2 = LoadBitmapFromFile(files[1]);
+
+            if (bitmap1 == null || bitmap2 == null)
+            {
+                WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "无法加载图片，请检查文件格式"));
+                return;
+            }
+
+            // 计算总宽度和最大高度
+            int totalWidth = bitmap1.PixelWidth + bitmap2.PixelWidth;
+            int maxHeight = Math.Max(bitmap1.PixelHeight, bitmap2.PixelHeight);
+
+            // 创建绘图目标
+            DrawingVisual visual = new DrawingVisual();
+            using (DrawingContext context = visual.RenderOpen())
+            {
+                context.DrawImage(bitmap1, new Rect(0, 0, bitmap1.PixelWidth, bitmap1.PixelHeight));
+                context.DrawImage(bitmap2, new Rect(bitmap1.PixelWidth, 0, bitmap2.PixelWidth, bitmap2.PixelHeight));
+            }
+
+            // 渲染为位图
+            RenderTargetBitmap rtb = new RenderTargetBitmap(
+                totalWidth, maxHeight,
+                96, 96, PixelFormats.Pbgra32);
+            rtb.Render(visual);
+
+            // 保存为 JPG 文件
+            JpegBitmapEncoder encoder = new JpegBitmapEncoder();
+            encoder.QualityLevel = 90; // 设置画质
+            encoder.Frames.Add(BitmapFrame.Create(rtb));
+
+            var di = new DirectoryInfo($@"files\investor\{Id}\cards");
+            if (!di.Exists) di.Create();
+            var path = Path.Combine(di.FullName, $"photo-{DateTime.Now:yyyyMMdd}.jpg");
+            using (var fs = new FileStream(path, FileMode.Create))
+                encoder.Save(fs);
+
+            // 保存
+            var fi = new FileInfo(path);
+            var hash = fi.ComputeHash();
+            FileStorageInfo fsi = new()
+            {
+                Title = "",
+                Path = path,
+                Hash = hash,
+                Time = DateTime.Now
+            };
+            using var db = DbHelper.Base();
+            var cus = db.GetCollection<Investor>().FindById(Id);
+            if (cus.IDCards is null) cus.IDCards = [fsi];
+            else cus.IDCards.Add(fsi);
+            db.GetCollection<Investor>().Update(cus);
+
+            if (IDCards.Files is null) IDCards.Files = [fsi];
+            else IDCards.Files.Add(fsi);
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"合并证件图片出错 {ex}");
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "合并证件图片出错"));
+        }
+
+    }
+    private BitmapSource LoadBitmapFromFile(string path)
+    {
+        using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+        {
+            BitmapDecoder decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+            return decoder.Frames[0];
+        }
+    }
+
+    private void SaveBitmapToFile(BitmapSource bitmap)
+    {
+        SaveFileDialog sfd = new SaveFileDialog();
+        sfd.Filter = "JPG 图片|*.jpg";
+        sfd.FileName = "Combined.jpg";
+
+        if (sfd.ShowDialog() == true)
+        {
+            JpegBitmapEncoder encoder = new JpegBitmapEncoder();
+            encoder.QualityLevel = 90; // 设置画质
+            encoder.Frames.Add(BitmapFrame.Create(bitmap));
+
+            using (FileStream fs = new FileStream(sfd.FileName, FileMode.Create))
+            {
+                encoder.Save(fs);
+            }
+
+            MessageBox.Show("图片已成功合并并保存！");
+        }
+    }
 
     //[RelayCommand]
     //public void AddFile(IFileSelector obj)

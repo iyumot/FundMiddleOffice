@@ -417,7 +417,8 @@
                         local:HelpService.Placement="Right"
                         Command="{Binding MergeCardPhotoCommand}"
                         Style="{StaticResource ButtonIcon.Small}"
-                        ToolTip="合并证件图片" />
+                        ToolTip="合并证件图片"
+                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
                 </DockPanel>
 
             </StackPanel>
