@@ -10,6 +10,10 @@ namespace FMO;
 
 public enum Placement
 {
+    Left,
+    Right,
+    Top,
+    Bottom,
     LeftTop,
     RightTop,
     LeftBottom,
@@ -67,6 +71,8 @@ public static class HelpService
         obj.SetValue(OffsetProperty, value);
 
 
+    public static bool HasHelp(DependencyObject obj) => obj.ReadLocalValue(HelpProperty) != DependencyProperty.UnsetValue || obj.ReadLocalValue(PlacementProperty) != DependencyProperty.UnsetValue;
+
 
     // 初始化帮助系统
     public static void Initialize(Window window)
@@ -121,7 +127,7 @@ public static class HelpService
         var helpElements = new List<FrameworkElement>();
         FindHelpElements(window, helpElements);
 
-        if(helpElements.Count == 0)
+        if (helpElements.Count == 0)
         {
             // 如果没有帮助内容，直接返回
             helpLayer.Visibility = Visibility.Collapsed;
@@ -138,14 +144,13 @@ public static class HelpService
             if (!element.IsVisible) continue;
 
             var helpTemplate = GetHelp(element);
-            if (helpTemplate == null) continue;
+            if (helpTemplate == null && element.ToolTip is null) continue;
 
             // 获取位置设置
             var placement = GetPlacement(element);
             var offset = GetOffset(element);
 
-            // 计算元素在窗口中的位置
-            Point position;
+            // 计算元素在窗口中的位置 
             try
             {
                 // 获取元素在窗口中的位置和尺寸
@@ -159,35 +164,39 @@ public static class HelpService
                 Canvas.SetLeft(bd, elementBounds.Left);
                 Canvas.SetTop(bd, elementBounds.Top);
 
-                // 根据位置设置计算卡片位置
-                position = CalculatePosition(elementBounds, placement, offset);
+
+
+                // 创建帮助卡片
+                UIElement helpCard = helpTemplate is not null ? new ContentControl
+                {
+                    ContentTemplate = helpTemplate,
+                    //Style = window.Resources["HelpCardStyle"] as Style,
+
+                } : new ContentControl { Content = element.ToolTip };
+
+                helpLayer.Children.Add(helpCard);
+
+
+                // 强制布局更新以获取实际尺寸
+                helpCard.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                helpCard.Arrange(new Rect(0, 0, helpCard.DesiredSize.Width, helpCard.DesiredSize.Height));
+
+                double helpCardWidth = helpCard.DesiredSize.Width;
+                double helpCardHeight = helpCard.DesiredSize.Height;
+
+                // 计算位置
+                var position = CalculatePosition(elementBounds, placement, offset, helpCardWidth, helpCardHeight);
+
+
+                // 设置卡片位置
+                Canvas.SetLeft(helpCard, position.X);
+                Canvas.SetTop(helpCard, position.Y);
             }
             catch
             {
                 continue; // 如果转换失败则跳过
             }
 
-
-
-            // 创建帮助卡片
-            var helpCard = new ContentControl
-            {
-                ContentTemplate = helpTemplate,
-                //Style = window.Resources["HelpCardStyle"] as Style,
-
-            };
-
-            helpLayer.Children.Add(helpCard);
-
-            // 设置卡片位置
-            Canvas.SetLeft(helpCard, position.X);
-            Canvas.SetTop(helpCard, position.Y);
-            //// 添加动画
-            //var storyboard = window.Resources["ShowHelpAnimation"] as Storyboard;
-            //if (storyboard != null)
-            //{
-            //    storyboard.Begin(helpCard);
-            //}
         }
 
         helpLayer.InvalidateVisual();
@@ -203,7 +212,7 @@ public static class HelpService
             var child = VisualTreeHelper.GetChild(parent, i);
 
             // 如果是FrameworkElement且设置了Help属性
-            if (child is FrameworkElement element && GetHelp(element) != null)
+            if (child is FrameworkElement element && HasHelp(element))
             {
                 results.Add(element);
             }
@@ -235,13 +244,33 @@ public static class HelpService
 
 
     // 计算帮助卡片位置
-    private static Point CalculatePosition(Rect elementBounds, Placement placement, Point offset)
+    private static Point CalculatePosition(Rect elementBounds, Placement placement, Point offset, double helpCardWidth, double helpCardHeight)
     {
         double x = 0;
         double y = 0;
 
         switch (placement)
         {
+            case Placement.Left:
+                x = elementBounds.Left - helpCardWidth + offset.X;
+                y = elementBounds.Top + (elementBounds.Height / 2) - (helpCardHeight / 2) + offset.Y;
+                break;
+
+            case Placement.Right:
+                x = elementBounds.Right + offset.X;
+                y = elementBounds.Top + (elementBounds.Height / 2) - (helpCardHeight / 2) + offset.Y;
+                break;
+
+            case Placement.Top:
+                x = elementBounds.Left + (elementBounds.Width / 2) - (helpCardWidth / 2) + offset.X;
+                y = elementBounds.Top - helpCardHeight + offset.Y;
+                break;
+
+            case Placement.Bottom:
+                x = elementBounds.Left + (elementBounds.Width / 2) - (helpCardWidth / 2) + offset.X;
+                y = elementBounds.Bottom + offset.Y;
+                break;
+
             case Placement.LeftTop:
                 x = elementBounds.Left;
                 y = elementBounds.Top;
