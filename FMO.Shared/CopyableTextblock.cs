@@ -128,6 +128,8 @@ public class CopyableTextBlock : Control
             tb.MaskedText = "●●●●●●●●";
         else
             tb.MaskedText = tb.IsMasked ? GenMask(tb.Text) : tb.Text;
+
+        tb.SetCanCopy(tb.Text);
     }
 
     private static string GenMask(string? text)
@@ -150,5 +152,8 @@ public class CopyableTextBlock : Control
         if (Template.FindName("PART_Copy", this) is Button button)
             button.Click += (s, e) => { if (Text is not null) Clipboard.SetDataObject(new DataObject(Text)); };
     }
-     
+    private void SetCanCopy(string? str)
+    {
+        CanCopy = !string.IsNullOrWhiteSpace(str) && str != "-";
+    }
 }
