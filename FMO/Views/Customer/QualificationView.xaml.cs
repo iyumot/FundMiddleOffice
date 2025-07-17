@@ -349,6 +349,8 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
     {
         using var db = DbHelper.Base();
         var obj = db.GetCollection<InvestorQualification>().FindById(Id);
+        if (Date.NewValue is not null)
+            obj.Date = Date.NewValue.Value;
         obj.Result = IsProfessional ? QualifiedInvestorType.Professional : QualifiedInvestorType.Normal;
         obj.ProofType = ProofType ?? QualificationFileType.None;
         obj.ExperienceType = ExperienceType ?? QualificationExperienceType.None;
@@ -514,7 +516,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
             HasError = true;
             info.Add("投资经历");
         }
-         
+
 
 
         Statement = string.Join('，', info);
