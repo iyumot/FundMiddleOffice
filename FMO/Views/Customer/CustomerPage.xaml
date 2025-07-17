@@ -136,6 +136,14 @@
         </Style>
 
         <Style
+            x:Key="DataGridColumnHeaderStyle.NoSpace"
+            BasedOn="{StaticResource DataGridColumnHeaderStyle}"
+            TargetType="DataGridColumnHeader">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+
+        <Style
             x:Key="DataGrid.ReadOnly"
             BasedOn="{StaticResource DataGridBaseStyle}"
             TargetType="{x:Type DataGrid}">
@@ -143,7 +151,7 @@
             <Setter Property="hc:DataGridAttach.ApplyDefaultStyle" Value="False" />
             <Setter Property="DataGrid.CellStyle" Value="{StaticResource ColorCell}" />
             <Setter Property="DataGrid.RowStyle" Value="{StaticResource ColorRowStyle}" />
-            <Setter Property="DataGrid.ColumnHeaderStyle" Value="{StaticResource DataGridColumnHeaderStyle.Small}" />
+            <Setter Property="DataGrid.ColumnHeaderStyle" Value="{StaticResource DataGridColumnHeaderStyle.NoSpace}" />
             <Setter Property="DataGrid.RowHeight" Value="24" />
             <Setter Property="DataGrid.ColumnHeaderHeight" Value="20" />
             <Setter Property="hc:DataGridAttach.EditingTextColumnStyle" Value="{StaticResource DataGridEditingTextColumnStyle.Small}" />
@@ -472,7 +480,10 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <local:CopyableControl HorizontalAlignment="Center">
-                                <TextBlock VerticalAlignment="Center" Text="{Binding Efficient}" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontSize="10"
+                                    Text="{Binding Efficient}" />
                             </local:CopyableControl>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
