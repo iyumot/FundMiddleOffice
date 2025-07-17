@@ -97,3 +97,8 @@ public interface IAPIConfig
 {
     public string Id { get; }
 }
+
+
+public record ReturnWrap<T>(ReturnCode Code, T[]? Data);
+
+public record TrusteeCallHistory(string Identifier, string Method, DateTime Time, string Params, string? Json);

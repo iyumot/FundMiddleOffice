@@ -281,7 +281,3 @@ public abstract class TrusteeApiBase : ITrustee
         public string? Log { get; set; }
     }
 }
-
-public record ReturnWrap<T>(ReturnCode Code, T[]? Data);
-
-public record TrusteeCallHistory(string Identifier, string Method, DateTime Time, string Params, string? Json);

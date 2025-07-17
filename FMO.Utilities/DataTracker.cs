@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
+using FMO.Trustee;
 using Serilog;
 using System.Collections;
 
@@ -116,9 +117,19 @@ public static class DataTracker
             var sh = c.OrderBy(x => x.Date).LastOrDefault(x => x.Date <= last.Date);
 
             // 检查份额是否一致，如果不一致则添加提示：基金份额与估值表不一致
-            if (sh?.Share != last.Share)
+            if (sh!.Share != last.Share)
             {
                 FundTips.Add(new FundTip(fund.Id, fund.Name, TipType.FundShareNotPair, "基金份额与估值表不一致"));
+
+                // 修改 trustee中的work日期
+                using var pd = DbHelper.Platform();
+                var rs = pd.GetCollection<TrusteeMethodShotRange>().Find(x => x.Id.EndsWith(nameof(ITrustee.QueryTransferRecords))).ToArray();
+                foreach (var item in rs)
+                {
+                    if(item.End > sh.Date)
+                        pd.GetCollection<TrusteeMethodShotRange>().Update(new TrusteeMethodShotRange(item.Id, item.Begin, sh.Date));
+                }
+
                 // 发送基金提示消息（例如用于界面通知）
                 WeakReferenceMessenger.Default.Send(new FundTipMessage(fund.Id));
                 continue;
