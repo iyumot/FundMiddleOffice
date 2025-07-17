@@ -19,6 +19,6 @@ public struct DateEfficient
     {
         if (Begin >= End) return string.Empty;
 
-        return $"{Begin?.ToString("yyyy-MM-dd")}-{(LongTerm ? "长期" : End?.ToString("yyyy-MM-dd"))}";
+        return $"{Begin?.ToString("yyyy.MM.dd")}-{(LongTerm ? "长期" : End?.ToString("yyyy.MM.dd"))}";
     }
 }

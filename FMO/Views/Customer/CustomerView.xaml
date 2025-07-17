@@ -244,6 +244,7 @@
 
                                 <ListBox
                                     x:Name="list"
+                                    VerticalAlignment="Center"
                                     Background="Transparent"
                                     BorderThickness="0"
                                     ItemTemplate="{StaticResource DT.File}"
@@ -413,12 +414,23 @@
                         Style="{StaticResource CardFileStyle}" />
 
                     <Button
-                        hc:IconElement.Geometry="{StaticResource f.id-card}"
                         local:HelpService.Placement="Right"
                         Command="{Binding MergeCardPhotoCommand}"
-                        Style="{StaticResource ButtonIcon.Small}"
                         ToolTip="合并证件图片"
-                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}">
+
+                        <Viewbox Height="12">
+                            <DockPanel>
+                                <Path Data="{StaticResource f.image}" Fill="Black" />
+                                <Path
+                                    Margin="50,0"
+                                    Data="{StaticResource f.arrow-right}"
+                                    Fill="Black" />
+                                <Path Data="{StaticResource f.id-card}" Fill="Black" />
+                            </DockPanel>
+                        </Viewbox>
+
+                    </Button>
                 </DockPanel>
 
             </StackPanel>

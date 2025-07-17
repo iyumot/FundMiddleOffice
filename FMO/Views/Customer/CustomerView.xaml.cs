@@ -708,26 +708,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
         }
     }
 
-    private void SaveBitmapToFile(BitmapSource bitmap)
-    {
-        SaveFileDialog sfd = new SaveFileDialog();
-        sfd.Filter = "JPG 图片|*.jpg";
-        sfd.FileName = "Combined.jpg";
-
-        if (sfd.ShowDialog() == true)
-        {
-            JpegBitmapEncoder encoder = new JpegBitmapEncoder();
-            encoder.QualityLevel = 90; // 设置画质
-            encoder.Frames.Add(BitmapFrame.Create(bitmap));
-
-            using (FileStream fs = new FileStream(sfd.FileName, FileMode.Create))
-            {
-                encoder.Save(fs);
-            }
-
-            MessageBox.Show("图片已成功合并并保存！");
-        }
-    }
+ 
 
     //[RelayCommand]
     //public void AddFile(IFileSelector obj)
@@ -1004,7 +985,7 @@ public partial class DateEfficientViewModel : ObservableObject, IEquatable<DateE
     {
         if (Begin >= End) return string.Empty;
 
-        return $"{Begin?.ToString("yyyy-MM-dd")}-{(IsLongTerm ? "长期" : End?.ToString("yyyy-MM-dd"))}";
+        return $"{Begin?.ToString("yyyy.MM.dd")}-{(IsLongTerm ? "长期" : End?.ToString("yyyy.MM.dd"))}";
     }
 }
 

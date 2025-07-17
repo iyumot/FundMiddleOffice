@@ -15,6 +15,8 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace FMO;
 
@@ -49,7 +51,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
 
     [ObservableProperty]
-    public partial InvestorReadOnlyViewModel? Selected { get; set; } 
+    public partial InvestorReadOnlyViewModel? Selected { get; set; }
 
 
     [ObservableProperty]
@@ -114,7 +116,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
         CustomerSource.Source = Customers;
         CustomerSource.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(InvestorReadOnlyViewModel.Holding), System.ComponentModel.ListSortDirection.Descending));
-        CustomerSource.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(InvestorReadOnlyViewModel.Type), System.ComponentModel.ListSortDirection.Ascending)); 
+        CustomerSource.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(InvestorReadOnlyViewModel.Type), System.ComponentModel.ListSortDirection.Ascending));
         CustomerSource.Filter += CustomerSource_Filter;
         CustomerSource.IsLiveSortingRequested = true;
         CustomerSource.LiveSortingProperties.Add(nameof(InvestorReadOnlyViewModel.Holding));
@@ -423,6 +425,49 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
                         }
 
                         db.GetCollection<InvestorQualification>().Upsert(old);
+
+
+                        // 身份证
+                        var idcards = files.Where(x => x.Name.Contains("身份证件正反面") && x.Name.Contains(cus.Name)).ToArray();
+                        if (idcards.Length == 2)
+                        {
+                            using var ms = MergeCards(db, idcards);
+                            if (ms is not null)
+                            {
+                                var di = new DirectoryInfo($@"files\investor\{cus.Id}\cards");
+                                if (!di.Exists) di.Create();
+                                var path = Path.Combine(di.FullName, $"photo-{DateTime.Now:yyyyMMdd}.jpg");
+                                using (var ffs = new FileStream(path, FileMode.Create))
+                                {
+                                    ms.Seek(0, SeekOrigin.Begin);
+                                    ms.CopyTo(ffs);
+                                    ffs.Close();
+                                }
+
+                                // 保存
+                                var fi = new FileInfo(path);
+                                var hash = fi.ComputeHash();
+                                FileStorageInfo fsi = new()
+                                {
+                                    Title = "",
+                                    Path = path,
+                                    Hash = hash,
+                                    Time = DateTime.Now
+                                };
+
+                                if (cus.IDCards is null) cus.IDCards = [fsi];
+                                else
+                                {
+                                    foreach (var ic in cus.IDCards.ToArray())
+                                    {
+                                        if (ic.Path == fsi.Path)
+                                            cus.IDCards.Remove(ic);
+                                    }
+                                    cus.IDCards.Add(fsi);
+                                }
+                                db.GetCollection<Investor>().Update(cus);
+                            }
+                        }
                     }
 
 
@@ -430,6 +475,61 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
             }
 
         });
+    }
+
+    private BitmapSource? LoadImage(ZipArchiveEntry entry)
+    {
+        try
+        {
+            using var ms = new MemoryStream();
+            using (var fs = entry.Open())
+                fs.CopyTo(ms);
+
+            ms.Seek(0, SeekOrigin.Begin);
+            return BitmapDecoder.Create(ms, BitmapCreateOptions.None, BitmapCacheOption.OnLoad).Frames[0];
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+    }
+
+    private MemoryStream? MergeCards(BaseDatabase db, ZipArchiveEntry[] idcards)
+    {
+        // 加载图像
+        BitmapSource? bitmap1 = LoadImage(idcards[0]);
+        BitmapSource? bitmap2 = LoadImage(idcards[1]);
+
+        if (bitmap1 == null || bitmap2 == null)
+            return null;
+
+
+        // 计算总宽度和最大高度
+        int totalWidth = bitmap1.PixelWidth + bitmap2.PixelWidth;
+        int maxHeight = Math.Max(bitmap1.PixelHeight, bitmap2.PixelHeight);
+
+        // 创建绘图目标
+        DrawingVisual visual = new DrawingVisual();
+        using (DrawingContext context = visual.RenderOpen())
+        {
+            context.DrawImage(bitmap1, new Rect(0, 0, bitmap1.PixelWidth, bitmap1.PixelHeight));
+            context.DrawImage(bitmap2, new Rect(bitmap1.PixelWidth, 0, bitmap2.PixelWidth, bitmap2.PixelHeight));
+        }
+
+        // 渲染为位图
+        RenderTargetBitmap rtb = new RenderTargetBitmap(
+            totalWidth, maxHeight,
+            96, 96, PixelFormats.Pbgra32);
+        rtb.Render(visual);
+
+        // 保存为 JPG 文件
+        JpegBitmapEncoder encoder = new JpegBitmapEncoder();
+        encoder.QualityLevel = 90; // 设置画质
+        encoder.Frames.Add(BitmapFrame.Create(rtb));
+
+        var ms = new MemoryStream();
+        encoder.Save(ms);
+        return ms;
     }
 
     [RelayCommand]
