@@ -823,22 +823,6 @@
                                                 Header="确认份额" />
                                         </DataGrid.Columns>
                                     </DataGrid>
-                                    <!--<ListBox
-                                    Margin="10,0,0,0"
-                                    BorderThickness="0"
-                                    ItemsSource="{Binding}"
-                                    Style="{StaticResource ListBoxCustom}">
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate DataType="local:TransferRecordViewModel">
-                                            <DockPanel>
-                                                <TextBlock Text="{Binding ConfirmedDate, StringFormat=yyyy-MM-dd}" />
-                                                <TextBlock Margin="5,0" Text="{Binding Type}" />
-                                                <TextBlock Text="{Binding RequestAmount}" />
-                                                <TextBlock Text="{Binding RequestShare}" />
-                                            </DockPanel>
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>-->
                                 </DockPanel>
                                 <DataTemplate.Triggers>
                                     <DataTrigger Binding="{Binding Asset}" Value="0">

@@ -192,7 +192,7 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
                 var fi = new FileInfo(path);
                 if (!fi.Directory!.Exists) fi.Directory.Create();
 
-                if (Tpl.GenerateByPredefined(path, "信息变更承诺函.docx", new { Name = fund.Name, Code = fund.Code }))
+                if (Tpl.GenerateByPredefined(path, "信息变更承诺函.docx", new { Name = fund.Name, Code = fund.Code, Date = Date }))
                 {
                     if (CommitmentLetter.File?.Exists ?? false)
                         CommitmentLetter.File.Delete();
