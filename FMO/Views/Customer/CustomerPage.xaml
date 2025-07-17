@@ -475,7 +475,10 @@
                 <DataGridTemplateColumn Header="证件有效期">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <shared:CopyableTextBlock FontSize="10" Text="{Binding Efficient}" />
+                            <shared:CopyableTextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="10"
+                                Text="{Binding Efficient}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

@@ -204,7 +204,7 @@
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
 
-        <Style x:Key="VersionedFile" TargetType="shared:MultipleFileView">
+        <Style x:Key="CardFileStyle" TargetType="shared:MultipleFileView">
             <Setter Property="MaxHeight" Value="21" />
             <Setter Property="Template">
                 <Setter.Value>
@@ -406,10 +406,19 @@
                     Header="身份证明文件"
                     IsReadOnly="{Binding IsReadOnly}" />-->
 
-                <shared:MultipleFileView
-                    Binding="{Binding IDCards}"
-                    IsReadOnly="{Binding IsReadOnly}"
-                    Style="{StaticResource VersionedFile}" />
+                <DockPanel LastChildFill="False">
+                    <shared:MultipleFileView
+                        Binding="{Binding IDCards}"
+                        IsReadOnly="{Binding IsReadOnly}"
+                        Style="{StaticResource CardFileStyle}" />
+
+                    <Button
+                        hc:IconElement.Geometry="{StaticResource f.id-card}"
+                        local:HelpService.Placement="Right"
+                        Command="{Binding MergeCardPhotoCommand}"
+                        Style="{StaticResource ButtonIcon.Small}"
+                        ToolTip="合并证件图片" />
+                </DockPanel>
 
             </StackPanel>
 
