@@ -122,7 +122,11 @@
 
         <Separator Margin="0,4" />
 
-        <hc:UniformSpacingPanel Orientation="Vertical" Spacing="4">
+        <hc:UniformSpacingPanel
+            AllowDrop="True"
+            Drop="MultiFile_Drop"
+            Orientation="Vertical"
+            Spacing="4">
             <shared:SingleFileView Binding="{Binding OrderFile}" />
 
             <shared:SingleFileView Binding="{Binding RiskPair}" Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />

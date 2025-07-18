@@ -23,5 +23,12 @@ namespace FMO
         {
             InitializeComponent();
         }
+ 
+
+        private void MultiFile_Drop(object sender, DragEventArgs e)
+        {
+            if (DataContext is SupplementaryOrderWindowViewModel v)
+                v.OnBatchFile(e.Data.GetData(DataFormats.FileDrop) as string[]);
+        }
     }
 }

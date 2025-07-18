@@ -7,6 +7,7 @@ using FMO.Utilities;
 using Serilog;
 using System.ComponentModel;
 using System.IO;
+using System.IO.Compression;
 using System.Windows;
 using System.Windows.Data;
 
@@ -635,5 +636,20 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
 
 
         Tips = tip;
+    }
+
+    internal void OnBatchFile(string[]? v)
+    {
+        if (v is null) return;
+
+        if(v.Length == 1 && Path.GetExtension(v[0]) switch { "zip" or "gzip" or "rar" or "7z"=> true ,_=>false})
+        {
+            using var fs = new FileStream(v[0], FileMode.Open);
+            using ZipArchive archive = new ZipArchive(fs);
+
+            var file = archive.Entries.Where(x => x.Name.Contains("基金合同"));
+
+
+        }
     }
 }
