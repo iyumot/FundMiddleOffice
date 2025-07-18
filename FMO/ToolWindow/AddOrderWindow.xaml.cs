@@ -266,7 +266,7 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
             var texts = PdfHelper.GetTexts(fi.FullName);
             foreach (var txt in texts)
             {
-                if(DateTimeHelper.TryFindDate(txt) is DateOnly d)
+                if (DateTimeHelper.TryFindDate(txt) is DateOnly d)
                 {
                     Date = new DateTime(d, default);
                 }
@@ -515,6 +515,9 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
     [ObservableProperty]
     public partial bool MergeOrderBySameDay { get; set; }
 
+    [ObservableProperty]
+    public partial bool DateMayNotGood { get; set; }
+
     public override bool CanConfirm => Date is not null && Number > 0 && SelectedType is not null;
 
     protected override void ConfirmOverride()
@@ -626,6 +629,14 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
                 Check();
                 break;
         }
+
+        if (e.PropertyName == nameof(Date) && Date is DateTime dt)
+        {
+            var d = DateOnly.FromDateTime(dt);
+
+            DateMayNotGood = (d > Record.RequestDate || Record.RequestDate?.DayNumber - d.DayNumber > 5);
+        }
+
     }
 
     protected override void Check()
@@ -647,6 +658,8 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
 
         if (Date is not null && Record.RequestDate < DateOnly.FromDateTime(Date.Value))
             tip += "签约日期晚于申请日期";
+        else if (DateMayNotGood)
+            tip += "签约日期可能不合适";
 
         if (need && !Contract.Exists)
             tip += " 缺少合同";
@@ -665,7 +678,7 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
     {
         if (v is null) return;
 
-        if(v.Length == 1 && Path.GetExtension(v[0]) switch { "zip" or "gzip" or "rar" or "7z"=> true ,_=>false})
+        if (v.Length == 1 && Path.GetExtension(v[0]) switch { "zip" or "gzip" or "rar" or "7z" => true, _ => false })
         {
             using var fs = new FileStream(v[0], FileMode.Open);
             using ZipArchive archive = new ZipArchive(fs);
@@ -675,4 +688,5 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
 
         }
     }
+
 }

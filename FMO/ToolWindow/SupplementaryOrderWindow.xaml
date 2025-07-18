@@ -72,6 +72,13 @@
 
                 <DatePicker Width="110" SelectedDate="{Binding Date}" />
 
+                <Viewbox
+                    Height="15"
+                    Margin="5,0,0,0"
+                    Visibility="{Binding DateMayNotGood, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    <Path Data="{StaticResource f.circle-exclamation}" Fill="Red" />
+                </Viewbox>
+
                 <Button
                     Height="auto"
                     Margin="6,0,0,0"
