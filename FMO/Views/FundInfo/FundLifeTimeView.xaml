@@ -458,6 +458,7 @@
                             Header="补充协议"
                             Visibility="{Binding ModifyBySupplementary, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
+                        <shared:FileControl Binding="{Binding SignedSupplementary}" Visibility="{Binding ModifyBySupplementary, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
                         <shared:FileControl Binding="{Binding Contract}" />
                         <shared:FileControl Binding="{Binding RiskDisclosureDocument}" />

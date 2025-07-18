@@ -303,6 +303,9 @@ public class ContractModifyFlow : ContractFlow
 
     public FileStorageInfo? CommitmentLetter { get; set; }
 
+
+    public FileStorageInfo? SignedSupplementary { get; set; }
+
     //份额、要素
 
     public override string Name { get => "合同变更"; set { } }

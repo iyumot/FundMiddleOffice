@@ -56,7 +56,10 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
 
     public FileViewModel CommitmentLetter { get; }
 
-
+    /// <summary>
+    /// 签署的补充协议
+    /// </summary>
+    public FileViewModel SignedSupplementary { get; set; }
 
 
     [SetsRequiredMembers]
@@ -81,6 +84,15 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
         ///补充协议
         SupplementaryFile = new(flow.SupplementaryFile?.Files.Select(x => new FileInfo(x.Path)) ?? Array.Empty<FileInfo>());
         SupplementaryFile.CollectionChanged += SupplementaryFile_CollectionChanged;
+
+        SignedSupplementary = new()
+        {
+            Label = "签署的协议",
+            Filter = "压缩文件|*.zip;*.rar;*.gzip;*.7z",
+            SaveFolder = FundHelper.GetFolder(FundId, "SignedSupplementary"),
+            GetProperty = x => x switch { ContractModifyFlow f => f.SignedSupplementary, _ => null },
+            SetProperty = (x, y) => { if (x is ContractModifyFlow f) f.SignedSupplementary = y; },
+        }; SignedSupplementary.Init(flow);
 
         RegistrationLetter = new()
         {
