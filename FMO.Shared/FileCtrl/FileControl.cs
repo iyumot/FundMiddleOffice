@@ -124,6 +124,7 @@ public class SingleFileView : HeaderedContentControl
                 return; //try { Binding.File.Delete(); } catch { }
 
             Binding.File = Binding.OnSetFile(new FileInfo(ss[0]), "");
+            Binding.FileChanged?.Invoke();
         }
     }
 
