@@ -462,7 +462,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
         AssessmentFile = fi.FullName;
 
         // 判断文件名中是否有日期和评估等级
-        if (DateTimeHelper.TryParse(fi.Name, out var date))
+        if (DateTimeHelper.TryFindDate(fi.Name) is DateOnly date)
             NewDate = new DateTime(date, default);
 
         var m = Regex.Match(fi.Name, @"\bC\d\b");
@@ -486,8 +486,8 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
         }
         foreach (var str in texts)
         {
-            if (DateTimeHelper.TryParse(str, out date))
-                NewDate = new DateTime(date, default);
+            if (DateTimeHelper.TryFindDate(str) is DateOnly date2)
+                NewDate = new DateTime(date2, default);
 
             m = Regex.Match(str, @"\b[CD](\d)\b", RegexOptions.IgnoreCase);
             if (m.Success)

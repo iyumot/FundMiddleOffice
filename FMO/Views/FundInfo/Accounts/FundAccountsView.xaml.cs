@@ -298,7 +298,7 @@ public partial class FundAccountsViewModel : ObservableObject
                         else ++failed;
                     }
 
-                    if (a is null || b is null || d is null || e is null || g is null || !DateTimeHelper.TryParse(g, out var date))
+                    if (a is null || b is null || d is null || e is null || g is null || DateTimeHelper.TryFindDate(g) is not DateOnly date)
                     {
                         ++failed;
                         Log.Error($"解析股卡失败:\n {c.text}");

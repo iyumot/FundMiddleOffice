@@ -18,7 +18,7 @@ public static class DateTimeHelper
     {
         if (string.IsNullOrWhiteSpace(s))
         {
-            d = default; 
+            d = default;
             return false;
         }
 
@@ -30,14 +30,26 @@ public static class DateTimeHelper
             return true;
 
 
-         var m = Regex.Match(s, @"[\D]?(\d{4})[\D]?(\d{2})[\D]?(\d{2})[\D]?");
-        if (m.Success && int.Parse(m.Groups[1].Value) is int y && int.Parse(m.Groups[2].Value) is int mm && mm <= 12 && int.Parse(m.Groups[3].Value) is int dd)
-        {
-            d = new DateOnly(y, mm, dd);
-            return true;
-        }
+        //var m = Regex.Match(s, @"(?<!\d)\s*(\d{4})[-/]?(\d{2})[-/]?(\d{2})\s*(?!\d)");
+        //if (m.Success && int.Parse(m.Groups[1].Value) is int y && int.Parse(m.Groups[2].Value) is int mm && mm <= 12 && int.Parse(m.Groups[3].Value) is int dd)
+        //{
+        //    d = new DateOnly(y, mm, dd);
+        //    return true;
+        //}
 
         return false;
+    }
+
+
+    public static DateOnly? TryFindDate(string? s)
+    {
+        var m = Regex.Match(s, @"(?<!\d)\s*(\d{4})[-/]?(\d{2})[-/]?(\d{2})\s*(?!\d)");
+        if (m.Success && int.Parse(m.Groups[1].Value) is int y && int.Parse(m.Groups[2].Value) is int mm && mm <= 12 && int.Parse(m.Groups[3].Value) is int dd)
+        {
+            return new DateOnly(y, mm, dd);
+        }
+
+        return null;
     }
 
 

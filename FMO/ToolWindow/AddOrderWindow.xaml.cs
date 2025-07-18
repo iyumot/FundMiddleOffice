@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
+using FMO.PDF;
 using FMO.Shared;
 using FMO.Utilities;
 using Serilog;
@@ -49,7 +50,7 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
         OrderFile = new()
         {
             Label = "认申赎单",
-            OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.OrderSheet = b),
+            OnSetFile = (x, y) => SetFile2(x, y, (a, b) => a.OrderSheet = b),
             OnDeleteFile = x => DeleteFile(x),
             FileChanged = () => Check()
         };
@@ -78,6 +79,7 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
             FileChanged = () => Check()
         };
     }
+
 
     public int Id { get; set; }
 
@@ -212,7 +214,7 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
     protected FileStorageInfo? SetFile(System.IO.FileInfo fi, string title, Action<TransferOrder, FileStorageInfo> func)
     {
         // 如果文件名中有日期
-        if (Date is null && DateTimeHelper.TryParse(fi.Name, out var date))
+        if (Date is null && DateTimeHelper.TryFindDate(fi.Name) is DateOnly date)
             Date = new DateTime(date, default);
 
 
@@ -251,6 +253,27 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
             db.GetCollection<TransferOrder>().Update(q);
             return fsi;
         }
+    }
+
+
+    protected FileStorageInfo? SetFile2(FileInfo fi, string title, Action<TransferOrder, FileStorageInfo> func)
+    {
+        var fsi = SetFile(fi, title, func);
+
+        // 如果是pdf，解析日期
+        try
+        {
+            var texts = PdfHelper.GetTexts(fi.FullName);
+            foreach (var txt in texts)
+            {
+                if(DateTimeHelper.TryFindDate(txt) is DateOnly d)
+                {
+                    Date = new DateTime(d, default);
+                }
+            }
+        }
+        catch { }
+        return fsi;
     }
 
     protected FileStorageInfo? Move(FileStorageInfo? fsi)
