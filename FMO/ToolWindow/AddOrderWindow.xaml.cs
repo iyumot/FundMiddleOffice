@@ -654,7 +654,7 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
         if (need && !RiskDisclosure.Exists)
             tip += " 缺少风险揭示书";
 
-        if (needvideo && !Video.Exists)
+        if (need && needvideo && !Video.Exists)
             tip += " 缺少双录";
 
 
