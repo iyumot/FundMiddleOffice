@@ -14,25 +14,52 @@
 
         <DataTemplate x:Key="DT.View">
             <DockPanel Margin="5,0">
-                <TextBlock Text="{Binding DateBegin, StringFormat=yyyy.MM.dd}" />
-                <TextBlock Text="-" />
-                <TextBlock Text="{Binding DateEnd, StringFormat=yyyy.MM.dd}" />
+                <StackPanel>
+                    <TextBlock Text="数据范围" />
+                    <TextBlock Text="{Binding DateBegin, StringFormat=yyyy.MM.dd}" />
+                    <TextBlock Text="{Binding DateEnd, StringFormat=yyyy.MM.dd}" />
+                </StackPanel>
             </DockPanel>
         </DataTemplate>
 
         <DataTemplate x:Key="DT.Edit">
             <DockPanel>
-                <Button
-                    Margin="0,2,0,0"
-                    HorizontalAlignment="Stretch"
-                    Command="{Binding SaveCommand}"
-                    CommandParameter="{Binding .}"
-                    Content="保存"
-                    DockPanel.Dock="Bottom"
-                    Style="{StaticResource ButtonSuccess.Small}" />
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
 
-                <DatePicker DockPanel.Dock="Top" SelectedDate="{Binding DateBegin, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
-                <DatePicker SelectedDate="{Binding DateEnd, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
+                    <TextBlock VerticalAlignment="Center" Text="数据范围" />
+
+                    <Button
+                        Grid.Row="1"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Command="{Binding SaveDataRangeCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                        Content="保存"
+                        Style="{StaticResource ButtonSuccess.Small}" />
+
+                    <DatePicker
+                        Grid.Column="1"
+                        Margin="5,0,0,0"
+                        DockPanel.Dock="Top"
+                        SelectedDate="{Binding DateBegin, Converter={StaticResource DataTimeDateOnlySwitchConverter}}"
+                        Style="{StaticResource DatePicker.Small}" />
+                    <DatePicker
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Margin="5,0,0,0"
+                        SelectedDate="{Binding DateEnd, Converter={StaticResource DataTimeDateOnlySwitchConverter}}"
+                        Style="{StaticResource DatePicker.Small}" />
+
+                </Grid>
+
 
 
             </DockPanel>
