@@ -39,6 +39,13 @@ public class TransferOrder
 
     public int FundId { get; set; }
 
+    /// <summary>
+    /// 份额类型
+    /// </summary>
+    public string? ShareClass { get; set; }
+
+    public string? FundName { get; set; }
+
     public DateOnly Date { get; set; }
 
     public TransferOrderType Type { get; set; }
@@ -88,5 +95,4 @@ public class TransferOrder
     /// 回访
     /// </summary>
     public FileStorageInfo? Review { get; set; }
-
 }

@@ -155,7 +155,15 @@
                             Binding="{Binding Type, Converter={StaticResource EnumDescriptionConverter}}"
                             ElementStyle="{StaticResource CenterText}"
                             Header="类型" />
-                        <DataGridTextColumn Binding="{Binding Number}" Header="金额/份额" />
+                        <DataGridTextColumn Binding="{Binding FundName}" Header="基金名称" />
+                        <DataGridTextColumn
+                            Binding="{Binding ShareClass}"
+                            ElementStyle="{StaticResource CenterText}"
+                            Header="份额类别" />
+                        <DataGridTextColumn
+                            Binding="{Binding Number, Converter={StaticResource ZeroToBlankConverter}}"
+                            ElementStyle="{StaticResource CenterText}"
+                            Header="金额/份额" />
 
                         <DataGridTemplateColumn Header="申请单">
                             <DataGridTemplateColumn.CellTemplate>

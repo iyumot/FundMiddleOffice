@@ -287,6 +287,8 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
     public CollectionViewSource FundSource { get; } = new();
 
 
+    [ObservableProperty]
+    public partial string? ShareClass { get; set; }
 
     [ObservableProperty]
     public partial string? SearchFundKey { get; set; }
@@ -369,6 +371,8 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
                 Id = Id,
                 Date = DateOnly.FromDateTime(Date ?? default),
                 FundId = SelectedFund!.Id,
+                FundName = SelectedFund!.Name,
+                ShareClass = ShareClass,
                 InvestorId = SelectedInvestor!.Id,
                 InvestorName = SelectedInvestor.Name,
                 InvestorIdentity = SelectedInvestor.Identity?.Id,
@@ -517,6 +521,8 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
                 Id = Id,
                 Date = DateOnly.FromDateTime(Date ?? default),
                 FundId = Record.FundId ?? 0,
+                FundName = Record.FundName,
+                ShareClass = Record.ShareClass,
                 InvestorId = Record.CustomerId ?? 0,
                 InvestorIdentity = Record.CustomerIdentity,
                 InvestorName = Record.CustomerName,

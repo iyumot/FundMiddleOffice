@@ -44,6 +44,19 @@ public static class DatabaseAssist
             //db.RenameCollection("customer_accounts", nameof(InvestorBankAccount));
         }},
 
+        {23, db=>{ 
+            var o = db.GetCollection<TransferOrder>().FindAll().ToArray();
+            var rr = db.GetCollection<TransferRecord>().FindAll().ToArray();
+            foreach (var item in o)
+            {
+                if(rr.FirstOrDefault(x=>x.OrderId == item.Id) is TransferRecord r)
+                {
+                    item.FundName = r.FundName;
+                    item.ShareClass = r.ShareClass;
+                }
+	        }
+            db.GetCollection<TransferOrder>().Update(o);
+        } },
     };
 
 
