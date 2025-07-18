@@ -35,7 +35,7 @@ public record FundsTipCountMessage(int Count);
 public static class DataTracker
 {
 
-    public static ThreadSafeList<FundTip> FundTips { get; } = new();
+    public static FundTipList FundTips { get; } = new();
 
     static DataTracker()
     {
@@ -102,6 +102,11 @@ public static class DataTracker
                 FundTips.Add(new FundTip(fund.Id, fund.Name, TipType.FundNoTARecord, "没有TA数据"));
                 continue;
             }
+            else if (FundTips.FirstOrDefault(x => x.FundId == fund.Id && x.Type == TipType.FundNoTARecord) is FundTip tip) // 清除错误信息
+            {
+                FundTips.Remove(tip);
+                WeakReferenceMessenger.Default.Send(new FundTipMessage(fund.Id));
+            }
 
             // 获取 TA 记录中确认日期（ConfirmedDate）最大的日期
             var lta = ta.Max(x => x.ConfirmedDate);
@@ -126,13 +131,18 @@ public static class DataTracker
                 var rs = pd.GetCollection<TrusteeMethodShotRange>().Find(x => x.Id.EndsWith(nameof(ITrustee.QueryTransferRecords))).ToArray();
                 foreach (var item in rs)
                 {
-                    if(item.End > sh.Date)
+                    if (item.End > sh.Date)
                         pd.GetCollection<TrusteeMethodShotRange>().Update(new TrusteeMethodShotRange(item.Id, item.Begin, sh.Date));
                 }
 
                 // 发送基金提示消息（例如用于界面通知）
                 WeakReferenceMessenger.Default.Send(new FundTipMessage(fund.Id));
                 continue;
+            }
+            else if (FundTips.FirstOrDefault(x => x.FundId == fund.Id && x.Type == TipType.FundShareNotPair) is FundTip tip) // 清除错误信息
+            {
+                FundTips.Remove(tip);
+                WeakReferenceMessenger.Default.Send(new FundTipMessage(fund.Id));
             }
 
         }
@@ -304,19 +314,24 @@ public static class DataTracker
             db.GetCollection<InvestorBalance>().Upsert(new InvestorBalance { FundId = f, InvestorId = c, Share = share, Deposit = deposit, Withdraw = withdraw, Date = tf.Max(x => x.ConfirmedDate) });
         }
 
+        var ids = records.Select(x => x.FundId).Distinct().ToList();
+        var funds = db.GetCollection<Fund>().Find(x => ids.Contains(x.Id)).ToList();
+        DataTracker.CheckShareIsPair(funds);
     }
 
 }
+
+
 public class ThreadSafeList<T> : IEnumerable<T>
 {
-    private readonly List<T> _innerList = new List<T>();
-    private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
+    protected readonly List<T> _innerList = new List<T>();
+    protected readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
 
     public delegate void CollectionChangedHandler();
 
     public CollectionChangedHandler? CollectionChanged;
 
-    public void Add(T item)
+    public virtual void Add(T item)
     {
         _lock.EnterWriteLock();
         try
@@ -390,6 +405,30 @@ public class ThreadSafeList<T> : IEnumerable<T>
             {
                 _lock.ExitReadLock();
             }
+        }
+    }
+}
+
+public class FundTipList : ThreadSafeList<FundTip>
+{
+    public override void Add(FundTip item)
+    {
+        _lock.EnterWriteLock();
+        bool add = false;
+        try
+        {
+            // 不重复添加
+            if (!_innerList.Any(x => x.FundId == item.FundId && x.Type == item.Type))
+            {
+                _innerList.Add(item);
+                add = true;
+            }
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
+            if (add)
+                CollectionChanged?.Invoke();
         }
     }
 }

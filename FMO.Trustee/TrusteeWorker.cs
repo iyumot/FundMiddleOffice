@@ -434,8 +434,6 @@ public partial class TrusteeWorker : ObservableObject
         WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(method, ret));
         TransferRecordConfig.Last = DateTime.Now;
         Save(TransferRecordConfig);
-
-        DataTracker.CheckShareIsPair(funds);
     }
 
     /// <summary>
