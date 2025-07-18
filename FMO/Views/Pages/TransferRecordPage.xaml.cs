@@ -290,12 +290,17 @@ partial class TransferRecordViewModel
 
     public bool HasOrder => OrderId != 0;
 
+    /// <summary>
+    /// 是否有同日同向订单
+    /// </summary>
+    public bool HasBrotherRecord { get; set; }
+
 
     [RelayCommand]
     public void ModifyOrder()
     {
         var wnd = new SupplementaryOrderWindow();
-        var context = new SupplementaryOrderWindowViewModel(Build());
+        var context = new SupplementaryOrderWindowViewModel(this);
         wnd.DataContext = context;
         wnd.Owner = App.Current.MainWindow;
         if (wnd.ShowDialog() ?? false)

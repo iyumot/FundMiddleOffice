@@ -319,6 +319,15 @@ public static class DataTracker
         DataTracker.CheckShareIsPair(funds);
     }
 
+    /// <summary>
+    ///  关联订单
+    /// </summary>
+    /// <param name="same"></param>
+    public static void LinkOrder(params TransferRecord[] same)
+    {
+        foreach (var item in same)
+            WeakReferenceMessenger.Default.Send(new TransferRecordLinkOrderMessage(item.Id, item.OrderId));
+    }
 }
 
 

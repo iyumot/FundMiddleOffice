@@ -40,7 +40,7 @@ public partial class CustomerView : UserControl
 /// <summary>
 /// customer vm
 /// </summary>
-public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
+public partial class CustomerViewModel : EditableControlViewModelBase<Investor>, IRecipient<TransferRecordLinkOrderMessage>
 {
     [TypeConverter(typeof(EnumDescriptionTypeConverter))] public enum NaturalType { [Description("非员工")] NonEmployee, [Description("员工")] Employee };
 
@@ -255,14 +255,27 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
             var Asset = Share * nv;
             var profit = Asset + Withdraw - Deposit;
 
-            trbf.Add(new TransferRecordByFund
+            var rvm = tf.Where(x => TransferRecord.IsManual(x.Type)).OrderBy(x => x.ConfirmedDate).Select(x => new TransferRecordViewModel(x)).ToList();
+
+            // 同日同向单
+            for (int i = 1; i < rvm.Count; i++)
+            {
+                if (rvm[i].ConfirmedDate == rvm[i - 1].ConfirmedDate)
+                {
+                    rvm[i - 1].HasBrotherRecord = true;
+                    rvm[i].HasBrotherRecord = true;
+                }
+            }
+
+            TransferRecordByFund rbf = new()
             {
                 FundId = tf.First().FundId,
                 FundName = tf.Key,
                 Asset = Asset,
                 Profit = profit,
-                Records = tf.Where(x => TransferRecord.IsManual(x.Type)).Select(x => new TransferRecordViewModel(x))
-            });
+                Records = rvm
+            };
+            trbf.Add(rbf);
         }
 
         TotalProfit = trbf.Sum(x => x.Profit) switch { 0 => null, var n => n };
@@ -628,7 +641,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
         if (files.Length != 2)
         {
-            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning,"请选择且仅选择两个图片文件"));
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "请选择且仅选择两个图片文件"));
             return;
         }
 
@@ -708,7 +721,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
         }
     }
 
- 
+
 
     //[RelayCommand]
     //public void AddFile(IFileSelector obj)
@@ -855,7 +868,22 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>
 
     protected override Investor InitNewEntity() => new Investor { Name = string.Empty };
 
-
+    public void Receive(TransferRecordLinkOrderMessage message)
+    {
+        if (TransferRecords is null) return;
+        try
+        { 
+            foreach (var item in TransferRecords.Where(x => x.Records is not null).SelectMany(x => x.Records!))
+            {
+                if (item.Id == message.OrderId && item.OrderId != message.OrderId)
+                    item.OrderId = message.OrderId;
+            }
+        }
+        catch (Exception e)
+        {
+            Log.Error($"void Receive(TransferRecordLinkOrderMessage message) {e}");
+        }
+    }
 
     public partial class TransferRecordByFund : ObservableObject
     {

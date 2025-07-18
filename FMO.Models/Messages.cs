@@ -41,3 +41,11 @@ public enum LogLevel
 public record ToastMessage(LogLevel Level, string Message);
 
 public record EntityDeleted<T>(T Value);
+
+
+/// <summary>
+/// 交易确认关联订单
+/// </summary>
+/// <param name="RecordId"></param>
+/// <param name="OrderId"></param>
+public record TransferRecordLinkOrderMessage(int RecordId, int OrderId);

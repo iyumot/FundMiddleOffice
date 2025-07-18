@@ -36,7 +36,7 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
             Label = "基金合同",
             OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.Contract = b),
             OnDeleteFile = x => DeleteFile(x),
-            FileChanged = ()=>Check()
+            FileChanged = () => Check()
         };
         RiskDisclosure = new()
         {
@@ -183,24 +183,24 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
 
 
     private void DeleteFile(FileStorageInfo x)
-    { 
+    {
         if (Id == 0) //未保存
             return;
 
         using var db = DbHelper.Base();
-        if( db.GetCollection<TransferOrder>().FindById(Id) is TransferOrder o)
+        if (db.GetCollection<TransferOrder>().FindById(Id) is TransferOrder o)
         {
             if (Contract.File == x)
                 o.Contract = null;
             else if (RiskDisclosure.File == x)
                 o.RiskDiscloure = null;
-            else if(RiskPair.File == x)
+            else if (RiskPair.File == x)
                 o.RiskPair = null;
-            else if(Review.File == x)
+            else if (Review.File == x)
                 o.Review = null;
-            else if(Video.File == x)
+            else if (Video.File == x)
                 o.Videotape = null;
-            else if(OrderFile .File == x)
+            else if (OrderFile.File == x)
                 o.OrderSheet = null;
 
             db.GetCollection<TransferOrder>().Update(o);
@@ -312,6 +312,8 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
     public partial Investor? SelectedInvestor { get; set; }
 
 
+
+
     public AddOrderWindowViewModel()
     {
         using var db = DbHelper.Base();
@@ -398,7 +400,7 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
 
         // 判断是否是首次
         bool need = false;
-        bool needvideo = false; 
+        bool needvideo = false;
         DateOnly date = Date is null ? default : DateOnly.FromDateTime(Date.Value);
         if (SelectedType == TransferOrderType.Buy)
         {
@@ -406,7 +408,7 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
             int fundid = SelectedFund?.Id ?? 0;
             var cid = SelectedInvestor?.Id ?? 0;
             var early = db.GetCollection<TransferRecord>().Find(x => x.FundId == fundid && x.CustomerId == cid).Min(x => x.RequestDate);
-        
+
             if (Date is not null && early >= date) need = true;
 
             var q = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == cid).Where(x => x.Date <= date).OrderBy(x => x.Date).LastOrDefault();
@@ -432,7 +434,7 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
 
 public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModelBase
 {
-    public SupplementaryOrderWindowViewModel(TransferRecord record)
+    public SupplementaryOrderWindowViewModel(TransferRecordViewModel record)
     {
         Record = record;
 
@@ -469,13 +471,21 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
         Check();
     }
 
-    public TransferRecord Record { get; }
+    public TransferRecordViewModel Record { get; }
 
+
+    public TransferRecord[]? SameDay { get; set; }
 
     public override TransferOrderType[] Types { get; }
 
     [ObservableProperty]
     public partial bool IsSellTypeForzen { get; set; }
+
+    /// <summary>
+    /// 同日的确认合并一个订单
+    /// </summary>
+    [ObservableProperty]
+    public partial bool MergeOrderBySameDay { get; set; }
 
     public override bool CanConfirm => Date is not null && Number > 0 && SelectedType is not null;
 
@@ -498,19 +508,16 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
                 OrderFile.File = Move(OrderFile.File);
                 Video.File = Move(Video.File);
                 Review.File = Move(Review.File);
-                RiskPair.File = Move(RiskPair.File); 
+                RiskPair.File = Move(RiskPair.File);
             }
-
-
-
 
 
             TransferOrder order = new TransferOrder
             {
                 Id = Id,
                 Date = DateOnly.FromDateTime(Date ?? default),
-                FundId = Record.FundId,
-                InvestorId = Record.CustomerId,
+                FundId = Record.FundId ?? 0,
+                InvestorId = Record.CustomerId ?? 0,
                 InvestorIdentity = Record.CustomerIdentity,
                 InvestorName = Record.CustomerName,
                 Type = SelectedType!.Value,
@@ -522,9 +529,25 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
                 RiskPair = RiskPair.File,
                 Review = Review.File,
             };
-            var rec = db.GetCollection<TransferRecord>().FindById(Record.Id);
-            rec.OrderId = Id;
-            db.GetCollection<TransferRecord>().Update(rec);
+            // 同日订单
+            if (MergeOrderBySameDay)
+            {
+                var same = db.GetCollection<TransferRecord>().Find(x => x.ConfirmedDate == Record.ConfirmedDate && x.Id != Record.Id).ToArray();
+                foreach (var item in same)
+                    item.OrderId = Id;
+
+                DataTracker.LinkOrder(same);
+                db.GetCollection<TransferRecord>().Update(same);
+            }
+            else
+            {
+                var rec = db.GetCollection<TransferRecord>().FindById(Record.Id);
+                rec.OrderId = Id;
+                db.GetCollection<TransferRecord>().Update(rec);
+                DataTracker.LinkOrder(rec);
+            }
+
+
             db.GetCollection<TransferOrder>().Upsert(order);
             db.Commit();
 
@@ -538,11 +561,27 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
     }
 
 
-    private TransferOrderType GetSellType(TransferRecord record)
+    partial void OnMergeOrderBySameDayChanged(bool value)
     {
-        if (record.RequestAmount == 0)
+        if (value && SameDay is null)
+        {
+            using var db = DbHelper.Base();
+            SameDay = db.GetCollection<TransferRecord>().Find(x => x.ConfirmedDate == Record.ConfirmedDate && x.FundId == Record.FundId && x.CustomerId == Record.CustomerId).ToArray();
+        }
+
+        if (!value)
+            Number = Record.RequestAmount > 0 ? Record.RequestAmount : Record.RequestShare;
+        else if (SameDay is not null)
+            Number = SameDay.Sum(x => x.RequestAmount) switch { 0 => SameDay.Sum(x => x.RequestShare), var n => n };
+
+
+    }
+
+    private TransferOrderType GetSellType(TransferRecordViewModel record)
+    {
+        if (record.RequestAmount is null || record.RequestAmount == 0)
             return TransferOrderType.Share;
-        else if (Math.Abs(record.RequestAmount - record.ConfirmedNetAmount) < 10)
+        else if (record.RequestAmount is not null && record.ConfirmedNetAmount is not null && Math.Abs(record.RequestAmount.Value - record.ConfirmedNetAmount.Value) < 10)
             return TransferOrderType.Amount;
         else return TransferOrderType.RemainAmout;
     }

@@ -100,8 +100,16 @@
                 </ListBox>
 
 
+                <CheckBox
+                    Margin="5,0,0,0"
+                    Content="合并同日确认"
+                    DockPanel.Dock="Right"
+                    IsChecked="{Binding MergeOrderBySameDay}"
+                    Visibility="{Binding Record.HasBrotherRecord, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
                 <!--  申请金额/份额  -->
                 <TextBox
+                    Margin="5,0"
                     hc:InfoElement.Placeholder="金额/份额"
                     Style="{StaticResource TextBoxExtend}"
                     Text="{Binding Number, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
