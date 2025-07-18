@@ -199,6 +199,8 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
         var investor = db.GetCollection<Investor>().FindById(id);
         Id = id;
 
+        WeakReferenceMessenger.Default.RegisterAll(this);
+
         Name = new ChangeableViewModel<Investor, string>(investor, init: x => x.Name, update: (x, y) => x.Name = y ?? string.Empty, clear: x => x.Name = string.Empty);
 
 
@@ -872,11 +874,14 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
     {
         if (TransferRecords is null) return;
         try
-        { 
+        {
             foreach (var item in TransferRecords.Where(x => x.Records is not null).SelectMany(x => x.Records!))
             {
-                if (item.Id == message.OrderId && item.OrderId != message.OrderId)
+                if (item.Id == message.RecordId && item.OrderId != message.OrderId)
+                {
                     item.OrderId = message.OrderId;
+                    item.OnPropertyChanged(nameof(item.HasOrder));
+                }
             }
         }
         catch (Exception e)

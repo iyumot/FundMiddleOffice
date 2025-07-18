@@ -25,7 +25,7 @@ public partial class TransferRecordPage : UserControl
 }
 
 
-public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<TransferRecord>, IRecipient<PageTAMessage>
+public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<TransferRecord>, IRecipient<PageTAMessage>,IRecipient<TransferOrder>
 {
     [ObservableProperty]
     public partial ObservableCollection<TransferRecordViewModel>? Records { get; set; }
@@ -170,6 +170,13 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         {
             using var db = DbHelper.Base();
             db.GetCollection<TransferOrder>().Delete(order.Id);
+
+            var rr = db.GetCollection<TransferRecord>().Find(x => x.OrderId == order.Id).ToArray();
+            foreach (var item in rr)
+                item.OrderId = 0;
+            db.GetCollection<TransferRecord>().Update(rr);
+
+            DataTracker.LinkOrder(rr);           
             Orders!.Remove(order);
         }
     }
@@ -276,6 +283,14 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         TabIndex = message.TabIndex;
         SearchKeyword = message.Search;
     }
+
+    public void Receive(TransferOrder message)
+    {
+        var old = Orders!.FirstOrDefault(x => x.Id == message.Id);
+        if (old is not null)
+            old.UpdateFrom(message);
+        else Orders!.Add(new TransferOrderViewModel(message));
+    }
 }
 
 
@@ -309,6 +324,8 @@ partial class TransferRecordViewModel
             OnPropertyChanged(nameof(HasOrder));
         }
     }
+
+    
 }
 
 

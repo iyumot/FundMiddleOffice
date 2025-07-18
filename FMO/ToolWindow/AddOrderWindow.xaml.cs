@@ -532,7 +532,7 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
             // 同日订单
             if (MergeOrderBySameDay)
             {
-                var same = db.GetCollection<TransferRecord>().Find(x => x.ConfirmedDate == Record.ConfirmedDate && x.Id != Record.Id).ToArray();
+                var same = db.GetCollection<TransferRecord>().Find(x => x.ConfirmedDate == Record.ConfirmedDate && x.FundId == Record.FundId && x.CustomerId == Record.CustomerId).ToArray();
                 foreach (var item in same)
                     item.OrderId = Id;
 
