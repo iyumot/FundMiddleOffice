@@ -172,6 +172,7 @@ public partial class PlatformPageViewModel : ObservableObject
 
             var files = new DirectoryInfo("plugins").GetFiles("*.dll");
 
+            //TryAddSignature(Assembly.GetExecutingAssembly());
 
             foreach (var file in files)
             {
@@ -458,7 +459,8 @@ public partial class PlatformPageViewModelDigital : ObservableRecipient//, IReci
 
         Buttons = [
             new SyncButtonData((Geometry)App.Current.Resources["f.address-card"]  , SynchronizeDataCommand, SyncCustomers,"客户资料"),
-            new SyncButtonData((Geometry)App.Current.Resources["f.certificate"]  , SynchronizeDataCommand, SyncQualifications,"合投材料"),  ];
+            new SyncButtonData((Geometry)App.Current.Resources["f.certificate"]  , SynchronizeDataCommand, SyncQualifications,"合投材料"),
+            new SyncButtonData((Geometry)App.Current.Resources["f.sheet-plastic"]  , SynchronizeDataCommand, SynchronizeOrder,"交易订单"),  ];
 
         //using var db = DbHelper.Platform();
         ////Config = db.GetCollection<TrusteeConfig>().FindOne(x => x.Id == Assist.Identifier) ?? new TrusteeConfig { Id = assist.Identifier };
@@ -537,6 +539,13 @@ public partial class PlatformPageViewModelDigital : ObservableRecipient//, IReci
     {
         await Assist.SynchronizeQualificatoinAsync();
     }
+
+    public async Task SynchronizeOrder()
+    {
+        await Assist.SynchronizeOrderAsync();
+    }
+
+
 
 
     partial void OnIsEnabledChanged(bool value)
