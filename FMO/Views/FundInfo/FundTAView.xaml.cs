@@ -168,7 +168,22 @@ public partial class FundTAViewModel : ObservableObject
         try
         {
             var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), $"{FundName}-份额.xlsx");
-            Tpl.Generate(path, tplfile, new { ii = CurrentShares.Where(x => x.Share > 0), Date = NetValueDate, NetValue = Daily.NetValue, Share = Daily.Share });
+
+            using var db = DbHelper.Base();
+            var customers = db.GetCollection<Investor>().FindAll().ToArray();
+
+            var gend= CurrentShares.OrderByDescending(x=> x.Share).Take(10).Join(customers, x => x.Id, x => x.Id, (x, y) => new
+            {
+                Name = x.Name,
+                ID = y.Identity.Id,
+                Amount = x.Asset,
+                Portion = x.Proportion,
+                Phone = y.Phone,
+                Addr = y.Address
+            });
+
+
+            Tpl.Generate(path, tplfile, new { ii = gend });
 
         }
         catch (Exception)
