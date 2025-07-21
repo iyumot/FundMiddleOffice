@@ -64,6 +64,9 @@ public class TransferOrder
 
     public DateOnly CreateDate { get; set; }
 
+    public string? ExternalId { get; set; }
+
+    public string? Source { get; set; }
 
     /// <summary>
     /// 合同

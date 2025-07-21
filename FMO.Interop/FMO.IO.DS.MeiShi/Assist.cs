@@ -24,6 +24,7 @@ public class Assist : AssistBase
     private string? token { get; set; }
 
     public string? ManagerCode { get; private set; }
+    public string? TokenId { get; private set; }
 
     public override async Task<bool> PrepareLoginAsync(IPage page)
     {
@@ -90,7 +91,6 @@ public class Assist : AssistBase
 
         var cookies = await page.Context.CookiesAsync(["https://vipfunds.simu800.com", "https://sso.simu800.com"]);
         ManagerCode = cookies.FirstOrDefault(x => x.Name == "manager_externalCompanyCode")?.Value;
-
 
         return await base.EndLoginAsync(page);
     }
@@ -290,7 +290,7 @@ public class Assist : AssistBase
             await locator.First.ClickAsync();
 
             locator = page.Locator("div.rc-virtual-list >> div").Filter(new() { HasTextRegex = new Regex("条\\/页$") });
-            var cnt = await locator.CountAsync();
+            await locator.Last.ClickAsync();
         }
         catch (Exception e)
         {
@@ -561,13 +561,23 @@ public class Assist : AssistBase
             });
 
             locator = page.Locator("div.rc-virtual-list >> div").Filter(new() { HasTextRegex = new Regex("条\\/页$") });
-            var cnt = await locator.CountAsync();
+
+            await page.WaitForTimeoutAsync(200);
+            foreach (var item in (await locator.AllAsync()).Reverse())
+            {
+                if (await item.IsVisibleAsync())
+                {
+                    await item.ClickAsync();
+                    break;
+                }
+            }
+
         }
         catch (Exception e)
         {
             Log.Error(log + $"切换500条/页失败{e.Message}");
             WeakReferenceMessenger.Default.Send("同步合投资料失败，请查看log", "toast");
-            return false;
+            //return false;
         }
 
         if (response is null) return false;
@@ -597,11 +607,11 @@ public class Assist : AssistBase
             var cname = item.customerName;
             var cid = item.cardNumber;
             //var type = item.signType;
-            var openday = item.openDay;
+            //var openday = item.openDay;
             var number = item.tradeMoney ?? item.redemptionMoney;
 
             if (fundname is null) continue;
-
+            if (item.signType != 1) continue;
 
             // 查找对应的基金
             var (fund, sc) = funds.FindByName(fundname);
@@ -619,8 +629,8 @@ public class Assist : AssistBase
             }
 
 
-            var od = await GetOrderInfo(id, page);
-            if(od is null)
+            var od = await GetOrderInfo(id, item.signType, page);
+            if (od is null)
             {
                 Log.Error($"{Identifier}.{nameof(SynchronizeOrderAsync)} 获取订单详情失败 {id}");
                 continue;
@@ -629,7 +639,7 @@ public class Assist : AssistBase
             var stime = DateTime.TryParse(od?.sealedDocuments?.FirstOrDefault()?.sealTime, out var dt) ? DateOnly.FromDateTime(dt) : default;
 
             TransferOrderType type = TransferOrderType.Buy;
-            if (item.signType == 3 && od?.redemptionType < 3)
+            if (item.signType == 3 && item?.redemptionType < 3)
                 type = od?.redemptionType switch
                 {
                     0 => TransferOrderType.Share,
@@ -637,6 +647,7 @@ public class Assist : AssistBase
                     2 => TransferOrderType.RemainAmout,
                 };
 
+            var sid = $"{id}";
             TransferOrder order = new TransferOrder
             {
                 FundId = fund.Id,
@@ -648,73 +659,114 @@ public class Assist : AssistBase
                 Date = stime,
                 Type = type,
                 Number = number ?? 0,
+                Source = Identifier,
+                ExternalId = $"{id}",
             };
 
             // 检查是否已存在
-            var exist = db.GetCollection<TransferOrder>().FindOne(x => x.FundId == fund.Id && x.InvestorId == cus.Id && x.Date == stime && x.Type == type && x.Number == number);
-            if (exist is not null)
-                order.Id = exist.Id;
-            else db.GetCollection<TransferOrder>().Insert(order);
-
-            // 下载文件
-            var di = new DirectoryInfo($"files\\order\\{order.Id}");
-            di.Create();
-            foreach (var ff in od.sealedDocuments!)
+            var exist = db.GetCollection<TransferOrder>().FindOne(x => x.ExternalId == sid);
+            if (exist is null) exist = db.GetCollection<TransferOrder>().FindOne(x => x.FundId == fund.Id && x.InvestorId == cus.Id && x.Date == stime && x.Type == type && x.Number == number);
+            db.BeginTrans();
+            try
             {
-                // 监听下载事件
-                var downloadTask = page.WaitForDownloadAsync();
 
-                await page.GotoAsync(ff.sealedUrl!);
-                var download = await downloadTask;
+                if (exist is not null)
+                    order.Id = exist.Id;
+                else db.GetCollection<TransferOrder>().Insert(order);
 
-                DateTime time = DateTime.Parse(ff.sealTime!);
-
-                if (ff.documentName.Length > 10 && ff.codeType == 123)
-                    ff.documentName = "基金合同";
-
-                var filepath = Path.Combine(di.FullName, $"{order.FundName}-{order.InvestorName}-{time.ToLocalTime():yyyyMMdd}-{ff.documentName}.pdf");
-
-                // 保存下载的文件
-                await download.SaveAsAsync( filepath);
-
-
-                switch (ff.codeType)
+                // 下载文件
+                var di = new DirectoryInfo($"files\\order\\{order.Id}");
+                di.Create();
+                foreach (var ff in od.sealedDocuments!)
                 {
-                    case 121:
-                        order.RiskPair = new FileStorageInfo { Title = ff.documentName, Time = time, Path = filepath, Hash = FileHelper.ComputeHash(filepath) };
-                        break;
+                    var fdown = await page.APIRequest.GetAsync(ff.sealedUrl!);
 
-                    case 122:
-                        order.RiskDiscloure = new FileStorageInfo { Title = ff.documentName, Time = time, Path = filepath, Hash = FileHelper.ComputeHash(filepath) };
-                        break;
-                    case 123:
-                        order.Contract = new FileStorageInfo { Title = ff.documentName, Time = time, Path = filepath, Hash = FileHelper.ComputeHash(filepath) };
-                        break;
-                    case 125:
-                        order.OrderSheet = new FileStorageInfo { Title = ff.documentName, Time = time, Path = filepath, Hash = FileHelper.ComputeHash(filepath) };
-                        break;
+                    if (response.Status != 200)
+                        continue;
 
-                    default:
-                        break;
+
+                    DateTime time = DateTime.Parse(ff.sealTime!);
+
+                    if (ff.documentName.Length > 10 && ff.codeType == 123)
+                        ff.documentName = "基金合同";
+
+                    var filepath = Path.Combine(di.FullName, $"{order.FundName}-{order.InvestorName}-{time.ToLocalTime():yyyyMMdd}-{ff.documentName}.pdf");
+
+                    // 保存下载的文件   
+                    var buffer = await fdown.BodyAsync();
+                    using (var fileStream = File.Create(filepath))
+                    {
+                        fileStream.Write(buffer, 0, buffer.Length);
+                        fileStream.Flush();
+                    }
+
+                    if (ff.codeType is null)
+                    {
+                        if (ff.documentName.Contains("申请"))
+                            ff.codeType = 125;
+                    }
+
+                    switch (ff.codeType)
+                    {
+                        case 121:
+                            order.RiskPair = new FileStorageInfo { Title = ff.documentName, Time = time, Path = filepath, Hash = FileHelper.ComputeHash(filepath) };
+                            break;
+
+                        case 122:
+                            order.RiskDiscloure = new FileStorageInfo { Title = ff.documentName, Time = time, Path = filepath, Hash = FileHelper.ComputeHash(filepath) };
+                            break;
+                        case 123:
+                            order.Contract = new FileStorageInfo { Title = ff.documentName, Time = time, Path = filepath, Hash = FileHelper.ComputeHash(filepath) };
+                            break;
+                        case 125:
+                            order.OrderSheet = new FileStorageInfo { Title = ff.documentName, Time = time, Path = filepath, Hash = FileHelper.ComputeHash(filepath) };
+                            break;
+
+                        default:
+                            break;
+                    }
+
                 }
 
-            }
+                // 双录
+                url = od.doubleRecordingUrl!;
+                if (url is not null)
+                {
+                    var fdown = await page.APIRequest.GetAsync(url!);
 
-            // 双录
-            url = od.doubleRecordingUrl!;
-            if (url is not null)
+                    if (response.Status == 200)
+                    {
+                        // 保存下载的文件   
+                        var buffer = await fdown.BodyAsync();
+                        var filepath = Path.Combine(di.FullName, $"{fundname}-{cname}-双录.mp4");
+                        using (var fileStream = File.Create(filepath))
+                        {
+                            fileStream.Write(buffer, 0, buffer.Length);
+                            fileStream.Flush();
+                        }
+
+                        order.Videotape = new FileStorageInfo { Title = "双录", Time = order.OrderSheet?.Time ?? default, Path = filepath, Hash = FileHelper.ComputeHash(filepath) };
+                    }
+                }
+
+                db.GetCollection<TransferOrder>().Update(order);
+
+                // 找ta
+                DateTimeHelper.TryParse(item.openDay, out var openday);
+                var sameday = db.GetCollection<TransferRecord>().Find(x => x.FundId == order.FundId && x.CustomerId == order.InvestorId && openday == x.RequestDate).ToArray();
+                foreach (var ta in sameday)
+                {
+                    if (ta.OrderId == 0) ta.OrderId = order.Id;
+                }
+                db.GetCollection<TransferRecord>().Update(sameday);
+
+                pdb.GetCollection<MeiShiOrderCache>().Upsert(new MeiShiOrderCache { Id = id, OrderId = order.Id });
+                db.Commit();
+            }
+            catch (Exception)
             {
-                // 监听下载事件
-                var downloadTask = page.WaitForDownloadAsync();
-                await page.GotoAsync(url);
-                var download = await downloadTask;
-                var filepath = $"{fundname}-{cname}-双录.mp4";
-                // 保存下载的文件
-                await download.SaveAsAsync(Path.Combine(di.FullName, filepath));
-                order.Videotape = new FileStorageInfo { Title = "双录", Time = order.OrderSheet?.Time ?? default, Path = filepath, Hash = FileHelper.ComputeHash(Path.Combine(di.FullName, filepath)) };
+                db.Rollback();
             }
-
-            db.GetCollection<TransferOrder>().Update(order);
         }
 
 
@@ -734,20 +786,45 @@ public class Assist : AssistBase
     //}
 
 
-    public async Task<Json.OrderDetail.ResponseData?> GetOrderInfo(long id, IPage page)
+    public async Task<Json.OrderDetail.ResponseData?> GetOrderInfo(long id, int? signType, IPage page)
     {
-        var url = $"https://vipfunds.simu800.com/vip-manager/manager/signFlowController/querySignFlowInfo?flowId={id}&codeValue=2070&t={DateTime.Now.TimeStampByMilliseconds()}";
-        await page.GotoAsync(url);
-        var json = await page.ContentAsync();
+        try
+        {
 
-        var root = JsonSerializer.Deserialize<Json.OrderDetail.ApiResponse>(json);
-        if (root is null) return null;
+            var type = signType switch { 0 => "productProcessDetails", 1 => "applyPurchase", _ => "Redeming" };
+            IResponse? response = null;
+            var url = $"https://vipfunds.simu800.com/vipmanager/investorManagement/signFlowManagement/{type}/{id}?ascription={token}&isDelete=0&key=null&v={DateTime.Now.TimeStampByMilliseconds()}";
+            await page.RunAndWaitForResponseAsync(async () => await page.GotoAsync(url), req =>
+            {
+                if (req.Url.Contains("codeValue=4040"))
+                {
+                    response = req;
+                    return true;
+                }
+                return false;
+            });
 
-        return root.data;
+            if (response is null) return null;
+
+            //await page.GotoAsync($"https://vipfunds.simu800.com/vip-manager/manager/flowProcess/queryProcessByFlowId?flowId={id}&t={DateTime.Now.TimeStampByMilliseconds()}");
+            //var url = $"https://vipfunds.simu800.com/vip-manager/manager/signFlowController/querySignFlowInfo?flowId={id}&codeValue=2070&t={DateTime.Now.TimeStampByMilliseconds()}";
+            //await page.GotoAsync(url);
+
+            var json = await response.TextAsync();
+
+            var root = JsonSerializer.Deserialize<Json.OrderDetail.ApiResponse>(json);
+            if (root is null) return null;
+
+            return root.data;
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
     }
 
 
-    
+
 
 
     public async Task<bool> DownloadSignFile(long id, IPage page)
