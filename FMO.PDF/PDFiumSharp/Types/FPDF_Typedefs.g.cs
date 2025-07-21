@@ -1,12 +1,4 @@
-﻿
-
-
-
-
-
-
-
-#region Copyright and License
+﻿#region Copyright and License
 /*
 This file is part of PDFiumSharp, a wrapper around the PDFium library for the .NET framework.
 Copyright (C) 2017 Tobias Meyer
@@ -22,7 +14,6 @@ using System.Threading;
 
 namespace PDFiumSharp.Types
 {
-
 	/// <summary>Handle to a FPDF_ACTION</summary>
 	[StructLayout(LayoutKind.Sequential)]
     public struct FPDF_ACTION : IHandle<FPDF_ACTION>
@@ -44,7 +35,6 @@ namespace PDFiumSharp.Types
 
 		FPDF_ACTION IHandle<FPDF_ACTION>.SetToNull() => new FPDF_ACTION(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
-
 
 	/// <summary>Handle to a FPDF_ANNOTATION</summary>
 	[StructLayout(LayoutKind.Sequential)]
@@ -68,7 +58,6 @@ namespace PDFiumSharp.Types
 		FPDF_ANNOTATION IHandle<FPDF_ANNOTATION>.SetToNull() => new FPDF_ANNOTATION(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
 
-
 	/// <summary>Handle to a FPDF_ATTACHMENT</summary>
 	[StructLayout(LayoutKind.Sequential)]
     public struct FPDF_ATTACHMENT : IHandle<FPDF_ATTACHMENT>
@@ -90,7 +79,6 @@ namespace PDFiumSharp.Types
 
 		FPDF_ATTACHMENT IHandle<FPDF_ATTACHMENT>.SetToNull() => new FPDF_ATTACHMENT(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
-
 
 	/// <summary>Handle to a FPDF_AVAIL</summary>
 	[StructLayout(LayoutKind.Sequential)]
@@ -114,7 +102,6 @@ namespace PDFiumSharp.Types
 		FPDF_AVAIL IHandle<FPDF_AVAIL>.SetToNull() => new FPDF_AVAIL(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
 
-
 	/// <summary>Handle to a FPDF_BITMAP</summary>
 	[StructLayout(LayoutKind.Sequential)]
     public struct FPDF_BITMAP : IHandle<FPDF_BITMAP>
@@ -136,7 +123,6 @@ namespace PDFiumSharp.Types
 
 		FPDF_BITMAP IHandle<FPDF_BITMAP>.SetToNull() => new FPDF_BITMAP(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
-
 
 	/// <summary>Handle to a FPDF_BOOKMARK</summary>
 	[StructLayout(LayoutKind.Sequential)]
@@ -160,7 +146,6 @@ namespace PDFiumSharp.Types
 		FPDF_BOOKMARK IHandle<FPDF_BOOKMARK>.SetToNull() => new FPDF_BOOKMARK(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
 
-
 	/// <summary>Handle to a FPDF_BSTR</summary>
 	[StructLayout(LayoutKind.Sequential)]
     public struct FPDF_BSTR : IHandle<FPDF_BSTR>
@@ -182,7 +167,6 @@ namespace PDFiumSharp.Types
 
 		FPDF_BSTR IHandle<FPDF_BSTR>.SetToNull() => new FPDF_BSTR(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
-
 
 	/// <summary>Handle to a FPDF_CLIPPATH</summary>
 	[StructLayout(LayoutKind.Sequential)]
@@ -206,7 +190,6 @@ namespace PDFiumSharp.Types
 		FPDF_CLIPPATH IHandle<FPDF_CLIPPATH>.SetToNull() => new FPDF_CLIPPATH(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
 
-
 	/// <summary>Handle to a FPDF_COLORSCHEME</summary>
 	[StructLayout(LayoutKind.Sequential)]
     public struct FPDF_COLORSCHEME : IHandle<FPDF_COLORSCHEME>
@@ -228,7 +211,6 @@ namespace PDFiumSharp.Types
 
 		FPDF_COLORSCHEME IHandle<FPDF_COLORSCHEME>.SetToNull() => new FPDF_COLORSCHEME(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
-
 
 	/// <summary>Handle to a FPDF_DEST</summary>
 	[StructLayout(LayoutKind.Sequential)]
@@ -252,7 +234,6 @@ namespace PDFiumSharp.Types
 		FPDF_DEST IHandle<FPDF_DEST>.SetToNull() => new FPDF_DEST(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
 
-
 	/// <summary>Handle to a FPDF_DOCUMENT</summary>
 	[StructLayout(LayoutKind.Sequential)]
     public struct FPDF_DOCUMENT : IHandle<FPDF_DOCUMENT>
@@ -274,7 +255,6 @@ namespace PDFiumSharp.Types
 
 		FPDF_DOCUMENT IHandle<FPDF_DOCUMENT>.SetToNull() => new FPDF_DOCUMENT(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
-
 
 	/// <summary>Handle to a FPDF_FILEIDTYPE</summary>
 	[StructLayout(LayoutKind.Sequential)]
@@ -298,7 +278,6 @@ namespace PDFiumSharp.Types
 		FPDF_FILEIDTYPE IHandle<FPDF_FILEIDTYPE>.SetToNull() => new FPDF_FILEIDTYPE(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
 
-
 	/// <summary>Handle to a FPDF_FONT</summary>
 	[StructLayout(LayoutKind.Sequential)]
     public struct FPDF_FONT : IHandle<FPDF_FONT>
@@ -320,7 +299,6 @@ namespace PDFiumSharp.Types
 
 		FPDF_FONT IHandle<FPDF_FONT>.SetToNull() => new FPDF_FONT(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
-
 
 	/// <summary>Handle to a FPDF_FORMHANDLE</summary>
 	[StructLayout(LayoutKind.Sequential)]
@@ -344,7 +322,6 @@ namespace PDFiumSharp.Types
 		FPDF_FORMHANDLE IHandle<FPDF_FORMHANDLE>.SetToNull() => new FPDF_FORMHANDLE(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
 
-
 	/// <summary>Handle to a FPDF_GLYPHPATH</summary>
 	[StructLayout(LayoutKind.Sequential)]
     public struct FPDF_GLYPHPATH : IHandle<FPDF_GLYPHPATH>
@@ -366,7 +343,6 @@ namespace PDFiumSharp.Types
 
 		FPDF_GLYPHPATH IHandle<FPDF_GLYPHPATH>.SetToNull() => new FPDF_GLYPHPATH(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
-
 
 	/// <summary>Handle to a FPDF_JAVASCRIPT_ACTION</summary>
 	[StructLayout(LayoutKind.Sequential)]
@@ -390,7 +366,6 @@ namespace PDFiumSharp.Types
 		FPDF_JAVASCRIPT_ACTION IHandle<FPDF_JAVASCRIPT_ACTION>.SetToNull() => new FPDF_JAVASCRIPT_ACTION(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
 
-
 	/// <summary>Handle to a FPDF_LINK</summary>
 	[StructLayout(LayoutKind.Sequential)]
     public struct FPDF_LINK : IHandle<FPDF_LINK>
@@ -412,7 +387,6 @@ namespace PDFiumSharp.Types
 
 		FPDF_LINK IHandle<FPDF_LINK>.SetToNull() => new FPDF_LINK(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
-
 
 	/// <summary>Handle to a FPDF_PAGE</summary>
 	[StructLayout(LayoutKind.Sequential)]
@@ -436,7 +410,6 @@ namespace PDFiumSharp.Types
 		FPDF_PAGE IHandle<FPDF_PAGE>.SetToNull() => new FPDF_PAGE(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
 
-
 	/// <summary>Handle to a FPDF_PAGELINK</summary>
 	[StructLayout(LayoutKind.Sequential)]
     public struct FPDF_PAGELINK : IHandle<FPDF_PAGELINK>
@@ -458,7 +431,6 @@ namespace PDFiumSharp.Types
 
 		FPDF_PAGELINK IHandle<FPDF_PAGELINK>.SetToNull() => new FPDF_PAGELINK(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
-
 
 	/// <summary>Handle to a FPDF_PAGEOBJECT</summary>
 	[StructLayout(LayoutKind.Sequential)]
@@ -482,7 +454,6 @@ namespace PDFiumSharp.Types
 		FPDF_PAGEOBJECT IHandle<FPDF_PAGEOBJECT>.SetToNull() => new FPDF_PAGEOBJECT(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
 
-
 	/// <summary>Handle to a FPDF_PAGEOBJECTMARK</summary>
 	[StructLayout(LayoutKind.Sequential)]
     public struct FPDF_PAGEOBJECTMARK : IHandle<FPDF_PAGEOBJECTMARK>
@@ -504,7 +475,6 @@ namespace PDFiumSharp.Types
 
 		FPDF_PAGEOBJECTMARK IHandle<FPDF_PAGEOBJECTMARK>.SetToNull() => new FPDF_PAGEOBJECTMARK(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
-
 
 	/// <summary>Handle to a FPDF_PAGERANGE</summary>
 	[StructLayout(LayoutKind.Sequential)]
@@ -528,7 +498,6 @@ namespace PDFiumSharp.Types
 		FPDF_PAGERANGE IHandle<FPDF_PAGERANGE>.SetToNull() => new FPDF_PAGERANGE(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
 
-
 	/// <summary>Handle to a FPDF_PATHSEGMENT</summary>
 	[StructLayout(LayoutKind.Sequential)]
     public struct FPDF_PATHSEGMENT : IHandle<FPDF_PATHSEGMENT>
@@ -550,7 +519,6 @@ namespace PDFiumSharp.Types
 
 		FPDF_PATHSEGMENT IHandle<FPDF_PATHSEGMENT>.SetToNull() => new FPDF_PATHSEGMENT(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
-
 
 	/// <summary>Handle to a FPDF_RECORDER</summary>
 	[StructLayout(LayoutKind.Sequential)]
@@ -574,7 +542,6 @@ namespace PDFiumSharp.Types
 		FPDF_RECORDER IHandle<FPDF_RECORDER>.SetToNull() => new FPDF_RECORDER(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
 
-
 	/// <summary>Handle to a FPDF_OBJECT_TYPE</summary>
 	[StructLayout(LayoutKind.Sequential)]
     public struct FPDF_OBJECT_TYPE : IHandle<FPDF_OBJECT_TYPE>
@@ -596,7 +563,6 @@ namespace PDFiumSharp.Types
 
 		FPDF_OBJECT_TYPE IHandle<FPDF_OBJECT_TYPE>.SetToNull() => new FPDF_OBJECT_TYPE(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
-
 
 	/// <summary>Handle to a FPDF_SCHHANDLE</summary>
 	[StructLayout(LayoutKind.Sequential)]
@@ -620,7 +586,6 @@ namespace PDFiumSharp.Types
 		FPDF_SCHHANDLE IHandle<FPDF_SCHHANDLE>.SetToNull() => new FPDF_SCHHANDLE(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
 
-
 	/// <summary>Handle to a FPDF_SIGNATURE</summary>
 	[StructLayout(LayoutKind.Sequential)]
     public struct FPDF_SIGNATURE : IHandle<FPDF_SIGNATURE>
@@ -642,7 +607,6 @@ namespace PDFiumSharp.Types
 
 		FPDF_SIGNATURE IHandle<FPDF_SIGNATURE>.SetToNull() => new FPDF_SIGNATURE(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
-
 
 	/// <summary>Handle to a FPDF_SKIA_CANVAS</summary>
 	[StructLayout(LayoutKind.Sequential)]
@@ -666,7 +630,6 @@ namespace PDFiumSharp.Types
 		FPDF_SKIA_CANVAS IHandle<FPDF_SKIA_CANVAS>.SetToNull() => new FPDF_SKIA_CANVAS(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
 
-
 	/// <summary>Handle to a FPDF_STRUCTELEMENT</summary>
 	[StructLayout(LayoutKind.Sequential)]
     public struct FPDF_STRUCTELEMENT : IHandle<FPDF_STRUCTELEMENT>
@@ -688,7 +651,6 @@ namespace PDFiumSharp.Types
 
 		FPDF_STRUCTELEMENT IHandle<FPDF_STRUCTELEMENT>.SetToNull() => new FPDF_STRUCTELEMENT(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
-
 
 	/// <summary>Handle to a FPDF_STRUCTELEMENT_ATTR</summary>
 	[StructLayout(LayoutKind.Sequential)]
@@ -712,7 +674,6 @@ namespace PDFiumSharp.Types
 		FPDF_STRUCTELEMENT_ATTR IHandle<FPDF_STRUCTELEMENT_ATTR>.SetToNull() => new FPDF_STRUCTELEMENT_ATTR(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
 
-
 	/// <summary>Handle to a FPDF_STRUCTTREE</summary>
 	[StructLayout(LayoutKind.Sequential)]
     public struct FPDF_STRUCTTREE : IHandle<FPDF_STRUCTTREE>
@@ -734,7 +695,6 @@ namespace PDFiumSharp.Types
 
 		FPDF_STRUCTTREE IHandle<FPDF_STRUCTTREE>.SetToNull() => new FPDF_STRUCTTREE(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
-
 
 	/// <summary>Handle to a FPDF_SYSFONTINFO</summary>
 	[StructLayout(LayoutKind.Sequential)]
@@ -758,7 +718,6 @@ namespace PDFiumSharp.Types
 		FPDF_SYSFONTINFO IHandle<FPDF_SYSFONTINFO>.SetToNull() => new FPDF_SYSFONTINFO(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
 
-
 	/// <summary>Handle to a FPDF_TEXTPAGE</summary>
 	[StructLayout(LayoutKind.Sequential)]
     public struct FPDF_TEXTPAGE : IHandle<FPDF_TEXTPAGE>
@@ -780,7 +739,6 @@ namespace PDFiumSharp.Types
 
 		FPDF_TEXTPAGE IHandle<FPDF_TEXTPAGE>.SetToNull() => new FPDF_TEXTPAGE(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
-
 
 	/// <summary>Handle to a FPDF_XOBJECT</summary>
 	[StructLayout(LayoutKind.Sequential)]
@@ -804,7 +762,6 @@ namespace PDFiumSharp.Types
 		FPDF_XOBJECT IHandle<FPDF_XOBJECT>.SetToNull() => new FPDF_XOBJECT(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
 
-
 	/// <summary>Handle to a FPDF_WCHAR</summary>
 	[StructLayout(LayoutKind.Sequential)]
     public struct FPDF_WCHAR : IHandle<FPDF_WCHAR>
@@ -826,7 +783,6 @@ namespace PDFiumSharp.Types
 
 		FPDF_WCHAR IHandle<FPDF_WCHAR>.SetToNull() => new FPDF_WCHAR(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
-
 
 	/// <summary>Handle to a FPDF_WIDGET</summary>
 	[StructLayout(LayoutKind.Sequential)]
@@ -850,7 +806,6 @@ namespace PDFiumSharp.Types
 		FPDF_WIDGET IHandle<FPDF_WIDGET>.SetToNull() => new FPDF_WIDGET(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
 
-
 	/// <summary>Handle to a UNSUPPORT_INFO</summary>
 	[StructLayout(LayoutKind.Sequential)]
     public struct UNSUPPORT_INFO : IHandle<UNSUPPORT_INFO>
@@ -873,7 +828,6 @@ namespace PDFiumSharp.Types
 		UNSUPPORT_INFO IHandle<UNSUPPORT_INFO>.SetToNull() => new UNSUPPORT_INFO(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
 
-
 	/// <summary>Handle to a FX_FILEAVAIL</summary>
 	[StructLayout(LayoutKind.Sequential)]
     public struct FX_FILEAVAIL : IHandle<FX_FILEAVAIL>
@@ -895,6 +849,5 @@ namespace PDFiumSharp.Types
 
 		FX_FILEAVAIL IHandle<FX_FILEAVAIL>.SetToNull() => new FX_FILEAVAIL(Interlocked.Exchange(ref _ptr, IntPtr.Zero));
 	}
-
 
 }

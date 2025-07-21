@@ -1,12 +1,4 @@
-﻿
-
-
-
-
-
-
-
-#region Copyright and License
+﻿#region Copyright and License
 /*
 This file is part of PDFiumSharp, a wrapper around the PDFium library for the .NET framework.
 Copyright (C) 2017 Tobias Meyer
@@ -27,7 +19,6 @@ namespace PDFiumSharp
 	{
 		static readonly object _lock = new object();
 
-
 		#region FPDF_InitLibrary
 
 		static partial class PlatformInvoke
@@ -42,18 +33,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_InitLibrary/*'/>
 		public static void FPDF_InitLibrary()
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDF_InitLibrary_x64(); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDF_InitLibrary_x86(); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_InitLibraryWithConfig
 
@@ -69,18 +57,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_InitLibraryWithConfig/*'/>
 		public static void FPDF_InitLibraryWithConfig(ref FPDF_LIBRARY_CONFIG config)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDF_InitLibraryWithConfig_x64(ref config); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDF_InitLibraryWithConfig_x86(ref config); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_DestroyLibrary
 
@@ -96,18 +81,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_DestroyLibrary/*'/>
 		public static void FPDF_DestroyLibrary()
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDF_DestroyLibrary_x64(); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDF_DestroyLibrary_x86(); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_SetSandBoxPolicy
 
@@ -123,18 +105,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_SetSandBoxPolicy/*'/>
 		public static void FPDF_SetSandBoxPolicy(int policy, bool enable)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDF_SetSandBoxPolicy_x64(policy, enable); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDF_SetSandBoxPolicy_x86(policy, enable); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_SetPrintMode
 
@@ -150,18 +129,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_SetPrintMode/*'/>
 		public static bool FPDF_SetPrintMode(int mode)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_SetPrintMode_x64(mode); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_SetPrintMode_x86(mode); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_LoadDocument
 
@@ -178,18 +154,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.PdfDocument(string, string)'/>
 		public static FPDF_DOCUMENT FPDF_LoadDocument([MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Utf8StringMarshaler))] string file_path, [MarshalAs(UnmanagedType.LPStr)] string password)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_LoadDocument_x64(file_path, password); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_LoadDocument_x86(file_path, password); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_LoadMemDocument
 
@@ -206,18 +179,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.PdfDocument(byte[], int, int, string)'/>
 		private static FPDF_DOCUMENT FPDF_LoadMemDocument(ref byte data_buf, int size, [MarshalAs(UnmanagedType.LPStr)] string password)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_LoadMemDocument_x64(ref data_buf, size, password); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_LoadMemDocument_x86(ref data_buf, size, password); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_LoadMemDocument64
 
@@ -234,18 +204,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.PdfDocument(byte[], int, int, string)'/>
 		private static FPDF_DOCUMENT FPDF_LoadMemDocument64(ref byte data_buf, long size, [MarshalAs(UnmanagedType.LPStr)] string password)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_LoadMemDocument64_x64(ref data_buf, size, password); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_LoadMemDocument64_x86(ref data_buf, size, password); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_LoadCustomDocument
 
@@ -262,18 +229,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.PdfDocument(System.IO.Stream, int, string)'/>
 		public static FPDF_DOCUMENT FPDF_LoadCustomDocument(FPDF_FILEREAD fileRead, [MarshalAs(UnmanagedType.LPStr)] string password)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_LoadCustomDocument_x64(fileRead, password); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_LoadCustomDocument_x86(fileRead, password); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetFileVersion
 
@@ -290,18 +254,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.FileVersion'/>
 		public static bool FPDF_GetFileVersion(FPDF_DOCUMENT doc, out int fileVersion)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetFileVersion_x64(doc, out fileVersion); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetFileVersion_x86(doc, out fileVersion); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetLastError
 
@@ -317,18 +278,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_GetLastError/*'/>
 		public static FPDF_ERR FPDF_GetLastError()
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetLastError_x64(); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetLastError_x86(); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_DocumentHasValidCrossReferenceTable
 
@@ -344,18 +302,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_DocumentHasValidCrossReferenceTable/*'/>
 		public static bool FPDF_DocumentHasValidCrossReferenceTable(FPDF_DOCUMENT document)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_DocumentHasValidCrossReferenceTable_x64(document); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_DocumentHasValidCrossReferenceTable_x86(document); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetTrailerEnds
 
@@ -371,18 +326,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_GetTrailerEnds/*'/>
 		public static ulong FPDF_GetTrailerEnds(FPDF_DOCUMENT document, out uint buffer, ulong length)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetTrailerEnds_x64(document, out buffer, length); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetTrailerEnds_x86(document, out buffer, length); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetDocPermissions
 
@@ -399,18 +351,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.Permissions'/>
 		public static DocumentPermissions FPDF_GetDocPermissions(FPDF_DOCUMENT document)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetDocPermissions_x64(document); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetDocPermissions_x86(document); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetDocUserPermissions
 
@@ -426,18 +375,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_GetDocUserPermissions/*'/>
 		public static DocumentPermissions FPDF_GetDocUserPermissions(FPDF_DOCUMENT document)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetDocUserPermissions_x64(document); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetDocUserPermissions_x86(document); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetSecurityHandlerRevision
 
@@ -454,18 +400,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.SecurityHandlerRevision'/>
 		public static int FPDF_GetSecurityHandlerRevision(FPDF_DOCUMENT document)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetSecurityHandlerRevision_x64(document); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetSecurityHandlerRevision_x86(document); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetPageCount
 
@@ -483,18 +426,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.Pages'/>
 		public static int FPDF_GetPageCount(FPDF_DOCUMENT document)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetPageCount_x64(document); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetPageCount_x86(document); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_LoadPage
 
@@ -512,18 +452,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.Pages'/>
 		public static FPDF_PAGE FPDF_LoadPage(FPDF_DOCUMENT document, int page_index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_LoadPage_x64(document, page_index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_LoadPage_x86(document, page_index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetPageWidthF
 
@@ -539,18 +476,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_GetPageWidthF/*'/>
 		public static float FPDF_GetPageWidthF(FPDF_PAGE page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetPageWidthF_x64(page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetPageWidthF_x86(page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetPageWidth
 
@@ -567,18 +501,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfPage.Width'/>
 		public static double FPDF_GetPageWidth(FPDF_PAGE page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetPageWidth_x64(page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetPageWidth_x86(page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetPageHeightF
 
@@ -594,18 +525,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_GetPageHeightF/*'/>
 		public static float FPDF_GetPageHeightF(FPDF_PAGE page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetPageHeightF_x64(page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetPageHeightF_x86(page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetPageHeight
 
@@ -622,18 +550,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfPage.Height'/>
 		public static double FPDF_GetPageHeight(FPDF_PAGE page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetPageHeight_x64(page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetPageHeight_x86(page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetPageBoundingBox
 
@@ -649,18 +574,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_GetPageBoundingBox/*'/>
 		public static bool FPDF_GetPageBoundingBox(FPDF_PAGE page, FS_RECTF rect)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetPageBoundingBox_x64(page, rect); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetPageBoundingBox_x86(page, rect); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetPageSizeByIndexF
 
@@ -676,18 +598,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_GetPageSizeByIndexF/*'/>
 		public static bool FPDF_GetPageSizeByIndexF(FPDF_DOCUMENT document, int page_index, FS_SIZEF size)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetPageSizeByIndexF_x64(document, page_index, size); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetPageSizeByIndexF_x86(document, page_index, size); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetPageSizeByIndex
 
@@ -704,18 +623,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfPage.Size'/>
 		public static bool FPDF_GetPageSizeByIndex(FPDF_DOCUMENT document, int page_index, out double width, out double height)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetPageSizeByIndex_x64(document, page_index, out width, out height); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetPageSizeByIndex_x86(document, page_index, out width, out height); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_RenderPage
 
@@ -732,18 +648,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfPage.Render'/>
 		public static void FPDF_RenderPage(IntPtr hdc, FPDF_PAGE page, int start_x, int start_y, int size_x, int size_y, PageOrientations rotation, RenderingFlags flags)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDF_RenderPage_x64(hdc, page, start_x, start_y, size_x, size_y, rotation, flags); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDF_RenderPage_x86(hdc, page, start_x, start_y, size_x, size_y, rotation, flags); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_RenderPageBitmap
 
@@ -760,18 +673,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfPage.Render'/>
 		public static void FPDF_RenderPageBitmap(FPDF_BITMAP bitmap, FPDF_PAGE page, int start_x, int start_y, int size_x, int size_y, PageOrientations rotation, RenderingFlags flags)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDF_RenderPageBitmap_x64(bitmap, page, start_x, start_y, size_x, size_y, rotation, flags); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDF_RenderPageBitmap_x86(bitmap, page, start_x, start_y, size_x, size_y, rotation, flags); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_RenderPageBitmapWithMatrix
 
@@ -787,18 +697,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_RenderPageBitmapWithMatrix/*'/>
 		public static void FPDF_RenderPageBitmapWithMatrix(FPDF_BITMAP bitmap, FPDF_PAGE page, [MarshalAs(UnmanagedType.LPStruct)] FS_MATRIX matrix, [MarshalAs(UnmanagedType.LPStruct)] FS_RECTF clipping, RenderingFlags flags)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDF_RenderPageBitmapWithMatrix_x64(bitmap, page, matrix, clipping, flags); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDF_RenderPageBitmapWithMatrix_x86(bitmap, page, matrix, clipping, flags); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_RenderPageSkp
 
@@ -814,18 +721,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_RenderPageSkp/*'/>
 		public static FPDF_RECORDER FPDF_RenderPageSkp(FPDF_PAGE page, int size_x, int size_y)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_RenderPageSkp_x64(page, size_x, size_y); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_RenderPageSkp_x86(page, size_x, size_y); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_ClosePage
 
@@ -842,18 +746,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.Close'/>
 		public static void FPDF_ClosePage(FPDF_PAGE page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDF_ClosePage_x64(page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDF_ClosePage_x86(page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_CloseDocument
 
@@ -870,18 +771,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.Close'/>
 		public static void FPDF_CloseDocument(FPDF_DOCUMENT document)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDF_CloseDocument_x64(document); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDF_CloseDocument_x86(document); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_DeviceToPage
 
@@ -898,18 +796,15 @@ namespace PDFiumSharp
 		/// <seealso cref='T:PdfPage.DeviceToPage((int left, int top, int width, int height), int, int, PageOrientations)'/>
 		public static bool FPDF_DeviceToPage(FPDF_PAGE page, int start_x, int start_y, int size_x, int size_y, PageOrientations rotate, int device_x, int device_y, out double page_x, out double page_y)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_DeviceToPage_x64(page, start_x, start_y, size_x, size_y, rotate, device_x, device_y, out page_x, out page_y); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_DeviceToPage_x86(page, start_x, start_y, size_x, size_y, rotate, device_x, device_y, out page_x, out page_y); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_PageToDevice
 
@@ -926,18 +821,15 @@ namespace PDFiumSharp
 		/// <seealso cref='T:PdfPage.PageToDevice((int left, int top, int width, int height), double, double, PageOrientations)'/>
 		public static bool FPDF_PageToDevice(FPDF_PAGE page, int start_x, int start_y, int size_x, int size_y, PageOrientations rotate, double page_x, double page_y, out int device_x, out int device_y)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_PageToDevice_x64(page, start_x, start_y, size_x, size_y, rotate, page_x, page_y, out device_x, out device_y); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_PageToDevice_x86(page, start_x, start_y, size_x, size_y, rotate, page_x, page_y, out device_x, out device_y); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFBitmap_Create
 
@@ -954,18 +846,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PDFiumBitmap.PDFiumBitmap(int, int, bool)'/>
 		public static FPDF_BITMAP FPDFBitmap_Create(int width, int height, bool hasAlpha)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFBitmap_Create_x64(width, height, hasAlpha); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFBitmap_Create_x86(width, height, hasAlpha); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFBitmap_CreateEx
 
@@ -982,18 +871,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PDFiumBitmap.PDFiumBitmap(int, int, BitmapFormats, IntPtr, int)'/>
 		public static FPDF_BITMAP FPDFBitmap_CreateEx(int width, int height, BitmapFormats format, IntPtr first_scan, int stride)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFBitmap_CreateEx_x64(width, height, format, first_scan, stride); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFBitmap_CreateEx_x86(width, height, format, first_scan, stride); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFBitmap_GetFormat
 
@@ -1009,18 +895,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFBitmap_GetFormat/*'/>
 		public static BitmapFormats FPDFBitmap_GetFormat(FPDF_BITMAP bitmap)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFBitmap_GetFormat_x64(bitmap); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFBitmap_GetFormat_x86(bitmap); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFBitmap_FillRect
 
@@ -1038,18 +921,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PDFiumBitmap.Fill(FPDF_COLOR)'/>
 		public static void FPDFBitmap_FillRect(FPDF_BITMAP bitmap, int left, int top, int width, int height, FPDF_COLOR color)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFBitmap_FillRect_x64(bitmap, left, top, width, height, color); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFBitmap_FillRect_x86(bitmap, left, top, width, height, color); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFBitmap_GetBuffer
 
@@ -1066,18 +946,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PDFiumBitmap.Scan0'/>
 		public static IntPtr FPDFBitmap_GetBuffer(FPDF_BITMAP bitmap)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFBitmap_GetBuffer_x64(bitmap); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFBitmap_GetBuffer_x86(bitmap); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFBitmap_GetWidth
 
@@ -1094,18 +971,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PDFiumBitmap.Width'/>
 		public static int FPDFBitmap_GetWidth(FPDF_BITMAP bitmap)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFBitmap_GetWidth_x64(bitmap); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFBitmap_GetWidth_x86(bitmap); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFBitmap_GetHeight
 
@@ -1122,18 +996,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PDFiumBitmap.Height'/>
 		public static int FPDFBitmap_GetHeight(FPDF_BITMAP bitmap)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFBitmap_GetHeight_x64(bitmap); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFBitmap_GetHeight_x86(bitmap); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFBitmap_GetStride
 
@@ -1150,18 +1021,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PDFiumBitmap.Stride'/>
 		public static int FPDFBitmap_GetStride(FPDF_BITMAP bitmap)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFBitmap_GetStride_x64(bitmap); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFBitmap_GetStride_x86(bitmap); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFBitmap_Destroy
 
@@ -1178,18 +1046,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PDFiumBitmap.Dispose'/>
 		public static void FPDFBitmap_Destroy(FPDF_BITMAP bitmap)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFBitmap_Destroy_x64(bitmap); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFBitmap_Destroy_x86(bitmap); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_VIEWERREF_GetPrintScaling
 
@@ -1206,18 +1071,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.PrintPrefersScaling'/>
 		public static bool FPDF_VIEWERREF_GetPrintScaling(FPDF_DOCUMENT document)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_VIEWERREF_GetPrintScaling_x64(document); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_VIEWERREF_GetPrintScaling_x86(document); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_VIEWERREF_GetNumCopies
 
@@ -1234,18 +1096,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.PrintCopyCount'/>
 		public static int FPDF_VIEWERREF_GetNumCopies(FPDF_DOCUMENT document)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_VIEWERREF_GetNumCopies_x64(document); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_VIEWERREF_GetNumCopies_x86(document); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_VIEWERREF_GetPrintPageRange
 
@@ -1261,18 +1120,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_VIEWERREF_GetPrintPageRange/*'/>
 		public static FPDF_PAGERANGE FPDF_VIEWERREF_GetPrintPageRange(FPDF_DOCUMENT document)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_VIEWERREF_GetPrintPageRange_x64(document); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_VIEWERREF_GetPrintPageRange_x86(document); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_VIEWERREF_GetPrintPageRangeCount
 
@@ -1288,18 +1144,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_VIEWERREF_GetPrintPageRangeCount/*'/>
 		public static uint FPDF_VIEWERREF_GetPrintPageRangeCount(FPDF_PAGERANGE pagerange)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_VIEWERREF_GetPrintPageRangeCount_x64(pagerange); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_VIEWERREF_GetPrintPageRangeCount_x86(pagerange); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_VIEWERREF_GetPrintPageRangeElement
 
@@ -1315,18 +1168,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_VIEWERREF_GetPrintPageRangeElement/*'/>
 		public static int FPDF_VIEWERREF_GetPrintPageRangeElement(FPDF_PAGERANGE pagerange, uint index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_VIEWERREF_GetPrintPageRangeElement_x64(pagerange, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_VIEWERREF_GetPrintPageRangeElement_x86(pagerange, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_VIEWERREF_GetDuplex
 
@@ -1343,18 +1193,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.DuplexType'/>
 		public static DuplexTypes FPDF_VIEWERREF_GetDuplex(FPDF_DOCUMENT document)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_VIEWERREF_GetDuplex_x64(document); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_VIEWERREF_GetDuplex_x86(document); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_VIEWERREF_GetName
 
@@ -1370,18 +1217,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_VIEWERREF_GetName/*'/>
 		public static ulong FPDF_VIEWERREF_GetName(FPDF_DOCUMENT document, [MarshalAs(UnmanagedType.LPStr)] string key, ref byte buffer, ulong length)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_VIEWERREF_GetName_x64(document, key, ref buffer, length); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_VIEWERREF_GetName_x86(document, key, ref buffer, length); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_CountNamedDests
 
@@ -1399,18 +1243,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.Destinations'/>
 		public static int FPDF_CountNamedDests(FPDF_DOCUMENT document)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_CountNamedDests_x64(document); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_CountNamedDests_x86(document); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetNamedDestByName
 
@@ -1428,18 +1269,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.Destinations'/>
 		public static FPDF_DEST FPDF_GetNamedDestByName(FPDF_DOCUMENT document, [MarshalAs(UnmanagedType.LPStr)] string name)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetNamedDestByName_x64(document, name); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetNamedDestByName_x86(document, name); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetNamedDest
 
@@ -1456,18 +1294,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PDFium.FPDF_GetNamedDest(FPDF_DOCUMENT, int)'/>
 		private static FPDF_DEST FPDF_GetNamedDest(FPDF_DOCUMENT document, int index, IntPtr buffer, out int buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetNamedDest_x64(document, index, buffer, out buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetNamedDest_x86(document, index, buffer, out buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetNamedDest
 
@@ -1484,18 +1319,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PDFium.FPDF_GetNamedDest(FPDF_DOCUMENT, int)'/>
 		private static FPDF_DEST FPDF_GetNamedDest(FPDF_DOCUMENT document, int index, ref byte buffer, ref int buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetNamedDest_x64(document, index, ref buffer, ref buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetNamedDest_x86(document, index, ref buffer, ref buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetXFAPacketCount
 
@@ -1511,18 +1343,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_GetXFAPacketCount/*'/>
 		public static int FPDF_GetXFAPacketCount(FPDF_DOCUMENT document)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetXFAPacketCount_x64(document); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetXFAPacketCount_x86(document); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetXFAPacketName
 
@@ -1538,18 +1367,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_GetXFAPacketName/*'/>
 		public static ulong FPDF_GetXFAPacketName(FPDF_DOCUMENT document, int index, ref byte buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetXFAPacketName_x64(document, index, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetXFAPacketName_x86(document, index, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetXFAPacketContent
 
@@ -1565,18 +1391,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_GetXFAPacketContent/*'/>
 		public static bool FPDF_GetXFAPacketContent(FPDF_DOCUMENT document, int index, ref byte buffer, ulong buflen, out ulong out_buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetXFAPacketContent_x64(document, index, ref buffer, buflen, out out_buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetXFAPacketContent_x86(document, index, ref buffer, buflen, out out_buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetArrayBufferAllocatorSharedInstance
 
@@ -1592,18 +1415,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_GetArrayBufferAllocatorSharedInstance/*'/>
 		public static IntPtr FPDF_GetArrayBufferAllocatorSharedInstance()
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetArrayBufferAllocatorSharedInstance_x64(); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetArrayBufferAllocatorSharedInstance_x86(); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_BStr_Init
 
@@ -1619,18 +1439,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_BStr_Init/*'/>
 		public static FPDF_RESULT FPDF_BStr_Init(ref FPDF_BSTR bstr)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_BStr_Init_x64(ref bstr); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_BStr_Init_x86(ref bstr); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_BStr_Set
 
@@ -1646,18 +1463,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_BStr_Set/*'/>
 		public static FPDF_RESULT FPDF_BStr_Set(ref FPDF_BSTR bstr, ref char cstr, int length)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_BStr_Set_x64(ref bstr, ref cstr, length); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_BStr_Set_x86(ref bstr, ref cstr, length); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_BStr_Clear
 
@@ -1673,18 +1487,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_BStr_Clear/*'/>
 		public static FPDF_RESULT FPDF_BStr_Clear(ref FPDF_BSTR bstr)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_BStr_Clear_x64(ref bstr); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_BStr_Clear_x86(ref bstr); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFBookmark_GetFirstChild
 
@@ -1702,18 +1513,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfBookmark.Children'/>
 		public static FPDF_BOOKMARK FPDFBookmark_GetFirstChild(FPDF_DOCUMENT document, FPDF_BOOKMARK bookmark)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFBookmark_GetFirstChild_x64(document, bookmark); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFBookmark_GetFirstChild_x86(document, bookmark); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFBookmark_GetNextSibling
 
@@ -1731,18 +1539,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfBookmark.Children'/>
 		public static FPDF_BOOKMARK FPDFBookmark_GetNextSibling(FPDF_DOCUMENT document, FPDF_BOOKMARK bookmark)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFBookmark_GetNextSibling_x64(document, bookmark); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFBookmark_GetNextSibling_x86(document, bookmark); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFBookmark_GetTitle
 
@@ -1759,18 +1564,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PDFium.FPDFBookmark_GetTitle(FPDF_BOOKMARK)'/>
 		private static ulong FPDFBookmark_GetTitle(FPDF_BOOKMARK bookmark, ref byte buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFBookmark_GetTitle_x64(bookmark, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFBookmark_GetTitle_x86(bookmark, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFBookmark_GetCount
 
@@ -1786,18 +1588,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFBookmark_GetCount/*'/>
 		public static int FPDFBookmark_GetCount(FPDF_BOOKMARK bookmark)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFBookmark_GetCount_x64(bookmark); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFBookmark_GetCount_x86(bookmark); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFBookmark_Find
 
@@ -1814,18 +1613,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.FindBookmark(string)'/>
 		public static FPDF_BOOKMARK FPDFBookmark_Find(FPDF_DOCUMENT document, [MarshalAs(UnmanagedType.LPWStr)] string title)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFBookmark_Find_x64(document, title); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFBookmark_Find_x86(document, title); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFBookmark_GetDest
 
@@ -1842,18 +1638,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfBookmark.Destination'/>
 		public static FPDF_DEST FPDFBookmark_GetDest(FPDF_DOCUMENT document, FPDF_BOOKMARK bookmark)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFBookmark_GetDest_x64(document, bookmark); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFBookmark_GetDest_x86(document, bookmark); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFBookmark_GetAction
 
@@ -1870,18 +1663,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfBookmark.Action'/>
 		public static FPDF_ACTION FPDFBookmark_GetAction(FPDF_BOOKMARK bookmark)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFBookmark_GetAction_x64(bookmark); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFBookmark_GetAction_x86(bookmark); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAction_GetType
 
@@ -1898,18 +1688,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfAction.Type'/>
 		public static ActionTypes FPDFAction_GetType(FPDF_ACTION action)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAction_GetType_x64(action); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAction_GetType_x86(action); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAction_GetDest
 
@@ -1926,18 +1713,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfAction.Destination'/>
 		public static FPDF_DEST FPDFAction_GetDest(FPDF_DOCUMENT document, FPDF_ACTION action)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAction_GetDest_x64(document, action); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAction_GetDest_x86(document, action); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAction_GetFilePath
 
@@ -1954,18 +1738,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PDFium.FPDFAction_GetFilePath(FPDF_ACTION)'/>
 		private static uint FPDFAction_GetFilePath(FPDF_ACTION action, ref byte buffer, uint buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAction_GetFilePath_x64(action, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAction_GetFilePath_x86(action, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAction_GetURIPath
 
@@ -1982,18 +1763,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PDFium.FPDFAction_GetURIPath(FPDF_DOCUMENT, FPDF_ACTION)'/>
 		private static uint FPDFAction_GetURIPath(FPDF_DOCUMENT document, FPDF_ACTION action, ref byte buffer, uint buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAction_GetURIPath_x64(document, action, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAction_GetURIPath_x86(document, action, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFDest_GetDestPageIndex
 
@@ -2011,18 +1789,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.Destinations'/>
 		public static int FPDFDest_GetDestPageIndex(FPDF_DOCUMENT document, FPDF_DEST dest)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFDest_GetDestPageIndex_x64(document, dest); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFDest_GetDestPageIndex_x86(document, dest); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFDest_GetView
 
@@ -2038,18 +1813,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFDest_GetView/*'/>
 		public static ZoomModes FPDFDest_GetView(FPDF_DEST dest, out uint pNumParams, float pParams)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFDest_GetView_x64(dest, out pNumParams, pParams); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFDest_GetView_x86(dest, out pNumParams, pParams); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFDest_GetLocationInPage
 
@@ -2067,18 +1839,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.Destinations'/>
 		public static bool FPDFDest_GetLocationInPage(FPDF_DEST dest, out bool hasXCoord, out bool hasYCoord, out bool hasZoom, out float x, out float y, out float zoom)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFDest_GetLocationInPage_x64(dest, out hasXCoord, out hasYCoord, out hasZoom, out x, out y, out zoom); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFDest_GetLocationInPage_x86(dest, out hasXCoord, out hasYCoord, out hasZoom, out x, out y, out zoom); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFLink_GetLinkAtPoint
 
@@ -2094,18 +1863,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFLink_GetLinkAtPoint/*'/>
 		public static FPDF_LINK FPDFLink_GetLinkAtPoint(FPDF_PAGE page, double x, double y)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFLink_GetLinkAtPoint_x64(page, x, y); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFLink_GetLinkAtPoint_x86(page, x, y); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFLink_GetLinkZOrderAtPoint
 
@@ -2121,18 +1887,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFLink_GetLinkZOrderAtPoint/*'/>
 		public static int FPDFLink_GetLinkZOrderAtPoint(FPDF_PAGE page, double x, double y)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFLink_GetLinkZOrderAtPoint_x64(page, x, y); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFLink_GetLinkZOrderAtPoint_x86(page, x, y); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFLink_GetDest
 
@@ -2148,18 +1911,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFLink_GetDest/*'/>
 		public static FPDF_DEST FPDFLink_GetDest(FPDF_DOCUMENT document, FPDF_LINK link)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFLink_GetDest_x64(document, link); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFLink_GetDest_x86(document, link); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFLink_GetAction
 
@@ -2175,18 +1935,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFLink_GetAction/*'/>
 		public static FPDF_ACTION FPDFLink_GetAction(FPDF_LINK link)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFLink_GetAction_x64(link); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFLink_GetAction_x86(link); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFLink_Enumerate
 
@@ -2202,18 +1959,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFLink_Enumerate/*'/>
 		private static bool FPDFLink_Enumerate(FPDF_PAGE page, ref int startPos, out FPDF_LINK linkAnnot)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFLink_Enumerate_x64(page, ref startPos, out linkAnnot); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFLink_Enumerate_x86(page, ref startPos, out linkAnnot); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFLink_GetAnnot
 
@@ -2229,18 +1983,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFLink_GetAnnot/*'/>
 		public static FPDF_ANNOTATION FPDFLink_GetAnnot(FPDF_PAGE page, FPDF_LINK linkAnnot)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFLink_GetAnnot_x64(page, linkAnnot); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFLink_GetAnnot_x86(page, linkAnnot); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFLink_GetAnnotRect
 
@@ -2256,18 +2007,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFLink_GetAnnotRect/*'/>
 		public static bool FPDFLink_GetAnnotRect(FPDF_LINK linkAnnot, out FS_RECTF rect)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFLink_GetAnnotRect_x64(linkAnnot, out rect); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFLink_GetAnnotRect_x86(linkAnnot, out rect); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFLink_CountQuadPoints
 
@@ -2283,18 +2031,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFLink_CountQuadPoints/*'/>
 		public static int FPDFLink_CountQuadPoints(FPDF_LINK linkAnnot)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFLink_CountQuadPoints_x64(linkAnnot); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFLink_CountQuadPoints_x86(linkAnnot); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFLink_GetQuadPoints
 
@@ -2310,18 +2055,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFLink_GetQuadPoints/*'/>
 		public static bool FPDFLink_GetQuadPoints(FPDF_LINK linkAnnot, int quadIndex, out FS_QUADPOINTSF quadPoints)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFLink_GetQuadPoints_x64(linkAnnot, quadIndex, out quadPoints); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFLink_GetQuadPoints_x86(linkAnnot, quadIndex, out quadPoints); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetPageAAction
 
@@ -2337,18 +2079,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_GetPageAAction/*'/>
 		public static FPDF_ACTION FPDF_GetPageAAction(FPDF_PAGE page, int aa_type)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetPageAAction_x64(page, aa_type); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetPageAAction_x86(page, aa_type); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetFileIdentifier
 
@@ -2364,18 +2103,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_GetFileIdentifier/*'/>
 		public static ulong FPDF_GetFileIdentifier(FPDF_DOCUMENT document, FPDF_FILEIDTYPE id_type, ref byte buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetFileIdentifier_x64(document, id_type, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetFileIdentifier_x86(document, id_type, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetMetaText
 
@@ -2393,18 +2129,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PDFium.FPDF_GetMetaText(FPDF_DOCUMENT, MetadataTags)'/>
 		public static uint FPDF_GetMetaText(FPDF_DOCUMENT document, [MarshalAs(UnmanagedType.LPStr)] string tag, ref byte buffer, uint buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetMetaText_x64(document, tag, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetMetaText_x86(document, tag, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetPageLabel
 
@@ -2421,18 +2154,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PDFium.FPDF_GetPageLabel(FPDF_DOCUMENT, int)'/>
 		public static uint FPDF_GetPageLabel(FPDF_DOCUMENT document, int page_index, ref byte buffer, uint buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetPageLabel_x64(document, page_index, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetPageLabel_x86(document, page_index, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_CreateNewDocument
 
@@ -2449,18 +2179,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.PdfDocument'/>
 		public static FPDF_DOCUMENT FPDF_CreateNewDocument()
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_CreateNewDocument_x64(); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_CreateNewDocument_x86(); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_New
 
@@ -2479,18 +2206,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.Pages'/>
 		public static FPDF_PAGE FPDFPage_New(FPDF_DOCUMENT document, int page_index, double width, double height)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_New_x64(document, page_index, width, height); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_New_x86(document, page_index, width, height); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_Delete
 
@@ -2508,18 +2232,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.Pages'/>
 		public static void FPDFPage_Delete(FPDF_DOCUMENT document, int page_index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFPage_Delete_x64(document, page_index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFPage_Delete_x86(document, page_index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_MovePages
 
@@ -2535,18 +2256,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_MovePages/*'/>
 		public static bool FPDF_MovePages(FPDF_DOCUMENT document, ref int page_indices, ulong page_indices_len, int dest_page_index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_MovePages_x64(document, ref page_indices, page_indices_len, dest_page_index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_MovePages_x86(document, ref page_indices, page_indices_len, dest_page_index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_GetRotation
 
@@ -2563,18 +2281,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfPage.Orientation'/>
 		public static PageOrientations FPDFPage_GetRotation(FPDF_PAGE page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetRotation_x64(page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetRotation_x86(page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_SetRotation
 
@@ -2591,18 +2306,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfPage.Orientation'/>
 		public static void FPDFPage_SetRotation(FPDF_PAGE page, PageOrientations rotation)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFPage_SetRotation_x64(page, rotation); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFPage_SetRotation_x86(page, rotation); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_InsertObject
 
@@ -2618,18 +2330,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_InsertObject/*'/>
 		private static void FPDFPage_InsertObject(FPDF_PAGE page, FPDF_PAGEOBJECT page_obj)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFPage_InsertObject_x64(page, page_obj); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFPage_InsertObject_x86(page, page_obj); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_RemoveObject
 
@@ -2645,18 +2354,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_RemoveObject/*'/>
 		public static bool FPDFPage_RemoveObject(FPDF_PAGE page, FPDF_PAGEOBJECT page_obj)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_RemoveObject_x64(page, page_obj); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_RemoveObject_x86(page, page_obj); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_CountObjects
 
@@ -2672,18 +2378,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_CountObjects/*'/>
 		public static int FPDFPage_CountObjects(FPDF_PAGE page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_CountObjects_x64(page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_CountObjects_x86(page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_GetObject
 
@@ -2699,18 +2402,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_GetObject/*'/>
 		public static FPDF_PAGEOBJECT FPDFPage_GetObject(FPDF_PAGE page, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetObject_x64(page, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetObject_x86(page, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_HasTransparency
 
@@ -2726,18 +2426,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_HasTransparency/*'/>
 		public static bool FPDFPage_HasTransparency(FPDF_PAGE page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_HasTransparency_x64(page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_HasTransparency_x86(page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_GenerateContent
 
@@ -2753,18 +2450,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_GenerateContent/*'/>
 		public static bool FPDFPage_GenerateContent(FPDF_PAGE page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_GenerateContent_x64(page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_GenerateContent_x86(page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_Destroy
 
@@ -2780,18 +2474,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_Destroy/*'/>
 		public static void FPDFPageObj_Destroy(FPDF_PAGEOBJECT page_obj)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFPageObj_Destroy_x64(page_obj); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFPageObj_Destroy_x86(page_obj); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_HasTransparency
 
@@ -2807,18 +2498,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_HasTransparency/*'/>
 		public static bool FPDFPageObj_HasTransparency(FPDF_PAGEOBJECT pageObject)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_HasTransparency_x64(pageObject); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_HasTransparency_x86(pageObject); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_GetType
 
@@ -2834,18 +2522,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_GetType/*'/>
 		public static PageObjTypes FPDFPageObj_GetType(FPDF_PAGEOBJECT page_object)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetType_x64(page_object); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetType_x86(page_object); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_Transform
 
@@ -2861,18 +2546,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_Transform/*'/>
 		public static void FPDFPageObj_Transform(FPDF_PAGEOBJECT page_object, double a, double b, double c, double d, double e, double f)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFPageObj_Transform_x64(page_object, a, b, c, d, e, f); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFPageObj_Transform_x86(page_object, a, b, c, d, e, f); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_GetMatrix
 
@@ -2888,18 +2570,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_GetMatrix/*'/>
 		public static bool FPDFPageObj_GetMatrix(FPDF_PAGEOBJECT page_object, FS_MATRIX matrix)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetMatrix_x64(page_object, matrix); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetMatrix_x86(page_object, matrix); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_SetMatrix
 
@@ -2915,18 +2594,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_SetMatrix/*'/>
 		public static bool FPDFPageObj_SetMatrix(FPDF_PAGEOBJECT path, [MarshalAs(UnmanagedType.LPStruct)] FS_MATRIX matrix)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_SetMatrix_x64(path, matrix); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_SetMatrix_x86(path, matrix); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_TransformAnnots
 
@@ -2942,18 +2618,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_TransformAnnots/*'/>
 		public static void FPDFPage_TransformAnnots(FPDF_PAGE page, double a, double b, double c, double d, double e, double f)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFPage_TransformAnnots_x64(page, a, b, c, d, e, f); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFPage_TransformAnnots_x86(page, a, b, c, d, e, f); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_NewImageObj
 
@@ -2969,18 +2642,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_NewImageObj/*'/>
 		public static FPDF_PAGEOBJECT FPDFPageObj_NewImageObj(FPDF_DOCUMENT document)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_NewImageObj_x64(document); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_NewImageObj_x86(document); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_CountMarks
 
@@ -2996,18 +2666,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_CountMarks/*'/>
 		public static int FPDFPageObj_CountMarks(FPDF_PAGEOBJECT page_object)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_CountMarks_x64(page_object); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_CountMarks_x86(page_object); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_GetMark
 
@@ -3023,18 +2690,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_GetMark/*'/>
 		public static FPDF_PAGEOBJECTMARK FPDFPageObj_GetMark(FPDF_PAGEOBJECT page_object, ulong index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetMark_x64(page_object, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetMark_x86(page_object, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_AddMark
 
@@ -3050,18 +2714,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_AddMark/*'/>
 		public static FPDF_PAGEOBJECTMARK FPDFPageObj_AddMark(FPDF_PAGEOBJECT page_object, [MarshalAs(UnmanagedType.LPStr)] string name)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_AddMark_x64(page_object, name); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_AddMark_x86(page_object, name); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_RemoveMark
 
@@ -3077,18 +2738,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_RemoveMark/*'/>
 		public static bool FPDFPageObj_RemoveMark(FPDF_PAGEOBJECT page_object, FPDF_PAGEOBJECTMARK mark)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_RemoveMark_x64(page_object, mark); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_RemoveMark_x86(page_object, mark); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObjMark_GetName
 
@@ -3104,18 +2762,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObjMark_GetName/*'/>
 		public static bool FPDFPageObjMark_GetName(FPDF_PAGEOBJECTMARK mark, ref byte buffer, ulong buflen, out ulong out_buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_GetName_x64(mark, ref buffer, buflen, out out_buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_GetName_x86(mark, ref buffer, buflen, out out_buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObjMark_CountParams
 
@@ -3131,18 +2786,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObjMark_CountParams/*'/>
 		public static int FPDFPageObjMark_CountParams(FPDF_PAGEOBJECTMARK mark)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_CountParams_x64(mark); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_CountParams_x86(mark); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObjMark_GetParamKey
 
@@ -3158,18 +2810,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObjMark_GetParamKey/*'/>
 		public static bool FPDFPageObjMark_GetParamKey(FPDF_PAGEOBJECTMARK mark, ulong index, ref byte buffer, ulong buflen, out ulong out_buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_GetParamKey_x64(mark, index, ref buffer, buflen, out out_buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_GetParamKey_x86(mark, index, ref buffer, buflen, out out_buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObjMark_GetParamValueType
 
@@ -3185,18 +2834,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObjMark_GetParamValueType/*'/>
 		public static ObjectTypes FPDFPageObjMark_GetParamValueType(FPDF_PAGEOBJECTMARK mark, [MarshalAs(UnmanagedType.LPStr)] string key)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_GetParamValueType_x64(mark, key); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_GetParamValueType_x86(mark, key); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObjMark_GetParamIntValue
 
@@ -3212,18 +2858,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObjMark_GetParamIntValue/*'/>
 		public static bool FPDFPageObjMark_GetParamIntValue(FPDF_PAGEOBJECTMARK mark, [MarshalAs(UnmanagedType.LPStr)] string key, out int out_value)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_GetParamIntValue_x64(mark, key, out out_value); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_GetParamIntValue_x86(mark, key, out out_value); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObjMark_GetParamStringValue
 
@@ -3239,18 +2882,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObjMark_GetParamStringValue/*'/>
 		public static bool FPDFPageObjMark_GetParamStringValue(FPDF_PAGEOBJECTMARK mark, [MarshalAs(UnmanagedType.LPStr)] string key, ref byte buffer, ulong buflen, out ulong out_buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_GetParamStringValue_x64(mark, key, ref buffer, buflen, out out_buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_GetParamStringValue_x86(mark, key, ref buffer, buflen, out out_buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObjMark_GetParamBlobValue
 
@@ -3266,18 +2906,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObjMark_GetParamBlobValue/*'/>
 		public static bool FPDFPageObjMark_GetParamBlobValue(FPDF_PAGEOBJECTMARK mark, [MarshalAs(UnmanagedType.LPStr)] string key, ref byte buffer, ulong buflen, out ulong out_buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_GetParamBlobValue_x64(mark, key, ref buffer, buflen, out out_buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_GetParamBlobValue_x86(mark, key, ref buffer, buflen, out out_buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObjMark_SetIntParam
 
@@ -3293,18 +2930,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObjMark_SetIntParam/*'/>
 		public static bool FPDFPageObjMark_SetIntParam(FPDF_DOCUMENT document, FPDF_PAGEOBJECT page_object, FPDF_PAGEOBJECTMARK mark, [MarshalAs(UnmanagedType.LPStr)] string key, int value)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_SetIntParam_x64(document, page_object, mark, key, value); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_SetIntParam_x86(document, page_object, mark, key, value); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObjMark_SetStringParam
 
@@ -3320,18 +2954,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObjMark_SetStringParam/*'/>
 		public static bool FPDFPageObjMark_SetStringParam(FPDF_DOCUMENT document, FPDF_PAGEOBJECT page_object, FPDF_PAGEOBJECTMARK mark, [MarshalAs(UnmanagedType.LPStr)] string key, [MarshalAs(UnmanagedType.LPStr)] string value)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_SetStringParam_x64(document, page_object, mark, key, value); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_SetStringParam_x86(document, page_object, mark, key, value); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObjMark_SetBlobParam
 
@@ -3347,18 +2978,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObjMark_SetBlobParam/*'/>
 		public static bool FPDFPageObjMark_SetBlobParam(FPDF_DOCUMENT document, FPDF_PAGEOBJECT page_object, FPDF_PAGEOBJECTMARK mark, [MarshalAs(UnmanagedType.LPStr)] string key, ref byte value, ulong value_len)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_SetBlobParam_x64(document, page_object, mark, key, ref value, value_len); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_SetBlobParam_x86(document, page_object, mark, key, ref value, value_len); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObjMark_RemoveParam
 
@@ -3374,18 +3002,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObjMark_RemoveParam/*'/>
 		public static bool FPDFPageObjMark_RemoveParam(FPDF_PAGEOBJECT page_object, FPDF_PAGEOBJECTMARK mark, [MarshalAs(UnmanagedType.LPStr)] string key)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_RemoveParam_x64(page_object, mark, key); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObjMark_RemoveParam_x86(page_object, mark, key); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFImageObj_LoadJpegFile
 
@@ -3401,18 +3026,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFImageObj_LoadJpegFile/*'/>
 		private static bool FPDFImageObj_LoadJpegFile(ref FPDF_PAGE pages, int nCount, FPDF_PAGEOBJECT image_object, FPDF_FILEREAD fileRead)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_LoadJpegFile_x64(ref pages, nCount, image_object, fileRead); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_LoadJpegFile_x86(ref pages, nCount, image_object, fileRead); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFImageObj_LoadJpegFileInline
 
@@ -3428,18 +3050,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFImageObj_LoadJpegFileInline/*'/>
 		private static bool FPDFImageObj_LoadJpegFileInline(ref FPDF_PAGE pages, int nCount, FPDF_PAGEOBJECT image_object, FPDF_FILEREAD fileRead)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_LoadJpegFileInline_x64(ref pages, nCount, image_object, fileRead); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_LoadJpegFileInline_x86(ref pages, nCount, image_object, fileRead); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFImageObj_SetMatrix
 
@@ -3455,18 +3074,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFImageObj_SetMatrix/*'/>
 		public static bool FPDFImageObj_SetMatrix(FPDF_PAGEOBJECT image_object, double a, double b, double c, double d, double e, double f)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_SetMatrix_x64(image_object, a, b, c, d, e, f); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_SetMatrix_x86(image_object, a, b, c, d, e, f); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFImageObj_SetBitmap
 
@@ -3482,18 +3098,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFImageObj_SetBitmap/*'/>
 		public static bool FPDFImageObj_SetBitmap(ref FPDF_PAGE pages, int count, FPDF_PAGEOBJECT image_object, FPDF_BITMAP bitmap)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_SetBitmap_x64(ref pages, count, image_object, bitmap); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_SetBitmap_x86(ref pages, count, image_object, bitmap); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFImageObj_GetBitmap
 
@@ -3509,18 +3122,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFImageObj_GetBitmap/*'/>
 		public static FPDF_BITMAP FPDFImageObj_GetBitmap(FPDF_PAGEOBJECT image_object)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_GetBitmap_x64(image_object); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_GetBitmap_x86(image_object); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFImageObj_GetRenderedBitmap
 
@@ -3536,18 +3146,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFImageObj_GetRenderedBitmap/*'/>
 		public static FPDF_BITMAP FPDFImageObj_GetRenderedBitmap(FPDF_DOCUMENT document, FPDF_PAGE page, FPDF_PAGEOBJECT image_object)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_GetRenderedBitmap_x64(document, page, image_object); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_GetRenderedBitmap_x86(document, page, image_object); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFImageObj_GetImageDataDecoded
 
@@ -3563,18 +3170,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFImageObj_GetImageDataDecoded/*'/>
 		public static ulong FPDFImageObj_GetImageDataDecoded(FPDF_PAGEOBJECT image_object, ref byte buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_GetImageDataDecoded_x64(image_object, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_GetImageDataDecoded_x86(image_object, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFImageObj_GetImageDataRaw
 
@@ -3590,18 +3194,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFImageObj_GetImageDataRaw/*'/>
 		public static ulong FPDFImageObj_GetImageDataRaw(FPDF_PAGEOBJECT image_object, ref byte buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_GetImageDataRaw_x64(image_object, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_GetImageDataRaw_x86(image_object, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFImageObj_GetImageFilterCount
 
@@ -3617,18 +3218,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFImageObj_GetImageFilterCount/*'/>
 		public static int FPDFImageObj_GetImageFilterCount(FPDF_PAGEOBJECT image_object)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_GetImageFilterCount_x64(image_object); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_GetImageFilterCount_x86(image_object); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFImageObj_GetImageFilter
 
@@ -3644,18 +3242,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFImageObj_GetImageFilter/*'/>
 		public static ulong FPDFImageObj_GetImageFilter(FPDF_PAGEOBJECT image_object, int index, ref byte buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_GetImageFilter_x64(image_object, index, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_GetImageFilter_x86(image_object, index, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFImageObj_GetImageMetadata
 
@@ -3671,18 +3266,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFImageObj_GetImageMetadata/*'/>
 		public static bool FPDFImageObj_GetImageMetadata(FPDF_PAGEOBJECT image_object, FPDF_PAGE page, out FPDF_IMAGEOBJ_METADATA metadata)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_GetImageMetadata_x64(image_object, page, out metadata); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_GetImageMetadata_x86(image_object, page, out metadata); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFImageObj_GetImagePixelSize
 
@@ -3698,18 +3290,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFImageObj_GetImagePixelSize/*'/>
 		public static bool FPDFImageObj_GetImagePixelSize(FPDF_PAGEOBJECT image_object, out uint width, out uint height)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_GetImagePixelSize_x64(image_object, out width, out height); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFImageObj_GetImagePixelSize_x86(image_object, out width, out height); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_CreateNewPath
 
@@ -3725,18 +3314,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_CreateNewPath/*'/>
 		public static FPDF_PAGEOBJECT FPDFPageObj_CreateNewPath(float x, float y)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_CreateNewPath_x64(x, y); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_CreateNewPath_x86(x, y); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_CreateNewRect
 
@@ -3752,18 +3338,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_CreateNewRect/*'/>
 		public static FPDF_PAGEOBJECT FPDFPageObj_CreateNewRect(float x, float y, float w, float h)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_CreateNewRect_x64(x, y, w, h); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_CreateNewRect_x86(x, y, w, h); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_GetBounds
 
@@ -3779,18 +3362,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_GetBounds/*'/>
 		public static bool FPDFPageObj_GetBounds(FPDF_PAGEOBJECT page_object, out float left, out float bottom, out float right, out float top)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetBounds_x64(page_object, out left, out bottom, out right, out top); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetBounds_x86(page_object, out left, out bottom, out right, out top); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_GetRotatedBounds
 
@@ -3806,18 +3386,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_GetRotatedBounds/*'/>
 		public static bool FPDFPageObj_GetRotatedBounds(FPDF_PAGEOBJECT page_object, FS_QUADPOINTSF quad_points)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetRotatedBounds_x64(page_object, quad_points); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetRotatedBounds_x86(page_object, quad_points); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_SetBlendMode
 
@@ -3833,18 +3410,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_SetBlendMode/*'/>
 		public static void FPDFPageObj_SetBlendMode(FPDF_PAGEOBJECT page_object, [MarshalAs(UnmanagedType.LPStr)] string blend_mode)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFPageObj_SetBlendMode_x64(page_object, blend_mode); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFPageObj_SetBlendMode_x86(page_object, blend_mode); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_SetStrokeColor
 
@@ -3860,18 +3434,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_SetStrokeColor/*'/>
 		public static bool FPDFPageObj_SetStrokeColor(FPDF_PAGEOBJECT page_object, uint R, uint G, uint B, uint A)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_SetStrokeColor_x64(page_object, R, G, B, A); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_SetStrokeColor_x86(page_object, R, G, B, A); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_GetStrokeColor
 
@@ -3887,18 +3458,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_GetStrokeColor/*'/>
 		public static bool FPDFPageObj_GetStrokeColor(FPDF_PAGEOBJECT page_object, out uint R, out uint G, out uint B, out uint A)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetStrokeColor_x64(page_object, out R, out G, out B, out A); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetStrokeColor_x86(page_object, out R, out G, out B, out A); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_SetStrokeWidth
 
@@ -3914,18 +3482,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_SetStrokeWidth/*'/>
 		public static bool FPDFPageObj_SetStrokeWidth(FPDF_PAGEOBJECT page_object, float width)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_SetStrokeWidth_x64(page_object, width); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_SetStrokeWidth_x86(page_object, width); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_GetStrokeWidth
 
@@ -3941,18 +3506,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_GetStrokeWidth/*'/>
 		public static bool FPDFPageObj_GetStrokeWidth(FPDF_PAGEOBJECT page_object, out float width)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetStrokeWidth_x64(page_object, out width); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetStrokeWidth_x86(page_object, out width); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_GetLineJoin
 
@@ -3968,18 +3530,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_GetLineJoin/*'/>
 		public static int FPDFPageObj_GetLineJoin(FPDF_PAGEOBJECT page_object)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetLineJoin_x64(page_object); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetLineJoin_x86(page_object); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_SetLineJoin
 
@@ -3995,18 +3554,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_SetLineJoin/*'/>
 		public static bool FPDFPageObj_SetLineJoin(FPDF_PAGEOBJECT page_object, int line_join)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_SetLineJoin_x64(page_object, line_join); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_SetLineJoin_x86(page_object, line_join); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_GetLineCap
 
@@ -4022,18 +3578,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_GetLineCap/*'/>
 		public static int FPDFPageObj_GetLineCap(FPDF_PAGEOBJECT page_object)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetLineCap_x64(page_object); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetLineCap_x86(page_object); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_SetLineCap
 
@@ -4049,18 +3602,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_SetLineCap/*'/>
 		public static bool FPDFPageObj_SetLineCap(FPDF_PAGEOBJECT page_object, int line_cap)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_SetLineCap_x64(page_object, line_cap); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_SetLineCap_x86(page_object, line_cap); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_SetFillColor
 
@@ -4076,18 +3626,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_SetFillColor/*'/>
 		public static bool FPDFPageObj_SetFillColor(FPDF_PAGEOBJECT page_object, uint R, uint G, uint B, uint A)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_SetFillColor_x64(page_object, R, G, B, A); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_SetFillColor_x86(page_object, R, G, B, A); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_GetFillColor
 
@@ -4103,18 +3650,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_GetFillColor/*'/>
 		public static bool FPDFPageObj_GetFillColor(FPDF_PAGEOBJECT page_object, out uint R, out uint G, out uint B, out uint A)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetFillColor_x64(page_object, out R, out G, out B, out A); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetFillColor_x86(page_object, out R, out G, out B, out A); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_GetDashPhase
 
@@ -4130,18 +3674,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_GetDashPhase/*'/>
 		public static bool FPDFPageObj_GetDashPhase(FPDF_PAGEOBJECT page_object, out float phase)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetDashPhase_x64(page_object, out phase); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetDashPhase_x86(page_object, out phase); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_SetDashPhase
 
@@ -4157,18 +3698,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_SetDashPhase/*'/>
 		public static bool FPDFPageObj_SetDashPhase(FPDF_PAGEOBJECT page_object, float phase)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_SetDashPhase_x64(page_object, phase); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_SetDashPhase_x86(page_object, phase); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_GetDashCount
 
@@ -4184,18 +3722,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_GetDashCount/*'/>
 		public static int FPDFPageObj_GetDashCount(FPDF_PAGEOBJECT page_object)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetDashCount_x64(page_object); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetDashCount_x86(page_object); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_GetDashArray
 
@@ -4211,18 +3746,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_GetDashArray/*'/>
 		public static bool FPDFPageObj_GetDashArray(FPDF_PAGEOBJECT page_object, out float dash_array, uint dash_count)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetDashArray_x64(page_object, out dash_array, dash_count); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetDashArray_x86(page_object, out dash_array, dash_count); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_SetDashArray
 
@@ -4238,18 +3770,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_SetDashArray/*'/>
 		public static bool FPDFPageObj_SetDashArray(FPDF_PAGEOBJECT page_object, ref float dash_array, uint dash_count, float phase)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_SetDashArray_x64(page_object, ref dash_array, dash_count, phase); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_SetDashArray_x86(page_object, ref dash_array, dash_count, phase); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPath_CountSegments
 
@@ -4265,18 +3794,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPath_CountSegments/*'/>
 		public static int FPDFPath_CountSegments(FPDF_PAGEOBJECT path)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPath_CountSegments_x64(path); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPath_CountSegments_x86(path); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPath_GetPathSegment
 
@@ -4292,18 +3818,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPath_GetPathSegment/*'/>
 		public static FPDF_PATHSEGMENT FPDFPath_GetPathSegment(FPDF_PAGEOBJECT path, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPath_GetPathSegment_x64(path, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPath_GetPathSegment_x86(path, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPathSegment_GetPoint
 
@@ -4319,18 +3842,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPathSegment_GetPoint/*'/>
 		public static bool FPDFPathSegment_GetPoint(FPDF_PATHSEGMENT segment, out float x, out float y)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPathSegment_GetPoint_x64(segment, out x, out y); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPathSegment_GetPoint_x86(segment, out x, out y); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPathSegment_GetType
 
@@ -4346,18 +3866,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPathSegment_GetType/*'/>
 		public static int FPDFPathSegment_GetType(FPDF_PATHSEGMENT segment)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPathSegment_GetType_x64(segment); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPathSegment_GetType_x86(segment); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPathSegment_GetClose
 
@@ -4373,18 +3890,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPathSegment_GetClose/*'/>
 		public static bool FPDFPathSegment_GetClose(FPDF_PATHSEGMENT segment)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPathSegment_GetClose_x64(segment); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPathSegment_GetClose_x86(segment); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPath_MoveTo
 
@@ -4400,18 +3914,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPath_MoveTo/*'/>
 		public static bool FPDFPath_MoveTo(FPDF_PAGEOBJECT path, float x, float y)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPath_MoveTo_x64(path, x, y); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPath_MoveTo_x86(path, x, y); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPath_LineTo
 
@@ -4427,18 +3938,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPath_LineTo/*'/>
 		public static bool FPDFPath_LineTo(FPDF_PAGEOBJECT path, float x, float y)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPath_LineTo_x64(path, x, y); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPath_LineTo_x86(path, x, y); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPath_BezierTo
 
@@ -4454,18 +3962,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPath_BezierTo/*'/>
 		public static bool FPDFPath_BezierTo(FPDF_PAGEOBJECT path, float x1, float y1, float x2, float y2, float x3, float y3)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPath_BezierTo_x64(path, x1, y1, x2, y2, x3, y3); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPath_BezierTo_x86(path, x1, y1, x2, y2, x3, y3); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPath_Close
 
@@ -4481,18 +3986,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPath_Close/*'/>
 		public static bool FPDFPath_Close(FPDF_PAGEOBJECT path)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPath_Close_x64(path); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPath_Close_x86(path); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPath_SetDrawMode
 
@@ -4508,18 +4010,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPath_SetDrawMode/*'/>
 		public static bool FPDFPath_SetDrawMode(FPDF_PAGEOBJECT path, PathFillModes fillmode, bool stroke)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPath_SetDrawMode_x64(path, fillmode, stroke); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPath_SetDrawMode_x86(path, fillmode, stroke); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPath_GetDrawMode
 
@@ -4535,18 +4034,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPath_GetDrawMode/*'/>
 		public static bool FPDFPath_GetDrawMode(FPDF_PAGEOBJECT path, out PathFillModes fillmode, out bool stroke)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPath_GetDrawMode_x64(path, out fillmode, out stroke); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPath_GetDrawMode_x86(path, out fillmode, out stroke); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_NewTextObj
 
@@ -4562,18 +4058,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_NewTextObj/*'/>
 		public static FPDF_PAGEOBJECT FPDFPageObj_NewTextObj(FPDF_DOCUMENT document, [MarshalAs(UnmanagedType.LPStr)] string font, float font_size)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_NewTextObj_x64(document, font, font_size); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_NewTextObj_x86(document, font, font_size); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_SetText
 
@@ -4589,18 +4082,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_SetText/*'/>
 		public static bool FPDFText_SetText(FPDF_PAGEOBJECT text_object, [MarshalAs(UnmanagedType.LPWStr)] string text)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_SetText_x64(text_object, text); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_SetText_x86(text_object, text); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_SetCharcodes
 
@@ -4616,18 +4106,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_SetCharcodes/*'/>
 		public static bool FPDFText_SetCharcodes(FPDF_PAGEOBJECT text_object, ref uint charcodes, uint count)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_SetCharcodes_x64(text_object, ref charcodes, count); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_SetCharcodes_x86(text_object, ref charcodes, count); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_LoadFont
 
@@ -4643,18 +4130,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_LoadFont/*'/>
 		private static FPDF_FONT FPDFText_LoadFont(FPDF_DOCUMENT document, ref byte data, uint size, FontTypes font_type, bool cid)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_LoadFont_x64(document, ref data, size, font_type, cid); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_LoadFont_x86(document, ref data, size, font_type, cid); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_LoadStandardFont
 
@@ -4670,18 +4154,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_LoadStandardFont/*'/>
 		public static FPDF_FONT FPDFText_LoadStandardFont(FPDF_DOCUMENT document, [MarshalAs(UnmanagedType.LPStr)] string font)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_LoadStandardFont_x64(document, font); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_LoadStandardFont_x86(document, font); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFTextObj_GetFontSize
 
@@ -4697,18 +4178,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFTextObj_GetFontSize/*'/>
 		public static bool FPDFTextObj_GetFontSize(FPDF_PAGEOBJECT text, out float size)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFTextObj_GetFontSize_x64(text, out size); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFTextObj_GetFontSize_x86(text, out size); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFFont_Close
 
@@ -4724,18 +4202,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFFont_Close/*'/>
 		public static void FPDFFont_Close(FPDF_FONT font)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFFont_Close_x64(font); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFFont_Close_x86(font); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_CreateTextObj
 
@@ -4751,18 +4226,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_CreateTextObj/*'/>
 		public static FPDF_PAGEOBJECT FPDFPageObj_CreateTextObj(FPDF_DOCUMENT document, FPDF_FONT font, float font_size)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_CreateTextObj_x64(document, font, font_size); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_CreateTextObj_x86(document, font, font_size); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFTextObj_GetTextRenderMode
 
@@ -4778,18 +4250,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFTextObj_GetTextRenderMode/*'/>
 		public static FPDF_TEXT_RENDERMODE FPDFTextObj_GetTextRenderMode(FPDF_PAGEOBJECT text)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFTextObj_GetTextRenderMode_x64(text); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFTextObj_GetTextRenderMode_x86(text); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFTextObj_SetTextRenderMode
 
@@ -4805,18 +4274,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFTextObj_SetTextRenderMode/*'/>
 		public static bool FPDFTextObj_SetTextRenderMode(FPDF_PAGEOBJECT text, FPDF_TEXT_RENDERMODE render_mode)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFTextObj_SetTextRenderMode_x64(text, render_mode); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFTextObj_SetTextRenderMode_x86(text, render_mode); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFTextObj_GetText
 
@@ -4832,18 +4298,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFTextObj_GetText/*'/>
 		public static ulong FPDFTextObj_GetText(FPDF_PAGEOBJECT text_object, FPDF_TEXTPAGE text_page, out FPDF_WCHAR buffer, ulong length)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFTextObj_GetText_x64(text_object, text_page, out buffer, length); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFTextObj_GetText_x86(text_object, text_page, out buffer, length); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFTextObj_GetRenderedBitmap
 
@@ -4859,18 +4322,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFTextObj_GetRenderedBitmap/*'/>
 		public static FPDF_BITMAP FPDFTextObj_GetRenderedBitmap(FPDF_DOCUMENT document, FPDF_PAGE page, FPDF_PAGEOBJECT text_object, float scale)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFTextObj_GetRenderedBitmap_x64(document, page, text_object, scale); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFTextObj_GetRenderedBitmap_x86(document, page, text_object, scale); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFTextObj_GetFont
 
@@ -4886,18 +4346,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFTextObj_GetFont/*'/>
 		public static FPDF_FONT FPDFTextObj_GetFont(FPDF_PAGEOBJECT text)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFTextObj_GetFont_x64(text); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFTextObj_GetFont_x86(text); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFFont_GetFontName
 
@@ -4913,18 +4370,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFFont_GetFontName/*'/>
 		public static ulong FPDFFont_GetFontName(FPDF_FONT font, ref byte buffer, ulong length)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFFont_GetFontName_x64(font, ref buffer, length); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFFont_GetFontName_x86(font, ref buffer, length); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFFont_GetFontData
 
@@ -4940,18 +4394,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFFont_GetFontData/*'/>
 		public static bool FPDFFont_GetFontData(FPDF_FONT font, ref byte buffer, uint buflen, out uint out_buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFFont_GetFontData_x64(font, ref buffer, buflen, out out_buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFFont_GetFontData_x86(font, ref buffer, buflen, out out_buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFFont_GetIsEmbedded
 
@@ -4967,18 +4418,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFFont_GetIsEmbedded/*'/>
 		public static int FPDFFont_GetIsEmbedded(FPDF_FONT font)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFFont_GetIsEmbedded_x64(font); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFFont_GetIsEmbedded_x86(font); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFFont_GetFlags
 
@@ -4994,18 +4442,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFFont_GetFlags/*'/>
 		public static int FPDFFont_GetFlags(FPDF_FONT font)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFFont_GetFlags_x64(font); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFFont_GetFlags_x86(font); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFFont_GetWeight
 
@@ -5021,18 +4466,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFFont_GetWeight/*'/>
 		public static int FPDFFont_GetWeight(FPDF_FONT font)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFFont_GetWeight_x64(font); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFFont_GetWeight_x86(font); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFFont_GetItalicAngle
 
@@ -5048,18 +4490,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFFont_GetItalicAngle/*'/>
 		public static bool FPDFFont_GetItalicAngle(FPDF_FONT font, out int angle)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFFont_GetItalicAngle_x64(font, out angle); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFFont_GetItalicAngle_x86(font, out angle); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFFont_GetAscent
 
@@ -5075,18 +4514,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFFont_GetAscent/*'/>
 		public static bool FPDFFont_GetAscent(FPDF_FONT font, float font_size, out float ascent)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFFont_GetAscent_x64(font, font_size, out ascent); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFFont_GetAscent_x86(font, font_size, out ascent); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFFont_GetDescent
 
@@ -5102,18 +4538,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFFont_GetDescent/*'/>
 		public static bool FPDFFont_GetDescent(FPDF_FONT font, float font_size, out float descent)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFFont_GetDescent_x64(font, font_size, out descent); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFFont_GetDescent_x86(font, font_size, out descent); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFFont_GetGlyphWidth
 
@@ -5129,18 +4562,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFFont_GetGlyphWidth/*'/>
 		public static bool FPDFFont_GetGlyphWidth(FPDF_FONT font, uint glyph, float font_size, out float width)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFFont_GetGlyphWidth_x64(font, glyph, font_size, out width); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFFont_GetGlyphWidth_x86(font, glyph, font_size, out width); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFFont_GetGlyphPath
 
@@ -5156,18 +4586,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFFont_GetGlyphPath/*'/>
 		public static FPDF_GLYPHPATH FPDFFont_GetGlyphPath(FPDF_FONT font, uint glyph, float font_size)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFFont_GetGlyphPath_x64(font, glyph, font_size); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFFont_GetGlyphPath_x86(font, glyph, font_size); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFGlyphPath_CountGlyphSegments
 
@@ -5183,18 +4610,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFGlyphPath_CountGlyphSegments/*'/>
 		public static int FPDFGlyphPath_CountGlyphSegments(FPDF_GLYPHPATH glyphpath)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFGlyphPath_CountGlyphSegments_x64(glyphpath); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFGlyphPath_CountGlyphSegments_x86(glyphpath); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFGlyphPath_GetGlyphPathSegment
 
@@ -5210,18 +4634,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFGlyphPath_GetGlyphPathSegment/*'/>
 		public static FPDF_PATHSEGMENT FPDFGlyphPath_GetGlyphPathSegment(FPDF_GLYPHPATH glyphpath, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFGlyphPath_GetGlyphPathSegment_x64(glyphpath, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFGlyphPath_GetGlyphPathSegment_x86(glyphpath, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFFormObj_CountObjects
 
@@ -5237,18 +4658,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFFormObj_CountObjects/*'/>
 		public static int FPDFFormObj_CountObjects(FPDF_PAGEOBJECT form_object)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFFormObj_CountObjects_x64(form_object); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFFormObj_CountObjects_x86(form_object); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFFormObj_GetObject
 
@@ -5264,18 +4682,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFFormObj_GetObject/*'/>
 		public static FPDF_PAGEOBJECT FPDFFormObj_GetObject(FPDF_PAGEOBJECT form_object, ulong index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFFormObj_GetObject_x64(form_object, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFFormObj_GetObject_x86(form_object, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FSDK_SetUnSpObjProcessHandler
 
@@ -5291,18 +4706,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FSDK_SetUnSpObjProcessHandler/*'/>
 		public static bool FSDK_SetUnSpObjProcessHandler(UNSUPPORT_INFO unsp_info)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FSDK_SetUnSpObjProcessHandler_x64(unsp_info); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FSDK_SetUnSpObjProcessHandler_x86(unsp_info); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFDoc_GetPageMode
 
@@ -5319,18 +4731,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.PageMode'/>
 		public static PageModes FPDFDoc_GetPageMode(FPDF_DOCUMENT document)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFDoc_GetPageMode_x64(document); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFDoc_GetPageMode_x86(document); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_Flatten
 
@@ -5347,18 +4756,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfPage.Flatten(FlattenFlags)'/>
 		public static FlattenResults FPDFPage_Flatten(FPDF_PAGE page, FlattenFlags nFlag)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_Flatten_x64(page, nFlag); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_Flatten_x86(page, nFlag); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_ImportPagesByIndex
 
@@ -5374,18 +4780,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_ImportPagesByIndex/*'/>
 		public static bool FPDF_ImportPagesByIndex(FPDF_DOCUMENT dest_doc, FPDF_DOCUMENT src_doc, ref int page_indices, ulong length, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_ImportPagesByIndex_x64(dest_doc, src_doc, ref page_indices, length, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_ImportPagesByIndex_x86(dest_doc, src_doc, ref page_indices, length, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_ImportPages
 
@@ -5404,18 +4807,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.Pages'/>
 		public static bool FPDF_ImportPages(FPDF_DOCUMENT dest_doc, FPDF_DOCUMENT src_doc, [MarshalAs(UnmanagedType.LPStr)] string pagerange, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_ImportPages_x64(dest_doc, src_doc, pagerange, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_ImportPages_x86(dest_doc, src_doc, pagerange, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_ImportNPagesToOne
 
@@ -5431,18 +4831,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_ImportNPagesToOne/*'/>
 		public static FPDF_DOCUMENT FPDF_ImportNPagesToOne(FPDF_DOCUMENT src_doc, float output_width, float output_height, uint num_pages_on_x_axis, uint num_pages_on_y_axis)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_ImportNPagesToOne_x64(src_doc, output_width, output_height, num_pages_on_x_axis, num_pages_on_y_axis); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_ImportNPagesToOne_x86(src_doc, output_width, output_height, num_pages_on_x_axis, num_pages_on_y_axis); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_NewXObjectFromPage
 
@@ -5458,18 +4855,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_NewXObjectFromPage/*'/>
 		public static FPDF_XOBJECT FPDF_NewXObjectFromPage(FPDF_DOCUMENT dest_doc, FPDF_DOCUMENT src_doc, int src_page_index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_NewXObjectFromPage_x64(dest_doc, src_doc, src_page_index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_NewXObjectFromPage_x86(dest_doc, src_doc, src_page_index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_CloseXObject
 
@@ -5485,18 +4879,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_CloseXObject/*'/>
 		public static void FPDF_CloseXObject(FPDF_XOBJECT xobject)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDF_CloseXObject_x64(xobject); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDF_CloseXObject_x86(xobject); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_NewFormObjectFromXObject
 
@@ -5512,18 +4903,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_NewFormObjectFromXObject/*'/>
 		public static FPDF_PAGEOBJECT FPDF_NewFormObjectFromXObject(FPDF_XOBJECT xobject)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_NewFormObjectFromXObject_x64(xobject); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_NewFormObjectFromXObject_x86(xobject); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_CopyViewerPreferences
 
@@ -5540,18 +4928,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.CopyViewerPreferencesFrom(PdfDocument)'/>
 		public static bool FPDF_CopyViewerPreferences(FPDF_DOCUMENT dest_doc, FPDF_DOCUMENT src_doc)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_CopyViewerPreferences_x64(dest_doc, src_doc); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_CopyViewerPreferences_x86(dest_doc, src_doc); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_RenderPageBitmapWithColorScheme_Start
 
@@ -5567,18 +4952,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_RenderPageBitmapWithColorScheme_Start/*'/>
 		public static RenderingStatus FPDF_RenderPageBitmapWithColorScheme_Start(FPDF_BITMAP bitmap, FPDF_PAGE page, int start_x, int start_y, int size_x, int size_y, PageOrientations rotate, RenderingFlags flags, ref FPDF_COLORSCHEME color_scheme, IFSDK_PAUSE pause)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_RenderPageBitmapWithColorScheme_Start_x64(bitmap, page, start_x, start_y, size_x, size_y, rotate, flags, ref color_scheme, pause); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_RenderPageBitmapWithColorScheme_Start_x86(bitmap, page, start_x, start_y, size_x, size_y, rotate, flags, ref color_scheme, pause); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_RenderPageBitmap_Start
 
@@ -5594,18 +4976,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_RenderPageBitmap_Start/*'/>
 		public static RenderingStatus FPDF_RenderPageBitmap_Start(FPDF_BITMAP bitmap, FPDF_PAGE page, int start_x, int start_y, int size_x, int size_y, PageOrientations rotate, RenderingFlags flags, IFSDK_PAUSE pause)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_RenderPageBitmap_Start_x64(bitmap, page, start_x, start_y, size_x, size_y, rotate, flags, pause); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_RenderPageBitmap_Start_x86(bitmap, page, start_x, start_y, size_x, size_y, rotate, flags, pause); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_RenderPage_Continue
 
@@ -5621,18 +5000,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_RenderPage_Continue/*'/>
 		public static RenderingStatus FPDF_RenderPage_Continue(FPDF_PAGE page, IFSDK_PAUSE pause)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_RenderPage_Continue_x64(page, pause); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_RenderPage_Continue_x86(page, pause); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_RenderPage_Close
 
@@ -5648,18 +5024,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_RenderPage_Close/*'/>
 		public static void FPDF_RenderPage_Close(FPDF_PAGE page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDF_RenderPage_Close_x64(page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDF_RenderPage_Close_x86(page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_SaveAsCopy
 
@@ -5677,18 +5050,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.Save(Stream, SaveFlags, int)'/>
 		public static bool FPDF_SaveAsCopy(FPDF_DOCUMENT document, FPDF_FILEWRITE fileWrite, SaveFlags flags)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_SaveAsCopy_x64(document, fileWrite, flags); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_SaveAsCopy_x86(document, fileWrite, flags); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_SaveWithVersion
 
@@ -5706,18 +5076,15 @@ namespace PDFiumSharp
 		/// <seealso cref='PdfDocument.Save(Stream, SaveFlags, int)'/>
 		public static bool FPDF_SaveWithVersion(FPDF_DOCUMENT document, FPDF_FILEWRITE fileWrite, SaveFlags flags, int fileVersion)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_SaveWithVersion_x64(document, fileWrite, flags, fileVersion); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_SaveWithVersion_x86(document, fileWrite, flags, fileVersion); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_GetCharIndexFromTextIndex
 
@@ -5733,18 +5100,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_GetCharIndexFromTextIndex/*'/>
 		public static int FPDFText_GetCharIndexFromTextIndex(FPDF_TEXTPAGE text_page, int nTextIndex)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_GetCharIndexFromTextIndex_x64(text_page, nTextIndex); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_GetCharIndexFromTextIndex_x86(text_page, nTextIndex); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_GetTextIndexFromCharIndex
 
@@ -5760,18 +5124,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_GetTextIndexFromCharIndex/*'/>
 		public static int FPDFText_GetTextIndexFromCharIndex(FPDF_TEXTPAGE text_page, int nCharIndex)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_GetTextIndexFromCharIndex_x64(text_page, nCharIndex); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_GetTextIndexFromCharIndex_x86(text_page, nCharIndex); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructTree_GetForPage
 
@@ -5787,18 +5148,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructTree_GetForPage/*'/>
 		public static FPDF_STRUCTTREE FPDF_StructTree_GetForPage(FPDF_PAGE page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructTree_GetForPage_x64(page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructTree_GetForPage_x86(page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructTree_Close
 
@@ -5814,18 +5172,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructTree_Close/*'/>
 		public static void FPDF_StructTree_Close(FPDF_STRUCTTREE struct_tree)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDF_StructTree_Close_x64(struct_tree); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDF_StructTree_Close_x86(struct_tree); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructTree_CountChildren
 
@@ -5841,18 +5196,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructTree_CountChildren/*'/>
 		public static int FPDF_StructTree_CountChildren(FPDF_STRUCTTREE struct_tree)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructTree_CountChildren_x64(struct_tree); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructTree_CountChildren_x86(struct_tree); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructTree_GetChildAtIndex
 
@@ -5868,18 +5220,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructTree_GetChildAtIndex/*'/>
 		public static FPDF_STRUCTELEMENT FPDF_StructTree_GetChildAtIndex(FPDF_STRUCTTREE struct_tree, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructTree_GetChildAtIndex_x64(struct_tree, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructTree_GetChildAtIndex_x86(struct_tree, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_GetAltText
 
@@ -5895,18 +5244,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_GetAltText/*'/>
 		public static ulong FPDF_StructElement_GetAltText(FPDF_STRUCTELEMENT struct_element, ref byte buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetAltText_x64(struct_element, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetAltText_x86(struct_element, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_GetActualText
 
@@ -5922,18 +5268,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_GetActualText/*'/>
 		public static ulong FPDF_StructElement_GetActualText(FPDF_STRUCTELEMENT struct_element, ref byte buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetActualText_x64(struct_element, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetActualText_x86(struct_element, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_GetID
 
@@ -5949,18 +5292,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_GetID/*'/>
 		public static ulong FPDF_StructElement_GetID(FPDF_STRUCTELEMENT struct_element, ref byte buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetID_x64(struct_element, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetID_x86(struct_element, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_GetLang
 
@@ -5976,18 +5316,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_GetLang/*'/>
 		public static ulong FPDF_StructElement_GetLang(FPDF_STRUCTELEMENT struct_element, ref byte buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetLang_x64(struct_element, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetLang_x86(struct_element, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_GetStringAttribute
 
@@ -6003,18 +5340,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_GetStringAttribute/*'/>
 		public static ulong FPDF_StructElement_GetStringAttribute(FPDF_STRUCTELEMENT struct_element, [MarshalAs(UnmanagedType.LPStr)] string attr_name, ref byte buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetStringAttribute_x64(struct_element, attr_name, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetStringAttribute_x86(struct_element, attr_name, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_GetMarkedContentID
 
@@ -6030,18 +5364,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_GetMarkedContentID/*'/>
 		public static int FPDF_StructElement_GetMarkedContentID(FPDF_STRUCTELEMENT struct_element)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetMarkedContentID_x64(struct_element); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetMarkedContentID_x86(struct_element); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_GetType
 
@@ -6057,18 +5388,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_GetType/*'/>
 		public static ulong FPDF_StructElement_GetType(FPDF_STRUCTELEMENT struct_element, ref byte buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetType_x64(struct_element, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetType_x86(struct_element, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_GetObjType
 
@@ -6084,18 +5412,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_GetObjType/*'/>
 		public static ulong FPDF_StructElement_GetObjType(FPDF_STRUCTELEMENT struct_element, ref byte buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetObjType_x64(struct_element, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetObjType_x86(struct_element, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_GetTitle
 
@@ -6111,18 +5436,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_GetTitle/*'/>
 		public static ulong FPDF_StructElement_GetTitle(FPDF_STRUCTELEMENT struct_element, ref byte buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetTitle_x64(struct_element, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetTitle_x86(struct_element, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_CountChildren
 
@@ -6138,18 +5460,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_CountChildren/*'/>
 		public static int FPDF_StructElement_CountChildren(FPDF_STRUCTELEMENT struct_element)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_CountChildren_x64(struct_element); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_CountChildren_x86(struct_element); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_GetChildAtIndex
 
@@ -6165,18 +5484,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_GetChildAtIndex/*'/>
 		public static FPDF_STRUCTELEMENT FPDF_StructElement_GetChildAtIndex(FPDF_STRUCTELEMENT struct_element, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetChildAtIndex_x64(struct_element, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetChildAtIndex_x86(struct_element, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_GetChildMarkedContentID
 
@@ -6192,18 +5508,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_GetChildMarkedContentID/*'/>
 		public static int FPDF_StructElement_GetChildMarkedContentID(FPDF_STRUCTELEMENT struct_element, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetChildMarkedContentID_x64(struct_element, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetChildMarkedContentID_x86(struct_element, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_GetParent
 
@@ -6219,18 +5532,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_GetParent/*'/>
 		public static FPDF_STRUCTELEMENT FPDF_StructElement_GetParent(FPDF_STRUCTELEMENT struct_element)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetParent_x64(struct_element); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetParent_x86(struct_element); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_GetAttributeCount
 
@@ -6246,18 +5556,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_GetAttributeCount/*'/>
 		public static int FPDF_StructElement_GetAttributeCount(FPDF_STRUCTELEMENT struct_element)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetAttributeCount_x64(struct_element); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetAttributeCount_x86(struct_element); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_GetAttributeAtIndex
 
@@ -6273,18 +5580,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_GetAttributeAtIndex/*'/>
 		public static FPDF_STRUCTELEMENT_ATTR FPDF_StructElement_GetAttributeAtIndex(FPDF_STRUCTELEMENT struct_element, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetAttributeAtIndex_x64(struct_element, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetAttributeAtIndex_x86(struct_element, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_Attr_GetCount
 
@@ -6300,18 +5604,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_Attr_GetCount/*'/>
 		public static int FPDF_StructElement_Attr_GetCount(FPDF_STRUCTELEMENT_ATTR struct_attribute)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_Attr_GetCount_x64(struct_attribute); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_Attr_GetCount_x86(struct_attribute); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_Attr_GetName
 
@@ -6327,18 +5628,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_Attr_GetName/*'/>
 		public static bool FPDF_StructElement_Attr_GetName(FPDF_STRUCTELEMENT_ATTR struct_attribute, int index, ref byte buffer, ulong buflen, out ulong out_buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_Attr_GetName_x64(struct_attribute, index, ref buffer, buflen, out out_buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_Attr_GetName_x86(struct_attribute, index, ref buffer, buflen, out out_buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_Attr_GetType
 
@@ -6354,18 +5652,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_Attr_GetType/*'/>
 		public static FPDF_OBJECT_TYPE FPDF_StructElement_Attr_GetType(FPDF_STRUCTELEMENT_ATTR struct_attribute, [MarshalAs(UnmanagedType.LPStr)] string name)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_Attr_GetType_x64(struct_attribute, name); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_Attr_GetType_x86(struct_attribute, name); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_Attr_GetBooleanValue
 
@@ -6381,18 +5676,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_Attr_GetBooleanValue/*'/>
 		public static bool FPDF_StructElement_Attr_GetBooleanValue(FPDF_STRUCTELEMENT_ATTR struct_attribute, [MarshalAs(UnmanagedType.LPStr)] string name, out bool out_value)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_Attr_GetBooleanValue_x64(struct_attribute, name, out out_value); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_Attr_GetBooleanValue_x86(struct_attribute, name, out out_value); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_Attr_GetNumberValue
 
@@ -6408,18 +5700,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_Attr_GetNumberValue/*'/>
 		public static bool FPDF_StructElement_Attr_GetNumberValue(FPDF_STRUCTELEMENT_ATTR struct_attribute, [MarshalAs(UnmanagedType.LPStr)] string name, out float out_value)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_Attr_GetNumberValue_x64(struct_attribute, name, out out_value); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_Attr_GetNumberValue_x86(struct_attribute, name, out out_value); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_Attr_GetStringValue
 
@@ -6435,18 +5724,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_Attr_GetStringValue/*'/>
 		public static bool FPDF_StructElement_Attr_GetStringValue(FPDF_STRUCTELEMENT_ATTR struct_attribute, [MarshalAs(UnmanagedType.LPStr)] string name, ref byte buffer, ulong buflen, out ulong out_buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_Attr_GetStringValue_x64(struct_attribute, name, ref buffer, buflen, out out_buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_Attr_GetStringValue_x86(struct_attribute, name, ref buffer, buflen, out out_buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_Attr_GetBlobValue
 
@@ -6462,18 +5748,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_Attr_GetBlobValue/*'/>
 		public static bool FPDF_StructElement_Attr_GetBlobValue(FPDF_STRUCTELEMENT_ATTR struct_attribute, [MarshalAs(UnmanagedType.LPStr)] string name, ref byte buffer, ulong buflen, out ulong out_buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_Attr_GetBlobValue_x64(struct_attribute, name, ref buffer, buflen, out out_buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_Attr_GetBlobValue_x86(struct_attribute, name, ref buffer, buflen, out out_buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_GetMarkedContentIdCount
 
@@ -6489,18 +5772,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_GetMarkedContentIdCount/*'/>
 		public static int FPDF_StructElement_GetMarkedContentIdCount(FPDF_STRUCTELEMENT struct_element)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetMarkedContentIdCount_x64(struct_element); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetMarkedContentIdCount_x86(struct_element); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_StructElement_GetMarkedContentIdAtIndex
 
@@ -6516,18 +5796,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_StructElement_GetMarkedContentIdAtIndex/*'/>
 		public static int FPDF_StructElement_GetMarkedContentIdAtIndex(FPDF_STRUCTELEMENT struct_element, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetMarkedContentIdAtIndex_x64(struct_element, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_StructElement_GetMarkedContentIdAtIndex_x86(struct_element, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_LoadPage
 
@@ -6543,18 +5820,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_LoadPage/*'/>
 		public static FPDF_TEXTPAGE FPDFText_LoadPage(FPDF_PAGE page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_LoadPage_x64(page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_LoadPage_x86(page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_ClosePage
 
@@ -6570,18 +5844,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_ClosePage/*'/>
 		public static void FPDFText_ClosePage(FPDF_TEXTPAGE text_page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFText_ClosePage_x64(text_page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFText_ClosePage_x86(text_page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_CountChars
 
@@ -6597,18 +5868,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_CountChars/*'/>
 		public static int FPDFText_CountChars(FPDF_TEXTPAGE text_page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_CountChars_x64(text_page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_CountChars_x86(text_page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_GetUnicode
 
@@ -6626,18 +5894,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_GetUnicode/*'/>
 		public static char FPDFText_GetUnicode(FPDF_TEXTPAGE text_page, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_GetUnicode_x64(text_page, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_GetUnicode_x86(text_page, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_IsGenerated
 
@@ -6653,18 +5918,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_IsGenerated/*'/>
 		public static int FPDFText_IsGenerated(FPDF_TEXTPAGE text_page, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_IsGenerated_x64(text_page, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_IsGenerated_x86(text_page, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_IsHyphen
 
@@ -6680,18 +5942,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_IsHyphen/*'/>
 		public static int FPDFText_IsHyphen(FPDF_TEXTPAGE text_page, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_IsHyphen_x64(text_page, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_IsHyphen_x86(text_page, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_HasUnicodeMapError
 
@@ -6707,18 +5966,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_HasUnicodeMapError/*'/>
 		public static int FPDFText_HasUnicodeMapError(FPDF_TEXTPAGE text_page, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_HasUnicodeMapError_x64(text_page, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_HasUnicodeMapError_x86(text_page, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_GetFontSize
 
@@ -6734,18 +5990,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_GetFontSize/*'/>
 		public static double FPDFText_GetFontSize(FPDF_TEXTPAGE text_page, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_GetFontSize_x64(text_page, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_GetFontSize_x86(text_page, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_GetFontInfo
 
@@ -6761,18 +6014,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_GetFontInfo/*'/>
 		public static ulong FPDFText_GetFontInfo(FPDF_TEXTPAGE text_page, int index, ref byte buffer, ulong buflen, out int flags)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_GetFontInfo_x64(text_page, index, ref buffer, buflen, out flags); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_GetFontInfo_x86(text_page, index, ref buffer, buflen, out flags); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_GetFontWeight
 
@@ -6788,18 +6038,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_GetFontWeight/*'/>
 		public static int FPDFText_GetFontWeight(FPDF_TEXTPAGE text_page, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_GetFontWeight_x64(text_page, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_GetFontWeight_x86(text_page, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_GetTextRenderMode
 
@@ -6815,18 +6062,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_GetTextRenderMode/*'/>
 		public static FPDF_TEXT_RENDERMODE FPDFText_GetTextRenderMode(FPDF_TEXTPAGE text_page, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_GetTextRenderMode_x64(text_page, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_GetTextRenderMode_x86(text_page, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_GetFillColor
 
@@ -6842,18 +6086,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_GetFillColor/*'/>
 		public static bool FPDFText_GetFillColor(FPDF_TEXTPAGE text_page, int index, out uint R, out uint G, out uint B, out uint A)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_GetFillColor_x64(text_page, index, out R, out G, out B, out A); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_GetFillColor_x86(text_page, index, out R, out G, out B, out A); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_GetStrokeColor
 
@@ -6869,18 +6110,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_GetStrokeColor/*'/>
 		public static bool FPDFText_GetStrokeColor(FPDF_TEXTPAGE text_page, int index, out uint R, out uint G, out uint B, out uint A)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_GetStrokeColor_x64(text_page, index, out R, out G, out B, out A); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_GetStrokeColor_x86(text_page, index, out R, out G, out B, out A); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_GetCharAngle
 
@@ -6896,18 +6134,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_GetCharAngle/*'/>
 		public static float FPDFText_GetCharAngle(FPDF_TEXTPAGE text_page, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_GetCharAngle_x64(text_page, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_GetCharAngle_x86(text_page, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_GetCharBox
 
@@ -6923,18 +6158,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_GetCharBox/*'/>
 		public static bool FPDFText_GetCharBox(FPDF_TEXTPAGE text_page, int index, out double left, out double right, out double bottom, out double top)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_GetCharBox_x64(text_page, index, out left, out right, out bottom, out top); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_GetCharBox_x86(text_page, index, out left, out right, out bottom, out top); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_GetLooseCharBox
 
@@ -6950,18 +6182,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_GetLooseCharBox/*'/>
 		public static bool FPDFText_GetLooseCharBox(FPDF_TEXTPAGE text_page, int index, FS_RECTF rect)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_GetLooseCharBox_x64(text_page, index, rect); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_GetLooseCharBox_x86(text_page, index, rect); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_GetMatrix
 
@@ -6977,18 +6206,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_GetMatrix/*'/>
 		public static bool FPDFText_GetMatrix(FPDF_TEXTPAGE text_page, int index, FS_MATRIX matrix)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_GetMatrix_x64(text_page, index, matrix); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_GetMatrix_x86(text_page, index, matrix); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_GetCharOrigin
 
@@ -7004,18 +6230,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_GetCharOrigin/*'/>
 		public static bool FPDFText_GetCharOrigin(FPDF_TEXTPAGE text_page, int index, out double x, out double y)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_GetCharOrigin_x64(text_page, index, out x, out y); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_GetCharOrigin_x86(text_page, index, out x, out y); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_GetCharIndexAtPos
 
@@ -7031,18 +6254,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_GetCharIndexAtPos/*'/>
 		public static int FPDFText_GetCharIndexAtPos(FPDF_TEXTPAGE text_page, double x, double y, double xTolerance, double yTolerance)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_GetCharIndexAtPos_x64(text_page, x, y, xTolerance, yTolerance); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_GetCharIndexAtPos_x86(text_page, x, y, xTolerance, yTolerance); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_GetText
 
@@ -7058,18 +6278,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_GetText/*'/>
 		private static int FPDFText_GetText(FPDF_TEXTPAGE text_page, int start_index, int count, ref byte result)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_GetText_x64(text_page, start_index, count, ref result); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_GetText_x86(text_page, start_index, count, ref result); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_CountRects
 
@@ -7085,18 +6302,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_CountRects/*'/>
 		public static int FPDFText_CountRects(FPDF_TEXTPAGE text_page, int start_index, int count)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_CountRects_x64(text_page, start_index, count); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_CountRects_x86(text_page, start_index, count); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_GetRect
 
@@ -7112,18 +6326,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_GetRect/*'/>
 		public static bool FPDFText_GetRect(FPDF_TEXTPAGE text_page, int rect_index, out double left, out double top, out double right, out double bottom)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_GetRect_x64(text_page, rect_index, out left, out top, out right, out bottom); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_GetRect_x86(text_page, rect_index, out left, out top, out right, out bottom); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_GetBoundedText
 
@@ -7139,18 +6350,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_GetBoundedText/*'/>
 		private static int FPDFText_GetBoundedText(FPDF_TEXTPAGE text_page, double left, double top, double right, double bottom, ref byte buffer, int buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_GetBoundedText_x64(text_page, left, top, right, bottom, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_GetBoundedText_x86(text_page, left, top, right, bottom, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_FindStart
 
@@ -7166,18 +6374,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_FindStart/*'/>
 		public static FPDF_SCHHANDLE FPDFText_FindStart(FPDF_TEXTPAGE text_page, [MarshalAs(UnmanagedType.LPWStr)] string findwhat, SearchFlags flags, int start_index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_FindStart_x64(text_page, findwhat, flags, start_index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_FindStart_x86(text_page, findwhat, flags, start_index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_FindNext
 
@@ -7193,18 +6398,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_FindNext/*'/>
 		public static bool FPDFText_FindNext(FPDF_SCHHANDLE handle)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_FindNext_x64(handle); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_FindNext_x86(handle); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_FindPrev
 
@@ -7220,18 +6422,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_FindPrev/*'/>
 		public static bool FPDFText_FindPrev(FPDF_SCHHANDLE handle)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_FindPrev_x64(handle); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_FindPrev_x86(handle); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_GetSchResultIndex
 
@@ -7247,18 +6446,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_GetSchResultIndex/*'/>
 		public static int FPDFText_GetSchResultIndex(FPDF_SCHHANDLE handle)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_GetSchResultIndex_x64(handle); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_GetSchResultIndex_x86(handle); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_GetSchCount
 
@@ -7274,18 +6470,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_GetSchCount/*'/>
 		public static int FPDFText_GetSchCount(FPDF_SCHHANDLE handle)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFText_GetSchCount_x64(handle); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFText_GetSchCount_x86(handle); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFText_FindClose
 
@@ -7301,18 +6494,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFText_FindClose/*'/>
 		public static void FPDFText_FindClose(FPDF_SCHHANDLE handle)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFText_FindClose_x64(handle); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFText_FindClose_x86(handle); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFLink_LoadWebLinks
 
@@ -7328,18 +6518,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFLink_LoadWebLinks/*'/>
 		public static FPDF_PAGELINK FPDFLink_LoadWebLinks(FPDF_TEXTPAGE text_page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFLink_LoadWebLinks_x64(text_page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFLink_LoadWebLinks_x86(text_page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFLink_CountWebLinks
 
@@ -7355,18 +6542,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFLink_CountWebLinks/*'/>
 		public static int FPDFLink_CountWebLinks(FPDF_PAGELINK link_page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFLink_CountWebLinks_x64(link_page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFLink_CountWebLinks_x86(link_page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFLink_GetURL
 
@@ -7382,18 +6566,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFLink_GetURL/*'/>
 		private static int FPDFLink_GetURL(FPDF_PAGELINK link_page, int link_index, ref byte buffer, int buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFLink_GetURL_x64(link_page, link_index, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFLink_GetURL_x86(link_page, link_index, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFLink_CountRects
 
@@ -7409,18 +6590,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFLink_CountRects/*'/>
 		public static int FPDFLink_CountRects(FPDF_PAGELINK link_page, int link_index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFLink_CountRects_x64(link_page, link_index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFLink_CountRects_x86(link_page, link_index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFLink_GetRect
 
@@ -7436,18 +6614,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFLink_GetRect/*'/>
 		public static bool FPDFLink_GetRect(FPDF_PAGELINK link_page, int link_index, int rect_index, out double left, out double top, out double right, out double bottom)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFLink_GetRect_x64(link_page, link_index, rect_index, out left, out top, out right, out bottom); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFLink_GetRect_x86(link_page, link_index, rect_index, out left, out top, out right, out bottom); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFLink_GetTextRange
 
@@ -7463,18 +6638,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFLink_GetTextRange/*'/>
 		public static bool FPDFLink_GetTextRange(FPDF_PAGELINK link_page, int link_index, out int start_char_index, out int char_count)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFLink_GetTextRange_x64(link_page, link_index, out start_char_index, out char_count); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFLink_GetTextRange_x86(link_page, link_index, out start_char_index, out char_count); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFLink_CloseWebLinks
 
@@ -7490,18 +6662,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFLink_CloseWebLinks/*'/>
 		public static void FPDFLink_CloseWebLinks(FPDF_PAGELINK link_page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFLink_CloseWebLinks_x64(link_page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFLink_CloseWebLinks_x86(link_page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_SetMediaBox
 
@@ -7517,18 +6686,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_SetMediaBox/*'/>
 		public static void FPDFPage_SetMediaBox(FPDF_PAGE page, float left, float bottom, float right, float top)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFPage_SetMediaBox_x64(page, left, bottom, right, top); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFPage_SetMediaBox_x86(page, left, bottom, right, top); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_SetCropBox
 
@@ -7544,18 +6710,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_SetCropBox/*'/>
 		public static void FPDFPage_SetCropBox(FPDF_PAGE page, float left, float bottom, float right, float top)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFPage_SetCropBox_x64(page, left, bottom, right, top); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFPage_SetCropBox_x86(page, left, bottom, right, top); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_SetBleedBox
 
@@ -7571,18 +6734,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_SetBleedBox/*'/>
 		public static void FPDFPage_SetBleedBox(FPDF_PAGE page, float left, float bottom, float right, float top)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFPage_SetBleedBox_x64(page, left, bottom, right, top); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFPage_SetBleedBox_x86(page, left, bottom, right, top); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_SetTrimBox
 
@@ -7598,18 +6758,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_SetTrimBox/*'/>
 		public static void FPDFPage_SetTrimBox(FPDF_PAGE page, float left, float bottom, float right, float top)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFPage_SetTrimBox_x64(page, left, bottom, right, top); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFPage_SetTrimBox_x86(page, left, bottom, right, top); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_SetArtBox
 
@@ -7625,18 +6782,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_SetArtBox/*'/>
 		public static void FPDFPage_SetArtBox(FPDF_PAGE page, float left, float bottom, float right, float top)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFPage_SetArtBox_x64(page, left, bottom, right, top); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFPage_SetArtBox_x86(page, left, bottom, right, top); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_GetMediaBox
 
@@ -7652,18 +6806,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_GetMediaBox/*'/>
 		public static bool FPDFPage_GetMediaBox(FPDF_PAGE page, out float left, out float bottom, out float right, out float top)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetMediaBox_x64(page, out left, out bottom, out right, out top); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetMediaBox_x86(page, out left, out bottom, out right, out top); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_GetCropBox
 
@@ -7679,18 +6830,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_GetCropBox/*'/>
 		public static bool FPDFPage_GetCropBox(FPDF_PAGE page, out float left, out float bottom, out float right, out float top)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetCropBox_x64(page, out left, out bottom, out right, out top); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetCropBox_x86(page, out left, out bottom, out right, out top); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_GetBleedBox
 
@@ -7706,18 +6854,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_GetBleedBox/*'/>
 		public static bool FPDFPage_GetBleedBox(FPDF_PAGE page, out float left, out float bottom, out float right, out float top)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetBleedBox_x64(page, out left, out bottom, out right, out top); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetBleedBox_x86(page, out left, out bottom, out right, out top); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_GetTrimBox
 
@@ -7733,18 +6878,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_GetTrimBox/*'/>
 		public static bool FPDFPage_GetTrimBox(FPDF_PAGE page, out float left, out float bottom, out float right, out float top)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetTrimBox_x64(page, out left, out bottom, out right, out top); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetTrimBox_x86(page, out left, out bottom, out right, out top); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_GetArtBox
 
@@ -7760,18 +6902,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_GetArtBox/*'/>
 		public static bool FPDFPage_GetArtBox(FPDF_PAGE page, out float left, out float bottom, out float right, out float top)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetArtBox_x64(page, out left, out bottom, out right, out top); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetArtBox_x86(page, out left, out bottom, out right, out top); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_TransFormWithClip
 
@@ -7787,18 +6926,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_TransFormWithClip/*'/>
 		public static bool FPDFPage_TransFormWithClip(FPDF_PAGE page, [MarshalAs(UnmanagedType.LPStruct)] FS_MATRIX matrix, [MarshalAs(UnmanagedType.LPStruct)] FS_RECTF clipRect)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_TransFormWithClip_x64(page, matrix, clipRect); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_TransFormWithClip_x86(page, matrix, clipRect); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_TransformClipPath
 
@@ -7814,18 +6950,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_TransformClipPath/*'/>
 		public static void FPDFPageObj_TransformClipPath(FPDF_PAGEOBJECT page_object, double a, double b, double c, double d, double e, double f)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFPageObj_TransformClipPath_x64(page_object, a, b, c, d, e, f); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFPageObj_TransformClipPath_x86(page_object, a, b, c, d, e, f); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPageObj_GetClipPath
 
@@ -7841,18 +6974,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPageObj_GetClipPath/*'/>
 		public static FPDF_CLIPPATH FPDFPageObj_GetClipPath(FPDF_PAGEOBJECT page_object)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetClipPath_x64(page_object); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPageObj_GetClipPath_x86(page_object); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFClipPath_CountPaths
 
@@ -7868,18 +6998,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFClipPath_CountPaths/*'/>
 		public static int FPDFClipPath_CountPaths(FPDF_CLIPPATH clip_path)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFClipPath_CountPaths_x64(clip_path); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFClipPath_CountPaths_x86(clip_path); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFClipPath_CountPathSegments
 
@@ -7895,18 +7022,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFClipPath_CountPathSegments/*'/>
 		public static int FPDFClipPath_CountPathSegments(FPDF_CLIPPATH clip_path, int path_index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFClipPath_CountPathSegments_x64(clip_path, path_index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFClipPath_CountPathSegments_x86(clip_path, path_index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFClipPath_GetPathSegment
 
@@ -7922,18 +7046,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFClipPath_GetPathSegment/*'/>
 		public static FPDF_PATHSEGMENT FPDFClipPath_GetPathSegment(FPDF_CLIPPATH clip_path, int path_index, int segment_index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFClipPath_GetPathSegment_x64(clip_path, path_index, segment_index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFClipPath_GetPathSegment_x86(clip_path, path_index, segment_index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_CreateClipPath
 
@@ -7949,18 +7070,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_CreateClipPath/*'/>
 		public static FPDF_CLIPPATH FPDF_CreateClipPath(float left, float bottom, float right, float top)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_CreateClipPath_x64(left, bottom, right, top); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_CreateClipPath_x86(left, bottom, right, top); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_DestroyClipPath
 
@@ -7976,18 +7094,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_DestroyClipPath/*'/>
 		public static void FPDF_DestroyClipPath(FPDF_CLIPPATH clipPath)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDF_DestroyClipPath_x64(clipPath); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDF_DestroyClipPath_x86(clipPath); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_InsertClipPath
 
@@ -8003,18 +7118,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_InsertClipPath/*'/>
 		public static void FPDFPage_InsertClipPath(FPDF_PAGE page, FPDF_CLIPPATH clipPath)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFPage_InsertClipPath_x64(page, clipPath); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFPage_InsertClipPath_x86(page, clipPath); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_IsSupportedSubtype
 
@@ -8030,18 +7142,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_IsSupportedSubtype/*'/>
 		public static bool FPDFAnnot_IsSupportedSubtype(FPDF_ANNOTATION_SUBTYPE subtype)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_IsSupportedSubtype_x64(subtype); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_IsSupportedSubtype_x86(subtype); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_CreateAnnot
 
@@ -8057,18 +7166,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_CreateAnnot/*'/>
 		public static FPDF_ANNOTATION FPDFPage_CreateAnnot(FPDF_PAGE page, FPDF_ANNOTATION_SUBTYPE subtype)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_CreateAnnot_x64(page, subtype); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_CreateAnnot_x86(page, subtype); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_GetAnnotCount
 
@@ -8084,18 +7190,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_GetAnnotCount/*'/>
 		public static int FPDFPage_GetAnnotCount(FPDF_PAGE page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetAnnotCount_x64(page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetAnnotCount_x86(page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_GetAnnot
 
@@ -8111,18 +7214,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_GetAnnot/*'/>
 		public static FPDF_ANNOTATION FPDFPage_GetAnnot(FPDF_PAGE page, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetAnnot_x64(page, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetAnnot_x86(page, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_GetAnnotIndex
 
@@ -8138,18 +7238,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_GetAnnotIndex/*'/>
 		public static int FPDFPage_GetAnnotIndex(FPDF_PAGE page, FPDF_ANNOTATION annot)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetAnnotIndex_x64(page, annot); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetAnnotIndex_x86(page, annot); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_CloseAnnot
 
@@ -8165,18 +7262,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_CloseAnnot/*'/>
 		public static void FPDFPage_CloseAnnot(FPDF_ANNOTATION annot)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFPage_CloseAnnot_x64(annot); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFPage_CloseAnnot_x86(annot); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_RemoveAnnot
 
@@ -8192,18 +7286,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_RemoveAnnot/*'/>
 		public static bool FPDFPage_RemoveAnnot(FPDF_PAGE page, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_RemoveAnnot_x64(page, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_RemoveAnnot_x86(page, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetSubtype
 
@@ -8219,18 +7310,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetSubtype/*'/>
 		public static FPDF_ANNOTATION_SUBTYPE FPDFAnnot_GetSubtype(FPDF_ANNOTATION annot)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetSubtype_x64(annot); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetSubtype_x86(annot); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_IsObjectSupportedSubtype
 
@@ -8246,18 +7334,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_IsObjectSupportedSubtype/*'/>
 		public static bool FPDFAnnot_IsObjectSupportedSubtype(FPDF_ANNOTATION_SUBTYPE subtype)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_IsObjectSupportedSubtype_x64(subtype); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_IsObjectSupportedSubtype_x86(subtype); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_UpdateObject
 
@@ -8273,18 +7358,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_UpdateObject/*'/>
 		public static bool FPDFAnnot_UpdateObject(FPDF_ANNOTATION annot, FPDF_PAGEOBJECT obj)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_UpdateObject_x64(annot, obj); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_UpdateObject_x86(annot, obj); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_AddInkStroke
 
@@ -8300,18 +7382,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_AddInkStroke/*'/>
 		public static int FPDFAnnot_AddInkStroke(FPDF_ANNOTATION annot, [MarshalAs(UnmanagedType.LPStruct)] FS_POINTF points, uint point_count)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_AddInkStroke_x64(annot, points, point_count); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_AddInkStroke_x86(annot, points, point_count); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_RemoveInkList
 
@@ -8327,18 +7406,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_RemoveInkList/*'/>
 		public static bool FPDFAnnot_RemoveInkList(FPDF_ANNOTATION annot)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_RemoveInkList_x64(annot); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_RemoveInkList_x86(annot); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_AppendObject
 
@@ -8354,18 +7430,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_AppendObject/*'/>
 		public static bool FPDFAnnot_AppendObject(FPDF_ANNOTATION annot, FPDF_PAGEOBJECT obj)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_AppendObject_x64(annot, obj); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_AppendObject_x86(annot, obj); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetObjectCount
 
@@ -8381,18 +7454,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetObjectCount/*'/>
 		public static int FPDFAnnot_GetObjectCount(FPDF_ANNOTATION annot)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetObjectCount_x64(annot); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetObjectCount_x86(annot); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetObject
 
@@ -8408,18 +7478,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetObject/*'/>
 		public static FPDF_PAGEOBJECT FPDFAnnot_GetObject(FPDF_ANNOTATION annot, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetObject_x64(annot, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetObject_x86(annot, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_RemoveObject
 
@@ -8435,18 +7502,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_RemoveObject/*'/>
 		public static bool FPDFAnnot_RemoveObject(FPDF_ANNOTATION annot, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_RemoveObject_x64(annot, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_RemoveObject_x86(annot, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_SetColor
 
@@ -8462,18 +7526,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_SetColor/*'/>
 		public static bool FPDFAnnot_SetColor(FPDF_ANNOTATION annot, FPDFANNOT_COLORTYPE type, uint R, uint G, uint B, uint A)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_SetColor_x64(annot, type, R, G, B, A); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_SetColor_x86(annot, type, R, G, B, A); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetColor
 
@@ -8489,18 +7550,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetColor/*'/>
 		public static bool FPDFAnnot_GetColor(FPDF_ANNOTATION annot, FPDFANNOT_COLORTYPE type, out uint R, out uint G, out uint B, out uint A)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetColor_x64(annot, type, out R, out G, out B, out A); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetColor_x86(annot, type, out R, out G, out B, out A); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_HasAttachmentPoints
 
@@ -8516,18 +7574,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_HasAttachmentPoints/*'/>
 		public static bool FPDFAnnot_HasAttachmentPoints(FPDF_ANNOTATION annot)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_HasAttachmentPoints_x64(annot); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_HasAttachmentPoints_x86(annot); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_SetAttachmentPoints
 
@@ -8543,18 +7598,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_SetAttachmentPoints/*'/>
 		public static bool FPDFAnnot_SetAttachmentPoints(FPDF_ANNOTATION annot, uint quad_index, [MarshalAs(UnmanagedType.LPStruct)] FS_QUADPOINTSF quad_points)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_SetAttachmentPoints_x64(annot, quad_index, quad_points); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_SetAttachmentPoints_x86(annot, quad_index, quad_points); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_AppendAttachmentPoints
 
@@ -8570,18 +7622,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_AppendAttachmentPoints/*'/>
 		public static bool FPDFAnnot_AppendAttachmentPoints(FPDF_ANNOTATION annot, [MarshalAs(UnmanagedType.LPStruct)] FS_QUADPOINTSF quad_points)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_AppendAttachmentPoints_x64(annot, quad_points); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_AppendAttachmentPoints_x86(annot, quad_points); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_CountAttachmentPoints
 
@@ -8597,18 +7646,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_CountAttachmentPoints/*'/>
 		public static uint FPDFAnnot_CountAttachmentPoints(FPDF_ANNOTATION annot)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_CountAttachmentPoints_x64(annot); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_CountAttachmentPoints_x86(annot); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetAttachmentPoints
 
@@ -8624,18 +7670,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetAttachmentPoints/*'/>
 		public static bool FPDFAnnot_GetAttachmentPoints(FPDF_ANNOTATION annot, uint quad_index, FS_QUADPOINTSF quad_points)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetAttachmentPoints_x64(annot, quad_index, quad_points); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetAttachmentPoints_x86(annot, quad_index, quad_points); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_SetRect
 
@@ -8651,18 +7694,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_SetRect/*'/>
 		public static bool FPDFAnnot_SetRect(FPDF_ANNOTATION annot, [MarshalAs(UnmanagedType.LPStruct)] FS_RECTF rect)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_SetRect_x64(annot, rect); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_SetRect_x86(annot, rect); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetRect
 
@@ -8678,18 +7718,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetRect/*'/>
 		public static bool FPDFAnnot_GetRect(FPDF_ANNOTATION annot, FS_RECTF rect)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetRect_x64(annot, rect); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetRect_x86(annot, rect); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetVertices
 
@@ -8705,18 +7742,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetVertices/*'/>
 		public static ulong FPDFAnnot_GetVertices(FPDF_ANNOTATION annot, FS_POINTF buffer, ulong length)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetVertices_x64(annot, buffer, length); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetVertices_x86(annot, buffer, length); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetInkListCount
 
@@ -8732,18 +7766,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetInkListCount/*'/>
 		public static ulong FPDFAnnot_GetInkListCount(FPDF_ANNOTATION annot)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetInkListCount_x64(annot); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetInkListCount_x86(annot); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetInkListPath
 
@@ -8759,18 +7790,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetInkListPath/*'/>
 		public static ulong FPDFAnnot_GetInkListPath(FPDF_ANNOTATION annot, ulong path_index, FS_POINTF buffer, ulong length)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetInkListPath_x64(annot, path_index, buffer, length); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetInkListPath_x86(annot, path_index, buffer, length); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetLine
 
@@ -8786,18 +7814,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetLine/*'/>
 		public static bool FPDFAnnot_GetLine(FPDF_ANNOTATION annot, FS_POINTF start, FS_POINTF end)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetLine_x64(annot, start, end); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetLine_x86(annot, start, end); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_SetBorder
 
@@ -8813,18 +7838,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_SetBorder/*'/>
 		public static bool FPDFAnnot_SetBorder(FPDF_ANNOTATION annot, float horizontal_radius, float vertical_radius, float border_width)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_SetBorder_x64(annot, horizontal_radius, vertical_radius, border_width); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_SetBorder_x86(annot, horizontal_radius, vertical_radius, border_width); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetBorder
 
@@ -8840,18 +7862,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetBorder/*'/>
 		public static bool FPDFAnnot_GetBorder(FPDF_ANNOTATION annot, out float horizontal_radius, out float vertical_radius, out float border_width)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetBorder_x64(annot, out horizontal_radius, out vertical_radius, out border_width); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetBorder_x86(annot, out horizontal_radius, out vertical_radius, out border_width); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetFormAdditionalActionJavaScript
 
@@ -8867,18 +7886,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetFormAdditionalActionJavaScript/*'/>
 		public static ulong FPDFAnnot_GetFormAdditionalActionJavaScript(FPDF_FORMHANDLE hHandle, FPDF_ANNOTATION annot, int evnt, out FPDF_WCHAR buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFormAdditionalActionJavaScript_x64(hHandle, annot, evnt, out buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFormAdditionalActionJavaScript_x86(hHandle, annot, evnt, out buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_HasKey
 
@@ -8894,18 +7910,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_HasKey/*'/>
 		public static bool FPDFAnnot_HasKey(FPDF_ANNOTATION annot, [MarshalAs(UnmanagedType.LPStr)] string key)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_HasKey_x64(annot, key); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_HasKey_x86(annot, key); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetValueType
 
@@ -8921,18 +7934,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetValueType/*'/>
 		public static FPDF_OBJECT_TYPE FPDFAnnot_GetValueType(FPDF_ANNOTATION annot, [MarshalAs(UnmanagedType.LPStr)] string key)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetValueType_x64(annot, key); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetValueType_x86(annot, key); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_SetStringValue
 
@@ -8948,18 +7958,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_SetStringValue/*'/>
 		public static bool FPDFAnnot_SetStringValue(FPDF_ANNOTATION annot, [MarshalAs(UnmanagedType.LPStr)] string key, [MarshalAs(UnmanagedType.LPWStr)] string value)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_SetStringValue_x64(annot, key, value); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_SetStringValue_x86(annot, key, value); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetStringValue
 
@@ -8975,18 +7982,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetStringValue/*'/>
 		public static ulong FPDFAnnot_GetStringValue(FPDF_ANNOTATION annot, [MarshalAs(UnmanagedType.LPStr)] string key, out FPDF_WCHAR buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetStringValue_x64(annot, key, out buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetStringValue_x86(annot, key, out buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetNumberValue
 
@@ -9002,18 +8006,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetNumberValue/*'/>
 		public static bool FPDFAnnot_GetNumberValue(FPDF_ANNOTATION annot, [MarshalAs(UnmanagedType.LPStr)] string key, out float value)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetNumberValue_x64(annot, key, out value); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetNumberValue_x86(annot, key, out value); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_SetAP
 
@@ -9029,18 +8030,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_SetAP/*'/>
 		public static bool FPDFAnnot_SetAP(FPDF_ANNOTATION annot, FPDF_ANNOT_APPEARANCEMODE appearanceMode, [MarshalAs(UnmanagedType.LPWStr)] string value)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_SetAP_x64(annot, appearanceMode, value); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_SetAP_x86(annot, appearanceMode, value); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetAP
 
@@ -9056,18 +8054,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetAP/*'/>
 		public static ulong FPDFAnnot_GetAP(FPDF_ANNOTATION annot, FPDF_ANNOT_APPEARANCEMODE appearanceMode, out FPDF_WCHAR buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetAP_x64(annot, appearanceMode, out buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetAP_x86(annot, appearanceMode, out buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetLinkedAnnot
 
@@ -9083,18 +8078,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetLinkedAnnot/*'/>
 		public static FPDF_ANNOTATION FPDFAnnot_GetLinkedAnnot(FPDF_ANNOTATION annot, [MarshalAs(UnmanagedType.LPStr)] string key)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetLinkedAnnot_x64(annot, key); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetLinkedAnnot_x86(annot, key); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetFlags
 
@@ -9110,18 +8102,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetFlags/*'/>
 		public static int FPDFAnnot_GetFlags(FPDF_ANNOTATION annot)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFlags_x64(annot); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFlags_x86(annot); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_SetFlags
 
@@ -9137,18 +8126,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_SetFlags/*'/>
 		public static bool FPDFAnnot_SetFlags(FPDF_ANNOTATION annot, int flags)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_SetFlags_x64(annot, flags); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_SetFlags_x86(annot, flags); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetFormFieldFlags
 
@@ -9164,18 +8150,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetFormFieldFlags/*'/>
 		public static int FPDFAnnot_GetFormFieldFlags(FPDF_FORMHANDLE handle, FPDF_ANNOTATION annot)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFormFieldFlags_x64(handle, annot); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFormFieldFlags_x86(handle, annot); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetFormFieldAtPoint
 
@@ -9191,18 +8174,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetFormFieldAtPoint/*'/>
 		public static FPDF_ANNOTATION FPDFAnnot_GetFormFieldAtPoint(FPDF_FORMHANDLE hHandle, FPDF_PAGE page, [MarshalAs(UnmanagedType.LPStruct)] FS_POINTF point)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFormFieldAtPoint_x64(hHandle, page, point); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFormFieldAtPoint_x86(hHandle, page, point); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetFormFieldName
 
@@ -9218,18 +8198,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetFormFieldName/*'/>
 		public static ulong FPDFAnnot_GetFormFieldName(FPDF_FORMHANDLE hHandle, FPDF_ANNOTATION annot, out FPDF_WCHAR buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFormFieldName_x64(hHandle, annot, out buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFormFieldName_x86(hHandle, annot, out buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetFormFieldAlternateName
 
@@ -9245,18 +8222,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetFormFieldAlternateName/*'/>
 		public static ulong FPDFAnnot_GetFormFieldAlternateName(FPDF_FORMHANDLE hHandle, FPDF_ANNOTATION annot, out FPDF_WCHAR buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFormFieldAlternateName_x64(hHandle, annot, out buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFormFieldAlternateName_x86(hHandle, annot, out buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetFormFieldType
 
@@ -9272,18 +8246,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetFormFieldType/*'/>
 		public static int FPDFAnnot_GetFormFieldType(FPDF_FORMHANDLE hHandle, FPDF_ANNOTATION annot)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFormFieldType_x64(hHandle, annot); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFormFieldType_x86(hHandle, annot); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetFormFieldValue
 
@@ -9299,18 +8270,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetFormFieldValue/*'/>
 		public static ulong FPDFAnnot_GetFormFieldValue(FPDF_FORMHANDLE hHandle, FPDF_ANNOTATION annot, out FPDF_WCHAR buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFormFieldValue_x64(hHandle, annot, out buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFormFieldValue_x86(hHandle, annot, out buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetOptionCount
 
@@ -9326,18 +8294,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetOptionCount/*'/>
 		public static int FPDFAnnot_GetOptionCount(FPDF_FORMHANDLE hHandle, FPDF_ANNOTATION annot)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetOptionCount_x64(hHandle, annot); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetOptionCount_x86(hHandle, annot); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetOptionLabel
 
@@ -9353,18 +8318,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetOptionLabel/*'/>
 		public static ulong FPDFAnnot_GetOptionLabel(FPDF_FORMHANDLE hHandle, FPDF_ANNOTATION annot, int index, out FPDF_WCHAR buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetOptionLabel_x64(hHandle, annot, index, out buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetOptionLabel_x86(hHandle, annot, index, out buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_IsOptionSelected
 
@@ -9380,18 +8342,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_IsOptionSelected/*'/>
 		public static bool FPDFAnnot_IsOptionSelected(FPDF_FORMHANDLE handle, FPDF_ANNOTATION annot, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_IsOptionSelected_x64(handle, annot, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_IsOptionSelected_x86(handle, annot, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetFontSize
 
@@ -9407,18 +8366,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetFontSize/*'/>
 		public static bool FPDFAnnot_GetFontSize(FPDF_FORMHANDLE hHandle, FPDF_ANNOTATION annot, out float value)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFontSize_x64(hHandle, annot, out value); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFontSize_x86(hHandle, annot, out value); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_IsChecked
 
@@ -9434,18 +8390,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_IsChecked/*'/>
 		public static bool FPDFAnnot_IsChecked(FPDF_FORMHANDLE hHandle, FPDF_ANNOTATION annot)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_IsChecked_x64(hHandle, annot); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_IsChecked_x86(hHandle, annot); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_SetFocusableSubtypes
 
@@ -9461,18 +8414,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_SetFocusableSubtypes/*'/>
 		public static bool FPDFAnnot_SetFocusableSubtypes(FPDF_FORMHANDLE hHandle, ref FPDF_ANNOTATION_SUBTYPE subtypes, uint count)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_SetFocusableSubtypes_x64(hHandle, ref subtypes, count); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_SetFocusableSubtypes_x86(hHandle, ref subtypes, count); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetFocusableSubtypesCount
 
@@ -9488,18 +8438,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetFocusableSubtypesCount/*'/>
 		public static int FPDFAnnot_GetFocusableSubtypesCount(FPDF_FORMHANDLE hHandle)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFocusableSubtypesCount_x64(hHandle); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFocusableSubtypesCount_x86(hHandle); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetFocusableSubtypes
 
@@ -9515,18 +8462,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetFocusableSubtypes/*'/>
 		public static bool FPDFAnnot_GetFocusableSubtypes(FPDF_FORMHANDLE hHandle, out FPDF_ANNOTATION_SUBTYPE subtypes, uint count)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFocusableSubtypes_x64(hHandle, out subtypes, count); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFocusableSubtypes_x86(hHandle, out subtypes, count); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetLink
 
@@ -9542,18 +8486,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetLink/*'/>
 		public static FPDF_LINK FPDFAnnot_GetLink(FPDF_ANNOTATION annot)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetLink_x64(annot); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetLink_x86(annot); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetFormControlCount
 
@@ -9569,18 +8510,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetFormControlCount/*'/>
 		public static int FPDFAnnot_GetFormControlCount(FPDF_FORMHANDLE hHandle, FPDF_ANNOTATION annot)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFormControlCount_x64(hHandle, annot); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFormControlCount_x86(hHandle, annot); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetFormControlIndex
 
@@ -9596,18 +8534,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetFormControlIndex/*'/>
 		public static int FPDFAnnot_GetFormControlIndex(FPDF_FORMHANDLE hHandle, FPDF_ANNOTATION annot)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFormControlIndex_x64(hHandle, annot); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFormControlIndex_x86(hHandle, annot); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_GetFormFieldExportValue
 
@@ -9623,18 +8558,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_GetFormFieldExportValue/*'/>
 		public static ulong FPDFAnnot_GetFormFieldExportValue(FPDF_FORMHANDLE hHandle, FPDF_ANNOTATION annot, out FPDF_WCHAR buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFormFieldExportValue_x64(hHandle, annot, out buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_GetFormFieldExportValue_x86(hHandle, annot, out buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAnnot_SetURI
 
@@ -9650,18 +8582,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAnnot_SetURI/*'/>
 		public static bool FPDFAnnot_SetURI(FPDF_ANNOTATION annot, ref char uri)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_SetURI_x64(annot, ref uri); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAnnot_SetURI_x86(annot, ref uri); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFDoc_GetAttachmentCount
 
@@ -9677,18 +8606,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFDoc_GetAttachmentCount/*'/>
 		public static int FPDFDoc_GetAttachmentCount(FPDF_DOCUMENT document)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFDoc_GetAttachmentCount_x64(document); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFDoc_GetAttachmentCount_x86(document); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFDoc_AddAttachment
 
@@ -9704,18 +8630,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFDoc_AddAttachment/*'/>
 		public static FPDF_ATTACHMENT FPDFDoc_AddAttachment(FPDF_DOCUMENT document, [MarshalAs(UnmanagedType.LPWStr)] string name)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFDoc_AddAttachment_x64(document, name); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFDoc_AddAttachment_x86(document, name); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFDoc_GetAttachment
 
@@ -9731,18 +8654,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFDoc_GetAttachment/*'/>
 		public static FPDF_ATTACHMENT FPDFDoc_GetAttachment(FPDF_DOCUMENT document, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFDoc_GetAttachment_x64(document, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFDoc_GetAttachment_x86(document, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFDoc_DeleteAttachment
 
@@ -9758,18 +8678,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFDoc_DeleteAttachment/*'/>
 		public static bool FPDFDoc_DeleteAttachment(FPDF_DOCUMENT document, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFDoc_DeleteAttachment_x64(document, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFDoc_DeleteAttachment_x86(document, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAttachment_GetName
 
@@ -9785,18 +8702,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAttachment_GetName/*'/>
 		public static ulong FPDFAttachment_GetName(FPDF_ATTACHMENT attachment, out FPDF_WCHAR buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAttachment_GetName_x64(attachment, out buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAttachment_GetName_x86(attachment, out buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAttachment_HasKey
 
@@ -9812,18 +8726,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAttachment_HasKey/*'/>
 		public static bool FPDFAttachment_HasKey(FPDF_ATTACHMENT attachment, [MarshalAs(UnmanagedType.LPStr)] string key)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAttachment_HasKey_x64(attachment, key); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAttachment_HasKey_x86(attachment, key); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAttachment_GetValueType
 
@@ -9839,18 +8750,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAttachment_GetValueType/*'/>
 		public static FPDF_OBJECT_TYPE FPDFAttachment_GetValueType(FPDF_ATTACHMENT attachment, [MarshalAs(UnmanagedType.LPStr)] string key)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAttachment_GetValueType_x64(attachment, key); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAttachment_GetValueType_x86(attachment, key); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAttachment_SetStringValue
 
@@ -9866,18 +8774,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAttachment_SetStringValue/*'/>
 		public static bool FPDFAttachment_SetStringValue(FPDF_ATTACHMENT attachment, [MarshalAs(UnmanagedType.LPStr)] string key, [MarshalAs(UnmanagedType.LPWStr)] string value)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAttachment_SetStringValue_x64(attachment, key, value); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAttachment_SetStringValue_x86(attachment, key, value); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAttachment_GetStringValue
 
@@ -9893,18 +8798,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAttachment_GetStringValue/*'/>
 		public static ulong FPDFAttachment_GetStringValue(FPDF_ATTACHMENT attachment, [MarshalAs(UnmanagedType.LPStr)] string key, out FPDF_WCHAR buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAttachment_GetStringValue_x64(attachment, key, out buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAttachment_GetStringValue_x86(attachment, key, out buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAttachment_SetFile
 
@@ -9920,18 +8822,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAttachment_SetFile/*'/>
 		public static bool FPDFAttachment_SetFile(FPDF_ATTACHMENT attachment, FPDF_DOCUMENT document, ref byte contents, ulong len)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAttachment_SetFile_x64(attachment, document, ref contents, len); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAttachment_SetFile_x86(attachment, document, ref contents, len); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAttachment_GetFile
 
@@ -9947,18 +8846,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAttachment_GetFile/*'/>
 		public static bool FPDFAttachment_GetFile(FPDF_ATTACHMENT attachment, ref byte buffer, ulong buflen, out ulong out_buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAttachment_GetFile_x64(attachment, ref buffer, buflen, out out_buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAttachment_GetFile_x86(attachment, ref buffer, buflen, out out_buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFCatalog_IsTagged
 
@@ -9974,18 +8870,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFCatalog_IsTagged/*'/>
 		public static bool FPDFCatalog_IsTagged(FPDF_DOCUMENT document)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFCatalog_IsTagged_x64(document); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFCatalog_IsTagged_x86(document); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAvail_Create
 
@@ -10001,18 +8894,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAvail_Create/*'/>
 		public static FPDF_AVAIL FPDFAvail_Create(out FX_FILEAVAIL file_avail, out FPDF_FILEACCESS file)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAvail_Create_x64(out file_avail, out file); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAvail_Create_x86(out file_avail, out file); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAvail_Destroy
 
@@ -10028,18 +8918,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAvail_Destroy/*'/>
 		public static void FPDFAvail_Destroy(FPDF_AVAIL avail)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFAvail_Destroy_x64(avail); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFAvail_Destroy_x86(avail); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAvail_IsDocAvail
 
@@ -10055,18 +8942,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAvail_IsDocAvail/*'/>
 		public static int FPDFAvail_IsDocAvail(FPDF_AVAIL avail, out FX_DOWNLOADHINTS hints)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAvail_IsDocAvail_x64(avail, out hints); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAvail_IsDocAvail_x86(avail, out hints); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAvail_GetDocument
 
@@ -10082,18 +8966,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAvail_GetDocument/*'/>
 		public static FPDF_DOCUMENT FPDFAvail_GetDocument(FPDF_AVAIL avail, [MarshalAs(UnmanagedType.LPStr)] string password)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAvail_GetDocument_x64(avail, password); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAvail_GetDocument_x86(avail, password); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAvail_GetFirstPageNum
 
@@ -10109,18 +8990,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAvail_GetFirstPageNum/*'/>
 		public static int FPDFAvail_GetFirstPageNum(FPDF_DOCUMENT doc)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAvail_GetFirstPageNum_x64(doc); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAvail_GetFirstPageNum_x86(doc); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAvail_IsPageAvail
 
@@ -10136,18 +9014,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAvail_IsPageAvail/*'/>
 		public static int FPDFAvail_IsPageAvail(FPDF_AVAIL avail, int page_index, out FX_DOWNLOADHINTS hints)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAvail_IsPageAvail_x64(avail, page_index, out hints); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAvail_IsPageAvail_x86(avail, page_index, out hints); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAvail_IsFormAvail
 
@@ -10163,18 +9038,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAvail_IsFormAvail/*'/>
 		public static int FPDFAvail_IsFormAvail(FPDF_AVAIL avail, out FX_DOWNLOADHINTS hints)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAvail_IsFormAvail_x64(avail, out hints); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAvail_IsFormAvail_x86(avail, out hints); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFAvail_IsLinearized
 
@@ -10190,18 +9062,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFAvail_IsLinearized/*'/>
 		public static int FPDFAvail_IsLinearized(FPDF_AVAIL avail)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFAvail_IsLinearized_x64(avail); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFAvail_IsLinearized_x86(avail); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFDOC_InitFormFillEnvironment
 
@@ -10217,18 +9086,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFDOC_InitFormFillEnvironment/*'/>
 		public static FPDF_FORMHANDLE FPDFDOC_InitFormFillEnvironment(FPDF_DOCUMENT document, FPDF_FORMFILLINFO formInfo)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFDOC_InitFormFillEnvironment_x64(document, formInfo); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFDOC_InitFormFillEnvironment_x86(document, formInfo); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFDOC_ExitFormFillEnvironment
 
@@ -10244,18 +9110,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFDOC_ExitFormFillEnvironment/*'/>
 		public static void FPDFDOC_ExitFormFillEnvironment(FPDF_FORMHANDLE hHandle)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDFDOC_ExitFormFillEnvironment_x64(hHandle); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDFDOC_ExitFormFillEnvironment_x86(hHandle); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_OnAfterLoadPage
 
@@ -10271,18 +9134,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_OnAfterLoadPage/*'/>
 		public static void FORM_OnAfterLoadPage(FPDF_PAGE page, FPDF_FORMHANDLE hHandle)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FORM_OnAfterLoadPage_x64(page, hHandle); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FORM_OnAfterLoadPage_x86(page, hHandle); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_OnBeforeClosePage
 
@@ -10298,18 +9158,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_OnBeforeClosePage/*'/>
 		public static void FORM_OnBeforeClosePage(FPDF_PAGE page, FPDF_FORMHANDLE hHandle)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FORM_OnBeforeClosePage_x64(page, hHandle); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FORM_OnBeforeClosePage_x86(page, hHandle); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_DoDocumentJSAction
 
@@ -10325,18 +9182,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_DoDocumentJSAction/*'/>
 		public static void FORM_DoDocumentJSAction(FPDF_FORMHANDLE hHandle)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FORM_DoDocumentJSAction_x64(hHandle); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FORM_DoDocumentJSAction_x86(hHandle); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_DoDocumentOpenAction
 
@@ -10352,18 +9206,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_DoDocumentOpenAction/*'/>
 		public static void FORM_DoDocumentOpenAction(FPDF_FORMHANDLE hHandle)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FORM_DoDocumentOpenAction_x64(hHandle); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FORM_DoDocumentOpenAction_x86(hHandle); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_DoDocumentAAction
 
@@ -10379,18 +9230,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_DoDocumentAAction/*'/>
 		public static void FORM_DoDocumentAAction(FPDF_FORMHANDLE hHandle, FPDFDOC_AACTION aaType)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FORM_DoDocumentAAction_x64(hHandle, aaType); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FORM_DoDocumentAAction_x86(hHandle, aaType); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_DoPageAAction
 
@@ -10406,18 +9254,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_DoPageAAction/*'/>
 		public static void FORM_DoPageAAction(FPDF_PAGE page, FPDF_FORMHANDLE hHandle, int aaType)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FORM_DoPageAAction_x64(page, hHandle, aaType); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FORM_DoPageAAction_x86(page, hHandle, aaType); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_OnMouseMove
 
@@ -10433,18 +9278,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_OnMouseMove/*'/>
 		public static bool FORM_OnMouseMove(FPDF_FORMHANDLE hHandle, FPDF_PAGE page, int modifier, double page_x, double page_y)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_OnMouseMove_x64(hHandle, page, modifier, page_x, page_y); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_OnMouseMove_x86(hHandle, page, modifier, page_x, page_y); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_OnMouseWheel
 
@@ -10460,18 +9302,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_OnMouseWheel/*'/>
 		public static bool FORM_OnMouseWheel(FPDF_FORMHANDLE hHandle, FPDF_PAGE page, int modifier, [MarshalAs(UnmanagedType.LPStruct)] FS_POINTF page_coord, int delta_x, int delta_y)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_OnMouseWheel_x64(hHandle, page, modifier, page_coord, delta_x, delta_y); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_OnMouseWheel_x86(hHandle, page, modifier, page_coord, delta_x, delta_y); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_OnFocus
 
@@ -10487,18 +9326,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_OnFocus/*'/>
 		public static bool FORM_OnFocus(FPDF_FORMHANDLE hHandle, FPDF_PAGE page, int modifier, double page_x, double page_y)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_OnFocus_x64(hHandle, page, modifier, page_x, page_y); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_OnFocus_x86(hHandle, page, modifier, page_x, page_y); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_OnLButtonDown
 
@@ -10514,18 +9350,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_OnLButtonDown/*'/>
 		public static bool FORM_OnLButtonDown(FPDF_FORMHANDLE hHandle, FPDF_PAGE page, int modifier, double page_x, double page_y)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_OnLButtonDown_x64(hHandle, page, modifier, page_x, page_y); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_OnLButtonDown_x86(hHandle, page, modifier, page_x, page_y); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_OnRButtonDown
 
@@ -10541,18 +9374,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_OnRButtonDown/*'/>
 		public static bool FORM_OnRButtonDown(FPDF_FORMHANDLE hHandle, FPDF_PAGE page, int modifier, double page_x, double page_y)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_OnRButtonDown_x64(hHandle, page, modifier, page_x, page_y); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_OnRButtonDown_x86(hHandle, page, modifier, page_x, page_y); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_OnLButtonUp
 
@@ -10568,18 +9398,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_OnLButtonUp/*'/>
 		public static bool FORM_OnLButtonUp(FPDF_FORMHANDLE hHandle, FPDF_PAGE page, int modifier, double page_x, double page_y)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_OnLButtonUp_x64(hHandle, page, modifier, page_x, page_y); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_OnLButtonUp_x86(hHandle, page, modifier, page_x, page_y); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_OnRButtonUp
 
@@ -10595,18 +9422,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_OnRButtonUp/*'/>
 		public static bool FORM_OnRButtonUp(FPDF_FORMHANDLE hHandle, FPDF_PAGE page, int modifier, double page_x, double page_y)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_OnRButtonUp_x64(hHandle, page, modifier, page_x, page_y); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_OnRButtonUp_x86(hHandle, page, modifier, page_x, page_y); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_OnLButtonDoubleClick
 
@@ -10622,18 +9446,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_OnLButtonDoubleClick/*'/>
 		public static bool FORM_OnLButtonDoubleClick(FPDF_FORMHANDLE hHandle, FPDF_PAGE page, int modifier, double page_x, double page_y)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_OnLButtonDoubleClick_x64(hHandle, page, modifier, page_x, page_y); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_OnLButtonDoubleClick_x86(hHandle, page, modifier, page_x, page_y); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_OnKeyDown
 
@@ -10649,18 +9470,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_OnKeyDown/*'/>
 		public static bool FORM_OnKeyDown(FPDF_FORMHANDLE hHandle, FPDF_PAGE page, int nKeyCode, int modifier)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_OnKeyDown_x64(hHandle, page, nKeyCode, modifier); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_OnKeyDown_x86(hHandle, page, nKeyCode, modifier); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_OnKeyUp
 
@@ -10676,18 +9494,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_OnKeyUp/*'/>
 		public static bool FORM_OnKeyUp(FPDF_FORMHANDLE hHandle, FPDF_PAGE page, int nKeyCode, int modifier)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_OnKeyUp_x64(hHandle, page, nKeyCode, modifier); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_OnKeyUp_x86(hHandle, page, nKeyCode, modifier); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_OnChar
 
@@ -10703,18 +9518,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_OnChar/*'/>
 		public static bool FORM_OnChar(FPDF_FORMHANDLE hHandle, FPDF_PAGE page, int nChar, int modifier)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_OnChar_x64(hHandle, page, nChar, modifier); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_OnChar_x86(hHandle, page, nChar, modifier); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_GetFocusedText
 
@@ -10730,18 +9542,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_GetFocusedText/*'/>
 		public static ulong FORM_GetFocusedText(FPDF_FORMHANDLE hHandle, FPDF_PAGE page, ref byte buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_GetFocusedText_x64(hHandle, page, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_GetFocusedText_x86(hHandle, page, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_GetSelectedText
 
@@ -10757,18 +9566,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_GetSelectedText/*'/>
 		public static ulong FORM_GetSelectedText(FPDF_FORMHANDLE hHandle, FPDF_PAGE page, ref byte buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_GetSelectedText_x64(hHandle, page, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_GetSelectedText_x86(hHandle, page, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_ReplaceAndKeepSelection
 
@@ -10784,18 +9590,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_ReplaceAndKeepSelection/*'/>
 		public static void FORM_ReplaceAndKeepSelection(FPDF_FORMHANDLE hHandle, FPDF_PAGE page, [MarshalAs(UnmanagedType.LPWStr)] string wsText)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FORM_ReplaceAndKeepSelection_x64(hHandle, page, wsText); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FORM_ReplaceAndKeepSelection_x86(hHandle, page, wsText); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_ReplaceSelection
 
@@ -10811,18 +9614,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_ReplaceSelection/*'/>
 		public static void FORM_ReplaceSelection(FPDF_FORMHANDLE hHandle, FPDF_PAGE page, [MarshalAs(UnmanagedType.LPWStr)] string wsText)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FORM_ReplaceSelection_x64(hHandle, page, wsText); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FORM_ReplaceSelection_x86(hHandle, page, wsText); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_SelectAllText
 
@@ -10838,18 +9638,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_SelectAllText/*'/>
 		public static bool FORM_SelectAllText(FPDF_FORMHANDLE hHandle, FPDF_PAGE page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_SelectAllText_x64(hHandle, page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_SelectAllText_x86(hHandle, page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_CanUndo
 
@@ -10865,18 +9662,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_CanUndo/*'/>
 		public static bool FORM_CanUndo(FPDF_FORMHANDLE hHandle, FPDF_PAGE page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_CanUndo_x64(hHandle, page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_CanUndo_x86(hHandle, page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_CanRedo
 
@@ -10892,18 +9686,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_CanRedo/*'/>
 		public static bool FORM_CanRedo(FPDF_FORMHANDLE hHandle, FPDF_PAGE page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_CanRedo_x64(hHandle, page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_CanRedo_x86(hHandle, page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_Undo
 
@@ -10919,18 +9710,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_Undo/*'/>
 		public static bool FORM_Undo(FPDF_FORMHANDLE hHandle, FPDF_PAGE page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_Undo_x64(hHandle, page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_Undo_x86(hHandle, page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_Redo
 
@@ -10946,18 +9734,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_Redo/*'/>
 		public static bool FORM_Redo(FPDF_FORMHANDLE hHandle, FPDF_PAGE page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_Redo_x64(hHandle, page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_Redo_x86(hHandle, page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_ForceToKillFocus
 
@@ -10973,18 +9758,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_ForceToKillFocus/*'/>
 		public static bool FORM_ForceToKillFocus(FPDF_FORMHANDLE hHandle)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_ForceToKillFocus_x64(hHandle); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_ForceToKillFocus_x86(hHandle); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_GetFocusedAnnot
 
@@ -11000,18 +9782,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_GetFocusedAnnot/*'/>
 		public static bool FORM_GetFocusedAnnot(FPDF_FORMHANDLE handle, out int page_index, out FPDF_ANNOTATION annot)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_GetFocusedAnnot_x64(handle, out page_index, out annot); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_GetFocusedAnnot_x86(handle, out page_index, out annot); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_SetFocusedAnnot
 
@@ -11027,18 +9806,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_SetFocusedAnnot/*'/>
 		public static bool FORM_SetFocusedAnnot(FPDF_FORMHANDLE handle, FPDF_ANNOTATION annot)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_SetFocusedAnnot_x64(handle, annot); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_SetFocusedAnnot_x86(handle, annot); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_HasFormFieldAtPoint
 
@@ -11054,18 +9830,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_HasFormFieldAtPoint/*'/>
 		public static int FPDFPage_HasFormFieldAtPoint(FPDF_FORMHANDLE hHandle, FPDF_PAGE page, double page_x, double page_y)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_HasFormFieldAtPoint_x64(hHandle, page, page_x, page_y); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_HasFormFieldAtPoint_x86(hHandle, page, page_x, page_y); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_FormFieldZOrderAtPoint
 
@@ -11081,18 +9854,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_FormFieldZOrderAtPoint/*'/>
 		public static int FPDFPage_FormFieldZOrderAtPoint(FPDF_FORMHANDLE hHandle, FPDF_PAGE page, double page_x, double page_y)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_FormFieldZOrderAtPoint_x64(hHandle, page, page_x, page_y); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_FormFieldZOrderAtPoint_x86(hHandle, page, page_x, page_y); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_SetFormFieldHighlightColor
 
@@ -11108,18 +9878,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_SetFormFieldHighlightColor/*'/>
 		public static void FPDF_SetFormFieldHighlightColor(FPDF_FORMHANDLE hHandle, int fieldType, ulong color)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDF_SetFormFieldHighlightColor_x64(hHandle, fieldType, color); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDF_SetFormFieldHighlightColor_x86(hHandle, fieldType, color); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_SetFormFieldHighlightAlpha
 
@@ -11135,18 +9902,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_SetFormFieldHighlightAlpha/*'/>
 		public static void FPDF_SetFormFieldHighlightAlpha(FPDF_FORMHANDLE hHandle, byte alpha)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDF_SetFormFieldHighlightAlpha_x64(hHandle, alpha); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDF_SetFormFieldHighlightAlpha_x86(hHandle, alpha); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_RemoveFormFieldHighlight
 
@@ -11162,18 +9926,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_RemoveFormFieldHighlight/*'/>
 		public static void FPDF_RemoveFormFieldHighlight(FPDF_FORMHANDLE hHandle)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDF_RemoveFormFieldHighlight_x64(hHandle); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDF_RemoveFormFieldHighlight_x86(hHandle); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_FFLDraw
 
@@ -11189,18 +9950,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_FFLDraw/*'/>
 		public static void FPDF_FFLDraw(FPDF_FORMHANDLE hHandle, FPDF_BITMAP bitmap, FPDF_PAGE page, int start_x, int start_y, int size_x, int size_y, PageOrientations rotation, RenderingFlags flags)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDF_FFLDraw_x64(hHandle, bitmap, page, start_x, start_y, size_x, size_y, rotation, flags); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDF_FFLDraw_x86(hHandle, bitmap, page, start_x, start_y, size_x, size_y, rotation, flags); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_FFLDrawSkia
 
@@ -11216,18 +9974,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_FFLDrawSkia/*'/>
 		public static void FPDF_FFLDrawSkia(FPDF_FORMHANDLE hHandle, FPDF_SKIA_CANVAS canvas, FPDF_PAGE page, int start_x, int start_y, int size_x, int size_y, int rotate, int flags)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDF_FFLDrawSkia_x64(hHandle, canvas, page, start_x, start_y, size_x, size_y, rotate, flags); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDF_FFLDrawSkia_x86(hHandle, canvas, page, start_x, start_y, size_x, size_y, rotate, flags); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetFormType
 
@@ -11243,18 +9998,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_GetFormType/*'/>
 		public static int FPDF_GetFormType(FPDF_DOCUMENT document)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetFormType_x64(document); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetFormType_x86(document); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_SetIndexSelected
 
@@ -11270,18 +10022,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_SetIndexSelected/*'/>
 		public static bool FORM_SetIndexSelected(FPDF_FORMHANDLE hHandle, FPDF_PAGE page, int index, bool selected)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_SetIndexSelected_x64(hHandle, page, index, selected); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_SetIndexSelected_x86(hHandle, page, index, selected); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FORM_IsIndexSelected
 
@@ -11297,18 +10046,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FORM_IsIndexSelected/*'/>
 		public static bool FORM_IsIndexSelected(FPDF_FORMHANDLE hHandle, FPDF_PAGE page, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FORM_IsIndexSelected_x64(hHandle, page, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FORM_IsIndexSelected_x86(hHandle, page, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_LoadXFA
 
@@ -11324,18 +10070,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_LoadXFA/*'/>
 		public static bool FPDF_LoadXFA(FPDF_DOCUMENT document)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_LoadXFA_x64(document); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_LoadXFA_x86(document); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetSignatureCount
 
@@ -11351,18 +10094,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_GetSignatureCount/*'/>
 		public static int FPDF_GetSignatureCount(FPDF_DOCUMENT document)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetSignatureCount_x64(document); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetSignatureCount_x86(document); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetSignatureObject
 
@@ -11378,18 +10118,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_GetSignatureObject/*'/>
 		public static FPDF_SIGNATURE FPDF_GetSignatureObject(FPDF_DOCUMENT document, int index)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetSignatureObject_x64(document, index); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetSignatureObject_x86(document, index); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFSignatureObj_GetContents
 
@@ -11405,18 +10142,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFSignatureObj_GetContents/*'/>
 		public static ulong FPDFSignatureObj_GetContents(FPDF_SIGNATURE signature, ref byte buffer, ulong length)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFSignatureObj_GetContents_x64(signature, ref buffer, length); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFSignatureObj_GetContents_x86(signature, ref buffer, length); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFSignatureObj_GetByteRange
 
@@ -11432,18 +10166,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFSignatureObj_GetByteRange/*'/>
 		public static ulong FPDFSignatureObj_GetByteRange(FPDF_SIGNATURE signature, out int buffer, ulong length)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFSignatureObj_GetByteRange_x64(signature, out buffer, length); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFSignatureObj_GetByteRange_x86(signature, out buffer, length); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFSignatureObj_GetSubFilter
 
@@ -11459,18 +10190,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFSignatureObj_GetSubFilter/*'/>
 		public static ulong FPDFSignatureObj_GetSubFilter(FPDF_SIGNATURE signature, out char buffer, ulong length)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFSignatureObj_GetSubFilter_x64(signature, out buffer, length); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFSignatureObj_GetSubFilter_x86(signature, out buffer, length); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFSignatureObj_GetReason
 
@@ -11486,18 +10214,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFSignatureObj_GetReason/*'/>
 		public static ulong FPDFSignatureObj_GetReason(FPDF_SIGNATURE signature, ref byte buffer, ulong length)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFSignatureObj_GetReason_x64(signature, ref buffer, length); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFSignatureObj_GetReason_x86(signature, ref buffer, length); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFSignatureObj_GetTime
 
@@ -11513,18 +10238,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFSignatureObj_GetTime/*'/>
 		public static ulong FPDFSignatureObj_GetTime(FPDF_SIGNATURE signature, out char buffer, ulong length)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFSignatureObj_GetTime_x64(signature, out buffer, length); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFSignatureObj_GetTime_x86(signature, out buffer, length); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFSignatureObj_GetDocMDPPermission
 
@@ -11542,18 +10264,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFSignatureObj_GetDocMDPPermission/*'/>
 		public static uint FPDFSignatureObj_GetDocMDPPermission(FPDF_SIGNATURE signature)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFSignatureObj_GetDocMDPPermission_x64(signature); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFSignatureObj_GetDocMDPPermission_x86(signature); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_AddInstalledFont
 
@@ -11569,18 +10288,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_AddInstalledFont/*'/>
 		public static void FPDF_AddInstalledFont(ref byte mapper, ref char face, int charset)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDF_AddInstalledFont_x64(ref mapper, ref face, charset); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDF_AddInstalledFont_x86(ref mapper, ref face, charset); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_SetSystemFontInfo
 
@@ -11596,18 +10312,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_SetSystemFontInfo/*'/>
 		public static void FPDF_SetSystemFontInfo(out FPDF_SYSFONTINFO pFontInfo)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDF_SetSystemFontInfo_x64(out pFontInfo); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDF_SetSystemFontInfo_x86(out pFontInfo); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_GetDefaultSystemFontInfo
 
@@ -11623,18 +10336,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_GetDefaultSystemFontInfo/*'/>
 		public static IntPtr FPDF_GetDefaultSystemFontInfo()
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDF_GetDefaultSystemFontInfo_x64(); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDF_GetDefaultSystemFontInfo_x86(); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDF_FreeDefaultSystemFontInfo
 
@@ -11650,18 +10360,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDF_FreeDefaultSystemFontInfo/*'/>
 		public static void FPDF_FreeDefaultSystemFontInfo(out FPDF_SYSFONTINFO pFontInfo)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { PlatformInvoke.FPDF_FreeDefaultSystemFontInfo_x64(out pFontInfo); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { PlatformInvoke.FPDF_FreeDefaultSystemFontInfo_x86(out pFontInfo); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_GetDecodedThumbnailData
 
@@ -11677,18 +10384,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_GetDecodedThumbnailData/*'/>
 		public static ulong FPDFPage_GetDecodedThumbnailData(FPDF_PAGE page, ref byte buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetDecodedThumbnailData_x64(page, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetDecodedThumbnailData_x86(page, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_GetRawThumbnailData
 
@@ -11704,18 +10408,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_GetRawThumbnailData/*'/>
 		public static ulong FPDFPage_GetRawThumbnailData(FPDF_PAGE page, ref byte buffer, ulong buflen)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetRawThumbnailData_x64(page, ref buffer, buflen); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetRawThumbnailData_x86(page, ref buffer, buflen); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 		#region FPDFPage_GetThumbnailAsBitmap
 
@@ -11731,18 +10432,15 @@ namespace PDFiumSharp
 		/// <include file='PDFium.xml' path='Documentation/FPDFPage_GetThumbnailAsBitmap/*'/>
 		public static FPDF_BITMAP FPDFPage_GetThumbnailAsBitmap(FPDF_PAGE page)
 		{
-
 			if (RuntimeInformation.ProcessArchitecture == Architecture.X64 || (RuntimeInformation.ProcessArchitecture == Architecture.X86 && IntPtr.Size == 8))
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetThumbnailAsBitmap_x64(page); }
 			else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
 				lock(_lock) { return PlatformInvoke.FPDFPage_GetThumbnailAsBitmap_x86(page); }
 			else
 				throw new PlatformNotSupportedException();
-
 		}
 
 		#endregion
-
 
 	}
 }

@@ -5,9 +5,11 @@ using PDFiumSharp.Enums;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+#if TARGET_NET9_WINDOWS
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+#endif
 
 namespace FMO.PDF;
 
@@ -72,6 +74,102 @@ public static class PdfHelper
     }
 
 
+
+
+
+
+    static double IntersectionXRatio(double a, double b, double c, double d)
+    {
+        // 找出两个区间左端点的最大值
+        double leftMax = Math.Max(a, c);
+        // 找出两个区间右端点的最小值
+        double rightMin = Math.Min(b, d);
+
+        // 判断是否存在交集
+        if (leftMax < rightMin)
+            return (rightMin - leftMax) / (Math.Max(b, d) - Math.Min(a, c));
+        return 0;
+    }
+
+    /// <summary>
+    /// t<b      有相交 > 0
+    /// </summary>
+    /// <param name="t1"></param>
+    /// <param name="b1"></param>
+    /// <param name="t2"></param>
+    /// <param name="b2"></param>
+    /// <returns></returns>
+    static double IntersectionYRatio(double t1, double b1, double t2, double b2)
+    {
+        // 1 包含 2
+        if (t1 <= t2 && b1 >= b2) return 1;
+        return (Math.Min(b1, b2) - Math.Max(t1, t2)) / (Math.Max(b1, b2) - Math.Min(t1, t2));
+    }
+
+
+    private static void Rotate(PageOrientations o, ref double l, ref double t, ref double r, ref double b)
+    {
+        switch (o)
+        {
+            case PageOrientations.Rotated90CW:
+                {
+                    var tmp = b;
+                    b = r;
+                    r = t;
+                    t = l;
+                    l = tmp;
+                }
+                break;
+            case PageOrientations.Rotated180:
+                {
+                    var tmp = l;
+                    l = r;
+                    r = tmp;
+                    tmp = t;
+                    t = b;
+                    b = tmp;
+                }
+                break;
+            case PageOrientations.Rotated90CCW:
+                {
+                    var tmp = l;
+                    l = t;
+                    t = r;
+                    r = b;
+                    b = tmp;
+                }
+                break;
+        }
+    }
+
+
+
+
+    public static MemoryStream ExportToPdf(string[] images)
+    {
+        var doc = PDFium.FPDF_CreateNewDocument();
+        int index = 0;
+        List<PDFiumSharp.Types.FPDF_PAGE> pages = new();
+        foreach (var f in images)
+        {
+            using var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            var img = PDFium.FPDFPageObj_NewImageObj(doc);
+            var page = PDFium.FPDFPage_New(doc, index++, 595, 841);
+            pages.Add(page);
+            PDFium.FPDFImageObj_LoadJpegFile(pages.ToArray(), img, fs);
+            PDFium.FPDFImageObj_GetImagePixelSize(img, out uint width, out uint height);
+            PDFium.FPDFImageObj_SetMatrix(img, 595, 0, 0, 841, 0, 0);
+            PDFium.FPDFPage_InsertObject(page, ref img);
+            PDFium.FPDFPage_GenerateContent(page);
+        }
+        var ms = new MemoryStream();
+        PDFium.FPDF_SaveAsCopy(doc, ms, PDFiumSharp.Enums.SaveFlags.None);
+
+        PDFium.FPDF_CloseDocument(doc);
+        return ms;
+    }
+
+#if TARGET_NET9_WINDOWS
     public static BankAccount[]? GetAccountInfo(Stream s)
     {
         List<BankAccount> result = new();
@@ -165,6 +263,21 @@ public static class PdfHelper
         return result.ToArray();
     }
 
+    internal static MemoryStream? GenThumbnail(MemoryStream? stream)
+    {
+        if (stream is null) return null;
+        var pdf = new PdfDocument(stream.ToArray());
+        var wb = new WriteableBitmap(200, 283, 96, 96, PixelFormats.Bgr32, null);
+        pdf.Pages[0].Render(wb);
+        wb.Freeze();
+
+        var encoder = new JpegBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(wb));
+        var ms = new MemoryStream();
+        encoder.Save(ms);
+        return ms;
+    }
+
 
     /// <summary>
     /// pdf 坐标 t > b
@@ -191,73 +304,7 @@ public static class PdfHelper
 
         return (r - l) * (t - b) / rc.Width / rc.Height;
     }
-
-
-    static double IntersectionXRatio(double a, double b, double c, double d)
-    {
-        // 找出两个区间左端点的最大值
-        double leftMax = Math.Max(a, c);
-        // 找出两个区间右端点的最小值
-        double rightMin = Math.Min(b, d);
-
-        // 判断是否存在交集
-        if (leftMax < rightMin)
-            return (rightMin - leftMax) / (Math.Max(b, d) - Math.Min(a, c));
-        return 0;
-    }
-
-    /// <summary>
-    /// t<b      有相交 > 0
-    /// </summary>
-    /// <param name="t1"></param>
-    /// <param name="b1"></param>
-    /// <param name="t2"></param>
-    /// <param name="b2"></param>
-    /// <returns></returns>
-    static double IntersectionYRatio(double t1, double b1, double t2, double b2)
-    {
-        // 1 包含 2
-        if (t1 <= t2 && b1 >= b2) return 1;
-        return (Math.Min(b1, b2) - Math.Max(t1, t2)) / (Math.Max(b1, b2) - Math.Min(t1, t2));
-    }
-
-
-    private static void Rotate(PageOrientations o, ref double l, ref double t, ref double r, ref double b)
-    {
-        switch (o)
-        {
-            case PageOrientations.Rotated90CW:
-                {
-                    var tmp = b;
-                    b = r;
-                    r = t;
-                    t = l;
-                    l = tmp;
-                }
-                break;
-            case PageOrientations.Rotated180:
-                {
-                    var tmp = l;
-                    l = r;
-                    r = tmp;
-                    tmp = t;
-                    t = b;
-                    b = tmp;
-                }
-                break;
-            case PageOrientations.Rotated90CCW:
-                {
-                    var tmp = l;
-                    l = t;
-                    t = r;
-                    r = b;
-                    b = tmp;
-                }
-                break;
-        }
-    }
-
-
+    
     internal static WriteableBitmap Render(string path)
     {
         using PDFiumSharp.PdfDocument doc = new PDFiumSharp.PdfDocument(path);
@@ -281,48 +328,6 @@ public static class PdfHelper
         }
         return wb;
     }
-
-
-    public static MemoryStream ExportToPdf(string[] images)
-    {
-        var doc = PDFium.FPDF_CreateNewDocument();
-        int index = 0;
-        List<PDFiumSharp.Types.FPDF_PAGE> pages = new();
-        foreach (var f in images)
-        {
-            using var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            var img = PDFium.FPDFPageObj_NewImageObj(doc);
-            var page = PDFium.FPDFPage_New(doc, index++, 595, 841);
-            pages.Add(page);
-            PDFium.FPDFImageObj_LoadJpegFile(pages.ToArray(), img, fs);
-            PDFium.FPDFImageObj_GetImagePixelSize(img, out uint width, out uint height);
-            PDFium.FPDFImageObj_SetMatrix(img, 595, 0, 0, 841, 0, 0);
-            PDFium.FPDFPage_InsertObject(page, ref img);
-            PDFium.FPDFPage_GenerateContent(page);
-        }
-        var ms = new MemoryStream();
-        PDFium.FPDF_SaveAsCopy(doc, ms, PDFiumSharp.Enums.SaveFlags.None);
-
-        PDFium.FPDF_CloseDocument(doc);
-        return ms;
-    }
-
-    internal static MemoryStream? GenThumbnail(MemoryStream? stream)
-    {
-        if (stream is null) return null;
-        var pdf = new PdfDocument(stream.ToArray());
-        var wb = new WriteableBitmap(200, 283, 96, 96, PixelFormats.Bgr32, null);
-        pdf.Pages[0].Render(wb);
-        wb.Freeze();
-
-        var encoder = new JpegBitmapEncoder();
-        encoder.Frames.Add(BitmapFrame.Create(wb));
-        var ms = new MemoryStream();
-        encoder.Save(ms);
-        return ms;
-    }
-
-
     /// <summary>
     /// Renders the page to a <see cref="WriteableBitmap"/>
     /// </summary>
@@ -391,7 +396,7 @@ public static class PdfHelper
             return BitmapFormats.Gray;
         throw new NotSupportedException($"Pixel format {pixelFormat} is not supported.");
     }
-     
+#endif
 
     public static string[] GetTexts(string? file)
     {
