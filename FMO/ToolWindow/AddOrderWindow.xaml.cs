@@ -263,14 +263,8 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
         // 如果是pdf，解析日期
         try
         {
-            var texts = PdfHelper.GetTexts(fi.FullName);
-            foreach (var txt in texts)
-            {
-                if (DateTimeHelper.TryFindDate(txt) is DateOnly d)
-                {
-                    Date = new DateTime(d, default);
-                }
-            }
+            if (PdfHelper.GetSignDate(fi.FullName) is DateOnly d)
+                Date = new DateTime( d,default);
         }
         catch { }
         return fsi;
