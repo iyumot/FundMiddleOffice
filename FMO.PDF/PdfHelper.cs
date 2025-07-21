@@ -1,8 +1,12 @@
 ﻿using FMO.Models;
 using FMO.Utilities;
+using LiteDB;
 using PDFiumSharp;
 using PDFiumSharp.Enums;
+using System.Formats.Asn1;
 using System.IO;
+using System.Security.Cryptography;
+using System.Security.Cryptography.Pkcs;
 using System.Text;
 using System.Text.RegularExpressions;
 #if TARGET_NET9_WINDOWS
@@ -169,7 +173,7 @@ public static class PdfHelper
         return ms;
     }
 
-#if TARGET_NET9_WINDOWS
+
     public static BankAccount[]? GetAccountInfo(Stream s)
     {
         List<BankAccount> result = new();
@@ -304,7 +308,7 @@ public static class PdfHelper
 
         return (r - l) * (t - b) / rc.Width / rc.Height;
     }
-    
+
     internal static WriteableBitmap Render(string path)
     {
         using PDFiumSharp.PdfDocument doc = new PDFiumSharp.PdfDocument(path);
@@ -396,7 +400,7 @@ public static class PdfHelper
             return BitmapFormats.Gray;
         throw new NotSupportedException($"Pixel format {pixelFormat} is not supported.");
     }
-#endif
+
 
     public static string[] GetTexts(string? file)
     {
@@ -425,4 +429,99 @@ public static class PdfHelper
         return strings.ToArray();
     }
 
+    public static DateOnly? GetSignDate(string? file)
+    {
+        if (string.IsNullOrWhiteSpace(file)) return null;
+
+        using var fs = new FileStream(file, FileMode.Open);
+        byte[] buf = new byte[fs.Length];
+        fs.ReadExactly(buf);
+        var d = PDFium.FPDF_LoadDocument(buf);
+
+        var cnt = PDFium.FPDF_GetSignatureCount(d);
+        if (cnt == 0) return null;
+
+        var sign = PDFium.FPDF_GetSignatureObject(d, 0);
+
+        // 准备缓冲区（必须是 char[]，不能是 StringBuilder）
+        var buffer = new byte[1];
+
+
+        // 调用函数
+        ulong written = PDFium.FPDFSignatureObj_GetContents(sign, ref buffer[0], (ulong)buffer.Length);
+        buffer = new byte[written];
+        PDFium.FPDFSignatureObj_GetContents(sign, ref buffer[0], (ulong)buffer.Length);
+
+        SignedCms cms = new SignedCms();
+        cms.Decode(buffer);
+
+        var time = GetSignTime(cms);
+        
+        PDFium.FPDF_CloseDocument(d);
+        return time is null ? null : DateOnly.FromDateTime(time.Value);
+    }
+
+
+
+
+    private static DateTime? GetSignTime(SignedCms cms)
+    {
+        foreach (var signerInfo in cms.SignerInfos)
+        {
+            foreach (var attr in signerInfo.SignedAttributes)
+            {
+                if (attr.Oid?.Value == "1.2.840.113549.1.9.16.2.14") // id-aa-timeStampToken
+                {
+                    // 提取时间戳令牌
+                    foreach (AsnEncodedData asnData in attr.Values)
+                    {
+                        byte[] tsToken = asnData.RawData; // 正确获取原始数据
+
+                        SignedCms tsCms = new SignedCms();
+                        tsCms.Decode(tsToken);
+
+                        foreach (SignerInfo tsSignerInfo in tsCms.SignerInfos)
+                        {
+                            foreach (var sd in tsSignerInfo.SignedAttributes)
+                            {
+                                if (sd.Oid?.Value == "1.2.840.113549.1.9.5")
+                                {
+                                    var asnReader = new AsnReader(sd.Values[0].RawData, AsnEncodingRules.DER);
+                                    return asnReader.ReadUtcTime().DateTime.ToLocalTime();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            foreach (var attr in signerInfo.UnsignedAttributes)
+            {
+                if (attr.Oid?.Value == "1.2.840.113549.1.9.16.2.14") // id-aa-timeStampToken
+                {
+                    // 提取时间戳令牌
+                    foreach (AsnEncodedData asnData in attr.Values)
+                    {
+                        byte[] tsToken = asnData.RawData; // 正确获取原始数据
+
+                        SignedCms tsCms = new SignedCms();
+                        tsCms.Decode(tsToken);
+
+                        foreach (SignerInfo tsSignerInfo in tsCms.SignerInfos)
+                        {
+                            foreach (var sd in tsSignerInfo.SignedAttributes)
+                            {
+                                if (sd.Oid?.Value == "1.2.840.113549.1.9.5")
+                                {
+                                    var asnReader = new AsnReader(sd.Values[0].RawData, AsnEncodingRules.DER);
+                                    return asnReader.ReadUtcTime().DateTime.ToLocalTime();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
 }
