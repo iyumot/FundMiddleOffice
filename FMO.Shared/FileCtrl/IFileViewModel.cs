@@ -63,7 +63,7 @@ public partial class FileViewModelBase : ObservableObject, IFileViewModel
     /// <summary>
     /// 特定名称
     /// </summary>
-    public Func<string>? SpecificFileName { get; set; }
+    public Func<string?, string>? SpecificFileName { get; set; }
 
 
     public string? SaveFolder { get; set; }
@@ -89,7 +89,7 @@ public partial class FileViewModelBase : ObservableObject, IFileViewModel
 
 
         // 保存副本 
-        var tar = FileHelper.CopyFile2(fi, SaveFolder, SpecificFileName is null ? null : SpecificFileName());
+        var tar = FileHelper.CopyFile2(fi, SaveFolder, SpecificFileName is null ? null : SpecificFileName(fi.Extension));
         if (tar is null)
         {
             Log.Error($"保存文件出错，{fi.FullName}");

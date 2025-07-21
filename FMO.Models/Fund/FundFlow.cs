@@ -304,6 +304,8 @@ public class ContractModifyFlow : ContractFlow
     public FileStorageInfo? CommitmentLetter { get; set; }
 
 
+    public FileStorageInfo? SealedCommitmentLetter { get; set; }
+
     public FileStorageInfo? SignedSupplementary { get; set; }
 
     //份额、要素

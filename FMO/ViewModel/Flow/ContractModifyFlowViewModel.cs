@@ -1,12 +1,14 @@
-﻿using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using FMO.Shared;
 using FMO.TPL;
 using FMO.Utilities;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Text.RegularExpressions;
 
 namespace FMO;
 
@@ -56,6 +58,8 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
 
     public FileViewModel CommitmentLetter { get; }
 
+    public FileViewModel SealedCommitmentLetter { get; }
+
     /// <summary>
     /// 签署的补充协议
     /// </summary>
@@ -79,6 +83,14 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
         ModifyBySupplementary = flow.ModifyBySupplementary;
         if (flow.SupplementaryFile?.Files.Any() ?? false)
             ModifyBySupplementary = true;
+
+        Contract.SpecificFileName = x =>
+        {
+            using var db = DbHelper.Base();
+            var fund = db.GetCollection<Fund>().FindById(FundId);
+
+            return $"{fund.Name}_基金合同_{Date:yyyy年MM月dd日}{x}";
+        };
 
 
         ///补充协议
@@ -115,12 +127,12 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
             GetProperty = x => x switch { ContractModifyFlow f => f.SealedAnnouncement, _ => null },
             SetProperty = (x, y) => { if (x is ContractModifyFlow f) f.SealedAnnouncement = y; },
             Filter = "PDF (*.pdf)|*.pdf;",
-            SpecificFileName = () =>
+            SpecificFileName = x =>
             {
                 using var db = DbHelper.Base();
                 var fund = db.GetCollection<Fund>().FindById(FundId);
 
-                return $"{fund.Name}_变更公告_{Date:yyyy年MM月dd日}.pdf";
+                return $"{fund.Name}_变更公告_{Date:yyyy年MM月dd日}{x}";
             }
         }; SealedAnnouncement.Init(flow);
 
@@ -132,6 +144,23 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
             GetProperty = x => x switch { ContractModifyFlow f => f.CommitmentLetter, _ => null },
             SetProperty = (x, y) => { if (x is ContractModifyFlow f) f.CommitmentLetter = y; },
         }; CommitmentLetter.Init(flow);
+
+
+        SealedCommitmentLetter = new()
+        {
+            Label = "信息变更承诺函",
+            SaveFolder = FundHelper.GetFolder(FundId, "Registration"),
+            GetProperty = x => x switch { ContractModifyFlow f => f.SealedCommitmentLetter, _ => null },
+            SetProperty = (x, y) => { if (x is ContractModifyFlow f) f.SealedCommitmentLetter = y; },
+            SpecificFileName = x =>
+            {
+                using var db = DbHelper.Base();
+                var fund = db.GetCollection<Fund>().FindById(FundId);
+
+                return $"{fund.Name}_信息变更承诺函_{Date:yyyy年MM月dd日}{x}";
+            }
+        }; SealedCommitmentLetter.Init(flow);
+
 
         Initialized = true;
     }
@@ -200,7 +229,7 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
 
                 using var db = DbHelper.Base();
                 var fund = db.GetCollection<Fund>().FindById(FundId);
-                string path = @$"{FundHelper.GetFolder(FundId)}\Registration\{fund.Name}_信息变更承诺函_{Date:yyyy年MM月dd日}.docx";
+                string path = @$"{FundHelper.GetFolder(FundId)}\Registration\信息变更承诺函_{Date:yyyy年MM月dd日}.docx";
                 var fi = new FileInfo(path);
                 if (!fi.Directory!.Exists) fi.Directory.Create();
 
@@ -236,4 +265,57 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
             db.GetCollection<FundFlow>().Update(flow);
         }
     }
+
+    protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+
+
+    }
+
+    protected override void UpdateFileDateOverride()
+    {
+        if (Date is null) return;
+
+        var d = DateOnly.FromDateTime(Date.Value);
+        using var db = DbHelper.Base();
+        if (db.GetCollection<FundFlow>().FindById(FlowId) is ContractModifyFlow flow)
+        {
+            if (Contract.File is not null && SwitchDate(Contract, d) && flow.ContractFile is not null)
+                flow.ContractFile.Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), Contract.File.FullName);
+
+            if (Announcement?.File is not null && SwitchDate(Announcement, d) && flow.Announcement is not null)
+                flow.Announcement.Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), Announcement.File.FullName);
+            if (SealedAnnouncement?.File is not null && SwitchDate(SealedAnnouncement, d) && flow.SealedAnnouncement is not null)
+                flow.SealedAnnouncement.Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), SealedAnnouncement.File.FullName);
+
+            if (CommitmentLetter?.File is not null && SwitchDate(CommitmentLetter, d) && flow.CommitmentLetter is not null)
+                flow.CommitmentLetter.Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), CommitmentLetter.File.FullName);
+
+            if (SealedCommitmentLetter?.File is not null && SwitchDate(SealedCommitmentLetter, d) && flow.SealedCommitmentLetter is not null)
+                flow.SealedCommitmentLetter.Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), SealedCommitmentLetter.File.FullName);
+
+
+            db.GetCollection<FundFlow>().Update(flow);
+        }
+
+    }
+
+
+    private bool SwitchDate(FileViewModel file, DateOnly d)
+    {
+        if (file.File is null) return false;
+
+
+        var m = Regex.Match(file.File.Name, @$"_(?:\d{{4}}年\d+月\d+日)?\{file.File.Extension}");
+        if (!m.Success)
+            return false;
+
+        string destFileName = Path.Combine(file.File.DirectoryName!, file.File.Name[..m.Index] + $"_{d:yyyy年MM月dd日}{file.File.Extension}");
+        file.File.MoveTo(destFileName);
+        file.File = new FileInfo(destFileName);
+
+        return true;
+    }
+
 }

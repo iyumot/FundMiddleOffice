@@ -132,6 +132,14 @@
                 </ToggleButton>
 
                 <Button
+                    hc:IconElement.Geometry="{StaticResource f.rotate}"
+                    Command="{Binding UpdateFileDateCommand}"
+                    DockPanel.Dock="Right"
+                    Style="{StaticResource ButtonIcon}"
+                    ToolTip="更新文件日期"
+                    Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                <Button
                     hc:IconElement.Geometry="{StaticResource f.file-medical}"
                     BorderThickness="0"
                     Command="{Binding AddCustomFileCommand}"
@@ -498,10 +506,12 @@
                             <shared:FileControl Binding="{Binding SealedAnnouncement}" Style="{StaticResource SealedFile}" />
                         </WrapPanel>
 
-                        <DockPanel>
+                        <WrapPanel>
                             <Button CommandParameter="{Binding CommitmentLetter}" Style="{StaticResource GeneratorButton}" />
                             <shared:FileControl Binding="{Binding CommitmentLetter}" />
-                        </DockPanel>
+                            <shared:FileControl Binding="{Binding SealedCommitmentLetter}" Style="{StaticResource SealedFile}" />
+                        </WrapPanel>
+
 
                         <shared:FileControl Binding="{Binding RegistrationLetter}" Visibility="{Binding ModifyName, Converter={StaticResource Boolean2VisibilityConverter}}" />
                     </StackPanel>

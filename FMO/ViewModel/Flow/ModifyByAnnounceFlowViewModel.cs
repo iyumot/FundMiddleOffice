@@ -2,7 +2,11 @@
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
+using System.IO;
+using System.Text.RegularExpressions;
 
 namespace FMO;
 
@@ -33,7 +37,7 @@ public partial class ModifyByAnnounceFlowViewModel : FlowViewModel
         {
             Label = "变更公告",
             Filter = "PDF (*.pdf)|*.pdf;",
-            SpecificFileName = () =>
+            SpecificFileName = x =>
             {
                 using var db = DbHelper.Base();
                 var fund = db.GetCollection<Fund>().FindById(FundId);
@@ -46,4 +50,7 @@ public partial class ModifyByAnnounceFlowViewModel : FlowViewModel
         }; SealedAnnouncement.Init(flow);
 
     }
+
+     
+
 }

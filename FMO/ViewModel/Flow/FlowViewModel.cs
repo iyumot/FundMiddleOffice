@@ -1,15 +1,15 @@
-﻿using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Windows;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Windows;
 
 namespace FMO;
 
@@ -260,7 +260,7 @@ public partial class FlowViewModel : ObservableObject, IFileSetter
     public void SetFile(IFileViewModel? file, string path)
     {
         if (file is FileViewModel ff)
-        { 
+        {
             FileStorageInfo? tar = ff.Build(path);
             if (tar?.Path is not null)
                 ff.File = new FileInfo(tar.Path);
@@ -311,6 +311,15 @@ public partial class FlowViewModel : ObservableObject, IFileSetter
         }
     }
 
+    [RelayCommand]
+    public void UpdateFileDate()
+    {
+        UpdateFileDateOverride();
+    }
+
+    protected virtual void UpdateFileDateOverride()
+    {
+    }
 }
 
 
