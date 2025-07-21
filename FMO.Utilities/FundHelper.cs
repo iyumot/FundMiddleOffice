@@ -115,5 +115,18 @@ public static class FundHelper
     }
 
 
+    public static (Fund?, string? Class) FindByName(this Fund[] funds, string name)
+    {
+        var fund = funds.FirstOrDefault(x => x.Name == name);
+        if (fund is not null) return (fund, null);
+
+        // 尝试通过名称包含来查找 xxA xxB等子份额
+        var poss = funds.Where(x => name.StartsWith(x.Name)).ToArray();
+        if (poss.Length == 1)
+            return (poss[0], name[poss[0].Name.Length..]);
+
+
+        return (null, null);
+    }
 
 }

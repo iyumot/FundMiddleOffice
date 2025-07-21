@@ -1,11 +1,11 @@
-﻿using System.IO.Compression;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-using CommunityToolkit.Mvvm.Messaging;
+﻿using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
 using Microsoft.Playwright;
 using Serilog;
+using System.IO.Compression;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace FMO.IO.DS.MeiShi;
 
@@ -22,6 +22,8 @@ public class Assist : AssistBase
     public override Regex HoldingCheck { get; init; } = new Regex(@"vipfunds\.simu800\.com|sso\.simu800\.com");
 
     private string? token { get; set; }
+
+    public string? ManagerCode { get; private set; }
 
     public override async Task<bool> PrepareLoginAsync(IPage page)
     {
@@ -79,13 +81,18 @@ public class Assist : AssistBase
         return (await page.GetByText("易直销").CountAsync() > 0);
     }
 
-    public override Task<bool> EndLoginAsync(IPage page)
+    public override async Task<bool> EndLoginAsync(IPage page)
     {
         var m = Regex.Match(page.Url, @"ascription=([\w%]+)");
         if (m.Success) token = m.Groups[1].Value;
 
         IsLogedIn = true;
-        return base.EndLoginAsync(page);
+
+        var cookies = await page.Context.CookiesAsync(["https://vipfunds.simu800.com", "https://sso.simu800.com"]);
+        ManagerCode = cookies.FirstOrDefault(x => x.Name == "manager_externalCompanyCode")?.Value;
+
+
+        return await base.EndLoginAsync(page);
     }
 
     /// <summary>
@@ -521,6 +528,248 @@ public class Assist : AssistBase
     }
 
 
+    public override async Task<bool> SynchronizeOrderAsync()
+    {
+        string log = $"{Identifier} 同步订单";
+        // 判断登陆状态
+        if (!IsLogedIn && !await ((IExternPlatform)this).LoginAsync())
+        {
+            Log.Error(log + "失败：未登陆");
+            return false;
+        }
+
+
+        string url = $"https://vipfunds.simu800.com/vipmanager/investorManagement/signFlowManagement?ascription={token}&v={DateTime.Now.TimeStampByMilliseconds()}";
+        await using var page = await Automation.AcquirePage(Identifier);
+        await page.GotoAsync(url, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+        //var page = pw.Page; 
+        await page.Keyboard.PressAsync("Escape");
+        await page.Keyboard.PressAsync("Escape");
+
+        var locator = page.Locator("div.ant-select.ant-pagination-options-size-changer.ant-select-single.ant-select-show-arrow");
+        IResponse? response = null;
+        try
+        {
+            await page.RunAndWaitForResponseAsync(async () => await locator.First.ClickAsync(), x =>
+            {
+                if (x.Request.Url?.Contains("querySignFlowAll") ?? false)
+                {
+                    response = x;
+                    return true;
+                }
+                return false;
+            });
+
+            locator = page.Locator("div.rc-virtual-list >> div").Filter(new() { HasTextRegex = new Regex("条\\/页$") });
+            var cnt = await locator.CountAsync();
+        }
+        catch (Exception e)
+        {
+            Log.Error(log + $"切换500条/页失败{e.Message}");
+            WeakReferenceMessenger.Default.Send("同步合投资料失败，请查看log", "toast");
+            return false;
+        }
+
+        if (response is null) return false;
+        var json = await response.TextAsync();
+
+        var data = JsonSerializer.Deserialize<Json.Order.ApiResponse>(json);
+
+        if (data?.data?.list is null) return false;
+
+        // 判断是否有下一页
+
+
+
+
+        // 解析
+        using var pdb = DbHelper.Platform();
+        var cache = pdb.GetCollection<MeiShiOrderCache>().FindAll().ToArray();
+        using var db = DbHelper.Base();
+        var funds = db.GetCollection<Fund>().FindAll().ToArray();
+        var customers = db.GetCollection<Investor>().FindAll().ToArray();
+
+
+        foreach (var item in data.data.list.ExceptBy(cache.Select(x => x.Id), x => x.signFlowId))
+        {
+            var id = item.signFlowId;
+            var fundname = item.productName;
+            var cname = item.customerName;
+            var cid = item.cardNumber;
+            //var type = item.signType;
+            var openday = item.openDay;
+            var number = item.tradeMoney ?? item.redemptionMoney;
+
+            if (fundname is null) continue;
+
+
+            // 查找对应的基金
+            var (fund, sc) = funds.FindByName(fundname);
+            if (fund is null)
+            {
+                Log.Error($"{Identifier}.{nameof(SynchronizeOrderAsync)} 未找到基金 {fundname}");
+                continue;
+            }
+
+            var cus = customers.FirstOrDefault(x => x.Name == cname && x.Identity?.Id == cid);
+            if (cus is null)
+            {
+                Log.Error($"{Identifier}.{nameof(SynchronizeOrderAsync)} 未找到客户 {cname} {cid}");
+                continue;
+            }
+
+
+            var od = await GetOrderInfo(id, page);
+            if(od is null)
+            {
+                Log.Error($"{Identifier}.{nameof(SynchronizeOrderAsync)} 获取订单详情失败 {id}");
+                continue;
+            }
+
+            var stime = DateTime.TryParse(od?.sealedDocuments?.FirstOrDefault()?.sealTime, out var dt) ? DateOnly.FromDateTime(dt) : default;
+
+            TransferOrderType type = TransferOrderType.Buy;
+            if (item.signType == 3 && od?.redemptionType < 3)
+                type = od?.redemptionType switch
+                {
+                    0 => TransferOrderType.Share,
+                    1 => TransferOrderType.Amount,
+                    2 => TransferOrderType.RemainAmout,
+                };
+
+            TransferOrder order = new TransferOrder
+            {
+                FundId = fund.Id,
+                FundName = fund.Name,
+                ShareClass = sc,
+                InvestorName = cname,
+                InvestorId = cus.Id,
+                InvestorIdentity = cid,
+                Date = stime,
+                Type = type,
+                Number = number ?? 0,
+            };
+
+            // 检查是否已存在
+            var exist = db.GetCollection<TransferOrder>().FindOne(x => x.FundId == fund.Id && x.InvestorId == cus.Id && x.Date == stime && x.Type == type && x.Number == number);
+            if (exist is not null)
+                order.Id = exist.Id;
+            else db.GetCollection<TransferOrder>().Insert(order);
+
+            // 下载文件
+            var di = new DirectoryInfo($"files\\order\\{order.Id}");
+            di.Create();
+            foreach (var ff in od.sealedDocuments!)
+            {
+                // 监听下载事件
+                var downloadTask = page.WaitForDownloadAsync();
+
+                await page.GotoAsync(ff.sealedUrl!);
+                var download = await downloadTask;
+
+                DateTime time = DateTime.Parse(ff.sealTime!);
+
+                if (ff.documentName.Length > 10 && ff.codeType == 123)
+                    ff.documentName = "基金合同";
+
+                var filepath = Path.Combine(di.FullName, $"{order.FundName}-{order.InvestorName}-{time.ToLocalTime():yyyyMMdd}-{ff.documentName}.pdf");
+
+                // 保存下载的文件
+                await download.SaveAsAsync( filepath);
+
+
+                switch (ff.codeType)
+                {
+                    case 121:
+                        order.RiskPair = new FileStorageInfo { Title = ff.documentName, Time = time, Path = filepath, Hash = FileHelper.ComputeHash(filepath) };
+                        break;
+
+                    case 122:
+                        order.RiskDiscloure = new FileStorageInfo { Title = ff.documentName, Time = time, Path = filepath, Hash = FileHelper.ComputeHash(filepath) };
+                        break;
+                    case 123:
+                        order.Contract = new FileStorageInfo { Title = ff.documentName, Time = time, Path = filepath, Hash = FileHelper.ComputeHash(filepath) };
+                        break;
+                    case 125:
+                        order.OrderSheet = new FileStorageInfo { Title = ff.documentName, Time = time, Path = filepath, Hash = FileHelper.ComputeHash(filepath) };
+                        break;
+
+                    default:
+                        break;
+                }
+
+            }
+
+            // 双录
+            url = od.doubleRecordingUrl!;
+            if (url is not null)
+            {
+                // 监听下载事件
+                var downloadTask = page.WaitForDownloadAsync();
+                await page.GotoAsync(url);
+                var download = await downloadTask;
+                var filepath = $"{fundname}-{cname}-双录.mp4";
+                // 保存下载的文件
+                await download.SaveAsAsync(Path.Combine(di.FullName, filepath));
+                order.Videotape = new FileStorageInfo { Title = "双录", Time = order.OrderSheet?.Time ?? default, Path = filepath, Hash = FileHelper.ComputeHash(Path.Combine(di.FullName, filepath)) };
+            }
+
+            db.GetCollection<TransferOrder>().Update(order);
+        }
+
+
+
+        return true;
+    }
+
+    //public async Task<string> GetOrderDetail(long id, IPage page)
+    //{
+    //    var url = $"https://vipfunds.simu800.com/vip-manager/manager/signFlowController/downloadSignFlowId?&signFlowIdList={id}&companyCode={ManagerCode}&downloadType=2&codeTypeList=123,124,609,122,125,127,121,129,126,610";
+    //    await page.GotoAsync(url);
+    //    var json = await page.ContentAsync();
+
+    //    var root = JsonSerializer.Deserialize<Json.OrderDetail.ApiResponse>(json);
+    //    if (root is null) return null;
+
+    //}
+
+
+    public async Task<Json.OrderDetail.ResponseData?> GetOrderInfo(long id, IPage page)
+    {
+        var url = $"https://vipfunds.simu800.com/vip-manager/manager/signFlowController/querySignFlowInfo?flowId={id}&codeValue=2070&t={DateTime.Now.TimeStampByMilliseconds()}";
+        await page.GotoAsync(url);
+        var json = await page.ContentAsync();
+
+        var root = JsonSerializer.Deserialize<Json.OrderDetail.ApiResponse>(json);
+        if (root is null) return null;
+
+        return root.data;
+    }
+
+
+    
+
+
+    public async Task<bool> DownloadSignFile(long id, IPage page)
+    {
+        var url = $"https://vipfunds.simu800.com/vip-manager/manager/signFlowController/downloadSignFlowId?&signFlowIdList={id}&companyCode={ManagerCode}&downloadType=1&codeTypeList=123,124,609,122,125,127,121,129,126,610";
+        var downloadTask = page.WaitForDownloadAsync();
+        await page.GotoAsync(url);
+
+        var download = await downloadTask;
+
+        if (await download.FailureAsync() is string err)
+        {
+            Log.Error($"下载签署文件失败：{err}");
+            return false;
+        }
+
+        await download.SaveAsAsync(@$"cache\meishi\order\{id}.zip");
+
+        return true;
+    }
+
+
     static ZipArchive ParseQualificationZip(InvestorQualification q, FileInfo file)
     {
         // 解压文件
@@ -604,9 +853,9 @@ public class Assist : AssistBase
         }
 
         // 记录未处理的文件
-        if(qfiles.Any())
+        if (qfiles.Any())
         {
-            Log.Warning($"{q.Id} {q.InvestorName}的合投文件存在未处理项目：{string.Join(',', qfiles.Select(x=>x.Name))}");
+            Log.Warning($"{q.Id} {q.InvestorName}的合投文件存在未处理项目：{string.Join(',', qfiles.Select(x => x.Name))}");
         }
 
 
@@ -620,5 +869,23 @@ public class QualificationSyncHistory
 
 
     public DateTime Time { get; set; }
+
+}
+
+public class MeiShiOrderCache
+{
+    /// <summary>
+    /// signFlowId 
+    /// </summary>
+    public long Id { get; set; }
+
+    /// <summary>
+    /// 生成的order
+    /// </summary>
+    public int OrderId { get; set; }
+
+
+
+
 
 }

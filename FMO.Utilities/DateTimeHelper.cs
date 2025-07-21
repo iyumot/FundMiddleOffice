@@ -12,7 +12,10 @@ public static class DateTimeHelper
     {
         return (long)(dateTime - start).TotalSeconds;
     }
-
+    public static long TimeStampByMilliseconds(this DateTime dateTime)
+    {
+        return (long)(dateTime - start).TotalMilliseconds;
+    }
 
     public static bool TryParse(string? s, out DateOnly d)
     {

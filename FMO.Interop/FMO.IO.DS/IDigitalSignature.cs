@@ -18,6 +18,8 @@ public interface IDigitalSignature : IExternPlatform
     /// <returns></returns>
     Task<bool> SynchronizeCustomerAsync();
     Task<bool> SynchronizeQualificatoinAsync();
+
+    Task<bool> SynchronizeOrderAsync();
 }
 
 
@@ -140,5 +142,10 @@ public abstract class AssistBase : IDigitalSignature
         }
         return null;
     }
+
+
+
+    public abstract Task<bool> SynchronizeOrderAsync();
+  
 
 }
