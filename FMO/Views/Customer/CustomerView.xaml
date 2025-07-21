@@ -300,7 +300,10 @@
         <DockPanel>
 
             <!--  基本信息  -->
-            <StackPanel DockPanel.Dock="Top">
+            <hc:UniformSpacingPanel
+                DockPanel.Dock="Top"
+                Orientation="Vertical"
+                VerticalSpacing="5">
 
 
                 <Border
@@ -318,7 +321,7 @@
 
 
                 <!--  投资人类型  -->
-                <DockPanel Margin="0,4" LastChildFill="False">
+                <DockPanel  LastChildFill="False">
                     <shared:ChangeableContainer Binding="{Binding EntityType}">
                         <shared:ChangeableContainer.ContentTemplate>
                             <DataTemplate>
@@ -346,7 +349,7 @@
 
 
                 <!--  证件  -->
-                <DockPanel Margin="0,4" LastChildFill="False">
+                <DockPanel  LastChildFill="False">
                     <shared:ChangeableContainer Binding="{Binding IDType}">
                         <shared:ChangeableContainer.ContentTemplate>
                             <DataTemplate>
@@ -395,11 +398,15 @@
                     </shared:ChangeableContainer.ContentTemplate>
                 </shared:ChangeableContainer>
 
-                <UniformGrid Margin="0,5" Rows="1">
+                <UniformGrid  Rows="1">
                     <shared:ChangeableContainer HorizontalContentAlignment="Stretch" Binding="{Binding Email}" />
 
                     <shared:ChangeableContainer HorizontalContentAlignment="Stretch" Binding="{Binding Phone}" />
                 </UniformGrid>
+
+
+                <shared:ChangeableContainer HorizontalContentAlignment="Stretch" Binding="{Binding Address}" />
+
 
                 <!--<local:MultiFileDisplay
                     Margin="0,5"
@@ -433,7 +440,7 @@
                     </Button>
                 </DockPanel>
 
-            </StackPanel>
+            </hc:UniformSpacingPanel>
 
             <Separator Margin="4" DockPanel.Dock="Top" />
 

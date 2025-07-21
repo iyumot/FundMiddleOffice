@@ -42,6 +42,7 @@ public class Investor
 
     public string? Phone { get; set; }
 
+    public string? Address { get; set; }
 
     public static bool IsNamePair(string? a, string? b)
     {

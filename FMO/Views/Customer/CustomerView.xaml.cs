@@ -103,6 +103,8 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
 
     public ChangeableViewModel<Investor, string> Phone { get; } = new() { InitFunc = x => x.Phone, UpdateFunc = (x, y) => x.Phone = y, ClearFunc = x => x.Phone = null, Label = "联系方式" };
 
+    public ChangeableViewModel<Investor, string> Address { get; } = new() { InitFunc = x => x.Address, UpdateFunc = (x, y) => x.Address = y, ClearFunc = x => x.Address = null, Label = "联系地址" };
+
     public MultipleFileViewModel IDCards { get; }
 
 
@@ -218,6 +220,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
 
         Email.Init(investor);
         Phone.Init(investor);
+        Address.Init(investor);
 
         IDCards = new()
         {
