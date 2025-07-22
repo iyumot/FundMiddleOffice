@@ -268,9 +268,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
             OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.Agent = b),
             OnDeleteFile = (x) => DeleteFile(a => a.Agent = null)
         };
-
-
-        (HasError, Statement) = obj.Check();
+         
     }
 
 
@@ -315,7 +313,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         obj.ExperienceTypes = entityType == EntityType.Natural ? [QualificationExperienceType.Invest, QualificationExperienceType.Work, QualificationExperienceType.Senior, QualificationExperienceType.Lawyer] : [QualificationExperienceType.Invest];
         obj.ExperienceType = x.ExperienceType;
 
-        (obj.HasError, obj.Statement) = x.Check();
+        x.Check();
 
         return obj;
     }
@@ -363,6 +361,8 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
 
         WeakReferenceMessenger.Default.Send(obj);
 
+        if (Date.IsValueChanged)
+            Date.Apply();
         IsReadOnly = true;
     }
 
@@ -487,6 +487,12 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         {
             HasError = true;
             info.Add("无认证类型");
+        }
+
+        if (IsProfessional && ExperienceType is null)
+        {
+            HasError = true;
+            info.Add("无投资经历");
         }
 
         if (!InfomationSheet.Exists)

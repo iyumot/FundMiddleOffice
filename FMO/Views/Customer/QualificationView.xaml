@@ -166,7 +166,10 @@
                                             <DataTemplate>
                                                 <DockPanel Margin="{StaticResource marg}">
                                                     <CheckBox Content="近三年年均收入" IsChecked="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
-                                                    <TextBox Width="60" Margin="4,0" />
+                                                    <TextBox
+                                                        Width="60"
+                                                        Margin="4,0"
+                                                        Text="{Binding Income, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
                                                     <TextBlock VerticalAlignment="Center" Text="万" />
                                                 </DockPanel>
                                             </DataTemplate>
