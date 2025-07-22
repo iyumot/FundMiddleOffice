@@ -238,6 +238,143 @@ public static class DataTracker
 
     }
 
+    /// <summary>
+    /// 检查并匹配订单
+    /// </summary>
+    /// <param name="db"></param>
+    public static void CheckPairOrder(BaseDatabase db)
+    {
+        var orders = db.GetCollection<TransferOrder>().FindAll().ToArray();
+        var tas = db.GetCollection<TransferRecord>().FindAll().Where(x => TransferRecord.IsManual(x.Type)).ToArray();
+
+        // 清除不存在的order
+        var bad = tas.Where(x => x.OrderId != 0).ExceptBy(orders.Select(x => x.Id), x => x.OrderId).ToArray();
+        foreach (var item in bad)
+            item.OrderId = 0;
+
+        // 清理对不上的
+        bad = tas.Where(x => x.OrderId != 0).Join(orders, x => x.OrderId, x => x.Id, (x, y) => (x, y)).Where(x => x.x.FundId != x.y.FundId || x.x.CustomerId != x.y.InvestorId).Select(x => x.x).ToArray();
+        foreach (var item in bad)
+            item.OrderId = 0;
+
+        db.GetCollection<TransferRecord>().Update(bad);
+
+        List<TransferRecord> changed = new();
+        // 未匹配
+        var un = orders.ExceptBy(tas.Select(x => x.OrderId), x => x.Id).ToArray();
+        foreach (var od in un)
+        {
+            // 找当日或后的第一个ta
+            DateOnly date = tas.Where(x => x.FundId == od.FundId && x.CustomerId == od.InvestorId).OrderBy(x => x.RequestDate).FirstOrDefault(x => x.RequestDate >= od.Date)?.RequestDate ?? default;
+
+            // 可能有同日多ta
+            var list = tas.Where(x => x.FundId == od.FundId && x.CustomerId == od.InvestorId && x.RequestDate == date);
+
+            // 单独匹配
+            foreach (var record in list)
+            {
+                if (od.Date > record.RequestDate) continue;
+                switch (od.Type)
+                {
+                    case TransferOrderType.FirstTrade:
+                    case TransferOrderType.Buy:
+                        if (od.Number != record.RequestAmount)
+                            continue;
+                        break;
+                    case TransferOrderType.Share:
+                        if (od.Number != record.RequestShare)
+                            continue;
+                        break;
+                    case TransferOrderType.Amount:
+                        if (od.Number != record.RequestAmount)
+                            continue;
+                        break;
+                    case TransferOrderType.RemainAmout:
+                        if ((od.Number / record.RequestAmount) switch { < 0.99m => true, > 1.01m => true, _ => false })
+                            continue;
+                        break;
+                    default:
+                        break;
+                }
+
+                record.OrderId = od.Id;
+                changed.Add(record);
+                break;
+
+            }
+
+            // 合并匹配
+            switch (od.Type)
+            {
+                case TransferOrderType.FirstTrade:
+                case TransferOrderType.Buy:
+                    if (od.Number != list.Sum(x => x.RequestAmount))
+                        continue;
+                    break;
+                case TransferOrderType.Share:
+                    if (od.Number != list.Sum(x => x.RequestShare))
+                        continue;
+                    break;
+                case TransferOrderType.Amount:
+                    if (od.Number != list.Sum(x => x.RequestAmount))
+                        continue;
+                    break;
+                case TransferOrderType.RemainAmout:
+                    if ((od.Number / list.Sum(x => x.ConfirmedAmount)) switch { < 0.99m => true, > 1.01m => true, _ => false })
+                        continue;
+                    break;
+            }
+
+            foreach (var item in list)
+            {
+                item.OrderId = od.Id;
+                changed.Add(item);
+            }
+
+        }
+        db.GetCollection<TransferRecord>().Update(changed);
+    }
+
+
+    public static bool IsPair(TransferOrder order, TransferRecord record)
+    {
+        if (order.FundId != record.FundId) return false;
+        if (order.InvestorId != record.CustomerId) return false;
+
+        if (order.Date > record.RequestDate) return false;
+
+        var orderbuy = order.Type switch { TransferOrderType.FirstTrade or TransferOrderType.Buy => true, _ => false };
+        if (orderbuy && !TransferRecord.IsManualIn(record.Type)) return false;
+        if (!orderbuy && !TransferRecord.IsManualOut(record.Type)) return false;
+
+        if (orderbuy && order.Number != record.RequestAmount) return false;
+        if (!orderbuy)
+        {
+            switch (order.Type)
+            {
+                case TransferOrderType.FirstTrade:
+                case TransferOrderType.Buy:
+                    if (order.Number != record.RequestAmount)
+                        return false;
+                    break;
+                case TransferOrderType.Share:
+                    if (order.Number != record.RequestShare)
+                        return false;
+                    break;
+                case TransferOrderType.Amount:
+                    if (order.Number != record.RequestAmount)
+                        return false;
+                    break;
+                case TransferOrderType.RemainAmout:
+                    if ((order.Number / record.ConfirmedAmount) switch { < 0.99m => true, > 1.01m => true, _ => false })
+                        return false;
+                    break;
+                default:
+                    break;
+            }
+        }
+        return true;
+    }
 
     public static void OnFundCleared(Fund f)
     {

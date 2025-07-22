@@ -18,7 +18,7 @@ public partial class MainWindow : Window
 {
     public MainWindow()
     {
-        Directory.SetCurrentDirectory(@"e:\fmo");
+        Directory.SetCurrentDirectory(@"d:\fmo");
         InitializeComponent();
     }
 }
@@ -50,7 +50,7 @@ public partial class MainWindowViewModel : ObservableObject
 
         // 产品名-投资人 
 
-        Regex regex = new Regex(@"(\w+)-(\w+)/[^/]+");
+        Regex regex = new Regex(@"(\w+)-([^/]+)/[^/]+");
         var folders = zip.Entries.Select(x => (x, regex.Match(x.FullName))).Where(x => x.Item2.Success).
             Select(x => new { Item = x.x, FundName = x.Item2.Groups[1].Value, Customer = x.Item2.Groups[2].Value }).ToList();
 
@@ -59,6 +59,11 @@ public partial class MainWindowViewModel : ObservableObject
         var customers = db.GetCollection<Investor>().FindAll().ToArray();
         var tas = db.GetCollection<TransferRecord>().FindAll().ToArray();
         var orders = db.GetCollection<TransferOrder>().FindAll().OrderBy(x => x.Date).ToArray();
+
+        // 备份
+        db.GetCollection<TransferRecord>($"TransferRecord_bak_{DateTime.Now:yyyyMMdd_HHmmss}").Insert(tas);
+        db.GetCollection<TransferOrder>($"TransferOrder_bak_{DateTime.Now:yyyyMMdd_HHmmss}").Insert(orders);
+
         // first
         foreach (var item in orders.GroupBy(x => x.FundId))
         {
@@ -120,8 +125,6 @@ public partial class MainWindowViewModel : ObservableObject
                 if (sheet is not null)
                 {
 
-
-
                     // 获取签名日期
                     using var ss = sheet.Item.Open();
                     using var ms = new MemoryStream();
@@ -168,11 +171,12 @@ public partial class MainWindowViewModel : ObservableObject
                         Number = number,
                         ShareClass = sc,
                         Date = signDate.Value,
+                        Source = "import"
                     };
 
                     if (old is null)
                         db.GetCollection<TransferOrder>().Insert(order);
-                    else order.Id = old.Id;
+                    else order = old;//order.Id = old.Id;
 
                     // 保存文件
                     var di = Directory.CreateDirectory(@$"files\order\{order.Id}");
@@ -265,8 +269,12 @@ public partial class MainWindowViewModel : ObservableObject
                             Number = number,
                             ShareClass = sc,
                             Date = signDate.Value,
+                            Source = "import"
                         };
-                        db.GetCollection<TransferOrder>().Insert(order);
+                        var old = orders.FirstOrDefault(x => x.FundId == fund.Id && x.InvestorId == cus.Id && x.Date == signDate && x.Type == TransferOrderType.Buy);
+                        if (old is null)
+                            db.GetCollection<TransferOrder>().Insert(order);
+                        else continue;//order.Id = old.Id;
 
                         var di = Directory.CreateDirectory(@$"files\order\{order.Id}");
                         order.OrderSheet = SaveTo(mss, "申请表", Path.Combine(di.FullName, nf.Item.Name));
@@ -320,8 +328,12 @@ public partial class MainWindowViewModel : ObservableObject
                             ShareClass = sc,
                             Number = number,
                             Date = signDate.Value,
+                            Source = "import"
                         };
-                        db.GetCollection<TransferOrder>().Insert(order);
+                        var old = orders.FirstOrDefault(x => x.FundId == fund.Id && x.InvestorId == cus.Id && x.Date == signDate && x.Type == rt);
+                        if (old is null)
+                            db.GetCollection<TransferOrder>().Insert(order);
+                        else continue;//order.Id = old.Id;
 
                         var di = Directory.CreateDirectory(@$"files\order\{order.Id}");
                         order.OrderSheet = SaveTo(mss, "申请表", Path.Combine(di.FullName, nf.Item.Name));
