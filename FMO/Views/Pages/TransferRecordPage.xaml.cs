@@ -310,12 +310,13 @@ partial class TransferRecordViewModel
     /// </summary>
     public bool HasBrotherRecord { get; set; }
 
+    public bool FirstTrade { get; set; }
 
     [RelayCommand]
     public void ModifyOrder()
     {
         var wnd = new SupplementaryOrderWindow();
-        var context = new SupplementaryOrderWindowViewModel(this);
+        var context = new SupplementaryOrderWindowViewModel(this, FirstTrade);
         wnd.DataContext = context;
         wnd.Owner = App.Current.MainWindow;
         if (wnd.ShowDialog() ?? false)
@@ -325,7 +326,23 @@ partial class TransferRecordViewModel
         }
     }
 
-    
+    public decimal ShareChange()
+    {
+        switch (Type)
+        {
+            case TransferRecordType.Subscription:
+            case TransferRecordType.Purchase:
+            case TransferRecordType.Increase:
+            case TransferRecordType.Distribution:
+                return ConfirmedShare??0;
+            case TransferRecordType.Redemption:
+            case TransferRecordType.ForceRedemption:
+            case TransferRecordType.Decrease:
+                return -ConfirmedShare??0;
+            default:
+                return 0;
+        }
+    }
 }
 
 

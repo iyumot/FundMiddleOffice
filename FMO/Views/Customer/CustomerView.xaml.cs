@@ -262,6 +262,8 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
 
             var rvm = tf.Where(x => TransferRecord.IsManual(x.Type)).OrderBy(x => x.ConfirmedDate).Select(x => new TransferRecordViewModel(x)).ToList();
 
+            rvm[0].FirstTrade = true;
+            decimal share = rvm[0].ShareChange();
             // 同日同向单
             for (int i = 1; i < rvm.Count; i++)
             {
@@ -270,6 +272,10 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
                     rvm[i - 1].HasBrotherRecord = true;
                     rvm[i].HasBrotherRecord = true;
                 }
+
+                if(share == 0) rvm[i].FirstTrade = true;
+
+                share += rvm[i].ShareChange();
             }
 
             TransferRecordByFund rbf = new()

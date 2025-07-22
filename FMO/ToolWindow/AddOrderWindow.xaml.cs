@@ -99,7 +99,7 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
     public partial TransferOrderType? SelectedType { get; set; }
 
 
-    public virtual TransferOrderType[] Types { get; } = [TransferOrderType.Buy, TransferOrderType.Share, TransferOrderType.Amount, TransferOrderType.RemainAmout];
+    public virtual TransferOrderType[] Types { get; } = [TransferOrderType.FirstTrade, TransferOrderType.Buy, TransferOrderType.Share, TransferOrderType.Amount, TransferOrderType.RemainAmout];
 
 
 
@@ -165,7 +165,7 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
     public partial string? Tips { get; set; }
 
 
-    public bool IsSell => SelectedType != TransferOrderType.Buy;
+    public bool IsSell => SelectedType > TransferOrderType.Buy ;
 
 
     protected abstract void Check();
@@ -264,7 +264,7 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
         try
         {
             if (PdfHelper.GetSignDate(fi.FullName) is DateOnly d)
-                Date = new DateTime( d,default);
+                Date = new DateTime(d, default);
         }
         catch { }
         return fsi;
@@ -456,11 +456,11 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
 
 public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModelBase
 {
-    public SupplementaryOrderWindowViewModel(TransferRecordViewModel record)
+    public SupplementaryOrderWindowViewModel(TransferRecordViewModel record, bool firstTrade)
     {
         Record = record;
 
-        SelectedType = record.Type switch { TransferRecordType.Redemption or TransferRecordType.ForceRedemption => GetSellType(record), _ => TransferOrderType.Buy };
+        SelectedType = record.Type switch { TransferRecordType.Redemption or TransferRecordType.ForceRedemption => GetSellType(record), _ => firstTrade ? TransferOrderType.FirstTrade : TransferOrderType.Buy };
 
 
         Number = record.RequestAmount > 0 ? record.RequestAmount : record.RequestShare;

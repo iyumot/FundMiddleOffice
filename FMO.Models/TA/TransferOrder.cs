@@ -5,7 +5,9 @@ namespace FMO.Models;
 [TypeConverter(nameof(EnumDescriptionTypeConverter))]
 public enum TransferOrderType
 {
-    [Description("买入")] Buy,
+    [Description("首次买入")] FirstTrade,
+
+    [Description("追加申购")] Buy,
 
     [Description("份额赎回")] Share,
 

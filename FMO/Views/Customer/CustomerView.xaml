@@ -321,7 +321,7 @@
 
 
                 <!--  投资人类型  -->
-                <DockPanel  LastChildFill="False">
+                <DockPanel LastChildFill="False">
                     <shared:ChangeableContainer Binding="{Binding EntityType}">
                         <shared:ChangeableContainer.ContentTemplate>
                             <DataTemplate>
@@ -349,7 +349,7 @@
 
 
                 <!--  证件  -->
-                <DockPanel  LastChildFill="False">
+                <DockPanel LastChildFill="False">
                     <shared:ChangeableContainer Binding="{Binding IDType}">
                         <shared:ChangeableContainer.ContentTemplate>
                             <DataTemplate>
@@ -398,7 +398,7 @@
                     </shared:ChangeableContainer.ContentTemplate>
                 </shared:ChangeableContainer>
 
-                <UniformGrid  Rows="1">
+                <UniformGrid Rows="1">
                     <shared:ChangeableContainer HorizontalContentAlignment="Stretch" Binding="{Binding Email}" />
 
                     <shared:ChangeableContainer HorizontalContentAlignment="Stretch" Binding="{Binding Phone}" />
