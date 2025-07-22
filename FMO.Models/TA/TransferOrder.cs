@@ -11,23 +11,12 @@ public enum TransferOrderType
 
     [Description("份额赎回")] Share,
 
-    [Description("按金额赎回")] Amount,
+    [Description("金额赎回")] Amount,
 
     [Description("赎回至指定金额")] RemainAmout,
 }
 
-[TypeConverter(nameof(EnumDescriptionTypeConverter))]
-public enum TransferSellType
-{
-    [Description("份额赎回")] Share,
-
-    [Description("按金额赎回")] Amount,
-
-    [Description("赎回至指定金额")]RemainAmout,
-}
-
-
-
+ 
 
 /// <summary>
 /// 交易订单
