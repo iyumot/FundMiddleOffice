@@ -1,0 +1,24 @@
+﻿<Window
+    x:Class="FMO.DataImporter.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:local="clr-namespace:FMO.DataImporter"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="数据导入器"
+    Width="800"
+    Height="450"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <Window.DataContext>
+        <local:MainWindowViewModel />
+    </Window.DataContext>
+    <hc:FlexPanel Margin="10">
+        <GroupBox Header="易私募">
+            <hc:UniformSpacingPanel>
+                <Button Command="{Binding ImportOrderFromMeishiCommand}" Content="导入签约资料" />
+            </hc:UniformSpacingPanel>
+        </GroupBox>
+    </hc:FlexPanel>
+</Window>

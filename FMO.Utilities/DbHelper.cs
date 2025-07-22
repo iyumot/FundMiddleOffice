@@ -1,9 +1,11 @@
 ﻿using FMO.Models;
 using LiteDB;
 using Serilog;
+using System;
 using System.Configuration;
 using System.Security.Cryptography;
 using System.Text;
+using System.Xml.Linq;
 namespace FMO.Utilities;
 
 internal record PatchRecord(int Id, DateTime Time);
@@ -325,6 +327,27 @@ public class BaseDatabase : LiteDatabase
         }
         return null;
     }
+
+
+    public (Fund? Fund, string? Class) FindByName(string name)
+    {
+        var fund = GetCollection<Fund>().FindOne(x => x.Name == name);
+        if (fund is not null) return (fund, null);
+
+        // 尝试通过名称包含来查找 xxA xxB等子份额
+        var poss = GetCollection<Fund>().Find(x => name.StartsWith(x.Name)).ToArray();
+        if (poss.Length == 1)
+            return (poss[0], name[poss[0].Name.Length..]);
+
+        // 曾用名
+        var ava = GetCollection<FundElements>().FindAll().Select(x => x.FullName.Changes.Select(y => new { id = x.Id, fn = y.Value })).ToList().SelectMany(x => x);
+
+        var old = ava.FirstOrDefault(x => name.StartsWith(x.fn));
+        if (old is not null)
+            return (GetCollection<Fund>().FindById(old.id), name == old.fn ? null : name[old.fn.Length..]);
+        return default;
+    }
+
 
     public ILiteCollection<DailyValue> GetDailyCollection(int fid)
     {
