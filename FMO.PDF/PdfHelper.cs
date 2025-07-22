@@ -408,6 +408,22 @@ public static class PdfHelper
 
         List<string> strings = [];
         using var fs = new FileStream(file, FileMode.Open);
+        return GetTexts(fs);
+    }
+
+    public static string[] GetTexts(Stream? fs)
+    {
+        if (fs is null) return [];
+        if (!fs.CanSeek)
+        {
+            using var ms = new MemoryStream();
+            fs.CopyTo(ms);
+            ms.Seek(0, SeekOrigin.Begin);
+            return GetTexts(ms);
+        }
+
+        fs.Seek(0, SeekOrigin.Begin);
+        List<string> strings = [];
         byte[] buf = new byte[fs.Length];
         fs.ReadExactly(buf);
         var d = PDFium.FPDF_LoadDocument(buf);
@@ -434,7 +450,24 @@ public static class PdfHelper
         if (string.IsNullOrWhiteSpace(file)) return null;
 
         using var fs = new FileStream(file, FileMode.Open);
-        byte[] buf = new byte[fs.Length];
+        return GetSignDate(fs);
+    }
+
+    public static DateOnly? GetSignDate(Stream? fs)
+    {
+        if (fs is null) return null;
+       
+        if(!fs.CanSeek)
+        {
+            using var ms = new MemoryStream();
+            fs.CopyTo(ms);
+            ms.Seek(0, SeekOrigin.Begin);
+            return GetSignDate(ms);
+        }
+
+
+        fs.Seek(0, SeekOrigin.Begin);
+        byte[] buf = new byte[fs.Length]; 
         fs.ReadExactly(buf);
         var d = PDFium.FPDF_LoadDocument(buf);
 
@@ -456,12 +489,10 @@ public static class PdfHelper
         cms.Decode(buffer);
 
         var time = GetSignTime(cms);
-        
+
         PDFium.FPDF_CloseDocument(d);
         return time is null ? null : DateOnly.FromDateTime(time.Value);
     }
-
-
 
 
     private static DateTime? GetSignTime(SignedCms cms)
