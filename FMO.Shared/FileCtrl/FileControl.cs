@@ -171,16 +171,19 @@ public class MultipleFileView:Control
         DefaultStyleKeyProperty.OverrideMetadata(typeof(MultipleFileView), new FrameworkPropertyMetadata(typeof(MultipleFileView)));
     }
 
+    public MultipleFileView()
+    { 
+    }
 
-    public IFileSelector Binding
+    public MultipleFileViewModel Binding
     {
-        get { return (IFileSelector)GetValue(BindingProperty); }
+        get { return (MultipleFileViewModel)GetValue(BindingProperty); }
         set { SetValue(BindingProperty, value); }
     }
 
     // Using a DependencyProperty as the backing store for Binding.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty BindingProperty =
-        DependencyProperty.Register("Binding", typeof(IFileSelector), typeof(MultipleFileView), new PropertyMetadata(null));
+        DependencyProperty.Register("Binding", typeof(MultipleFileViewModel), typeof(MultipleFileView), new PropertyMetadata(null));
 
     public bool IsReadOnly
     {
@@ -193,4 +196,15 @@ public class MultipleFileView:Control
         DependencyProperty.Register("IsReadOnly", typeof(bool), typeof(MultipleFileView), new PropertyMetadata(false));
 
 
+
+    protected override void OnDrop(DragEventArgs e)
+    {
+        if (Binding is not null && e.Data.GetData(DataFormats.FileDrop) is string[] ss)
+        {
+            foreach (var item in ss)
+            {
+                Binding.AddFileImpl(item);
+            }
+        }
+    }
 }

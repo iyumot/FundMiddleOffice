@@ -612,6 +612,7 @@
 
 
     <Style TargetType="local:MultipleFileView">
+        <Setter Property="AllowDrop" Value="{Binding IsReadOnly, Converter={StaticResource Boolean2BooleanReConverter}}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:MultipleFileView">

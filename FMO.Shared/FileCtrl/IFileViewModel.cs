@@ -340,14 +340,19 @@ public partial class MultipleFileViewModel : ObservableObject, IFileSelector
         if (fd.ShowDialog() != true)
             return;
 
-        var fi = new FileInfo(fd.FileName);
+        AddFileImpl(fd.FileName);
+    }
+
+
+    public void AddFileImpl(string path)
+    {
+        var fi = new FileInfo(path);
         var nf = OnAddFile(fi, Label);
         if (nf is null) return;
 
         if (Files is null) Files = [nf];
         else Files.Add(nf);
     }
-
 
     [RelayCommand]
     public void DeleteFile(FileStorageInfo? file)
