@@ -332,6 +332,9 @@ public partial class MultipleFileViewModel : ObservableObject, IFileSelector
 
     public required Action<FileStorageInfo> OnDeleteFile { get; set; }
 
+    public Action? FileChanged { get; set; }
+
+
     [RelayCommand]
     public void AddFile()
     {
@@ -352,6 +355,8 @@ public partial class MultipleFileViewModel : ObservableObject, IFileSelector
 
         if (Files is null) Files = [nf];
         else Files.Add(nf);
+
+        FileChanged?.Invoke();
     }
 
     [RelayCommand]
