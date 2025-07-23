@@ -104,10 +104,12 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         CountofInvestorsHoldingPositions = ib.Where(x => x.Share > 0).DistinctBy(x => x.InvestorId).Count();
 
         // 更新到customers
+        foreach (var item in Customers.IntersectBy(ib.Where(x => x.Share == 0).Select(x => x.InvestorId), x => x.Id))
+                item.Holding = InvestorReadOnlyViewModel.HoldingMode.Previous;
         foreach (var item in Customers.IntersectBy(ib.Where(x => x.Share > 0).Select(x => x.InvestorId), x => x.Id))
             item.Holding = InvestorReadOnlyViewModel.HoldingMode.Current;
-        foreach (var item in Customers.IntersectBy(ib.Where(x => x.Share == 0).Select(x => x.InvestorId), x => x.Id))
-            item.Holding = InvestorReadOnlyViewModel.HoldingMode.Previous;
+
+
 
         // 是否缺失订单
         var ta = db.GetCollection<TransferRecord>().FindAll().ToArray();
