@@ -50,6 +50,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
     public partial QualificationFileType? ProofType { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(MethodNotice))]
     public partial QualificationExperienceType? ExperienceType { get; set; }
 
     [ObservableProperty]
