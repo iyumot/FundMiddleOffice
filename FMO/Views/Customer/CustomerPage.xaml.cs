@@ -111,7 +111,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
         // 是否缺失订单
         var ta = db.GetCollection<TransferRecord>().FindAll().ToArray();
-        foreach (var item in Customers.IntersectBy(ta.Where(x => x.OrderId == 0 && TransferRecord.IsManual(x.Type)).Select(x => x.CustomerId), x => x.Id))
+        foreach (var item in Customers.IntersectBy(ta.Where(x => x.OrderId == 0 && TransferRecord.RequireOrder(x.Type)).Select(x => x.CustomerId), x => x.Id))
             item.LackOrder = true;
 
         CustomerSource.Source = Customers;
@@ -617,7 +617,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         if (c is not null)
         {
             using var db = DbHelper.Base();
-            c.LackOrder = db.GetCollection<TransferRecord>().Find(x => x.CustomerId == c.Id).Any(x => x.OrderId == 0 && TransferRecord.IsManual(x.Type));
+            c.LackOrder = db.GetCollection<TransferRecord>().Find(x => x.CustomerId == c.Id).Any(x => x.OrderId == 0 && TransferRecord.RequireOrder(x.Type));
         }
     }
 }

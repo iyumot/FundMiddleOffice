@@ -25,7 +25,7 @@ public partial class TransferRecordPage : UserControl
 }
 
 
-public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<TransferRecord>, IRecipient<PageTAMessage>,IRecipient<TransferOrder>
+public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<TransferRecord>, IRecipient<PageTAMessage>, IRecipient<TransferOrder>
 {
     [ObservableProperty]
     public partial ObservableCollection<TransferRecordViewModel>? Records { get; set; }
@@ -42,10 +42,18 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     public partial string? SearchKeyword { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsRecordTabSelected))]
     public partial int TabIndex { get; set; } = 2;
+
+    public bool IsRecordTabSelected => TabIndex == 2;
 
     [ObservableProperty]
     public partial ObservableCollection<TransferRequest>? Requests { get; set; }
+
+
+    [ObservableProperty]
+    public partial bool ShowOnlySignable { get; set; }
+
 
     public CollectionViewSource RequestsSource { get; set; } = new();
 
@@ -53,12 +61,11 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
     public TransferRecordPageViewModel()
     {
+        ShowOnlySignable = true;
         WeakReferenceMessenger.Default.RegisterAll(this);
 
-        RequestsSource.Filter += (s, e) => e.Accepted = string.IsNullOrWhiteSpace(SearchKeyword) ? true :
-        e.Item switch { TransferRequest r => r.CustomerName.Contains(SearchKeyword) || r.FundName.Contains(SearchKeyword) || r.CustomerIdentity.Contains(SearchKeyword), _ => true };
-        RecordsSource.Filter += (s, e) => e.Accepted = string.IsNullOrWhiteSpace(SearchKeyword) ? true :
-        e.Item switch { TransferRecordViewModel r => (r.CustomerName?.Contains(SearchKeyword) ?? false) || (r.FundName?.Contains(SearchKeyword) ?? false) || (r.CustomerIdentity?.Contains(SearchKeyword) ?? false), _ => true };
+        RequestsSource.Filter += (s, e) => e.Accepted = string.IsNullOrWhiteSpace(SearchKeyword) ? true : SearchPair(e.Item, SearchKeyword);
+        RecordsSource.Filter += (s, e) => e.Accepted = FilterRecord(e.Item);
 
         Task.Run(() =>
         {
@@ -122,7 +129,28 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     }
 
 
+    private bool FilterRecord(object obj)
+    {
+        if (obj is not TransferRecordViewModel r || r.Type is null) return false;
 
+        bool show = !ShowOnlySignable || TransferRecord.RequireOrder(r.Type.Value);
+        return show && (string.IsNullOrWhiteSpace(SearchKeyword) ? true : SearchPair(obj, SearchKeyword));
+    }
+
+
+    private bool SearchPair(object obj, string key)
+    {
+        if (obj is TransferRecordViewModel r) 
+            return (r.CustomerName?.Contains(key) ?? false) || (r.FundName?.Contains(key) ?? false) || (key?.Length > 3 && (r.CustomerIdentity?.Contains(key) ?? false));
+
+        if(obj is TransferRequest rr)
+            return (rr.CustomerName?.Contains(key) ?? false) || (rr.FundName?.Contains(key) ?? false) || (key?.Length > 3 && (rr.CustomerIdentity?.Contains(key) ?? false));
+
+        if(obj is TransferOrderViewModel o) 
+            return (o.InvestorName?.Contains(key) ?? false) || (o.FundName?.Contains(key) ?? false) || (key?.Length > 3 && (o.InvestorIdentity?.Contains(key) ?? false));
+
+        return false;
+    }
 
 
     partial void OnSearchKeywordChanged(string? value)
@@ -132,6 +160,11 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         else Refresh();
     }
 
+
+    partial void OnShowOnlySignableChanged(bool value)
+    {
+        RecordsSource?.View?.Refresh();
+    }
 
     private void Refresh()
     {
@@ -176,7 +209,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
                 item.OrderId = 0;
             db.GetCollection<TransferRecord>().Update(rr);
 
-            DataTracker.LinkOrder(rr);           
+            DataTracker.LinkOrder(rr);
             Orders!.Remove(order);
         }
     }
@@ -334,11 +367,11 @@ partial class TransferRecordViewModel
             case TransferRecordType.Purchase:
             case TransferRecordType.Increase:
             case TransferRecordType.Distribution:
-                return ConfirmedShare??0;
+                return ConfirmedShare ?? 0;
             case TransferRecordType.Redemption:
             case TransferRecordType.ForceRedemption:
             case TransferRecordType.Decrease:
-                return -ConfirmedShare??0;
+                return -ConfirmedShare ?? 0;
             default:
                 return 0;
         }

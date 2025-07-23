@@ -27,6 +27,11 @@
             VerticalAlignment="Top"
             Panel.ZIndex="99">
 
+            <CheckBox
+                Content="显示全部类型"
+                IsChecked="{Binding ShowOnlySignable, Converter={StaticResource Boolean2BooleanReConverter}}"
+                Visibility="{Binding IsRecordTabSelected, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
             <Button
                 Margin="10,0"
                 hc:IconElement.Geometry="{StaticResource f.plus}"
@@ -361,6 +366,17 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Viewbox Width="18" Visibility="{Binding HasOrder, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                                        <Path Data="{StaticResource f.ticket-simple}" Fill="Red" />
+                                    </Viewbox>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
                         <DataGridTextColumn Binding="{Binding RequestDate, StringFormat=yyyy-MM-dd}" Header="日期" />
                         <DataGridTextColumn Binding="{Binding FundCode}" Header="代码" />
                         <DataGridTextColumn Binding="{Binding FundName}" Header="产品" />

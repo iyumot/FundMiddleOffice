@@ -169,12 +169,12 @@ public class TransferRecord : IEquatable<TransferRecord>
     }
 
 
-    public static bool IsManual(TransferRecordType t)
+    public static bool RequireOrder(TransferRecordType t)
     {
-        return IsManualIn(t) || IsManualOut(t);
+        return RequireBuyOrder(t) || RequireSellOrder(t);
     }
 
-    public static bool IsManualIn(TransferRecordType t)
+    public static bool RequireBuyOrder(TransferRecordType t)
     {
         switch (t)
         {
@@ -188,7 +188,7 @@ public class TransferRecord : IEquatable<TransferRecord>
         }
     }
 
-    public static bool IsManualOut(TransferRecordType t)
+    public static bool RequireSellOrder(TransferRecordType t)
     {
         switch (t)
         { 

@@ -245,7 +245,7 @@ public static class DataTracker
     public static void CheckPairOrder(BaseDatabase db)
     {
         var orders = db.GetCollection<TransferOrder>().FindAll().ToArray();
-        var tas = db.GetCollection<TransferRecord>().FindAll().Where(x => TransferRecord.IsManual(x.Type)).ToArray();
+        var tas = db.GetCollection<TransferRecord>().FindAll().Where(x => TransferRecord.RequireOrder(x.Type)).ToArray();
 
         // 清除不存在的order
         var bad = tas.Where(x => x.OrderId != 0).ExceptBy(orders.Select(x => x.Id), x => x.OrderId).ToArray();
@@ -344,8 +344,8 @@ public static class DataTracker
         if (order.Date > record.RequestDate) return false;
 
         var orderbuy = order.Type switch { TransferOrderType.FirstTrade or TransferOrderType.Buy => true, _ => false };
-        if (orderbuy && !TransferRecord.IsManualIn(record.Type)) return false;
-        if (!orderbuy && !TransferRecord.IsManualOut(record.Type)) return false;
+        if (orderbuy && !TransferRecord.RequireBuyOrder(record.Type)) return false;
+        if (!orderbuy && !TransferRecord.RequireSellOrder(record.Type)) return false;
 
         if (orderbuy && order.Number != record.RequestAmount) return false;
         if (!orderbuy)
