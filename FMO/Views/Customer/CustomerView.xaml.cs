@@ -273,7 +273,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
                     rvm[i].HasBrotherRecord = true;
                 }
 
-                if(share == 0) rvm[i].FirstTrade = true;
+                if (share == 0) rvm[i].FirstTrade = true;
 
                 share += rvm[i].ShareChange();
             }
@@ -281,7 +281,8 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
             TransferRecordByFund rbf = new()
             {
                 FundId = tf.First().FundId,
-                FundName = tf.Key,
+                FundName = Fund.GetDefaultShortName(tf.First().FundName),
+                FundCode = tf.First().FundCode,
                 Asset = Asset,
                 Profit = profit,
                 Records = rvm
@@ -351,7 +352,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
                 InvestorTypes = [AmacInvestorType.Manager, AmacInvestorType.LegalEntity, AmacInvestorType.IndividualProprietorship, AmacInvestorType.NonLegalEntity, AmacInvestorType.QFII, AmacInvestorType.Foreign, AmacInvestorType.DirectFinancialInvestment];
                 break;
             case Models.EntityType.Product:
-                InvestorTypes = [..Enum.GetValues<AmacInvestorType>().Where(x => x > AmacInvestorType.Product), AmacInvestorType.QFII];
+                InvestorTypes = [.. Enum.GetValues<AmacInvestorType>().Where(x => x > AmacInvestorType.Product), AmacInvestorType.QFII];
                 break;
             default:
                 break;
@@ -912,6 +913,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
         public IEnumerable<TransferRecordViewModel>? Records { get; set; }
 
         public decimal Profit { get; internal set; }
+        public string? FundCode { get; internal set; }
 
         [RelayCommand]
         public void OpenFund()
