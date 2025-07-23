@@ -207,7 +207,8 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
             Label = "基本信息表",
             File = obj.InfomationSheet,
             OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.InfomationSheet = b),
-            OnDeleteFile = (x) => DeleteFile(a => a.InfomationSheet = null)
+            OnDeleteFile = (x) => DeleteFile(a => a.InfomationSheet = null),
+            FileChanged = () => Check()
         };
         //InfomationSheet.Init(obj);
 
@@ -216,7 +217,8 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
             Label = "合格投资者承诺函",
             File = obj.CommitmentLetter,
             OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.CommitmentLetter = b),
-            OnDeleteFile = (x) => DeleteFile(a => a.CommitmentLetter = null)
+            OnDeleteFile = (x) => DeleteFile(a => a.CommitmentLetter = null),
+            FileChanged = () => Check()
         };
 
         Notice = new()
@@ -224,7 +226,8 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
             Label = "普通/专业投资者告知书",
             File = obj.Notice,
             OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.Notice = b),
-            OnDeleteFile = (x) => DeleteFile(a => a.Notice = null)
+            OnDeleteFile = (x) => DeleteFile(a => a.Notice = null),
+            FileChanged = () => Check()
         };
 
         TaxDeclaration = new()
@@ -232,7 +235,8 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
             Label = "普通/税收文件",
             File = obj.TaxDeclaration,
             OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.TaxDeclaration = b),
-            OnDeleteFile = (x) => DeleteFile(a => a.TaxDeclaration = null)
+            OnDeleteFile = (x) => DeleteFile(a => a.TaxDeclaration = null),
+            FileChanged = () => Check()
         };
 
 
@@ -242,6 +246,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
             Files = [.. (obj.CertificationFiles ?? new())],
             OnAddFile = (x, y) => SetCertFile(Id, x),
             OnDeleteFile = x => DeleteCertFile(x),
+            FileChanged = () => Check()
         };
 
 
@@ -251,7 +256,8 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
             Label = "投资经历",
             File = obj.ProofOfExperience,
             OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.ProofOfExperience = b),
-            OnDeleteFile = (x) => DeleteFile(a => a.ProofOfExperience = null)
+            OnDeleteFile = (x) => DeleteFile(a => a.ProofOfExperience = null),
+            FileChanged = () => Check()
         };
 
         Authorization = new()
@@ -401,7 +407,6 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         func(q, fsi);
         db.GetCollection<InvestorQualification>().Update(q);
 
-        Check();
         return fsi;
     }
 
