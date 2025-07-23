@@ -169,6 +169,7 @@
                                                     <TextBox
                                                         Width="60"
                                                         Margin="4,0"
+                                                        DataContext="{Binding RelativeSource={RelativeSource AncestorType=local:QualificationView}, Path=DataContext}"
                                                         Text="{Binding Income, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
                                                     <TextBlock VerticalAlignment="Center" Text="万" />
                                                 </DockPanel>
