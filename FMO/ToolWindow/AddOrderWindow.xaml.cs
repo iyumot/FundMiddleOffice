@@ -91,6 +91,7 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
     public partial DateTime? Date { get; set; }
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
     public partial decimal? Number { get; set; }
 
 
@@ -165,7 +166,7 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
     public partial string? Tips { get; set; }
 
 
-    public bool IsSell => SelectedType > TransferOrderType.Buy ;
+    public bool IsSell => SelectedType > TransferOrderType.Buy;
 
 
     protected abstract void Check();
@@ -415,6 +416,39 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
         }
     }
 
+    //public TransferOrder? Build()
+    //{
+    //    if (Date is null || SelectedFund is null || SelectedInvestor is null || SelectedType is null || Number is null) return null;
+
+    //    var order = new TransferOrder
+    //    {
+    //        Date = DateOnly.FromDateTime(Date.Value),
+    //        CreateDate = DateOnly.FromDateTime(DateTime.Now),
+    //        FundId = SelectedFund.Id,
+    //        FundName = SelectedFund.Name,
+    //        InvestorId = SelectedInvestor.Id,
+    //        InvestorName = SelectedInvestor.Name,
+    //        InvestorIdentity = SelectedInvestor.Identity!.Id,
+    //        Number = Number.Value,
+    //        ShareClass = ShareClass,
+    //        Type = SelectedType.Value,
+    //        OrderSheet = OrderFile.File,
+
+    //    };
+
+    //    using var db = DbHelper.Base();
+    //    db.GetCollection<TransferOrder>().Insert(order);
+
+    //    // 移动文件
+    //    order.Contract = Move(Contract.File);
+    //    order.RiskDiscloure = Move(RiskDisclosure.File);
+    //    order.OrderSheet = Move(OrderFile.File);
+    //    order.Videotape = Move(Video.File);
+    //    order.Review = Move(Review.File);
+    //    order.RiskPair = Move(RiskPair.File);
+    //    db.GetCollection<TransferOrder>().Update(order);
+    //    return order;
+    //}
 
     protected override void Check()
     {

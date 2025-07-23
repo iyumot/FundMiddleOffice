@@ -301,12 +301,6 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         wnd.DataContext = context;
         if (wnd.ShowDialog() switch { true => false, _ => true })
             return;
-
-        var order = context.Order;
-        Orders?.Add(order);
-
-        using var db = DbHelper.Base();
-        db.GetCollection<TransferOrder>().Insert(order.Build());
     }
 
     public void Receive(TransferRecord message)
