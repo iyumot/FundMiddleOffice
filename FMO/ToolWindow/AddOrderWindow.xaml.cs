@@ -214,7 +214,7 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
     protected FileStorageInfo? SetFile(System.IO.FileInfo fi, string title, Action<TransferOrder, FileStorageInfo> func)
     {
         // 如果文件名中有日期
-        if (Date is null && DateTimeHelper.TryFindDate(fi.Name) is DateOnly date)
+        if (Date is null && !fi.Name.Contains("回访") && DateTimeHelper.TryFindDate(fi.Name) is DateOnly date)
             Date = new DateTime(date, default);
 
 
