@@ -313,7 +313,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         obj.ExperienceTypes = entityType == EntityType.Natural ? [QualificationExperienceType.Invest, QualificationExperienceType.Work, QualificationExperienceType.Senior, QualificationExperienceType.Lawyer] : [QualificationExperienceType.Invest];
         obj.ExperienceType = x.ExperienceType;
 
-        x.Check();
+        obj.Check();
 
         return obj;
     }
@@ -400,7 +400,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         func(q, fsi);
         db.GetCollection<InvestorQualification>().Update(q);
 
-        (HasError, Statement) = q.Check();
+        Check();
         return fsi;
     }
 
