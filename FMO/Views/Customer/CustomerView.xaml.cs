@@ -351,7 +351,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
                 InvestorTypes = [AmacInvestorType.Manager, AmacInvestorType.LegalEntity, AmacInvestorType.IndividualProprietorship, AmacInvestorType.NonLegalEntity, AmacInvestorType.QFII, AmacInvestorType.Foreign, AmacInvestorType.DirectFinancialInvestment];
                 break;
             case Models.EntityType.Product:
-                InvestorTypes = Enum.GetValues<AmacInvestorType>().Where(x => x > AmacInvestorType.Product).ToArray();
+                InvestorTypes = [..Enum.GetValues<AmacInvestorType>().Where(x => x > AmacInvestorType.Product), AmacInvestorType.QFII];
                 break;
             default:
                 break;
