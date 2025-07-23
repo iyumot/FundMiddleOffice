@@ -1,11 +1,9 @@
 ﻿using FMO.Models;
 using LiteDB;
 using Serilog;
-using System;
 using System.Configuration;
 using System.Security.Cryptography;
 using System.Text;
-using System.Xml.Linq;
 namespace FMO.Utilities;
 
 internal record PatchRecord(int Id, DateTime Time);
@@ -46,7 +44,7 @@ public static class DatabaseAssist
             //db.RenameCollection("customer_accounts", nameof(InvestorBankAccount));
         }},
 
-        {23, db=>{ 
+        {23, db=>{
             var o = db.GetCollection<TransferOrder>().FindAll().ToArray();
             var rr = db.GetCollection<TransferRecord>().FindAll().ToArray();
             foreach (var item in o)
@@ -56,8 +54,17 @@ public static class DatabaseAssist
                     item.FundName = r.FundName;
                     item.ShareClass = r.ShareClass;
                 }
-	        }
+            }
             db.GetCollection<TransferOrder>().Update(o);
+        } },
+        {24, db=>{
+            var rr = db.GetCollection<TransferRecord>().Find(x=>x.Type == TransferRecordType.Redemption || x.Type == TransferRecordType.ForceRedemption).OrderBy(x=>x.ConfirmedDate).ToArray();
+            foreach (var item in rr.Where(x=>x.ConfirmedShare == 0))
+            {
+                // citics 多保存的错误赎回
+                if(rr.Any(x=>x.ConfirmedDate == item.ConfirmedDate && x.CustomerId == item.CustomerId && x.FundId == item.FundId && x.RequestAmount == item.RequestAmount && x.RequestShare == item.RequestShare && x.ConfirmedShare >0))
+                    db.GetCollection<TransferRecord>().Delete(item.Id);
+            }
         } },
     };
 

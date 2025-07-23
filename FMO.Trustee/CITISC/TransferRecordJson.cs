@@ -205,7 +205,7 @@ public partial class CITICS
                 CustomerName = "unset",
                 CreateDate = DateOnly.FromDateTime(DateTime.Now),
                 ConfirmedNetAmount = ParseDecimal(RealBalance),
-                Source = "api",               
+                Source = AckStatus switch { "2" or "3" or "5" => "failed", _ => "api" },               
             };
             r.Fee -= r.PerformanceFee;
             r.ConfirmedNetAmount = r.ConfirmedAmount - r.Fee;

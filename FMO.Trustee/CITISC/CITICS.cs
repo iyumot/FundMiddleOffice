@@ -186,8 +186,8 @@ public partial class CITICS : TrusteeApiBase
                 }
             }
 
-
-            return new(result.Code, list.ToArray());
+            // ÅÅ³ýÊ§°ÜµÄ
+            return new(result.Code, list.Where(x=>x.Source != "failed").ToArray());
         }
 
         return new(result.Code, null);
