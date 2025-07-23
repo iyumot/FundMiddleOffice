@@ -6,6 +6,7 @@ using FMO.Shared;
 using FMO.Utilities;
 using Serilog;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Controls;
@@ -81,9 +82,22 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
                 Requests = new ObservableCollection<TransferRequest>(tr2);
                 Orders = [.. t3.Select(x => new TransferOrderViewModel(x))];
 
+                foreach(var o in Orders)
+                {
+                    if (tr.Any(x => x.OrderId == o.Id))
+                        o.IsComfirmed = true;
+                }
+
+                RecordsSource.SortDescriptions.Add(new SortDescription(nameof(TransferRecordViewModel.ConfirmedDate), ListSortDirection.Descending));
+                RequestsSource.SortDescriptions.Add(new SortDescription(nameof(TransferRequest.RequestDate), ListSortDirection.Descending));
+                OrderSource.SortDescriptions.Add(new SortDescription(nameof(TransferOrderViewModel.Date), ListSortDirection.Descending));
+
                 RecordsSource.Source = Records;
                 RequestsSource.Source = Requests;
                 OrderSource.Source = Orders;
+
+
+
             });
         });
 
@@ -140,13 +154,13 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
     private bool SearchPair(object obj, string key)
     {
-        if (obj is TransferRecordViewModel r) 
+        if (obj is TransferRecordViewModel r)
             return (r.CustomerName?.Contains(key) ?? false) || (r.FundName?.Contains(key) ?? false) || (key?.Length > 3 && (r.CustomerIdentity?.Contains(key) ?? false));
 
-        if(obj is TransferRequest rr)
+        if (obj is TransferRequest rr)
             return (rr.CustomerName?.Contains(key) ?? false) || (rr.FundName?.Contains(key) ?? false) || (key?.Length > 3 && (rr.CustomerIdentity?.Contains(key) ?? false));
 
-        if(obj is TransferOrderViewModel o) 
+        if (obj is TransferOrderViewModel o)
             return (o.InvestorName?.Contains(key) ?? false) || (o.FundName?.Contains(key) ?? false) || (key?.Length > 3 && (o.InvestorIdentity?.Contains(key) ?? false));
 
         return false;
@@ -382,4 +396,5 @@ partial class TransferRecordViewModel
 [AutoChangeableViewModel(typeof(TransferOrder))]
 partial class TransferOrderViewModel
 {
+    public bool IsComfirmed { get => field; set { field = value; OnPropertyChanged(nameof(IsComfirmed)); } }
 }

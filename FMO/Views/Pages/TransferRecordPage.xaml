@@ -154,6 +154,15 @@
                     Style="{StaticResource DataGrid.NoSelect}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding Id}" />
+                        <DataGridTemplateColumn>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Viewbox Height="15" Visibility="{Binding IsComfirmed, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                                        <Path Data="{StaticResource f.sheet-plastic}" Fill="Red" />
+                                    </Viewbox>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                         <DataGridTextColumn Binding="{Binding Date, StringFormat=yyyy-MM-dd}" Header="日期" />
                         <DataGridTextColumn Binding="{Binding InvestorName}" Header="投资人" />
                         <DataGridTextColumn
@@ -370,8 +379,8 @@
                         <DataGridTemplateColumn>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Viewbox Width="18" Visibility="{Binding HasOrder, Converter={StaticResource Boolean2VisibilityReConverter}}">
-                                        <Path Data="{StaticResource f.ticket-simple}" Fill="Red" />
+                                    <Viewbox Height="15" Visibility="{Binding HasOrder, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                                        <Path Data="{StaticResource f.sheet-plastic}" Fill="Red" />
                                     </Viewbox>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
