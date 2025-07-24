@@ -142,9 +142,10 @@
 
             <shared:SingleFileView Binding="{Binding RiskDisclosure}" Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
 
-            <shared:SingleFileView Binding="{Binding Video}" Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-
             <shared:SingleFileView Binding="{Binding Review}" Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+
+            <shared:SingleFileView Binding="{Binding Video}" Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
 
         </hc:UniformSpacingPanel>
 

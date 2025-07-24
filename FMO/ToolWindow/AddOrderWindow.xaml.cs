@@ -103,6 +103,9 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
     public virtual TransferOrderType[] Types { get; } = [TransferOrderType.FirstTrade, TransferOrderType.Buy, TransferOrderType.Share, TransferOrderType.Amount, TransferOrderType.RemainAmout];
 
 
+    [ObservableProperty]
+    public partial bool IsVideoNesscessary { get; set; } = false;
+
 
 
     public SingleFileViewModel Contract { get; }
@@ -351,9 +354,6 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
             e.Accepted = (string.IsNullOrWhiteSpace(SearchInvestorKey) || SearchInvestorKey == SelectedInvestor?.Name ? true : e.Item switch { Investor f => f.Name.Contains(SearchInvestorKey), _ => true });
         };
 
-
-
-
     }
 
     partial void OnSearchFundKeyChanged(string? value) => FundSource.View.Refresh();
@@ -471,6 +471,8 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
             if (q is null || q.Result == QualifiedInvestorType.Normal) needvideo = true;
         }
 
+        IsVideoNesscessary = needvideo;
+
         if (Date is not null && date < DateOnly.FromDateTime(Date.Value))
             tip += "签约日期晚于申请日期";
 
@@ -518,6 +520,13 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
             Video.File = order.Videotape;
             Review.File = order.Review;
 
+        }
+
+
+        if(firstTrade)
+        {
+            Contract.IsRequired = true;
+            RiskDisclosure.IsRequired = true;
         }
 
         if (SelectedType == TransferOrderType.Amount || SelectedType == TransferOrderType.RemainAmout)
@@ -674,7 +683,7 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
         // 判断是否是首次
         bool need = false;
         bool needvideo = false;
-        if (SelectedType == TransferOrderType.Buy)
+        if (SelectedType == TransferOrderType.Buy || SelectedType == TransferOrderType.FirstTrade)
         {
             using var db = DbHelper.Base();
             var early = db.GetCollection<TransferRecord>().Find(x => x.FundId == Record.FundId && x.CustomerId == Record.CustomerId).Min(x => x.RequestDate);
@@ -683,6 +692,9 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
             var q = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == Record.CustomerId).Where(x => x.Date <= Record.RequestDate).OrderBy(x => x.Date).LastOrDefault();
             if (q is null || q.Result == QualifiedInvestorType.Normal) needvideo = true;
         }
+
+        IsVideoNesscessary = needvideo;
+        Video.IsRequired = needvideo;
 
         if (Date is not null && Record.RequestDate < DateOnly.FromDateTime(Date.Value))
             tip += "签约日期晚于申请日期";
