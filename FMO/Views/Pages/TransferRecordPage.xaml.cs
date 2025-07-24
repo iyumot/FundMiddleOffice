@@ -82,10 +82,21 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
                 Requests = new ObservableCollection<TransferRequest>(tr2);
                 Orders = [.. t3.Select(x => new TransferOrderViewModel(x))];
 
-                foreach(var o in Orders)
+                foreach (var o in Orders)
                 {
                     if (tr.Any(x => x.OrderId == o.Id))
                         o.IsComfirmed = true;
+                }
+
+                foreach (var ft in Records.OrderBy(x => x.ConfirmedDate).GroupBy(x => x.FundId))
+                {
+                    var last = ft.Last().ConfirmedDate;
+                    var may = ft.Where(x => x.ConfirmedDate == last && (x.Type == TransferRecordType.Redemption || x.Type == TransferRecordType.ForceRedemption)).ToArray();
+                    if (may.Length == 0) continue;
+
+                    if (db.GetCollection<Fund>().FindById(ft.Key) is Fund ff && ff.ClearDate != default && last > ff.ClearDate)
+                        foreach (var item in may)
+                            item.RedemptionOnClear = true;
                 }
 
                 RecordsSource.SortDescriptions.Add(new SortDescription(nameof(TransferRecordViewModel.ConfirmedDate), ListSortDirection.Descending));
@@ -352,6 +363,11 @@ partial class TransferRecordViewModel
     public bool HasBrotherRecord { get; set; }
 
     public bool FirstTrade { get; set; }
+
+    /// <summary>
+    /// 清盘时的赎回，不需要申请
+    /// </summary>
+    public bool RedemptionOnClear { get; set; }
 
     [RelayCommand]
     public void ModifyOrder()

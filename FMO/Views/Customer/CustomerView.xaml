@@ -802,15 +802,32 @@
                                             <DataGridTemplateColumn>
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
-                                                        <Button
-                                                            x:Name="btn"
-                                                            hc:IconElement.Geometry="{StaticResource f.file}"
-                                                            BorderThickness="0"
-                                                            Command="{Binding ModifyOrderCommand}"
-                                                            Style="{StaticResource ButtonIcon.Small}" />
+                                                        <hc:SimplePanel>
+                                                            <Border
+                                                                HorizontalAlignment="Center"
+                                                                VerticalAlignment="Center"
+                                                                Background="Black"
+                                                                CornerRadius="8"
+                                                                Visibility="{Binding RedemptionOnClear, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                                                <TextBlock
+                                                                    Margin="3,1"
+                                                                    FontSize="11"
+                                                                    Foreground="White"
+                                                                    Text="清" />
+                                                            </Border>
+                                                            <Button
+                                                                x:Name="btn"
+                                                                hc:IconElement.Geometry="{StaticResource f.file}"
+                                                                BorderThickness="0"
+                                                                Command="{Binding ModifyOrderCommand}"
+                                                                Style="{StaticResource ButtonIcon.Small}" />
+                                                        </hc:SimplePanel>
                                                         <DataTemplate.Triggers>
                                                             <DataTrigger Binding="{Binding HasOrder}" Value="False">
                                                                 <Setter TargetName="btn" Property="Foreground" Value="Red" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding RedemptionOnClear}" Value="True">
+                                                                <Setter TargetName="btn" Property="Visibility" Value="Collapsed" />
                                                             </DataTrigger>
                                                         </DataTemplate.Triggers>
                                                     </DataTemplate>

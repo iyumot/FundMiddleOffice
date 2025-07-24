@@ -113,7 +113,9 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
         // 是否缺失订单
         var ta = db.GetCollection<TransferRecord>().FindAll().ToArray();
-        foreach (var item in Customers.IntersectBy(ta.Where(x => x.OrderId == 0 && TransferRecord.RequireOrder(x.Type)).Select(x => x.CustomerId), x => x.Id))
+        var cleard = db.GetCollection<Fund>().FindAll().ToDictionary(x => x.Id, x => x.ClearDate == default ? DateOnly.MaxValue : x.ClearDate);
+        
+        foreach (var item in Customers.IntersectBy(ta.Where(x => x.FundId != 0 && x.OrderId == 0 && x.ConfirmedDate < cleard[x.FundId] && TransferRecord.RequireOrder(x.Type)).Select(x => x.CustomerId), x => x.Id))
             item.LackOrder = true;
 
         CustomerSource.Source = Customers;

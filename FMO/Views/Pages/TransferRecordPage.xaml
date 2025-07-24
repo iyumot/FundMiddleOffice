@@ -380,7 +380,10 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Viewbox Height="15" Visibility="{Binding HasOrder, Converter={StaticResource Boolean2VisibilityReConverter}}">
-                                        <Path Data="{StaticResource f.sheet-plastic}" Fill="Red" />
+                                        <Path
+                                            Data="{StaticResource f.sheet-plastic}"
+                                            Fill="Red"
+                                            Visibility="{Binding RedemptionOnClear, Converter={StaticResource Boolean2VisibilityReConverter}}" />
                                     </Viewbox>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
