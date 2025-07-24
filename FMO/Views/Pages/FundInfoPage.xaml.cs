@@ -28,7 +28,8 @@ public partial class FundInfoPage : UserControl
 }
 
 
-public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<FundShareChangedMessage>, IRecipient<FundDailyUpdateMessage>, IRecipient<FundStrategyChangedMessage>, IRecipient<FundAccountChangedMessage>
+public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<FundShareChangedMessage>, IRecipient<FundDailyUpdateMessage>,
+    IRecipient<FundStrategyChangedMessage>, IRecipient<FundAccountChangedMessage>,IRecipient<EntityChangedMessage<Fund, DateOnly>>
 {
     public Fund Fund { get; init; }
 
@@ -770,6 +771,20 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
                     using var db = DbHelper.Base();
                     CustodyAccount = db.GetCollection<FundElements>().FindById(FundId)?.CustodyAccount?.Value?.ToString();
                 }
+                break;
+            default:
+                break;
+        }
+    }
+
+    public void Receive(EntityChangedMessage<Fund, DateOnly> message)
+    {
+        if (message.Entity.Id != FundId) return;
+
+        switch (message.PropertyName)
+        {
+            case nameof(Fund.ClearDate):
+                ClearDate = message.Value;
                 break;
             default:
                 break;

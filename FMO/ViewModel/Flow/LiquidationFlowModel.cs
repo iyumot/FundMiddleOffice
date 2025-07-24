@@ -1,9 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.Input;
-using DocumentFormat.OpenXml.Vml;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
 using FMO.TPL;
 using FMO.Utilities;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
@@ -101,6 +102,24 @@ public partial class LiquidationFlowViewModel : FlowViewModel
                 else HandyControl.Controls.Growl.Error("生成承诺函失败，请查看Log，检查模板是否存在");
             }
             catch { }
+        }
+    }
+
+
+    protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+
+        //
+        if (((e.PropertyName == nameof(LiquidationFlowViewModel.IsReadOnly) && IsReadOnly) ||
+            e.PropertyName == nameof(LiquidationFlowViewModel.Date)) && Date is not null)
+        {
+            using var db = DbHelper.Base();
+            if (db.GetCollection<Fund>().FindById(FundId) is Fund f)
+            {
+                f.ClearDate = DateOnly.FromDateTime(Date.Value);
+                WeakReferenceMessenger.Default.Send(new EntityChangedMessage<Fund, DateOnly>(f, nameof(Fund.ClearDate), f.ClearDate));
+            }
         }
     }
 }

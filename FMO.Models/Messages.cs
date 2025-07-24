@@ -43,6 +43,8 @@ public record ToastMessage(LogLevel Level, string Message);
 public record EntityDeleted<T>(T Value);
 
 
+public record EntityChangedMessage<TEntity,TProperty>(TEntity Entity, string PropertyName, TProperty Value);
+
 /// <summary>
 /// 交易确认关联订单
 /// </summary>
