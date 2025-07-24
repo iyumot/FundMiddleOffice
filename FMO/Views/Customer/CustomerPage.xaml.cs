@@ -121,9 +121,10 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         CustomerSource.Source = Customers;
         CustomerSource.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(InvestorReadOnlyViewModel.Holding), System.ComponentModel.ListSortDirection.Descending));
         CustomerSource.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(InvestorReadOnlyViewModel.Type), System.ComponentModel.ListSortDirection.Ascending));
+        CustomerSource.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(InvestorReadOnlyViewModel.Id), System.ComponentModel.ListSortDirection.Ascending));
         CustomerSource.Filter += CustomerSource_Filter;
         CustomerSource.IsLiveSortingRequested = true;
-        CustomerSource.LiveSortingProperties.Add(nameof(InvestorReadOnlyViewModel.Holding));
+        CustomerSource.LiveSortingProperties.Add(nameof(InvestorReadOnlyViewModel.Holding)); 
         CustomerSource.View.MoveCurrentTo(null);
 
         RefreshRiskAssessmentData(db, ib);
