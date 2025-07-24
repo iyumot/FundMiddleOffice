@@ -97,7 +97,7 @@ public static class DataTracker
             var ta = db.GetCollection<TransferRecord>().Find(x => x.FundId == fund.Id);
 
             // 如果没有 TA 记录或 FundShareRecord 数据为空，则添加提示：没有TA数据
-            if (c is null || !c.Any() || !ta.Any())
+            if (!ta.Any())
             {
                 FundTips.Add(new FundTip(fund.Id, fund.Name, TipType.FundNoTARecord, "没有TA数据"));
                 continue;
@@ -114,7 +114,7 @@ public static class DataTracker
             // 如果 FundShareRecord 为空，或者最新记录的日期早于 TA 的最新确认日期，则重建 FundShareRecord
             if (c is null || !c.Any() || c.Max(x => x.Date) < lta)
             {
-                db.BuildFundShareRecord(fund.Id); // 重建该基金的份额记录
+                db.RebuildFundShareRecord(fund.Id); // 重建该基金的份额记录
                 c = db.GetCollection<FundShareRecord>().Find(x => x.FundId == fund.Id); // 重新获取份额记录
             }
 
@@ -164,7 +164,7 @@ public static class DataTracker
         var lta = db.GetCollection<TransferRecord>().Find(x => x.FundId == fund.Id).Max(x => x.ConfirmedDate);
         if (c is null || !c.Any() || c.Max(x => x.Date < lta))
         {
-            db.BuildFundShareRecord(fund.Id);
+            db.RebuildFundShareRecord(fund.Id);
             c = db.GetCollection<FundShareRecord>().Find(x => x.FundId == fund.Id);
         }
 

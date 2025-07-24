@@ -396,7 +396,7 @@ public static class DbHelper
 
 
 
-    public static bool BuildFundShareRecord(this ILiteDatabase db, int fundid)
+    public static bool RebuildFundShareRecord(this ILiteDatabase db, int fundid)
     {
         try
         {
@@ -423,7 +423,7 @@ public static class DbHelper
     public static void BuildFundShareRecord(this ILiteDatabase db, params int[] fundids)
     {
         foreach (var fundid in fundids)
-            BuildFundShareRecord(db, fundid);
+            RebuildFundShareRecord(db, fundid);
     }
 
 
