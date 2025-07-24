@@ -682,6 +682,13 @@
             <Setter.Value>
                 <DataTemplate>
                     <DockPanel LastChildFill="False">
+                        <Viewbox
+                            Width="8"
+                            Margin="2,0"
+                            Visibility="{Binding Binding.IsRequired, RelativeSource={RelativeSource AncestorType=local:SingleFileView}, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <Path Data="{StaticResource StarGeometry}" Fill="Red" />
+                        </Viewbox>
+
                         <TextBlock
                             Name="lb"
                             VerticalAlignment="Center"

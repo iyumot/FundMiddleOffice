@@ -139,6 +139,8 @@ public class SingleFileView : HeaderedContentControl
         DependencyProperty.Register("IsReadOnly", typeof(bool), typeof(SingleFileView), new PropertyMetadata(false));
 
 
+ 
+
 
     public SingleFileViewModel Binding
     {

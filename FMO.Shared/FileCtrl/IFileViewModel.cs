@@ -226,6 +226,9 @@ public partial class SingleFileViewModel : ObservableObject, IFileSelector//,IFi
     [NotifyCanExecuteChangedFor(nameof(DeleteFileCommand))]
     public partial FileStorageInfo? File { get; set; }
 
+    [ObservableProperty]
+    public partial bool IsRequired { get; set; }
+
     public bool Exists => File?.Exists ?? false;
 
     public bool Deleted => File is not null && !File.Exists;
@@ -325,6 +328,9 @@ public partial class MultipleFileViewModel : ObservableObject, IFileSelector
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(DeleteFileCommand))]
     public partial ObservableCollection<FileStorageInfo>? Files { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsRequired { get; set; }
 
     public string? Filter { get; set; }
 
