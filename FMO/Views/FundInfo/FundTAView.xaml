@@ -54,7 +54,7 @@
             <Setter Property="Foreground" Value="Black" />
             <Setter Property="UIElement.SnapsToDevicePixels" Value="true" />
             <Setter Property="Margin" Value="0,0,0,4" />
-            <Setter Property="Padding" Value="0,6" />
+            <Setter Property="Padding" Value="4,6" />
             <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
             <Setter Property="DataGridRow.ValidationErrorTemplate">
                 <Setter.Value>
@@ -101,6 +101,7 @@
                             <DataGridRowHeader
                                 Grid.Row="0"
                                 Grid.Column="0"
+                                Margin="5,0"
                                 Visibility="{Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Row}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType=DataGrid}}" />
                         </SelectiveScrollingGrid>
                     </ControlTemplate>
@@ -187,7 +188,7 @@
 
 
         <!--  当前份额  -->
-        <DockPanel Visibility="{Binding IsCleared, Converter={StaticResource Boolean2VisibilityReConverter}}">
+        <DockPanel LastChildFill="False">
             <DockPanel DockPanel.Dock="Top">
                 <DockPanel DockPanel.Dock="Right">
                     <DockPanel.Resources>
@@ -225,7 +226,7 @@
             </DockPanel>
 
 
-            <hc:SimplePanel>
+            <hc:SimplePanel DockPanel.Dock="Top">
                 <DataGrid
                     Margin="0,5"
                     hc:DataGridAttach.ShowRowNumber="True"
@@ -318,6 +319,7 @@
                     </Border>
                 </Popup>
             </hc:SimplePanel>
+
 
         </DockPanel>
 
