@@ -4,6 +4,10 @@ namespace FMO.Models;
 
 public class Investor
 {
+    public Investor()
+    {
+    }
+
     public int Id { get; set; }
 
     public required string Name { get; set; }
@@ -55,6 +59,8 @@ public class Investor
         var bb = regex.Replace(b, "");
         return aa == bb;
     }
+
+
 }
 
 

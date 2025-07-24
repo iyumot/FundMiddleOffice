@@ -346,7 +346,10 @@
                                     VerticalAlignment="Center"
                                     ToolTip="风险测评过期"
                                     Visibility="{Binding EvaluationExpired, Converter={StaticResource BooleanToVisibility2Converter}}">
-                                    <Path Data="{StaticResource f.umbrella}" Fill="Red" />
+                                    <Path
+                                        x:Name="riske"
+                                        Data="{StaticResource f.umbrella}"
+                                        Fill="Red" />
                                 </Viewbox>
 
 
@@ -408,6 +411,10 @@
 
                                 <DataTrigger Binding="{Binding HasBankAccount}" Value="False">
                                     <Setter TargetName="bank" Property="Fill" Value="Red" />
+                                </DataTrigger>
+
+                                <DataTrigger Binding="{Binding Holding}" Value="Previous">
+                                    <Setter TargetName="riske" Property="Fill" Value="DarkGray" />
                                 </DataTrigger>
 
                                 <MultiDataTrigger>

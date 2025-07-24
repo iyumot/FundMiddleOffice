@@ -1,4 +1,5 @@
-﻿using FMO.Models;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using FMO.Models;
 using LiteDB;
 using Serilog;
 using System.Configuration;
@@ -87,27 +88,32 @@ public static class DatabaseAssist
             //db.GetCollection(nameof(Manager)).Update(new BsonDocument(dict));
 
             // 校验ta，为TransferRecord的CustomerId为0的设置Id
-            var d = db.GetCollection<TransferRecord>().Find(x => x.CustomerId == 0).ToArray();
-            if (d.Length > 0)
-            {
-                var cc = db.GetCollection<Investor>().FindAll().ToArray();
-                foreach (var item in d)
-                {
-                    var tmp = cc.Where(x => x.Identity.Id == item.CustomerIdentity).ToArray();
+            var d = db.GetCollection<TransferRecord>().FindAll().ToArray();
+            var cc = db.GetCollection<Investor>().FindAll().ToArray();
+            var cids = cc.Select(x => x.Id).ToArray();
 
-                    // 没有找到investor
-                    if (tmp.Length == 0)
-                    {
-                        var c = new Investor { Name = item.CustomerName, Identity = new Identity { Id = item.CustomerIdentity } };
-                        db.GetCollection<Investor>().Insert(c);
-                        item.CustomerId = c.Id;
-                    }
-                    else if (tmp.Count() == 1)
-                        item.CustomerId = tmp.First().Id;
-                    else Log.Error($"TransferRecord {item.Id} {item.FundName} {item.CustomerName} 与多个Inverstor对应");
+            foreach (var item in d.ExceptBy([0, .. cids], x => x.CustomerId))
+            {
+                var tmp = cc.Where(x => x.Identity.Id == item.CustomerIdentity).ToArray();
+
+                // 没有找到investor
+                if (tmp.Length == 0)
+                {
+                    var c = new Investor { Name = item.CustomerName, Identity = new Identity { Id = item.CustomerIdentity } };
+                    db.GetCollection<Investor>().Insert(c);
+                    item.CustomerId = c.Id;
+
+                    WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Info, $"新增投资人 {item.CustomerName}，请完善材料"));
                 }
-                db.GetCollection<TransferRecord>().Update(d);
+                else if (tmp.Length == 1)
+                    item.CustomerId = tmp.First().Id;
+                else
+                {
+                    Log.Error($"TransferRecord {item.Id} {item.FundName} {item.CustomerName} 与多个Inverstor对应");
+                    WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, $"{item.FundName} {item.CustomerName} 交易无法对应投资人，因为证件号重复"));
+                }
             }
+            db.GetCollection<TransferRecord>().Update(d);
 
 
             Patch();
