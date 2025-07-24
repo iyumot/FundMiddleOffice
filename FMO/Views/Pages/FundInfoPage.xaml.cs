@@ -52,6 +52,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         FundShortName = fund.ShortName;
         SetupDate = fund.SetupDate;
         RegistDate = fund.AuditDate;
+        ClearDate = fund.ClearDate;
         InitiateDate = fund.InitiateDate == default ? null : fund.InitiateDate;
         FundCode = fund.Code;
         FundStatus = fund.Status;
@@ -288,7 +289,10 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsCleared))]
     public partial FundStatus FundStatus { get; set; }
+
+    public bool IsCleared => FundStatus > FundStatus.StartLiquidation;
 
 
     [ObservableProperty]
@@ -303,6 +307,10 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
     [ObservableProperty]
     public partial DateOnly? RegistDate { get; set; }
+
+
+    [ObservableProperty]
+    public partial DateOnly? ClearDate { get; set; }
 
 
     [ObservableProperty]

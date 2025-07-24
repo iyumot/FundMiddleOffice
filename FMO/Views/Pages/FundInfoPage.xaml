@@ -340,6 +340,15 @@
                         <TextBlock Text="{Binding RegistDate, StringFormat=yyyy-MM-dd}" />
                     </shared:CopyableControl>
                 </BulletDecorator>
+
+                <BulletDecorator Visibility="{Binding IsCleared, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    <BulletDecorator.Bullet>
+                        <TextBlock Text="清算日期" />
+                    </BulletDecorator.Bullet>
+                    <shared:CopyableControl>
+                        <TextBlock Text="{Binding ClearDate, StringFormat=yyyy-MM-dd}" />
+                    </shared:CopyableControl>
+                </BulletDecorator>
             </UniformGrid>
 
             <!--<BulletDecorator>
