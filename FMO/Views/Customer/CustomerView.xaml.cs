@@ -238,7 +238,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
 
 
 
-        var iq = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == Id || (x.InvestorId == 0 && x.InvestorName == investor.Name && x.IdentityCode == investor.Identity.Id)).ToArray();
+        var iq = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == Id/* || (x.InvestorId == 0 && x.InvestorName == investor.Name && x.IdentityCode == investor.Identity.Id)*/).ToArray();
         Qualifications = [.. iq.Select(x => QualificationViewModel.From(x, investor.Type, investor.EntityType))];
         Qualifications.CollectionChanged += (s, e) => OnPropertyChanged(nameof(CanSkipRiskEvaluation));
 

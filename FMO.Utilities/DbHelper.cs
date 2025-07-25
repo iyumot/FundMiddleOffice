@@ -67,6 +67,18 @@ public static class DatabaseAssist
                     db.GetCollection<TransferRecord>().Delete(item.Id);
             }
         } },
+
+    {25, db=>{
+            var d = db.GetCollection<InvestorQualification>().Find(x=>x.InvestorId == 0).ToArray();
+            var cc = db.GetCollection<Investor>().FindAll().ToArray();
+
+            foreach (var item in d)
+            {
+                if(cc.FirstOrDefault(x=>x.Name == item.InvestorName && x.Identity?.Id == item.IdentityCode) is Investor investor)
+                    item.InvestorId = investor.Id;
+            }
+            db.GetCollection<InvestorQualification>().Update(d);
+        } },
     };
 
 
@@ -115,6 +127,7 @@ public static class DatabaseAssist
             }
             db.GetCollection<TransferRecord>().Update(d);
 
+            // 
 
             Patch();
         }
