@@ -127,6 +127,8 @@
                 <DatePicker Width="100" SelectedDate="{Binding Date}" />
 
                 <ListBox
+                    BorderThickness="0"
+                    ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus.Small}"
                     ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
                     ItemsSource="{Binding Types}"
                     SelectedItem="{Binding SelectedType}"

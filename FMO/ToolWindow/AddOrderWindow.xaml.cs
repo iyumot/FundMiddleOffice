@@ -99,8 +99,8 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
     [NotifyPropertyChangedFor(nameof(IsSell))]
     public partial TransferOrderType? SelectedType { get; set; }
 
-
-    public virtual TransferOrderType[] Types { get; } = [TransferOrderType.FirstTrade, TransferOrderType.Buy, TransferOrderType.Share, TransferOrderType.Amount, TransferOrderType.RemainAmout];
+    [ObservableProperty]
+    public partial TransferOrderType[] Types { get; set; } = [TransferOrderType.FirstTrade, TransferOrderType.Buy, TransferOrderType.Share, TransferOrderType.Amount, TransferOrderType.RemainAmout];
 
 
     [ObservableProperty]
@@ -336,6 +336,8 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
     public partial Investor? SelectedInvestor { get; set; }
 
 
+    public InvestorQualification[]? Qualifications { get; set; }
+
     [ObservableProperty]
     public partial bool IsFirstTrade { get; set; }
 
@@ -358,16 +360,21 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
 
     }
 
-    partial void OnSearchFundKeyChanged(string? value)
+    partial void OnSearchFundKeyChanged(string? value) => FundSource.View.Refresh();
+    partial void OnSearchInvestorKeyChanged(string? value) => InvestorSource.View.Refresh();
+
+    partial void OnSelectedFundChanged(Fund? value) => CheckFirstTrade();
+
+    partial void OnSelectedInvestorChanged(Investor? value)
     {
-        FundSource.View.Refresh();
+        if (value is null)
+            Qualifications = null;
+        else using (var db = DbHelper.Base())
+                Qualifications = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == value.Id).ToArray();
+
         CheckFirstTrade();
     }
-    partial void OnSearchInvestorKeyChanged(string? value)
-    {
-        InvestorSource.View.Refresh();
-        CheckFirstTrade();
-    }
+
     public override bool CanConfirm => SelectedFund is not null && SelectedInvestor is not null && Date is not null && SelectedType is not null && Number is not null;
 
     protected override void ConfirmOverride()
@@ -500,22 +507,33 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
 
     private void CheckFirstTrade()
     {
-        var first = false;
+        var first = true;
+        var professional = false;
         if (SelectedFund is not null && SelectedInvestor is not null)
         {
             using var db = DbHelper.Base();
-            first = !db.GetCollection<TransferRecord>().Find(x => x.FundId == SelectedFund.Id && x.CustomerId == SelectedInvestor.Id).Any();
+            first = db.GetCollection<TransferRecord>().Find(x => x.FundId == SelectedFund.Id && x.CustomerId == SelectedInvestor.Id).Sum(x => x.ShareChange()) == 0;
+            professional = Qualifications?.Any(x => x.Result == QualifiedInvestorType.Professional) ?? false;
         }
 
         if (first)
         {
             Contract.IsRequired = true;
             RiskDisclosure.IsRequired = true;
+            Video.IsRequired = true;
+            OrderFile.IsRequired = !professional;
+            Types = [TransferOrderType.FirstTrade];
+            SelectedType = TransferOrderType.FirstTrade;
         }
         else
         {
+            Contract.IsRequired = false;
+            RiskDisclosure.IsRequired = false;
             Video.IsRequired = false;
             OrderFile.IsRequired = true;
+            Types = [TransferOrderType.Buy, TransferOrderType.Share, TransferOrderType.Amount, TransferOrderType.RemainAmout];
+
+            SelectedType = null;
         }
     }
 }
@@ -576,7 +594,6 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
 
     public TransferRecord[]? SameDay { get; set; }
 
-    public override TransferOrderType[] Types { get; }
 
     [ObservableProperty]
     public partial bool IsSellTypeForzen { get; set; }
