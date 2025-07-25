@@ -533,6 +533,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
 
         Statement = string.Join('，', info);
     }
+    
 
     protected override InvestorQualification InitNewEntity() => new InvestorQualification();
 }

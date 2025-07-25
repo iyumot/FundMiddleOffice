@@ -715,9 +715,16 @@
 
                     <!--  合投  -->
                     <StackPanel>
+                        <StackPanel.Resources>
+                            <CollectionViewSource x:Key="cvs" Source="{Binding Qualifications}">
+                                <CollectionViewSource.SortDescriptions>
+                                    <cm:SortDescription PropertyName="Date.OldValue" />
+                                </CollectionViewSource.SortDescriptions>
+                            </CollectionViewSource>
+                        </StackPanel.Resources>
                         <ListBox
                             ItemTemplate="{StaticResource DT.QualificationItem}"
-                            ItemsSource="{Binding Qualifications}"
+                            ItemsSource="{Binding Source={StaticResource cvs}}"
                             SelectedItem="{Binding SelectedQualification}">
                             <ListBox.ItemsPanel>
                                 <ItemsPanelTemplate>
