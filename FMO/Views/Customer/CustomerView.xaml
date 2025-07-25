@@ -677,6 +677,11 @@
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <DockPanel Margin="5,0">
+                                            <DockPanel.ContextMenu>
+                                                <ContextMenu Style="{StaticResource ContextMenu.Small}">
+                                                    <MenuItem Command="{Binding DeleteCommand}" Header="删除" />
+                                                </ContextMenu>
+                                            </DockPanel.ContextMenu>
                                             <DockPanel
                                                 Margin="0,0,-10,0"
                                                 HorizontalAlignment="Center"

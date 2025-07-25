@@ -40,7 +40,7 @@ public partial class CustomerView : UserControl
 /// <summary>
 /// customer vm
 /// </summary>
-public partial class CustomerViewModel : EditableControlViewModelBase<Investor>, IRecipient<TransferRecordLinkOrderMessage>
+public partial class CustomerViewModel : EditableControlViewModelBase<Investor>, IRecipient<TransferRecordLinkOrderMessage>,IRecipient<EntityDeleted>
 {
     [TypeConverter(typeof(EnumDescriptionTypeConverter))] public enum NaturalType { [Description("非员工")] NonEmployee, [Description("员工")] Employee };
 
@@ -470,6 +470,14 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
         if (!fd.ShowDialog() ?? true) return;
 
         OnChooseAssessmentFile(fd.FileName);
+    }
+
+    [RelayCommand]
+    public void DeleteRisk(RiskAssessmentViewModel v)
+    {
+        using var db = DbHelper.Base();
+        db.GetCollection<RiskAssessment>().Delete(v.Id);
+        RiskAssessments.Remove(v);
     }
 
 
@@ -907,6 +915,18 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
         }
     }
 
+    public void Receive(EntityDeleted<RiskAssessment> message)
+    {
+        if (RiskAssessments.FirstOrDefault(x => x.Id == message.Value.Id) is RiskAssessmentViewModel r)
+            RiskAssessments.Remove(r);       
+    }
+
+    public void Receive(EntityDeleted message)
+    {
+        if (message.Type == typeof(RiskAssessment) && message.Id is int id && RiskAssessments.FirstOrDefault(x => x.Id == id) is RiskAssessmentViewModel r)
+            RiskAssessments.Remove(r);
+    }
+
     public partial class TransferRecordByFund : ObservableObject
     {
         public int FundId { get; set; }
@@ -1074,5 +1094,13 @@ public partial class RiskAssessmentViewModel : ObservableObject
         if (Path is not null && file.Exists)
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(file.FullName) { UseShellExecute = true });
         else WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "风险调查问卷不存在"));
+    }
+
+    [RelayCommand]
+    public void Delete()
+    {
+        using var db = DbHelper.Base();
+        db.GetCollection<RiskAssessment>().Delete(Id);
+        WeakReferenceMessenger.Default.Send(new EntityDeleted(typeof(RiskAssessment), Id));
     }
 }

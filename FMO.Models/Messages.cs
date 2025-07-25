@@ -43,6 +43,9 @@ public record ToastMessage(LogLevel Level, string Message);
 public record EntityDeleted<T>(T Value);
 
 
+public record EntityDeleted(Type Type, object Id);
+
+
 public record EntityChangedMessage<TEntity,TProperty>(TEntity Entity, string PropertyName, TProperty Value);
 
 /// <summary>
