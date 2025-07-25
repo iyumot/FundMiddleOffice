@@ -426,7 +426,7 @@ public static class DbHelper
         }
     }
 
-    public static void BuildFundShareRecord(this ILiteDatabase db, params int[] fundids)
+    public static void RebuildFundShareRecord(this ILiteDatabase db, params int[] fundids)
     {
         foreach (var fundid in fundids)
             RebuildFundShareRecord(db, fundid);

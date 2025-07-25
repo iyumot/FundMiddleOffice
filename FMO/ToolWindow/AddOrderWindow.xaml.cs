@@ -336,6 +336,8 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
     public partial Investor? SelectedInvestor { get; set; }
 
 
+    [ObservableProperty]
+    public partial bool IsFirstTrade { get; set; }
 
 
     public AddOrderWindowViewModel()
@@ -356,10 +358,16 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
 
     }
 
-    partial void OnSearchFundKeyChanged(string? value) => FundSource.View.Refresh();
-
-    partial void OnSearchInvestorKeyChanged(string? value) => InvestorSource.View.Refresh();
-
+    partial void OnSearchFundKeyChanged(string? value)
+    {
+        FundSource.View.Refresh();
+        CheckFirstTrade();
+    }
+    partial void OnSearchInvestorKeyChanged(string? value)
+    {
+        InvestorSource.View.Refresh();
+        CheckFirstTrade();
+    }
     public override bool CanConfirm => SelectedFund is not null && SelectedInvestor is not null && Date is not null && SelectedType is not null && Number is not null;
 
     protected override void ConfirmOverride()
@@ -488,6 +496,28 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
 
         Tips = tip;
     }
+
+
+    private void CheckFirstTrade()
+    {
+        var first = false;
+        if (SelectedFund is not null && SelectedInvestor is not null)
+        {
+            using var db = DbHelper.Base();
+            first = !db.GetCollection<TransferRecord>().Find(x => x.FundId == SelectedFund.Id && x.CustomerId == SelectedInvestor.Id).Any();
+        }
+
+        if (first)
+        {
+            Contract.IsRequired = true;
+            RiskDisclosure.IsRequired = true;
+        }
+        else
+        {
+            Video.IsRequired = false;
+            OrderFile.IsRequired = true;
+        }
+    }
 }
 
 public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModelBase
@@ -523,10 +553,15 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
         }
 
 
-        if(firstTrade)
+        if (firstTrade)
         {
             Contract.IsRequired = true;
             RiskDisclosure.IsRequired = true;
+        }
+        else
+        {
+            Video.IsRequired = false;
+            OrderFile.IsRequired = true;
         }
 
         if (SelectedType == TransferOrderType.Amount || SelectedType == TransferOrderType.RemainAmout)
