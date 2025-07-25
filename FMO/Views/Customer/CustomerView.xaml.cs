@@ -40,7 +40,7 @@ public partial class CustomerView : UserControl
 /// <summary>
 /// customer vm
 /// </summary>
-public partial class CustomerViewModel : EditableControlViewModelBase<Investor>, IRecipient<TransferRecordLinkOrderMessage>,IRecipient<EntityDeleted>
+public partial class CustomerViewModel : EditableControlViewModelBase<Investor>, IRecipient<TransferRecordLinkOrderMessage>, IRecipient<EntityDeleted>
 {
     [TypeConverter(typeof(EnumDescriptionTypeConverter))] public enum NaturalType { [Description("非员工")] NonEmployee, [Description("员工")] Employee };
 
@@ -277,9 +277,9 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
 
                 share += rvm[i].ShareChange();
             }
-            
+
             // 检查是不是清盘时的赎回
-            if ((rvm[^1].Type == TransferRecordType.Redemption || rvm[^1].Type == TransferRecordType.ForceRedemption) && 
+            if ((rvm[^1].Type == TransferRecordType.Redemption || rvm[^1].Type == TransferRecordType.ForceRedemption) &&
                 db.GetCollection<Fund>().FindById(rvm[0].FundId) is Fund ff && ff.ClearDate != default && rvm[^1].ConfirmedDate > ff.ClearDate)
                 rvm[^1].RedemptionOnClear = true;
 
@@ -459,7 +459,14 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
         using var db = DbHelper.Base();
         InvestorQualification entity = new InvestorQualification { InvestorId = Id };
         db.GetCollection<InvestorQualification>().Insert(entity);
-        Qualifications.Add(QualificationViewModel.From(entity, Type.OldValue, EntityType.OldValue));
+        QualificationViewModel q = QualificationViewModel.From(entity, Type.OldValue, EntityType.OldValue);
+
+        // 复用投资经历
+        if (Qualifications.Select(x => x.ProofOfExperience).FirstOrDefault(x => x.Exists) is SingleFileViewModel sf && sf.File?.Path is not null)
+        {
+            q.ProofOfExperience.File = q.ProofOfExperience.OnSetFile(new FileInfo(sf.File.Path), "");
+        }
+        Qualifications.Add(q);
     }
 
     [RelayCommand]
@@ -918,7 +925,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
     public void Receive(EntityDeleted<RiskAssessment> message)
     {
         if (RiskAssessments.FirstOrDefault(x => x.Id == message.Value.Id) is RiskAssessmentViewModel r)
-            RiskAssessments.Remove(r);       
+            RiskAssessments.Remove(r);
     }
 
     public void Receive(EntityDeleted message)
