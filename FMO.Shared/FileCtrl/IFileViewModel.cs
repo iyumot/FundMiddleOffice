@@ -292,7 +292,7 @@ public partial class SingleFileViewModel : ObservableObject, IFileSelector//,IFi
 
 
         var obj = new DataObject(DataFormats.FileDrop, new string[] { File.Path });
-        obj.SetText(File.Path);
+        obj.SetText(Path.GetFullPath(File.Path));
         Clipboard.SetDataObject(obj);
     }
 
@@ -393,7 +393,7 @@ public partial class MultipleFileViewModel : ObservableObject, IFileSelector
 
 
         var obj = new DataObject(DataFormats.FileDrop, new string[] { file.Path });
-        obj.SetText(file.Path);
+        obj.SetText(Path.GetFullPath(file.Path));
         Clipboard.SetDataObject(obj);
     }
 
