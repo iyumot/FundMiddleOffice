@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging; 
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.IO.AMAC;
 using FMO.Models;
 using FMO.Shared;
@@ -41,7 +41,10 @@ public partial class ManagerPage : UserControl
 
 public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager>, IRecipient<ParticipantChangedMessage>
 {
-    private int FilesId;
+   // private int FilesId;
+
+
+
 
     public string AmacPageUrl { get; set; }
 
@@ -123,33 +126,32 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     /// <summary>
     /// 营业执照正本
     /// </summary>
-    [ObservableProperty]
-    public partial ObservableCollection<FileInfo>? BusinessLicense { get; set; }
+    //[ObservableProperty]
+    //public partial ObservableCollection<FileInfo>? BusinessLicense { get; set; }
+
+
+    public MultipleFileViewModel BusinessLicense { get; }
 
     /// <summary>
     /// 营业执照副本
     /// </summary>
-    [ObservableProperty]
-    public partial ObservableCollection<FileInfo>? BusinessLicense2 { get; set; }
+    public MultipleFileViewModel BusinessLicense2 { get; }
 
     /// <summary>
     /// 开户许可证
     /// </summary>
-    [ObservableProperty]
-    public partial ObservableCollection<FileInfo>? AccountOpeningLicense { get; set; }
+    public MultipleFileViewModel AccountOpeningLicense { get; }
 
 
     /// <summary>
     /// 章程
     /// </summary>
-    [ObservableProperty]
-    public partial ObservableCollection<FileInfo>? CharterDocument { get; set; }
+    public MultipleFileViewModel CharterDocument { get; }
 
     /// <summary>
     /// 法人身份证
     /// </summary>
-    [ObservableProperty]
-    public partial ObservableCollection<FileInfo>? LegalPersonIdCard { get; set; }
+    public MultipleFileViewModel LegalPersonIdCard { get; }
 
 
     [ObservableProperty]
@@ -180,13 +182,13 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         var db = DbHelper.Base();
         var manager = db.GetCollection<Manager>().FindById(1);
         var id = manager?.Identity?.Id;
-        var mfile = db.GetCollection<InstitutionFiles>().FindOne(x => x.InstitutionId == id);
-        if (mfile is null)
-        {
-            mfile = new InstitutionFiles { InstitutionId = id };
-            db.GetCollection<InstitutionFiles>().Insert(mfile);
-        }
-        FilesId = mfile.Id;
+        //var mfile = db.GetCollection<InstitutionFiles>().FindOne(x => x.InstitutionId == id);
+        //if (mfile is null)
+        //{
+        //    mfile = new InstitutionFiles { InstitutionId = id };
+        //    db.GetCollection<InstitutionFiles>().Insert(mfile);
+        //}
+        //FilesId = mfile.Id;
 
 
         if (db.FileStorage.Exists("icon.main"))
@@ -376,26 +378,73 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         WebSite.Init(manager);
 
 
+        var cef = db.GetCollection<InstitutionCertifications>().FindById(manager.Identity!.Id);
+        if (cef is null)
+        {
+            cef = new() { Id = manager.Identity.Id };
+            db.GetCollection<InstitutionCertifications>().Insert(cef);
+        }
+        BusinessLicense = new()
+        {
+            Label = "营业执照正本",
+            Files = [.. (cef.BusinessLicense ?? new())],
+            OnAddFile = (x, y) => SetFile(x => x.BusinessLicense ??= new(), x),
+            OnDeleteFile = x => DeleleFile(x => x.BusinessLicense, x),
+        };
+
+        BusinessLicense2 = new()
+        {
+            Label = "营业执照副本",
+            Files = [.. (cef.BusinessLicense2 ?? new())],
+            OnAddFile = (x, y) => SetFile(x => x.BusinessLicense2 ??= new(), x),
+            OnDeleteFile = x => DeleleFile(x => x.BusinessLicense2, x),
+        };
 
 
-
-        BusinessLicense = mfile?.BusinessLicense is null ? new() : new ObservableCollection<FileInfo>(mfile.BusinessLicense.Files.Select(x => new FileInfo(x.Path)));
-        BusinessLicense.CollectionChanged += BusinessLicense_CollectionChanged;
-
-
-        BusinessLicense2 = mfile?.BusinessLicense2 is null ? new() : new ObservableCollection<FileInfo>(mfile.BusinessLicense2.Files.Select(x => new FileInfo(x.Path)));
-        BusinessLicense2.CollectionChanged += BusinessLicense2_CollectionChanged;
-
-
-        AccountOpeningLicense = mfile?.AccountOpeningLicense is null ? new() : new ObservableCollection<FileInfo>(mfile.AccountOpeningLicense.Files.Select(x => new FileInfo(x.Path)));
-        AccountOpeningLicense.CollectionChanged += AccountOpeningLicense_CollectionChanged;
-
-        CharterDocument = mfile?.CharterDocument is null ? new() : new ObservableCollection<FileInfo>(mfile.CharterDocument.Files.Select(x => new FileInfo(x.Path)));
-        CharterDocument.CollectionChanged += CharterDocument_CollectionChanged;
+        AccountOpeningLicense = new()
+        {
+            Label = "开户许可证",
+            Files = [.. (cef.AccountOpeningLicense ?? new())],
+            OnAddFile = (x, y) => SetFile(x => x.AccountOpeningLicense ??= new(), x),
+            OnDeleteFile = x => DeleleFile(x => x.AccountOpeningLicense, x),
+        };
 
 
-        LegalPersonIdCard = mfile?.LegalPersonIdCard is null ? new() : new ObservableCollection<FileInfo>(mfile.LegalPersonIdCard.Files.Select(x => new FileInfo(x.Path)));
-        LegalPersonIdCard.CollectionChanged += LegalPersonIdCard_CollectionChanged;
+        CharterDocument = new()
+        {
+            Label = "章程/合伙协议",
+            Files = [.. (cef.CharterDocument ?? new())],
+            OnAddFile = (x, y) => SetFile(x => x.CharterDocument ??= new(), x),
+            OnDeleteFile = x => DeleleFile(x => x.CharterDocument, x),
+        };
+
+
+        LegalPersonIdCard = new()
+        {
+            Label = "法人/委派代表身份证",
+            Files = [.. (cef.LegalPersonIdCard ?? new())],
+            OnAddFile = (x, y) => SetFile(x => x.LegalPersonIdCard ??= new(), x),
+            OnDeleteFile = x => DeleleFile(x => x.LegalPersonIdCard, x),
+        };
+
+
+        //BusinessLicense = mfile?.BusinessLicense is null ? new() : new ObservableCollection<FileInfo>(mfile.BusinessLicense.Files.Select(x => new FileInfo(x.Path)));
+        //BusinessLicense.CollectionChanged += BusinessLicense_CollectionChanged;
+
+
+        //BusinessLicense2 = mfile?.BusinessLicense2 is null ? new() : new ObservableCollection<FileInfo>(mfile.BusinessLicense2.Files.Select(x => new FileInfo(x.Path)));
+        //BusinessLicense2.CollectionChanged += BusinessLicense2_CollectionChanged;
+
+
+        //AccountOpeningLicense = mfile?.AccountOpeningLicense is null ? new() : new ObservableCollection<FileInfo>(mfile.AccountOpeningLicense.Files.Select(x => new FileInfo(x.Path)));
+        //AccountOpeningLicense.CollectionChanged += AccountOpeningLicense_CollectionChanged;
+
+        //CharterDocument = mfile?.CharterDocument is null ? new() : new ObservableCollection<FileInfo>(mfile.CharterDocument.Files.Select(x => new FileInfo(x.Path)));
+        //CharterDocument.CollectionChanged += CharterDocument_CollectionChanged;
+
+
+        //LegalPersonIdCard = mfile?.LegalPersonIdCard is null ? new() : new ObservableCollection<FileInfo>(mfile.LegalPersonIdCard.Files.Select(x => new FileInfo(x.Path)));
+        //LegalPersonIdCard.CollectionChanged += LegalPersonIdCard_CollectionChanged;
     }
 
 
@@ -582,7 +631,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         var oi = new OwnershipItem { Name = ins!.Name };
         Parse(1, per, os, oi);
 
-  
+
 
 
     }
@@ -617,211 +666,211 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
 
 
 
-    private void BusinessLicense_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-    {
-        if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
-        {
-            using var db = DbHelper.Base();
+    //private void BusinessLicense_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    //{
+    //    if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
+    //    {
+    //        using var db = DbHelper.Base();
 
-            foreach (FileInfo item in e.NewItems)
-            {
-                string hash = item.ComputeHash()!;
+    //        foreach (FileInfo item in e.NewItems)
+    //        {
+    //            string hash = item.ComputeHash()!;
 
-                // 保存副本
-                var dir = Directory.CreateDirectory("manager");
-                var tar = FileHelper.CopyFile(item, dir.FullName);
+    //            // 保存副本
+    //            var dir = Directory.CreateDirectory("manager");
+    //            var tar = FileHelper.CopyFile(item, dir.FullName);
 
-                FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
+    //            FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
 
-                var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
-                if (files.BusinessLicense is null)
-                    files.BusinessLicense = new VersionedFileInfo { Name = nameof(BusinessLicense), Files = new() };
-                files!.BusinessLicense.Files.Add(fileVersion);
-                db.GetCollection<InstitutionFiles>().Update(files);
-            }
-        }
-        else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
-        {
-            using var db = DbHelper.Base();
-            var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
-
-
-            foreach (FileInfo item in e.OldItems)
-            {
-                var rp = Path.GetRelativePath(Directory.GetCurrentDirectory(), item.FullName);
-                var file = files!.BusinessLicense?.Files.FirstOrDefault(x => rp == x.Path || x.Path == item.FullName);
-                if (file is not null)
-                    files.BusinessLicense!.Files.Remove(file);
-            }
-
-            db.GetCollection<InstitutionFiles>().Update(files!);
-        }
-
-    }
-    private void BusinessLicense2_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-    {
-        if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
-        {
-            using var db = DbHelper.Base();
-
-            foreach (FileInfo item in e.NewItems)
-            {
-                string hash = item.ComputeHash()!;
-
-                // 保存副本
-                var dir = Directory.CreateDirectory("manager");
-                var tar = FileHelper.CopyFile(item, dir.FullName);
-
-                FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
-
-                var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
-                if (files.BusinessLicense2 is null)
-                    files.BusinessLicense2 = new VersionedFileInfo { Name = nameof(BusinessLicense2), Files = new() };
-                files!.BusinessLicense2.Files.Add(fileVersion);
-                db.GetCollection<InstitutionFiles>().Update(files);
-            }
-        }
-        else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
-        {
-            using var db = DbHelper.Base();
-            var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
+    //            var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
+    //            if (files.BusinessLicense is null)
+    //                files.BusinessLicense = new VersionedFileInfo { Name = nameof(BusinessLicense), Files = new() };
+    //            files!.BusinessLicense.Files.Add(fileVersion);
+    //            db.GetCollection<InstitutionFiles>().Update(files);
+    //        }
+    //    }
+    //    else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
+    //    {
+    //        using var db = DbHelper.Base();
+    //        var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
 
 
-            foreach (FileInfo item in e.OldItems)
-            {
-                var rp = Path.GetRelativePath(Directory.GetCurrentDirectory(), item.FullName);
-                var file = files!.BusinessLicense2?.Files.FirstOrDefault(x => rp == x.Path || x.Path == item.FullName);
-                if (file is not null)
-                    files.BusinessLicense2!.Files.Remove(file);
-            }
+    //        foreach (FileInfo item in e.OldItems)
+    //        {
+    //            var rp = Path.GetRelativePath(Directory.GetCurrentDirectory(), item.FullName);
+    //            var file = files!.BusinessLicense?.Files.FirstOrDefault(x => rp == x.Path || x.Path == item.FullName);
+    //            if (file is not null)
+    //                files.BusinessLicense!.Files.Remove(file);
+    //        }
 
-            db.GetCollection<InstitutionFiles>().Update(files!);
-        }
+    //        db.GetCollection<InstitutionFiles>().Update(files!);
+    //    }
 
-    }
-    private void AccountOpeningLicense_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-    {
-        if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
-        {
-            using var db = DbHelper.Base();
+    //}
+    //private void BusinessLicense2_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    //{
+    //    if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
+    //    {
+    //        using var db = DbHelper.Base();
 
-            foreach (FileInfo item in e.NewItems)
-            {
-                string hash = item.ComputeHash()!;
+    //        foreach (FileInfo item in e.NewItems)
+    //        {
+    //            string hash = item.ComputeHash()!;
 
-                // 保存副本
-                var dir = Directory.CreateDirectory("manager");
-                var tar = FileHelper.CopyFile(item, dir.FullName);
+    //            // 保存副本
+    //            var dir = Directory.CreateDirectory("manager");
+    //            var tar = FileHelper.CopyFile(item, dir.FullName);
 
-                FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
+    //            FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
 
-                var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
-                if (files.AccountOpeningLicense is null)
-                    files.AccountOpeningLicense = new VersionedFileInfo { Name = nameof(AccountOpeningLicense), Files = new() };
-                files!.AccountOpeningLicense.Files.Add(fileVersion);
-                db.GetCollection<InstitutionFiles>().Update(files);
-            }
-        }
-        else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
-        {
-            using var db = DbHelper.Base();
-            var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
-
-
-            foreach (FileInfo item in e.OldItems)
-            {
-                var rp = Path.GetRelativePath(Directory.GetCurrentDirectory(), item.FullName);
-                var file = files!.AccountOpeningLicense?.Files.FirstOrDefault(x => rp == x.Path || x.Path == item.FullName);
-                if (file is not null)
-                    files.AccountOpeningLicense!.Files.Remove(file);
-            }
-
-            db.GetCollection<InstitutionFiles>().Update(files!);
-        }
-
-    }
-    private void CharterDocument_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-    {
-        if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
-        {
-            using var db = DbHelper.Base();
-
-            foreach (FileInfo item in e.NewItems)
-            {
-                string hash = item.ComputeHash()!;
-
-                // 保存副本
-                var dir = Directory.CreateDirectory("manager");
-                var tar = FileHelper.CopyFile(item, dir.FullName);
-
-                FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
-
-                var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
-                if (files.CharterDocument is null)
-                    files.CharterDocument = new VersionedFileInfo { Name = nameof(CharterDocument), Files = new() };
-                files!.CharterDocument.Files.Add(fileVersion);
-                db.GetCollection<InstitutionFiles>().Update(files);
-            }
-        }
-        else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
-        {
-            using var db = DbHelper.Base();
-            var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
+    //            var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
+    //            if (files.BusinessLicense2 is null)
+    //                files.BusinessLicense2 = new VersionedFileInfo { Name = nameof(BusinessLicense2), Files = new() };
+    //            files!.BusinessLicense2.Files.Add(fileVersion);
+    //            db.GetCollection<InstitutionFiles>().Update(files);
+    //        }
+    //    }
+    //    else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
+    //    {
+    //        using var db = DbHelper.Base();
+    //        var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
 
 
-            foreach (FileInfo item in e.OldItems)
-            {
-                var rp = Path.GetRelativePath(Directory.GetCurrentDirectory(), item.FullName);
-                var file = files!.CharterDocument?.Files.FirstOrDefault(x => rp == x.Path || x.Path == item.FullName);
-                if (file is not null)
-                    files.CharterDocument!.Files.Remove(file);
-            }
+    //        foreach (FileInfo item in e.OldItems)
+    //        {
+    //            var rp = Path.GetRelativePath(Directory.GetCurrentDirectory(), item.FullName);
+    //            var file = files!.BusinessLicense2?.Files.FirstOrDefault(x => rp == x.Path || x.Path == item.FullName);
+    //            if (file is not null)
+    //                files.BusinessLicense2!.Files.Remove(file);
+    //        }
 
-            db.GetCollection<InstitutionFiles>().Update(files!);
-        }
+    //        db.GetCollection<InstitutionFiles>().Update(files!);
+    //    }
 
-    }
-    private void LegalPersonIdCard_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-    {
-        if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
-        {
-            using var db = DbHelper.Base();
+    //}
+    //private void AccountOpeningLicense_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    //{
+    //    if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
+    //    {
+    //        using var db = DbHelper.Base();
 
-            foreach (FileInfo item in e.NewItems)
-            {
-                string hash = item.ComputeHash()!;
+    //        foreach (FileInfo item in e.NewItems)
+    //        {
+    //            string hash = item.ComputeHash()!;
 
-                // 保存副本
-                var dir = Directory.CreateDirectory("manager");
-                var tar = FileHelper.CopyFile(item, dir.FullName);
+    //            // 保存副本
+    //            var dir = Directory.CreateDirectory("manager");
+    //            var tar = FileHelper.CopyFile(item, dir.FullName);
 
-                FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
+    //            FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
 
-                var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
-                if (files.LegalPersonIdCard is null)
-                    files.LegalPersonIdCard = new VersionedFileInfo { Name = nameof(LegalPersonIdCard), Files = new() };
-                files!.LegalPersonIdCard.Files.Add(fileVersion);
-                db.GetCollection<InstitutionFiles>().Update(files);
-            }
-        }
-        else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
-        {
-            using var db = DbHelper.Base();
-            var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
+    //            var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
+    //            if (files.AccountOpeningLicense is null)
+    //                files.AccountOpeningLicense = new VersionedFileInfo { Name = nameof(AccountOpeningLicense), Files = new() };
+    //            files!.AccountOpeningLicense.Files.Add(fileVersion);
+    //            db.GetCollection<InstitutionFiles>().Update(files);
+    //        }
+    //    }
+    //    else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
+    //    {
+    //        using var db = DbHelper.Base();
+    //        var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
 
 
-            foreach (FileInfo item in e.OldItems)
-            {
-                var rp = Path.GetRelativePath(Directory.GetCurrentDirectory(), item.FullName);
-                var file = files!.LegalPersonIdCard?.Files.FirstOrDefault(x => rp == x.Path || x.Path == item.FullName);
-                if (file is not null)
-                    files.LegalPersonIdCard!.Files.Remove(file);
-            }
+    //        foreach (FileInfo item in e.OldItems)
+    //        {
+    //            var rp = Path.GetRelativePath(Directory.GetCurrentDirectory(), item.FullName);
+    //            var file = files!.AccountOpeningLicense?.Files.FirstOrDefault(x => rp == x.Path || x.Path == item.FullName);
+    //            if (file is not null)
+    //                files.AccountOpeningLicense!.Files.Remove(file);
+    //        }
 
-            db.GetCollection<InstitutionFiles>().Update(files!);
-        }
+    //        db.GetCollection<InstitutionFiles>().Update(files!);
+    //    }
 
-    }
+    //}
+    //private void CharterDocument_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    //{
+    //    if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
+    //    {
+    //        using var db = DbHelper.Base();
+
+    //        foreach (FileInfo item in e.NewItems)
+    //        {
+    //            string hash = item.ComputeHash()!;
+
+    //            // 保存副本
+    //            var dir = Directory.CreateDirectory("manager");
+    //            var tar = FileHelper.CopyFile(item, dir.FullName);
+
+    //            FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
+
+    //            var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
+    //            if (files.CharterDocument is null)
+    //                files.CharterDocument = new VersionedFileInfo { Name = nameof(CharterDocument), Files = new() };
+    //            files!.CharterDocument.Files.Add(fileVersion);
+    //            db.GetCollection<InstitutionFiles>().Update(files);
+    //        }
+    //    }
+    //    else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
+    //    {
+    //        using var db = DbHelper.Base();
+    //        var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
+
+
+    //        foreach (FileInfo item in e.OldItems)
+    //        {
+    //            var rp = Path.GetRelativePath(Directory.GetCurrentDirectory(), item.FullName);
+    //            var file = files!.CharterDocument?.Files.FirstOrDefault(x => rp == x.Path || x.Path == item.FullName);
+    //            if (file is not null)
+    //                files.CharterDocument!.Files.Remove(file);
+    //        }
+
+    //        db.GetCollection<InstitutionFiles>().Update(files!);
+    //    }
+
+    //}
+    //private void LegalPersonIdCard_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    //{
+    //    if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
+    //    {
+    //        using var db = DbHelper.Base();
+
+    //        foreach (FileInfo item in e.NewItems)
+    //        {
+    //            string hash = item.ComputeHash()!;
+
+    //            // 保存副本
+    //            var dir = Directory.CreateDirectory("manager");
+    //            var tar = FileHelper.CopyFile(item, dir.FullName);
+
+    //            FileVersion fileVersion = new FileVersion { Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.LastWriteTime };
+
+    //            var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
+    //            if (files.LegalPersonIdCard is null)
+    //                files.LegalPersonIdCard = new VersionedFileInfo { Name = nameof(LegalPersonIdCard), Files = new() };
+    //            files!.LegalPersonIdCard.Files.Add(fileVersion);
+    //            db.GetCollection<InstitutionFiles>().Update(files);
+    //        }
+    //    }
+    //    else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
+    //    {
+    //        using var db = DbHelper.Base();
+    //        var files = db.GetCollection<InstitutionFiles>().FindById(FilesId);
+
+
+    //        foreach (FileInfo item in e.OldItems)
+    //        {
+    //            var rp = Path.GetRelativePath(Directory.GetCurrentDirectory(), item.FullName);
+    //            var file = files!.LegalPersonIdCard?.Files.FirstOrDefault(x => rp == x.Path || x.Path == item.FullName);
+    //            if (file is not null)
+    //                files.LegalPersonIdCard!.Files.Remove(file);
+    //        }
+
+    //        db.GetCollection<InstitutionFiles>().Update(files!);
+    //    }
+
+    //}
 
     internal void SetLogo(string v)
     {
@@ -871,6 +920,56 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     }
     #endregion
 
+
+    private FileStorageInfo? SetFile(Func<InstitutionCertifications, List<FileStorageInfo>> func, FileInfo fi)
+    {
+        string hash = fi.ComputeHash()!;
+
+        // 保存副本
+        var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "manager"));
+
+        var tar = FileHelper.CopyFile2(fi, dir.FullName);
+        if (tar is null)
+        {
+            Log.Error($"保存文件出错，{fi.Name}");
+            HandyControl.Controls.Growl.Error($"无法保存{fi.Name}，文件名异常或者存在过多重名文件");
+            return null;
+        }
+
+        var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
+
+        using var db = DbHelper.Base();
+        var q = db.GetCollection<InstitutionCertifications>().FindById(InstitutionCode.OldValue);
+        var l = func(q);
+        FileStorageInfo fsi = new()
+        {
+            Title = "",
+            Path = path,
+            Hash = hash,
+            Time = DateTime.Now
+        };
+        l!.Add(fsi);
+        db.GetCollection<InstitutionCertifications>().Update(q);
+        return fsi;
+    }
+
+
+    private void DeleleFile(Func<InstitutionCertifications, List<FileStorageInfo>?> func, FileStorageInfo file)
+    {
+        using var db = DbHelper.Base();
+        var q = db.GetCollection<InstitutionCertifications>().FindById(InstitutionCode.OldValue);
+
+        var l = func(q);
+        if (l is null) return;
+        var old = l.Find(x => x.Path is not null && file.Path is not null && Path.GetFullPath(x.Path) == Path.GetFullPath(file.Path));
+        if (old is not null)
+        {
+            l.Remove(old);
+
+            try { File.Delete(old.Path!); } catch (Exception e) { Log.Error($"delete file failed {e}"); }
+        }
+        db.GetCollection<InstitutionCertifications>().Update(q);
+    }
 
 
     public class RelationViewModel

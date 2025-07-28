@@ -127,6 +127,189 @@
                 </BulletDecorator>
             </StackPanel>
         </DataTemplate>
+
+
+        <DataTemplate x:Key="DT.File">
+
+            <DockPanel Background="Transparent" LastChildFill="False">
+                <hc:SimplePanel>
+                    <DockPanel>
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Foreground="RoyalBlue"
+                            Text="{Binding Time, StringFormat=yyyy-MM-dd}" />
+                        <shared:AbbreviationText
+                            x:Name="file"
+                            Margin="5,2"
+                            VerticalContentAlignment="Center"
+                            Text="{Binding Name}" />
+                    </DockPanel>
+                    <hc:SimplePanel
+                        x:Name="p"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Stretch"
+                        Background="White"
+                        Visibility="Collapsed">
+                        <hc:SimplePanel.Resources>
+                            <Style BasedOn="{StaticResource ButtonIcon.Small}" TargetType="Button">
+                                <Setter Property="Margin" Value="2,-5" />
+                            </Style>
+                        </hc:SimplePanel.Resources>
+                        <DockPanel Margin="5,2" LastChildFill="False">
+                            <DockPanel LastChildFill="False">
+                                <Button
+                                    hc:IconElement.Geometry="{DynamicResource f.book-open-reader}"
+                                    Command="{Binding RelativeSource={RelativeSource AncestorType=shared:MultipleFileView}, Path=Binding.ViewCommand}"
+                                    CommandParameter="{Binding .}"
+                                    Foreground="Lime"
+                                    ToolTip="查看" />
+
+                                <Button
+                                    hc:IconElement.Geometry="{DynamicResource f.clone}"
+                                    Command="{Binding RelativeSource={RelativeSource AncestorType=shared:MultipleFileView}, Path=Binding.CopyCommand}"
+                                    CommandParameter="{Binding .}"
+                                    Foreground="RoyalBlue"
+                                    ToolTip="复制" />
+
+                                <Button
+                                    hc:IconElement.Geometry="{DynamicResource f.file-export}"
+                                    Command="{Binding RelativeSource={RelativeSource AncestorType=shared:MultipleFileView}, Path=Binding.SaveAsCommand}"
+                                    CommandParameter="{Binding .}"
+                                    ToolTip="另存为" />
+
+
+                            </DockPanel>
+
+                            <Button
+                                Margin="-5"
+                                hc:IconElement.Geometry="{DynamicResource f.xmark}"
+                                Command="{Binding Binding.DeleteFileCommand, RelativeSource={RelativeSource AncestorType=shared:MultipleFileView}}"
+                                CommandParameter="{Binding .}"
+                                Foreground="Red"
+                                Style="{DynamicResource ButtonIcon.Small}"
+                                ToolTip="删除"
+                                Visibility="{Binding DataContext.IsReadOnly, RelativeSource={RelativeSource AncestorType=ListBox}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                        </DockPanel>
+                    </hc:SimplePanel>
+
+                </hc:SimplePanel>
+                <TextBlock
+                    Margin="6,0,0,0"
+                    VerticalAlignment="Center"
+                    FontSize="8"
+                    Foreground="Red"
+                    Text="文件已被删除"
+                    Visibility="{Binding Exists, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+            </DockPanel>
+            <DataTemplate.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Exists, TargetNullValue=False}" Value="True" />
+                        <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="p" Property="Visibility" Value="Visible" />
+                </MultiDataTrigger>
+
+                <DataTrigger Binding="{Binding Exists, TargetNullValue=False}" Value="False">
+                    <Setter TargetName="file" Property="Foreground" Value="Gray" />
+                </DataTrigger>
+
+            </DataTemplate.Triggers>
+        </DataTemplate>
+        <Style x:Key="CardFileStyle" TargetType="shared:MultipleFileView">
+
+            <Setter Property="MaxHeight" Value="21" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="shared:MultipleFileView">
+                        <Border>
+                            <Border.Resources>
+                                <CollectionViewSource x:Key="data" Source="{Binding Binding.Files, RelativeSource={RelativeSource TemplatedParent}}" />
+                            </Border.Resources>
+                            <DockPanel Background="Transparent">
+                                <TextBlock
+                                    x:Name="lb"
+                                    VerticalAlignment="Center"
+                                    Foreground="{DynamicResource LabelBrush}"
+                                    Text="{Binding Binding.Label, RelativeSource={RelativeSource TemplatedParent}}" />
+                                <Grid>
+                                    <Viewbox
+                                        x:Name="arrow"
+                                        Width="14"
+                                        Height="14"
+                                        Margin="2,0,8,0"
+                                        VerticalAlignment="Center">
+                                        <Path
+                                            Data="{DynamicResource f.angle-right}"
+                                            Fill="Black"
+                                            Stroke="Black" />
+                                    </Viewbox>
+
+                                    <Button
+                                        x:Name="add"
+                                        hc:IconElement.Geometry="{DynamicResource f.gear}"
+                                        Command="{Binding Binding.AddFileCommand, RelativeSource={RelativeSource TemplatedParent}}"
+                                        CommandParameter="{Binding ., RelativeSource={RelativeSource TemplatedParent}}"
+                                        Style="{DynamicResource ButtonIcon.Small}"
+                                        ToolTip="设置文件"
+                                        Visibility="Hidden" />
+
+                                </Grid>
+
+
+                                <ListBox
+                                    x:Name="list"
+                                    VerticalAlignment="Center"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    ItemTemplate="{StaticResource DT.File}"
+                                    ItemsSource="{Binding Source={StaticResource data}}"
+                                    Style="{DynamicResource ListBoxCustom}" />
+
+                            </DockPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsMouseOver" Value="True" />
+                                    <Condition Property="IsReadOnly" Value="False" />
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="add" Property="Visibility" Value="Visible" />
+                                <Setter TargetName="arrow" Property="Visibility" Value="Collapsed" />
+                            </MultiTrigger>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation
+                                                BeginTime="0:0:0"
+                                                Storyboard.TargetProperty="MaxHeight"
+                                                From="21"
+                                                To="200" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation
+                                                BeginTime="0:0:0.5"
+                                                Storyboard.TargetProperty="MaxHeight"
+                                                From="200"
+                                                To="21"
+                                                Duration="0:0:0.5" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                                <!--<Setter Property="MaxHeight" Value="200" />-->
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
     <UserControl.DataContext>
         <local:ManagerPageViewModel />
@@ -226,31 +409,38 @@
 
 
                 <!--  logo  -->
-                <DockPanel>
-                    <Grid
-                        AllowDrop="True"
-                        Background="Transparent"
-                        Drop="Grid_Drop">
-                        <Image
-                            Width="64"
-                            Height="64"
-                            Source="{Binding MainLogo}" />
+                <GroupBox Header="Logo" Style="{StaticResource GroupBoxTab}">
+                    <DockPanel>
+                        <Grid
+                            AllowDrop="True"
+                            Background="Transparent"
+                            Drop="Grid_Drop">
+                            <Image
+                                Width="64"
+                                Height="64"
+                                Source="{Binding MainLogo}" />
 
-                        <TextBlock Text="Logo" Visibility="{Binding MainLogo, Converter={StaticResource Object2VisibilityReConverter}}" />
-                    </Grid>
-                    <Image />
-                </DockPanel>
+                            <TextBlock Text="Logo" Visibility="{Binding MainLogo, Converter={StaticResource Object2VisibilityReConverter}}" />
+                        </Grid>
+                        <Image />
+                    </DockPanel>
+                </GroupBox>
 
 
-                <Border Margin="0,20,0,0" Background="WhiteSmoke">
+                <GroupBox
+                    Margin="0,20,0,0"
+                    Background="WhiteSmoke"
+                    Header="证件"
+                    Style="{StaticResource GroupBoxTab}">
                     <StackPanel>
-                        <local:MultiFileDisplay Files="{Binding BusinessLicense}" Header="营业执照正本" />
-                        <local:MultiFileDisplay Files="{Binding BusinessLicense2}" Header="营业执照副本" />
-                        <local:MultiFileDisplay Files="{Binding AccountOpeningLicense}" Header="开户许可证" />
-                        <local:MultiFileDisplay Files="{Binding CharterDocument}" Header="章程/合伙协议" />
-                        <local:MultiFileDisplay Files="{Binding LegalPersonIdCard}" Header="法人/委派代表身份证" />
+                        <shared:MultipleFileView Binding="{Binding BusinessLicense}" Style="{StaticResource CardFileStyle}" />
+                        <shared:MultipleFileView Binding="{Binding BusinessLicense2}" Style="{StaticResource CardFileStyle}" />
+                        <shared:MultipleFileView Binding="{Binding AccountOpeningLicense}" Style="{StaticResource CardFileStyle}" />
+                        <shared:MultipleFileView Binding="{Binding CharterDocument}" Style="{StaticResource CardFileStyle}" />
+                        <!--<shared:MultipleFileView Binding="{Binding LegalPersonIdCard}" Style="{StaticResource CardFileStyle}" />-->
+
                     </StackPanel>
-                </Border>
+                </GroupBox>
             </StackPanel>
 
             <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top">

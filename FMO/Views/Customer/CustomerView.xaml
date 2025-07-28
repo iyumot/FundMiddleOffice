@@ -237,7 +237,7 @@
                                         CommandParameter="{Binding ., RelativeSource={RelativeSource TemplatedParent}}"
                                         Style="{DynamicResource ButtonIcon.Small}"
                                         ToolTip="设置文件"
-                                        Visibility="Collapsed" />
+                                        Visibility="Hidden" />
 
                                 </Grid>
 
