@@ -167,9 +167,16 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
     [RelayCommand]
     public void AddInvestor(DataGrid grid)
     {
-        InvestorReadOnlyViewModel item = new(new Investor { Name = "" }, null, null);
-        Customers.Add(item);
-        grid.ScrollIntoView(item);
+        AddInvestorWindowViewModel vm = new();
+        var wnd = new AddInvestorWindow { DataContext = vm , Owner = Application.Current.MainWindow };
+   
+        if(wnd.ShowDialog()??false)
+        {
+            var c = vm.Investor!;
+            using var db = DbHelper.Base();
+            db.GetCollection<Investor>().Insert(c);
+            Customers.Add(new InvestorReadOnlyViewModel(c, null, null));
+        }
     }
 
     [RelayCommand]
