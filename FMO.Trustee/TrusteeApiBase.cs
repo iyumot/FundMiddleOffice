@@ -228,7 +228,7 @@ public abstract class TrusteeApiBase : ITrustee
     protected static (DateOnly b, DateOnly e)[] Split(DateOnly begin, DateOnly end, int days)
     {
         if (begin == end) return [(begin, end)];
-        if (begin < end) return [];
+        if (begin > end) return [];
 
         int total = end.DayNumber - begin.DayNumber;
         int cnt = (int)Math.Ceiling((double)total / days);

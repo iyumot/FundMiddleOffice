@@ -111,7 +111,7 @@ public partial class CMS : TrusteeApiBase
     public override async Task<ReturnWrap<FundDailyFee>> QueryFundDailyFee(DateOnly begin, DateOnly end)
     {
         // 查询区间大于1个月，需要多次查询 
-        var ts = Split(begin, end, 30);
+        var ts = Split(begin, end, 31);
 
         List<FundDailyFee> transactions = new();
         foreach (var (b, e) in ts)
