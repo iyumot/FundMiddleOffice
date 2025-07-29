@@ -21,9 +21,15 @@ public abstract partial class EditableControlViewModelBase<T> : ChangeableEntity
         _debouncer = new Debouncer(() => NotifyChanged(), 500);
     }
 
-    public virtual T EntityOverride(ILiteDatabase db)
+    public virtual T? EntityOverride(ILiteDatabase db)
     {
         return db.GetCollection<T>().FindById(Id);
+    }
+
+
+    public virtual void UpdateOverride(ILiteDatabase db, T v)
+    {
+        db.GetCollection<T>().Upsert(v);
     }
 
     protected override void DeleteOverride(IPropertyModifier unit)
@@ -73,11 +79,9 @@ public abstract partial class EditableControlViewModelBase<T> : ChangeableEntity
             if (v is not null)
             {
                 using var db = DbHelper.Base();
-                db.GetCollection<T>().Upsert(v);
+                UpdateOverride(db, v);
                 if (Id == 0 && v.GetType().GetProperty("Id") is PropertyInfo pi && pi.PropertyType == typeof(int))
-                {
-                    Id = (int)pi.GetValue(v)!;
-                }
+                    Id = (int)pi.GetValue(v)!;                
 
                 _debouncer.Invoke();
             }
