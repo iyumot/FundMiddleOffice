@@ -450,7 +450,7 @@
                 <ToggleButton
                     hc:IconElement.Geometry="{StaticResource f.pencil}"
                     local:HelpService.Help="点击这里修改管理人资料和证件"
-                    local:HelpService.Placement="Right"
+                    local:HelpService.Placement="Left"
                     BorderThickness="0"
                     DockPanel.Dock="Right"
                     IsChecked="{Binding IsReadOnly}"
@@ -487,6 +487,8 @@
                             Text="成员" />
                         <Button
                             hc:IconElement.Geometry="{StaticResource f.circle-plus}"
+                            local:HelpService.Help="添加公司成员"
+                            local:HelpService.Placement="Top"
                             Command="{Binding AddMemberCommand}"
                             Foreground="Green"
                             Style="{StaticResource ButtonIcon}" />
@@ -499,6 +501,8 @@
                                 Visibility="{Binding LoadMemberFromAmacCommand.IsRunning, Converter={StaticResource Boolean2VisibilityConverter}}" />
                             <Button
                                 hc:IconElement.Geometry="{StaticResource f.download}"
+                                local:HelpService.Help="从协会human下载"
+                                local:HelpService.Placement="Right"
                                 Command="{Binding LoadMemberFromAmacCommand}"
                                 Style="{StaticResource ButtonIcon}"
                                 ToolTip="从协会更新" />
@@ -623,6 +627,8 @@
 
                         <Button
                             hc:IconElement.Geometry="{StaticResource f.circle-plus}"
+                            local:HelpService.Help="添加股东"
+                            local:HelpService.Placement="Right"
                             Command="{Binding AddShareHolderCommand}"
                             Foreground="Green"
                             Style="{StaticResource ButtonIcon}" />
@@ -641,68 +647,14 @@
                     IsReadOnly="True"
                     ItemsSource="{Binding ShareRelations}"
                     Style="{StaticResource DataGrid.NoSelect}">
-                    <!--<DataGrid.RowDetailsTemplate>
-                        <DataTemplate>
-                            <DataGrid
-                                AutoGenerateColumns="False"
-                                HeadersVisibility="None"
-                                ItemsSource="{Binding Children}"
-                                Style="{StaticResource DataGrid.NoSelect}">
-                                <DataGrid.Columns>
-                                    <DataGridTemplateColumn Header="姓名">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <shared:CopyableTextBlock Text="{Binding Holder.Name}" />
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-
-                                    <DataGridTemplateColumn Header="认缴金额">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <shared:CopyableTextBlock HorizontalAlignment="Right" Text="{Binding Share}" />
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-
-                                    <DataGridTextColumn
-                                        Binding="{Binding Ratio, StringFormat=P2}"
-                                        ElementStyle="{StaticResource RightAlignText}"
-                                        Header="占比" />
-
-                    -->
-                    <!--  编辑/删除  -->
-                    <!--
-                                    <DataGridTemplateColumn>
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <DockPanel LastChildFill="False">
-                                                    <Button
-                                                        hc:IconElement.Geometry="{StaticResource f.circle-minus}"
-                                                        Command="{Binding DataContext.RemoveShareHolderCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                        CommandParameter="{Binding .}"
-                                                        Foreground="Red"
-                                                        Style="{StaticResource ButtonIcon.Small}" />
-
-
-                                                    <Button
-                                                        hc:IconElement.Geometry="{StaticResource f.pen}"
-                                                        Command="{Binding DataContext.EditShareHolderCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                        CommandParameter="{Binding .}"
-                                                        Style="{StaticResource ButtonIcon.Small}" />
-                                                </DockPanel>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-                                </DataGrid.Columns>
-                            </DataGrid>
-                        </DataTemplate>
-                    </DataGrid.RowDetailsTemplate>-->
                     <DataGrid.Columns>
                         <DataGridTemplateColumn Header="姓名">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <shared:CopyableTextBlock Text="{Binding Holder.Name}">
+                                    <shared:CopyableTextBlock
+                                        local:HelpService.Help="双击修改股东资料"
+                                        local:HelpService.Placement="Bottom"
+                                        Text="{Binding Holder.Name}">
                                         <i:Interaction.Triggers>
                                             <i:EventTrigger EventName="MouseDoubleClick">
                                                 <i:InvokeCommandAction Command="{Binding OpenEntityCommand}" />
