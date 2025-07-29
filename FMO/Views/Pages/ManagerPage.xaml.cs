@@ -175,12 +175,18 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     [ObservableProperty]
     public partial bool ShowMemberPopup { get; set; }
 
+    /// <summary>
+    /// 股权与注册资本不一致
+    /// </summary>
+    [ObservableProperty]
+    public partial bool ShareNotPair { get; set; }
+
     public ManagerPageViewModel()
     {
         WeakReferenceMessenger.Default.Register<ParticipantChangedMessage>(this);
 
         var db = DbHelper.Base();
-        var manager = db.GetCollection<Manager>().FindById(1);
+        Manager manager = db.GetCollection<Manager>().FindById(1)!;
         var id = manager?.Identity?.Id;
         //var mfile = db.GetCollection<InstitutionFiles>().FindOne(x => x.InstitutionId == id);
         //if (mfile is null)
@@ -210,27 +216,25 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         //    Members.Add( (manager.LegalAgent));
 
 
-        var rel = db.GetCollection<Ownership>().FindAll().ToArray();// Find(x => x.InstitutionId == 1).ToArray();
+        var rel = db.GetCollection<Ownership>().Find(x => x.InstitutionId == 0).ToArray();
         var entities = db.GetCollection<IEntity>().FindAll().ToArray();
         var relations = rel.Select(x => new RelationViewModel
         {
             Id = x.Id,
             Holder = entities.FirstOrDefault(y => y.Id == x.HolderId),
-            Institution = x.InstitutionId == 0 ? manager : entities.Select(x=> x as Institution).FirstOrDefault(y => y?.Id == x.InstitutionId),
+            Institution = manager!,
             Share = x.Share,
             Ratio = x.Ratio == 0 ? x.Share / manager!.RegisterCapital : x.Ratio
         }).ToArray();
-        foreach (var item in relations.Where(x => x.Institution == manager))
-        {
-            item.Children = [.. relations.Where(x => x.Institution == item.Holder)];
-        }
-
         ShareRelations = [.. relations.Where(x => x.Institution == manager)];
+        ShareNotPair = rel.Sum(x => x.Share) != manager.RegisterCapital;
+
 
         db.Dispose();
 
         AmacPageUrl = $"https://gs.amac.org.cn/amac-infodisc/res/pof/manager/{manager!.AmacId}.html";
 
+        #region MyRegion
         ManagerName = new ChangeableViewModel<Manager, string>
         {
             Label = "管理人",
@@ -432,7 +436,8 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
             Files = [.. (cef.LegalPersonIdCard ?? new())],
             OnAddFile = (x, y) => SetFile(x => x.LegalPersonIdCard ??= new(), x),
             OnDeleteFile = x => DeleleFile(x => x.LegalPersonIdCard, x),
-        };
+        }; 
+        #endregion
 
 
         //BusinessLicense = mfile?.BusinessLicense is null ? new() : new ObservableCollection<FileInfo>(mfile.BusinessLicense.Files.Select(x => new FileInfo(x.Path)));
@@ -573,9 +578,22 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         wnd.Owner = App.Current.MainWindow;
         wnd.ShowDialog();
 
+        var rel = db.GetCollection<Ownership>().Find(x => x.InstitutionId == 0).ToArray();
+        var entities = db.GetCollection<IEntity>().FindAll().ToArray();
+        foreach (var x in rel.ExceptBy(ShareRelations.Select(x => x.Holder?.Id), x => x.HolderId))
+        {
+            ShareRelations.Add(new RelationViewModel
+            {
+                Id = x.Id,
+                Holder = entities.FirstOrDefault(y => y.Id == x.HolderId),
+                Institution = manager,
+                Share = x.Share,
+                Ratio = x.Ratio == 0 ? x.Share / manager!.RegisterCapital : x.Ratio
+            });
+        }
 
 
-
+        ShareNotPair = ShareRelations.Sum(x => x.Share) != manager.RegisterCapital;
 
     }
 
@@ -598,6 +616,8 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
             db.GetCollection<Ownership>().Delete(value.Id);
 
             ShareRelations.Remove(value);
+            
+            ShareNotPair = ShareRelations.Sum(x => x.Share) != RegisterCapital.OldValue;
         }
     }
 
@@ -608,7 +628,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         var manager = db.GetCollection<Manager>().FindById(1);
         var wnd = new AddOrModifyShareHolderWindow();
         AddOrModifyShareHolderWindowViewModel obj = new(manager);
-        obj.Holder = obj.Entities.FirstOrDefault(x=>x.Id ==  value.Holder!.Id);
+        obj.Holder = obj.Entities.FirstOrDefault(x => x.Id == value.Holder!.Id);
         obj.HolderName = value.Holder!.Name;
         obj.Institution = value.Institution;
         obj.ShareAmount = value.Share;
@@ -648,7 +668,6 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
 
 
     }
-
 
 
     private OwnershipItem Parse(int institutionId, IList<IEntity> per, IEnumerable<Ownership> os, OwnershipItem oi)
@@ -1055,6 +1074,25 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
             wnd.ShowDialog();
 
         }
+
+
+        [RelayCommand]
+        public void OpenEntity()
+        {
+            if (Holder is Institution institution)
+            {
+                try
+                {
+                    var wnd = new InstitutionWindow();
+                    var context = new InstitutionWindowViewModel(Holder.Id);
+                    wnd.DataContext = context;
+                    wnd.Owner = App.Current.MainWindow;
+                    wnd.ShowDialog();
+                }
+                catch (Exception e) { Log.Error($"{e}"); }
+            }
+        }
+
     }
 }
 

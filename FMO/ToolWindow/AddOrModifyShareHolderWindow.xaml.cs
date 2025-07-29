@@ -50,7 +50,7 @@ public partial class AddOrModifyShareHolderWindowViewModel : ObservableObject
     [ObservableProperty]
     public partial string? HolderName { get; set; }
 
-    public IEnumerable<IEntity>? Candidates => Institution is null ? Entities : Entities.Except([Institution]);
+    public IEnumerable<IEntity>? Candidates => Institution is null ? Entities : Entities.Where(x=>x.Id != Institution.Id);
 
 
     [ObservableProperty]

@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
@@ -613,6 +614,12 @@
                             Text="股东" />
 
 
+                        <TextBlock
+                            Margin="10,0"
+                            VerticalAlignment="Center"
+                            Foreground="Red"
+                            Text="股东认缴和注册资本不一致"
+                            Visibility="{Binding ShareNotPair, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
                         <Button
                             hc:IconElement.Geometry="{StaticResource f.circle-plus}"
@@ -695,7 +702,13 @@
                         <DataGridTemplateColumn Header="姓名">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <shared:CopyableTextBlock Text="{Binding Holder.Name}" />
+                                    <shared:CopyableTextBlock Text="{Binding Holder.Name}">
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="MouseDoubleClick">
+                                                <i:InvokeCommandAction Command="{Binding OpenEntityCommand}" />
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                    </shared:CopyableTextBlock>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>

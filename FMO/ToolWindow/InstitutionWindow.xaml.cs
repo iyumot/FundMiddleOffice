@@ -1,0 +1,500 @@
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using FMO.Models;
+using FMO.Shared;
+using FMO.Utilities;
+using LiteDB;
+using Serilog;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Windows;
+using System.Windows.Data;
+using static FMO.ManagerPageViewModel;
+using static FMO.OwnershipMapViewModel;
+
+namespace FMO;
+
+/// <summary>
+/// InstitutionWindow.xaml 的交互逻辑
+/// </summary>
+public partial class InstitutionWindow : Window
+{
+    public InstitutionWindow()
+    {
+        InitializeComponent();
+    }
+}
+
+public partial class InstitutionWindowViewModel : EditableControlViewModelBase<Institution>
+{
+
+    /// <summary>
+    /// 管理人名称
+    /// </summary>  
+    public ChangeableViewModel<Institution, string> InstitutionName { get; }
+
+    /// <summary>
+    /// 实控人
+    /// </summary>
+    public ChangeableViewModel<Institution, string> ArtificialPerson { get; }
+
+
+    /// <summary>
+    /// 注册资本
+    /// </summary>
+    public ChangeableViewModel<Institution, decimal?> RegisterCapital { get; }
+
+    /// <summary>
+    /// 实缴
+    /// </summary>
+    public ChangeableViewModel<Institution, decimal?> RealCapital { get; }
+
+    public ChangeableViewModel<Institution, DateTime?> SetupDate { get; }
+
+    public ChangeableViewModel<Institution, BooleanDate?> ExpireDate { get; }
+
+
+
+
+    /// <summary>
+    /// 电话
+    /// </summary> 
+    public ChangeableViewModel<Institution, string> Telephone { get; }
+
+    /// <summary>
+    /// 传真
+    /// </summary> 
+    public ChangeableViewModel<Institution, string> Fax { get; }
+
+    /// <summary>
+    /// 统一信用代码
+    /// </summary>  
+    public ChangeableViewModel<Institution, string> InstitutionCode { get; }
+
+    /// <summary>
+    /// 注册地址
+    /// </summary> 
+    public ChangeableViewModel<Institution, string> RegisterAddress { get; }
+
+
+
+    /// <summary>
+    /// 办公地址
+    /// </summary> 
+    public ChangeableViewModel<Institution, string> OfficeAddress { get; }
+
+
+    /// <summary>
+    /// 经营范围
+    /// </summary> 
+    public ChangeableViewModel<Institution, string> BusinessScope { get; }
+
+
+    /// <summary>
+    /// 官网
+    /// </summary> 
+    public ChangeableViewModel<Institution, string> WebSite { get; }
+
+
+
+
+    public MultipleFileViewModel BusinessLicense { get; }
+
+    /// <summary>
+    /// 营业执照副本
+    /// </summary>
+    public MultipleFileViewModel BusinessLicense2 { get; }
+
+    /// <summary>
+    /// 开户许可证
+    /// </summary>
+    public MultipleFileViewModel AccountOpeningLicense { get; }
+
+
+    /// <summary>
+    /// 章程
+    /// </summary>
+    public MultipleFileViewModel CharterDocument { get; }
+
+    /// <summary>
+    /// 法人身份证
+    /// </summary>
+    public MultipleFileViewModel LegalPersonIdCard { get; }
+
+
+    [ObservableProperty]
+    public partial bool ShowFileList { get; set; }
+
+    public ObservableCollection<RelationViewModel> ShareRelations { get; }
+    
+    /// <summary>
+    /// 股权与注册资本不一致
+    /// </summary>
+    [ObservableProperty]
+    public partial bool ShareNotPair { get; set; }
+
+
+    public InstitutionWindowViewModel(int id)
+    {
+        using var db = DbHelper.Base();
+        var org = db.GetCollection<IEntity>().FindById(id) as Institution;
+        if (org is null) throw new Exception();
+
+        Id = org.Id;
+        var rel = db.GetCollection<Ownership>().Find(x => x.InstitutionId == id).ToArray();
+        var entities = db.GetCollection<IEntity>().FindAll().ToArray();
+        var relations = rel.Select(x => new RelationViewModel
+        {
+            Id = x.Id,
+            Holder = entities.FirstOrDefault(y => y.Id == x.HolderId),
+            Institution = entities.Select(x => x as Institution).FirstOrDefault(y => y?.Id == x.InstitutionId),
+            Share = x.Share,
+            Ratio = org.RegisterCapital == 0 ? 0 : x.Share / org!.RegisterCapital
+        }).ToArray();
+
+        ShareRelations = [.. relations];
+
+        db.Dispose();
+
+
+        InstitutionName = new ChangeableViewModel<Institution, string>
+        {
+            Label = "管理人",
+            InitFunc = x => x.Name,
+            UpdateFunc = (x, y) => x.Name = y ?? "",
+            ClearFunc = x => x.Name = string.Empty,
+        };
+        InstitutionName.Init(org);
+
+        ArtificialPerson = new ChangeableViewModel<Institution, string>
+        {
+            Label = "实控人",
+            InitFunc = x => x.ArtificialPerson,
+            UpdateFunc = (x, y) => x.ArtificialPerson = y,
+            ClearFunc = x => x.ArtificialPerson = null,
+        };
+        ArtificialPerson.Init(org);
+
+
+
+        RegisterCapital = new ChangeableViewModel<Institution, decimal?>
+        {
+            Label = "注册资本(万)",
+            InitFunc = x => x.RegisterCapital,
+            UpdateFunc = (x, y) => x.RegisterCapital = y ?? 0,
+            ClearFunc = x => x.RegisterCapital = 0,
+            DisplayFunc = x => $"{x}万元"
+        };
+        RegisterCapital.Init(org);
+
+        RealCapital = new ChangeableViewModel<Institution, decimal?>
+        {
+            Label = "实缴资本(万)",
+            InitFunc = x => x.RealCapital switch { 0 => null, var a => a },
+            UpdateFunc = (x, y) => x.RealCapital = y ?? 0,
+            ClearFunc = x => x.RealCapital = 0,
+            DisplayFunc = x => $"{x}万元"
+        };
+        RealCapital.Init(org);
+
+        SetupDate = new ChangeableViewModel<Institution, DateTime?>
+        {
+            Label = "成立日期",
+            InitFunc = x => x.SetupDate == default ? null : new DateTime(x.SetupDate, default),
+            UpdateFunc = (x, y) => x.SetupDate = y is null ? default : DateOnly.FromDateTime(y.Value),
+            ClearFunc = x => x.SetupDate = default,
+            DisplayFunc = x => x?.ToString("yyyy-MM-dd")
+        };
+        SetupDate.Init(org);
+
+
+        ExpireDate = new ChangeableViewModel<Institution, BooleanDate?>
+        {
+            Label = "核销日期",
+            InitFunc = x => new BooleanDate { IsLongTerm = x.ExpireDate == DateOnly.MaxValue, Date = x.ExpireDate == default || x.ExpireDate == DateOnly.MaxValue ? null : new DateTime(x.ExpireDate, default) },
+            UpdateFunc = (x, y) => x.ExpireDate = y is null || y.Date is null ? default : (y.IsLongTerm ? DateOnly.MaxValue : DateOnly.FromDateTime(y.Date.Value)),
+            ClearFunc = x => x.ExpireDate = default,
+            DisplayFunc = x => x.IsLongTerm ? "长期" : x?.Date?.ToString("yyyy-MM-dd")
+        };
+        ExpireDate.Init(org);
+
+
+        Telephone = new ChangeableViewModel<Institution, string>
+        {
+            Label = "固定电话",
+            InitFunc = x => x.Telephone,
+            UpdateFunc = (x, y) => x.Telephone = y,
+            ClearFunc = x => x.Telephone = null,
+        };
+        Telephone.Init(org);
+
+        Fax = new ChangeableViewModel<Institution, string>
+        {
+            Label = "传真",
+            InitFunc = x => x.Fax,
+            UpdateFunc = (x, y) => x.Fax = y,
+            ClearFunc = x => x.Fax = null,
+        };
+        Fax.Init(org);
+
+
+
+        InstitutionCode = new ChangeableViewModel<Institution, string>
+        {
+            Label = "统一信用代码",
+            InitFunc = x => x.Identity?.Id,
+            UpdateFunc = (x, y) => x.Identity = new Identity { Id = y, Type = x.Identity?.Type ?? IDType.UnifiedSocialCreditCode, Other = x.Identity?.Other },
+            ClearFunc = x => x.Identity = new Identity { Id = "", Type = x.Identity?.Type ?? IDType.UnifiedSocialCreditCode, Other = x.Identity?.Other}
+        };
+        InstitutionCode.Init(org);
+
+
+
+        RegisterAddress = new ChangeableViewModel<Institution, string>
+        {
+            Label = "注册地址",
+            InitFunc = x => x.RegisterAddress,
+            UpdateFunc = (x, y) => x.RegisterAddress = y,
+            ClearFunc = x => x.RegisterAddress = null,
+        };
+        RegisterAddress.Init(org);
+
+
+
+        OfficeAddress = new ChangeableViewModel<Institution, string>
+        {
+            Label = "办公地址",
+            InitFunc = x => x.OfficeAddress,
+            UpdateFunc = (x, y) => x.OfficeAddress = y,
+            ClearFunc = x => x.OfficeAddress = null,
+        };
+        OfficeAddress.Init(org);
+
+
+
+        BusinessScope = new ChangeableViewModel<Institution, string>
+        {
+            Label = "经营范围",
+            InitFunc = x => x.BusinessScope,
+            UpdateFunc = (x, y) => x.BusinessScope = y,
+            ClearFunc = x => x.BusinessScope = null,
+        };
+        BusinessScope.Init(org);
+
+        WebSite = new ChangeableViewModel<Institution, string>
+        {
+            Label = "官网",
+            InitFunc = x => x.WebSite,
+            UpdateFunc = (x, y) => x.WebSite = y,
+            ClearFunc = x => x.WebSite = null,
+        };
+        WebSite.Init(org);
+
+
+        ShowFileList = !string.IsNullOrWhiteSpace(InstitutionCode.OldValue);
+        InstitutionCode.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(InstitutionCode.OldValue))
+            {
+                ShowFileList = !string.IsNullOrWhiteSpace(InstitutionCode.OldValue);
+                UpdateFiles();
+            }
+        };
+
+
+        BusinessLicense = new()
+        {
+            Label = "营业执照正本",
+            OnAddFile = (x, y) => SetFile(x => x.BusinessLicense ??= new(), x),
+            OnDeleteFile = x => DeleleFile(x => x.BusinessLicense, x),
+        };
+
+
+
+        BusinessLicense2 = new()
+        {
+            Label = "营业执照副本",
+            OnAddFile = (x, y) => SetFile(x => x.BusinessLicense2 ??= new(), x),
+            OnDeleteFile = x => DeleleFile(x => x.BusinessLicense2, x),
+        };
+
+
+        AccountOpeningLicense = new()
+        {
+            Label = "开户许可证",
+            OnAddFile = (x, y) => SetFile(x => x.AccountOpeningLicense ??= new(), x),
+            OnDeleteFile = x => DeleleFile(x => x.AccountOpeningLicense, x),
+        };
+
+
+        CharterDocument = new()
+        {
+            Label = "章程/合伙协议",
+            OnAddFile = (x, y) => SetFile(x => x.CharterDocument ??= new(), x),
+            OnDeleteFile = x => DeleleFile(x => x.CharterDocument, x),
+        };
+
+
+        LegalPersonIdCard = new()
+        {
+            Label = "法人/委派代表身份证",
+            OnAddFile = (x, y) => SetFile(x => x.LegalPersonIdCard ??= new(), x),
+            OnDeleteFile = x => DeleleFile(x => x.LegalPersonIdCard, x),
+        };
+
+
+        UpdateFiles();
+    }
+
+    private void UpdateFiles()
+    {
+        var id = InstitutionCode.OldValue;
+        if (string.IsNullOrWhiteSpace(id)) return;
+
+        using var db = DbHelper.Base();
+        var cef = db.GetCollection<InstitutionCertifications>().FindById(id);
+        if (cef is null)
+        {
+            cef = new() { Id = id };
+            db.GetCollection<InstitutionCertifications>().Insert(cef);
+        }
+        BusinessLicense.Files = [.. (cef.BusinessLicense ?? new())];
+        BusinessLicense2.Files = [.. (cef.BusinessLicense2 ?? new())];
+        AccountOpeningLicense.Files = [.. (cef.AccountOpeningLicense ?? new())];
+        CharterDocument.Files = [.. (cef.CharterDocument ?? new())];
+        LegalPersonIdCard.Files = [.. (cef.LegalPersonIdCard ?? new())];
+  
+    }
+
+    private FileStorageInfo? SetFile(Func<InstitutionCertifications, List<FileStorageInfo>> func, FileInfo fi)
+    {
+        string hash = fi.ComputeHash()!;
+
+        // 保存副本
+        var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "organization", $"{Id}"));
+
+        var tar = FileHelper.CopyFile2(fi, dir.FullName);
+        if (tar is null)
+        {
+            Log.Error($"保存文件出错，{fi.Name}");
+            HandyControl.Controls.Growl.Error($"无法保存{fi.Name}，文件名异常或者存在过多重名文件");
+            return null;
+        }
+
+        var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
+
+        using var db = DbHelper.Base();
+        var q = db.GetCollection<InstitutionCertifications>().FindById(InstitutionCode.OldValue);
+        var l = func(q);
+        FileStorageInfo fsi = new()
+        {
+            Title = "",
+            Path = path,
+            Hash = hash,
+            Time = fi.LastWriteTime
+        };
+        l!.Add(fsi);
+        db.GetCollection<InstitutionCertifications>().Update(q);
+        return fsi;
+    }
+
+
+    private void DeleleFile(Func<InstitutionCertifications, List<FileStorageInfo>?> func, FileStorageInfo file)
+    {
+        using var db = DbHelper.Base();
+        var q = db.GetCollection<InstitutionCertifications>().FindById(InstitutionCode.OldValue);
+
+        var l = func(q);
+        if (l is null) return;
+        var old = l.Find(x => x.Path is not null && file.Path is not null && Path.GetFullPath(x.Path) == Path.GetFullPath(file.Path));
+        if (old is not null)
+        {
+            l.Remove(old);
+
+            try { File.Delete(old.Path!); } catch (Exception e) { Log.Error($"delete file failed {e}"); }
+        }
+        db.GetCollection<InstitutionCertifications>().Update(q);
+    }
+
+
+    [RelayCommand]
+    public void AddShareHolder()
+    {
+        var db = DbHelper.Base();
+        var manager = (db.GetCollection<IEntity>().FindById(Id) as Institution)!;
+
+        var wnd = new AddOrModifyShareHolderWindow();
+        wnd.DataContext = new AddOrModifyShareHolderWindowViewModel(manager);
+        wnd.Owner = App.Current.MainWindow;
+        wnd.ShowDialog();
+
+        var rel = db.GetCollection<Ownership>().Find(x => x.InstitutionId == Id).ToArray();
+        var entities = db.GetCollection<IEntity>().FindAll().ToArray();
+        foreach (var x in rel.ExceptBy(ShareRelations.Select(x => x.Holder?.Id), x => x.HolderId))
+        {
+            ShareRelations.Add(new RelationViewModel
+            {
+                Id = x.Id,
+                Holder = entities.FirstOrDefault(y => y.Id == x.HolderId),
+                Institution = manager,
+                Share = x.Share,
+                Ratio = manager!.RegisterCapital != 0 ? x.Share / manager!.RegisterCapital : 0
+            });
+        }
+
+
+        ShareNotPair = ShareRelations.Sum(x => x.Share) != manager.RegisterCapital;
+
+    }
+ 
+
+    [RelayCommand]
+    public void RemoveShareHolder(RelationViewModel value)
+    {
+        if (HandyControl.Controls.MessageBox.Show($"是否确认删除 {value.Holder!.Name}？", button: MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+        {
+            using var db = DbHelper.Base();
+            db.GetCollection<Ownership>().Delete(value.Id);
+
+            ShareRelations.Remove(value);
+
+            ShareNotPair = ShareRelations.Sum(x => x.Share) != RegisterCapital.OldValue;
+        }
+    }
+
+    [RelayCommand]
+    public void EditShareHolder(RelationViewModel value)
+    {
+        var db = DbHelper.Base();
+        var manager = db.GetCollection<Manager>().FindById(1);
+        var wnd = new AddOrModifyShareHolderWindow();
+        AddOrModifyShareHolderWindowViewModel obj = new(manager);
+        obj.Holder = obj.Entities.FirstOrDefault(x => x.Id == value.Holder!.Id);
+        obj.HolderName = value.Holder!.Name;
+        obj.Institution = value.Institution;
+        obj.ShareAmount = value.Share;
+        wnd.DataContext = obj;
+        wnd.Owner = App.Current.MainWindow;
+        wnd.ShowDialog();
+
+    }
+
+ 
+
+
+    public override Institution? EntityOverride(ILiteDatabase db)
+    {
+        return db.GetCollection<IEntity>().FindById(Id) as Institution;
+    }
+
+
+    public override void UpdateOverride(ILiteDatabase db, Institution v)
+    {
+        db.GetCollection<IEntity>().Upsert(v);
+    }
+
+    protected override Institution InitNewEntity()
+    {
+        return new Institution { Name = "" };
+    }
+}
