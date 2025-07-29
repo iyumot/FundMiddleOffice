@@ -887,11 +887,32 @@ public class DailyValueCurveDrawing : FrameworkElement
         double fontSize = 12;
 
         // 准备绘制区域
-        double startX = mousePos.X + 10;
-        double startY = mousePos.Y - 50;
         double padding = 5;
         double rowHeight = fontSize + 4;
         double maxWidth = values.Max(v => CreateFormattedText(v.label + ": " + v.value, typeface, fontSize).Width) + padding * 2;
+ 
+        // 获取当前可视区域的边界（减去margin）
+        double margin = 50;
+        double maxCanvasWidth = this.ActualWidth - margin * 2;
+        double maxCanvasHeight = this.ActualHeight - margin * 2;
+
+        // 计算初始位置
+        double startX = mousePos.X + 10;
+        double startY = mousePos.Y - 50;
+
+        // 确保tooltip不会超出右边界
+        if (startX + maxWidth > maxCanvasWidth + margin)
+        {
+            startX = maxCanvasWidth + margin - maxWidth;
+        }
+
+        // 确保tooltip不会超出左边界
+        if (startX < margin)
+        {
+            startX = margin;
+        }
+
+
 
         // 绘制背景矩形
         using (DrawingContext dc = _tooltipVisual.RenderOpen())
