@@ -41,12 +41,11 @@
                         Style="{StaticResource ButtonPrimary}" />
                 </DockPanel>
 
-
                 <DockPanel IsEnabled="{Binding IsWorking, Converter={StaticResource Boolean2BooleanReConverter}}">
                     <TextBlock Text="起始日期" />
-                    <DatePicker SelectedDate="{Binding Begin}" />
+                    <DatePicker SelectedDate="{Binding Begin, UpdateSourceTrigger=PropertyChanged}" />
                     <TextBlock Text="终止日期" />
-                    <DatePicker SelectedDate="{Binding End}" />
+                    <DatePicker SelectedDate="{Binding End, UpdateSourceTrigger=PropertyChanged}" />
 
                 </DockPanel>
 
@@ -62,30 +61,41 @@
 
             </DockPanel>
 
-            <ListBox
-                BorderThickness="0"
-                IsEnabled="{Binding IsWorking, Converter={StaticResource Boolean2BooleanReConverter}}"
-                ItemsSource="{Binding MonthQuarters}"
-                Style="{StaticResource ListBoxCustom}">
-                <ListBox.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel IsItemsHost="True" Orientation="Horizontal" />
-                    </ItemsPanelTemplate>
-                </ListBox.ItemsPanel>
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Button
-                            Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.SetDateRangeCommand}"
-                            CommandParameter="{Binding .}"
-                            Content="{Binding .}"
-                            Style="{StaticResource ButtonDefault.Small}" />
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+            <DockPanel>
+
+                <ComboBox
+                    Width="70"
+                    ItemsSource="{Binding Years}"
+                    SelectedIndex="0"
+                    SelectedItem="{Binding Year}"
+                    Style="{StaticResource ComboBox.Small}" />
+
+                <ListBox
+                    BorderThickness="0"
+                    IsEnabled="{Binding IsWorking, Converter={StaticResource Boolean2BooleanReConverter}}"
+                    ItemsSource="{Binding MonthQuarters}"
+                    Style="{StaticResource ListBoxCustom}">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel IsItemsHost="True" Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Button
+                                Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.SetDateRangeCommand}"
+                                CommandParameter="{Binding .}"
+                                Content="{Binding .}"
+                                Style="{StaticResource ButtonDefault.Small}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
         </DockPanel>
 
 
-        <hc:SimplePanel>
+        <hc:SimplePanel Margin="0,5,0,0">
+
             <ListBox
                 IsEnabled="{Binding IsWorking, Converter={StaticResource Boolean2BooleanReConverter}}"
                 ItemsSource="{Binding Funds}"

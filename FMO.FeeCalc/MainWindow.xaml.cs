@@ -64,6 +64,12 @@ public partial class MainWindowViewModel : ObservableObject
     public partial bool IsWorking { get; set; }
 
 
+    [ObservableProperty]
+    public partial int Year { get; set; }
+
+    public int[] Years { get; } = Enumerable.Range(2000, DateTime.Today.Year - 1999).Reverse().ToArray();
+
+
     public bool CanCalc => Funds?.Any(x => x.IsChoosed) ?? false;
 
 
@@ -128,12 +134,12 @@ public partial class MainWindowViewModel : ObservableObject
         switch (d)
         {
             case MonthQuarter.January:
-                Begin = Begin.HasValue ? new DateTime(Begin.Value.Year, 1, 1) : new DateTime(DateTime.Today.Year, 1, 1);
-                End = End.HasValue ? new DateTime(Begin.Value.Year, 1, 31) : new DateTime(DateTime.Today.Year, 1, 31);
+                Begin = new DateTime(Year, 1, 1);
+                End = new DateTime(Year, 1, 31);
                 break;
             case MonthQuarter.February:
-                Begin = Begin.HasValue ? new DateTime(Begin.Value.Year, 2, 1) : new DateTime(DateTime.Today.Year, 2, 1);
-                End = End.HasValue ? new DateTime(Begin.Value.Year, 3, 1).AddDays(-1) : new DateTime(DateTime.Today.Year, 3, 1).AddDays(-1);
+                Begin = new DateTime(Year, 2, 1);
+                End = new DateTime(Year, 3, 1).AddDays(-1);
                 break;
             case MonthQuarter.March:
             case MonthQuarter.May:
@@ -141,31 +147,31 @@ public partial class MainWindowViewModel : ObservableObject
             case MonthQuarter.August:
             case MonthQuarter.October:
             case MonthQuarter.December:
-                Begin = Begin.HasValue ? new DateTime(Begin.Value.Year, (int)d, 1) : new DateTime(DateTime.Today.Year, (int)d, 1);
-                End = End.HasValue ? new DateTime(Begin.Value.Year, (int)d, 31) : new DateTime(DateTime.Today.Year, (int)d, 31);
+                Begin = new DateTime(Year, (int)d, 1);
+                End = new DateTime(Year, (int)d, 31);
                 break;
             case MonthQuarter.April:
             case MonthQuarter.June:
             case MonthQuarter.September:
             case MonthQuarter.November:
-                Begin = Begin.HasValue ? new DateTime(Begin.Value.Year, (int)d, 1) : new DateTime(DateTime.Today.Year, (int)d, 1);
-                End = End.HasValue ? new DateTime(Begin.Value.Year, (int)d, 30) : new DateTime(DateTime.Today.Year, (int)d, 30);
+                Begin = new DateTime(Year, (int)d, 1);
+                End = new DateTime(Year, (int)d, 30);
                 break;
             case MonthQuarter.Q1:
-                Begin = Begin.HasValue ? new DateTime(Begin.Value.Year, 1, 1) : new DateTime(DateTime.Today.Year, 1, 1);
-                End = End.HasValue ? new DateTime(Begin.Value.Year, 3, 31) : new DateTime(DateTime.Today.Year, 3, 31);
+                Begin = new DateTime(Year, 1, 1);
+                End = new DateTime(Year, 3, 31);
                 break;
             case MonthQuarter.Q2:
-                Begin = Begin.HasValue ? new DateTime(Begin.Value.Year, 4, 1) : new DateTime(DateTime.Today.Year, 4, 1);
-                End = End.HasValue ? new DateTime(Begin.Value.Year, 6, 30) : new DateTime(DateTime.Today.Year, 6, 30);
+                Begin = new DateTime(Year, 4, 1);
+                End = new DateTime(Year, 6, 30);
                 break;
             case MonthQuarter.Q3:
-                Begin = Begin.HasValue ? new DateTime(Begin.Value.Year, 7, 1) : new DateTime(DateTime.Today.Year, 7, 1);
-                End = End.HasValue ? new DateTime(Begin.Value.Year, 9, 30) : new DateTime(DateTime.Today.Year, 9, 30);
+                Begin = new DateTime(Year, 7, 1);
+                End = new DateTime(Year, 9, 30);
                 break;
             case MonthQuarter.Q4:
-                Begin = Begin.HasValue ? new DateTime(Begin.Value.Year, 10, 1) : new DateTime(DateTime.Today.Year, 10, 1);
-                End = End.HasValue ? new DateTime(Begin.Value.Year, 12, 31) : new DateTime(DateTime.Today.Year, 12, 31);
+                Begin = new DateTime(Year, 10, 1);
+                End = new DateTime(Year, 12, 31);
                 break;
             default:
                 break;
@@ -323,6 +329,8 @@ public partial class MainWindowViewModel : ObservableObject
                 db.GetCollection<FundDailyFee>().Upsert(rc.Data);
             }
         }
+
+        debouncer.Invoke();
     }
 
 
@@ -334,13 +342,13 @@ public partial class MainWindowViewModel : ObservableObject
         foreach (var f in col)
         {
             f.IsWorking = true;
-            using var db =  new LiteDatabase(@"FileName=data\feecalc.db;Connection=Shared");
+            using var db = new LiteDatabase(@"FileName=data\feecalc.db;Connection=Shared");
             var begin = dates[0];
             var end = dates[^1];
 
-           // var dc = db.GetDailyCollection(f.Fund.Id);
-           // var fees = db.GetCollection<FundDailyFee>().Find(x => x.FundId == f.Fund.Id && x.Date >= begin && x.Date <= end).OrderBy(x => x.Date).Select(x => new ManageFeeDetail(0, x.Date, x.ManagerFeeAccrued, dc.FindOne(y=>y.Date == x.Date)?.Share??0)).ToList();
-            
+            // var dc = db.GetDailyCollection(f.Fund.Id);
+            // var fees = db.GetCollection<FundDailyFee>().Find(x => x.FundId == f.Fund.Id && x.Date >= begin && x.Date <= end).OrderBy(x => x.Date).Select(x => new ManageFeeDetail(0, x.Date, x.ManagerFeeAccrued, dc.FindOne(y=>y.Date == x.Date)?.Share??0)).ToList();
+
             var fees = db.GetCollection<ManageFeeDetail>($"f{f.Fund.Id}").Find(x => x.Date >= begin && x.Date <= end).OrderBy(x => x.Date).ToList();
             var fdate = fees.Select(x => x.Date).ToArray();
 
