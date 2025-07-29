@@ -608,8 +608,9 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         var manager = db.GetCollection<Manager>().FindById(1);
         var wnd = new AddOrModifyShareHolderWindow();
         AddOrModifyShareHolderWindowViewModel obj = new(manager);
-        obj.Holder = value.Holder;
-        obj.Institution = value.Institution as Institution;
+        obj.Holder = obj.Entities.FirstOrDefault(x=>x.Id ==  value.Holder!.Id);
+        obj.HolderName = value.Holder!.Name;
+        obj.Institution = value.Institution;
         obj.ShareAmount = value.Share;
         wnd.DataContext = obj;
         wnd.Owner = App.Current.MainWindow;

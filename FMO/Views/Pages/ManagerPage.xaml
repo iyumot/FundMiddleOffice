@@ -621,11 +621,11 @@
                             Style="{StaticResource ButtonIcon}" />
 
 
-                        <Button
+                        <!--<Button
                             hc:IconElement.Geometry="{StaticResource f.dharmachakra}"
                             Command="{Binding OpenOwnershipCommand}"
                             Style="{StaticResource ButtonIcon}"
-                            ToolTip="股权结构图" />
+                            ToolTip="股权结构图" />-->
                     </DockPanel>
                 </Border>
 
@@ -634,7 +634,7 @@
                     IsReadOnly="True"
                     ItemsSource="{Binding ShareRelations}"
                     Style="{StaticResource DataGrid.NoSelect}">
-                    <DataGrid.RowDetailsTemplate>
+                    <!--<DataGrid.RowDetailsTemplate>
                         <DataTemplate>
                             <DataGrid
                                 AutoGenerateColumns="False"
@@ -663,7 +663,9 @@
                                         ElementStyle="{StaticResource RightAlignText}"
                                         Header="占比" />
 
-                                    <!--  编辑/删除  -->
+                    -->
+                    <!--  编辑/删除  -->
+                    <!--
                                     <DataGridTemplateColumn>
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
@@ -688,7 +690,7 @@
                                 </DataGrid.Columns>
                             </DataGrid>
                         </DataTemplate>
-                    </DataGrid.RowDetailsTemplate>
+                    </DataGrid.RowDetailsTemplate>-->
                     <DataGrid.Columns>
                         <DataGridTemplateColumn Header="姓名">
                             <DataGridTemplateColumn.CellTemplate>
