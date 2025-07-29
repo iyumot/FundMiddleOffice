@@ -319,17 +319,26 @@
                             <shared:FileControl Binding="{Binding ServiceAgreement}" IsReadOnly="{Binding IsReadOnly}" />
 
 
+
                             <BulletDecorator>
                                 <BulletDecorator.Bullet>
                                     <TextBlock Text="资金账号" />
                                 </BulletDecorator.Bullet>
-                                <shared:CopyableControl>
+
+                                <hc:SimplePanel>
+                                    <shared:CopyableTextBlock
+                                        Margin="15,0,0,0"
+                                        Text="{Binding Account}"
+                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
                                     <TextBox
                                         Margin="4,0"
-                                        IsReadOnly="{Binding IsReadOnly}"
                                         Style="{StaticResource TextBox.Small}"
-                                        Text="{Binding Account, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-                                </shared:CopyableControl>
+                                        Text="{Binding Account, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                                </hc:SimplePanel>
+
                             </BulletDecorator>
 
 
@@ -337,13 +346,20 @@
                                 <BulletDecorator.Bullet>
                                     <TextBlock Text="交易密码" />
                                 </BulletDecorator.Bullet>
-                                <shared:CopyableControl>
+                                <hc:SimplePanel>
+                                    <shared:CopyableTextBlock
+                                        Margin="15,0,0,0"
+                                        IsMasked="True"
+                                        Text="{Binding TradePassword}"
+                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
                                     <TextBox
                                         Margin="4,0"
-                                        IsReadOnly="{Binding IsReadOnly}"
                                         Style="{StaticResource TextBox.Small}"
-                                        Text="{Binding TradePassword, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-                                </shared:CopyableControl>
+                                        Text="{Binding TradePassword, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                                </hc:SimplePanel>
                             </BulletDecorator>
 
 
@@ -351,20 +367,27 @@
                                 <BulletDecorator.Bullet>
                                     <TextBlock Text="资金密码" />
                                 </BulletDecorator.Bullet>
-                                <shared:CopyableControl>
+                                <hc:SimplePanel>
+                                    <shared:CopyableTextBlock
+                                        Margin="15,0,0,0"
+                                        IsMasked="True"
+                                        Text="{Binding CapitalPassword}"
+                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
                                     <TextBox
                                         Margin="4,0"
-                                        IsReadOnly="{Binding IsReadOnly}"
                                         Style="{StaticResource TextBox.Small}"
-                                        Text="{Binding CapitalPassword, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-                                </shared:CopyableControl>
+                                        Text="{Binding CapitalPassword, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                                </hc:SimplePanel>
                             </BulletDecorator>
                         </StackPanel>
                     </DockPanel>
 
                     <!--  信用户  -->
 
-                    <!--<DockPanel Margin="0,4" DataContext="{Binding Credit}">
+                    <DockPanel Margin="0,4" DataContext="{Binding Credit}">
                         <Border Background="Orange">
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
 
@@ -408,16 +431,26 @@
                             </UniformGrid>
                             <shared:FileControl />
 
+
                             <BulletDecorator>
                                 <BulletDecorator.Bullet>
                                     <TextBlock Text="资金账号" />
                                 </BulletDecorator.Bullet>
-                                <shared:CopyableControl>
+
+                                <hc:SimplePanel>
+                                    <shared:CopyableTextBlock
+                                        Margin="15,0,0,0"
+                                        Text="{Binding Account}"
+                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
                                     <TextBox
                                         Margin="4,0"
-                                        IsEnabled="False"
-                                        Style="{StaticResource TextBox.Small}" />
-                                </shared:CopyableControl>
+                                        Style="{StaticResource TextBox.Small}"
+                                        Text="{Binding Account, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                                </hc:SimplePanel>
+
                             </BulletDecorator>
 
 
@@ -425,9 +458,20 @@
                                 <BulletDecorator.Bullet>
                                     <TextBlock Text="交易密码" />
                                 </BulletDecorator.Bullet>
-                                <shared:CopyableControl>
-                                    <TextBox Margin="4,0" Style="{StaticResource TextBox.Small}" />
-                                </shared:CopyableControl>
+                                <hc:SimplePanel>
+                                    <shared:CopyableTextBlock
+                                        Margin="15,0,0,0"
+                                        IsMasked="True"
+                                        Text="{Binding TradePassword}"
+                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                                    <TextBox
+                                        Margin="4,0"
+                                        Style="{StaticResource TextBox.Small}"
+                                        Text="{Binding TradePassword, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                                </hc:SimplePanel>
                             </BulletDecorator>
 
 
@@ -435,15 +479,23 @@
                                 <BulletDecorator.Bullet>
                                     <TextBlock Text="资金密码" />
                                 </BulletDecorator.Bullet>
-                                <shared:CopyableControl>
-                                    <PasswordBox
+                                <hc:SimplePanel>
+                                    <shared:CopyableTextBlock
+                                        Margin="15,0,0,0"
+                                        IsMasked="True"
+                                        Text="{Binding CapitalPassword}"
+                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                                    <TextBox
                                         Margin="4,0"
-                                        IsEnabled="False"
-                                        Style="{StaticResource PasswordBox.Small}" />
-                                </shared:CopyableControl>
+                                        Style="{StaticResource TextBox.Small}"
+                                        Text="{Binding CapitalPassword, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                                </hc:SimplePanel>
                             </BulletDecorator>
                         </StackPanel>
-                    </DockPanel>-->
+                    </DockPanel>
 
                 </StackPanel>
             </Border>
@@ -542,13 +594,21 @@
                                 <BulletDecorator.Bullet>
                                     <TextBlock Text="资金账号" />
                                 </BulletDecorator.Bullet>
-                                <shared:CopyableControl>
+
+                                <hc:SimplePanel>
+                                    <shared:CopyableTextBlock
+                                        Margin="15,0,0,0"
+                                        Text="{Binding Account}"
+                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
                                     <TextBox
                                         Margin="4,0"
-                                        IsReadOnly="{Binding IsReadOnly}"
                                         Style="{StaticResource TextBox.Small}"
-                                        Text="{Binding Account, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-                                </shared:CopyableControl>
+                                        Text="{Binding Account, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                                </hc:SimplePanel>
+
                             </BulletDecorator>
 
 
@@ -556,13 +616,20 @@
                                 <BulletDecorator.Bullet>
                                     <TextBlock Text="交易密码" />
                                 </BulletDecorator.Bullet>
-                                <shared:CopyableControl>
+                                <hc:SimplePanel>
+                                    <shared:CopyableTextBlock
+                                        Margin="15,0,0,0"
+                                        IsMasked="True"
+                                        Text="{Binding TradePassword}"
+                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
                                     <TextBox
                                         Margin="4,0"
-                                        IsReadOnly="{Binding IsReadOnly}"
                                         Style="{StaticResource TextBox.Small}"
-                                        Text="{Binding TradePassword, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-                                </shared:CopyableControl>
+                                        Text="{Binding TradePassword, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                                </hc:SimplePanel>
                             </BulletDecorator>
 
 
@@ -570,13 +637,20 @@
                                 <BulletDecorator.Bullet>
                                     <TextBlock Text="资金密码" />
                                 </BulletDecorator.Bullet>
-                                <shared:CopyableControl>
+                                <hc:SimplePanel>
+                                    <shared:CopyableTextBlock
+                                        Margin="15,0,0,0"
+                                        IsMasked="True"
+                                        Text="{Binding CapitalPassword}"
+                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
                                     <TextBox
                                         Margin="4,0"
-                                        IsReadOnly="{Binding IsReadOnly}"
                                         Style="{StaticResource TextBox.Small}"
-                                        Text="{Binding CapitalPassword, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-                                </shared:CopyableControl>
+                                        Text="{Binding CapitalPassword, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                                </hc:SimplePanel>
                             </BulletDecorator>
                         </StackPanel>
                     </DockPanel>
