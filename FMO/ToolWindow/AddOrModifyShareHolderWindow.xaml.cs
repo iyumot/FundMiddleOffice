@@ -1,9 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
-using HandyControl.Tools.Extension;
 using System.Collections.ObjectModel;
 using System.Windows;
 
@@ -24,19 +22,18 @@ public partial class AddOrModifyShareHolderWindow : Window
 
 public partial class AddOrModifyShareHolderWindowViewModel : ObservableObject
 {
-    public AddOrModifyShareHolderWindowViewModel()
+    public AddOrModifyShareHolderWindowViewModel(Institution institution)
     {
         using var db = DbHelper.Base();
         var per = db.GetCollection<IEntity>().FindAll().ToList();
-        per.Insert(0, db.GetCollection<Manager>().FindById(1));
-        Entities = new(per);
 
-        Institutions = new(per.Where(x => x is Institution).OfType<Institution>());
+        Institution = institution;
+        Entities = new(per); 
+
         Entities.CollectionChanged += (s, e) => OnPropertyChanged(nameof(Candidates));
     }
 
-
-    public ObservableCollection<Institution> Institutions { get; }
+     
 
 
     public ObservableCollection<IEntity> Entities { get; }
@@ -68,7 +65,7 @@ public partial class AddOrModifyShareHolderWindowViewModel : ObservableObject
 
     public bool CanConfirm => Institution is not null && Holder is not null && (ShareAmount ?? 0) > 0;
 
-     
+
     partial void OnHolderNameChanged(string? value)
     {
 
@@ -81,7 +78,6 @@ public partial class AddOrModifyShareHolderWindowViewModel : ObservableObject
     public void AddInstitution()
     {
         Institution obj = new Institution { Name = HolderName! };
-        Institutions.Add(obj);
         Entities.Add(obj);
         Holder = obj;
         ShowAddEntity = false;
@@ -102,22 +98,20 @@ public partial class AddOrModifyShareHolderWindowViewModel : ObservableObject
     {
         if (Holder is null || Institution is null || ShareAmount is null) return;
 
+        var iid = Institution is Manager ? 0 : Institution.Id;
+
         using var db = DbHelper.Base();
 
         // 检测是否有相同的数据
-        var old = db.GetCollection<Ownership>().FindOne(x => x.HolderId == Holder.Id && x.InstitutionId == Institution.Id);
-        if(old is not null)
-        {
-            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "存在相同的记录"));
-            return;
-        }
+        var old = db.GetCollection<Ownership>().FindOne(x => x.HolderId == Holder.Id && x.InstitutionId == iid);
+        if (old is not null)
+            Holder.Id = old.Id;
 
-        if (Holder.Id == 0)
-            db.GetCollection<IEntity>().Insert(Holder);
+        db.GetCollection<IEntity>().Upsert(Holder);
 
-        db.GetCollection<Ownership>().Insert(new Ownership { HolderId = Holder.Id, InstitutionId = Institution.Id, Share = ShareAmount.Value });
+        db.GetCollection<Ownership>().Insert(new Ownership { HolderId = Holder.Id, InstitutionId = iid, Share = ShareAmount.Value });
 
-        App.Current.Dispatcher.BeginInvoke(()=> wnd.Close());
+        App.Current.Dispatcher.BeginInvoke(() => wnd.Close());
     }
 
 }

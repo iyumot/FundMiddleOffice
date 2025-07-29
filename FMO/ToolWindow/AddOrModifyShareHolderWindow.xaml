@@ -7,22 +7,29 @@
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="股权关系"
-    Width="400"
+    Width="450"
     Height="180"
     d:DataContext="{d:DesignInstance Type=local:AddOrModifyShareHolderWindowViewModel}"
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
+    <Window.Resources>
+        <Style
+            x:Key="SearchBox"
+            BasedOn="{StaticResource ComboBoxBaseStyle}"
+            TargetType="ComboBox">
+            <Setter Property="IsEditable" Value="True" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="IsDropDownOpen" Value="{Binding IsKeyboardFocusWithin, RelativeSource={RelativeSource Mode=Self}, Mode=OneWay}" />
+        </Style>
+    </Window.Resources>
+
     <Border Margin="10">
         <StackPanel>
-            <BulletDecorator>
-                <BulletDecorator.Bullet>
-                    <TextBlock Width="80" Text="请选择组织" />
-                </BulletDecorator.Bullet>
-                <hc:AutoCompleteTextBox
-                    DisplayMemberPath="Name"
-                    ItemsSource="{Binding Institutions}"
-                    SelectedItem="{Binding Institution}" />
-            </BulletDecorator>
+            <TextBlock
+                HorizontalAlignment="Center"
+                FontSize="14"
+                FontWeight="Black"
+                Text="{Binding Institution.Name}" />
 
             <DockPanel Margin="0,10">
                 <TextBlock
@@ -43,15 +50,20 @@
 
 
 
-                <hc:AutoCompleteTextBox
+                <ComboBox
                     DisplayMemberPath="Name"
                     ItemsSource="{Binding Candidates}"
                     SelectedItem="{Binding Holder}"
+                    Style="{StaticResource SearchBox}"
                     Text="{Binding HolderName, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
             </DockPanel>
 
 
             <DockPanel>
+                <TextBlock
+                    Width="80"
+                    VerticalAlignment="Center"
+                    Text="认缴金额" />
                 <Button
                     Width="100"
                     Margin="10,0,0,0"
@@ -60,7 +72,16 @@
                     Content="确认"
                     DockPanel.Dock="Right"
                     Style="{StaticResource ButtonPrimary}" />
-                <hc:TextBox hc:InfoElement.Placeholder="认缴金额" Text="{Binding ShareAmount, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                <TextBlock
+                    Margin="5,0,0,0"
+                    VerticalAlignment="Center"
+                    DockPanel.Dock="Right"
+                    Text="万元" />
+                <hc:TextBox
+                    HorizontalContentAlignment="Center"
+                    hc:InfoElement.Placeholder="认缴金额"
+                    Text="{Binding ShareAmount, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+
             </DockPanel>
         </StackPanel>
     </Border>

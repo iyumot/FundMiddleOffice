@@ -1,6 +1,9 @@
-﻿using System.Windows;
+﻿using System.ComponentModel;
+using System.Globalization;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Markup;
 using System.Windows.Media;
 
 namespace FMO;
@@ -52,11 +55,31 @@ public static class HelpService
             typeof(HelpService),
             new PropertyMetadata(new Point(0, 0)));
 
+
+    [TypeConverter(typeof(StringToDataTemplateConverter))]
     public static DataTemplate GetHelp(DependencyObject obj) =>
         (DataTemplate)obj.GetValue(HelpProperty);
 
+    [TypeConverter(typeof(StringToDataTemplateConverter))]
     public static void SetHelp(DependencyObject obj, DataTemplate value) =>
         obj.SetValue(HelpProperty, value);
+
+    // 重载方法 - 这是关键
+    //public static void SetHelp(DependencyObject obj, string value)
+    //{
+    //    var template = CreateDataTemplateFromString(value);
+    //    obj.SetValue(HelpProperty, template);
+    //}
+
+    //private static DataTemplate CreateDataTemplateFromString(string text)
+    //{
+    //    var template = new DataTemplate();
+    //    var textBlockFactory = new FrameworkElementFactory(typeof(TextBlock));
+    //    textBlockFactory.SetValue(TextBlock.TextProperty, text);
+    //    textBlockFactory.SetValue(TextBlock.TextWrappingProperty, TextWrapping.Wrap);
+    //    template.VisualTree = textBlockFactory;
+    //    return template;
+    //}
 
     public static Placement GetPlacement(DependencyObject obj) =>
         (Placement)obj.GetValue(PlacementProperty);
@@ -302,5 +325,49 @@ public static class HelpService
         y += offset.Y;
 
         return new Point(x, y);
+    }
+}
+
+
+//public class HelpTextExtension : MarkupExtension
+//{
+//    public string? Text { get; set; }
+
+//    public HelpTextExtension() { }
+
+//    public HelpTextExtension(string text)
+//    {
+//        Text = text;
+//    }
+
+//    public override object ProvideValue(IServiceProvider serviceProvider)
+//    {
+//        var template = new DataTemplate();
+//        var textBlockFactory = new FrameworkElementFactory(typeof(TextBlock));
+//        textBlockFactory.SetValue(TextBlock.TextProperty, Text);
+//        template.VisualTree = textBlockFactory;
+//        return template;
+//    }
+//}
+
+public class StringToDataTemplateConverter : TypeConverter
+{
+    public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+    {
+        return sourceType == typeof(string) || base.CanConvertFrom(context, sourceType);
+    }
+
+    public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+    {
+        if (value is string text)
+        {
+            // 创建DataTemplate
+            var template = new DataTemplate();
+            var textBlockFactory = new FrameworkElementFactory(typeof(TextBlock));
+            textBlockFactory.SetValue(TextBlock.TextProperty, text);
+            template.VisualTree = textBlockFactory;
+            return template;
+        }
+        return base.ConvertFrom(context, culture, value);
     }
 }

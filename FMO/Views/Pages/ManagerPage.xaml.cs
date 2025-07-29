@@ -41,7 +41,7 @@ public partial class ManagerPage : UserControl
 
 public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager>, IRecipient<ParticipantChangedMessage>
 {
-   // private int FilesId;
+    // private int FilesId;
 
 
 
@@ -210,19 +210,26 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         //    Members.Add( (manager.LegalAgent));
 
 
-        var rel = db.GetCollection<Ownership>().Find(x => x.InstitutionId == 1).ToArray();
-        ShareRelations = new(rel.Select(x => new RelationViewModel
+        var rel = db.GetCollection<Ownership>().FindAll().ToArray();// Find(x => x.InstitutionId == 1).ToArray();
+        var entities = db.GetCollection<IEntity>().FindAll().ToArray();
+        var relations = rel.Select(x => new RelationViewModel
         {
             Id = x.Id,
-            Holder = db.GetCollection<IEntity>().FindById(x.HolderId),
-            Institution = manager,
+            Holder = entities.FirstOrDefault(y => y.Id == x.HolderId),
+            Institution = x.InstitutionId == 0 ? manager : entities.Select(x=> x as Institution).FirstOrDefault(y => y?.Id == x.InstitutionId),
             Share = x.Share,
-            Ratio = x.Ratio == 0 ? x.Share / manager.RegisterCapital : x.Ratio
-        }));
+            Ratio = x.Ratio == 0 ? x.Share / manager!.RegisterCapital : x.Ratio
+        }).ToArray();
+        foreach (var item in relations.Where(x => x.Institution == manager))
+        {
+            item.Children = [.. relations.Where(x => x.Institution == item.Holder)];
+        }
+
+        ShareRelations = [.. relations.Where(x => x.Institution == manager)];
 
         db.Dispose();
 
-        AmacPageUrl = $"https://gs.amac.org.cn/amac-infodisc/res/pof/manager/{manager.AmacId}.html";
+        AmacPageUrl = $"https://gs.amac.org.cn/amac-infodisc/res/pof/manager/{manager!.AmacId}.html";
 
         ManagerName = new ChangeableViewModel<Manager, string>
         {
@@ -558,8 +565,11 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     [RelayCommand]
     public void AddShareHolder()
     {
+        var db = DbHelper.Base();
+        var manager = db.GetCollection<Manager>().FindById(1);
+
         var wnd = new AddOrModifyShareHolderWindow();
-        wnd.DataContext = new AddOrModifyShareHolderWindowViewModel();
+        wnd.DataContext = new AddOrModifyShareHolderWindowViewModel(manager);
         wnd.Owner = App.Current.MainWindow;
         wnd.ShowDialog();
 
@@ -594,8 +604,10 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     [RelayCommand]
     public void EditShareHolder(RelationViewModel value)
     {
+        var db = DbHelper.Base();
+        var manager = db.GetCollection<Manager>().FindById(1);
         var wnd = new AddOrModifyShareHolderWindow();
-        AddOrModifyShareHolderWindowViewModel obj = new();
+        AddOrModifyShareHolderWindowViewModel obj = new(manager);
         obj.Holder = value.Holder;
         obj.Institution = value.Institution as Institution;
         obj.ShareAmount = value.Share;
@@ -972,7 +984,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     }
 
 
-    public class RelationViewModel
+    public partial class RelationViewModel : ObservableObject
     {
         public int Id { get; set; }
 
@@ -985,7 +997,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         /// 持股的机构、公司
         /// 0 表示 管理人
         /// </summary>
-        public IEntity? Institution { get; set; }
+        public required Institution Institution { get; set; }
 
 
         public string? InstitutionName { get; set; }
@@ -995,6 +1007,53 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         public decimal Ratio { get; set; }
 
 
+        public ObservableCollection<RelationViewModel>? Children { get; set; }
+
+        [RelayCommand]
+        public void AddShareHolder()
+        {
+            var wnd = new AddOrModifyShareHolderWindow();
+            wnd.DataContext = new AddOrModifyShareHolderWindowViewModel(Institution);
+            wnd.Owner = App.Current.MainWindow;
+            wnd.ShowDialog();
+
+        }
+
+        [RelayCommand]
+        public void AddPerson()
+        {
+            var wnd = new AddOrModifyPersonWindow();
+            wnd.DataContext = new PersonViewModel(new Person { Name = "" });
+            wnd.Owner = App.Current.MainWindow;
+            wnd.ShowDialog();
+        }
+
+
+        [RelayCommand]
+        public void RemoveShareHolder(RelationViewModel value)
+        {
+            if (HandyControl.Controls.MessageBox.Show($"是否确认删除 {value.Holder!.Name}？", button: MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                using var db = DbHelper.Base();
+                db.GetCollection<Ownership>().Delete(value.Id);
+
+                Children?.Remove(value);
+            }
+        }
+
+        [RelayCommand]
+        public void EditShareHolder(RelationViewModel value)
+        {
+            var wnd = new AddOrModifyShareHolderWindow();
+            AddOrModifyShareHolderWindowViewModel obj = new(Institution);
+            obj.Holder = value.Holder;
+            obj.Institution = value.Institution;
+            obj.ShareAmount = value.Share;
+            wnd.DataContext = obj;
+            wnd.Owner = App.Current.MainWindow;
+            wnd.ShowDialog();
+
+        }
     }
 }
 

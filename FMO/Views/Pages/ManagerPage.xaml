@@ -429,6 +429,8 @@
 
                 <GroupBox
                     Margin="0,20,0,0"
+                    local:HelpService.Help="可以设置多个文件，保存历史证件"
+                    local:HelpService.Placement="Bottom"
                     Background="WhiteSmoke"
                     Header="证件"
                     Style="{StaticResource GroupBoxTab}">
@@ -446,10 +448,18 @@
             <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top">
                 <ToggleButton
                     hc:IconElement.Geometry="{StaticResource f.pencil}"
+                    local:HelpService.Help="点击这里修改管理人资料和证件"
+                    local:HelpService.Placement="Right"
                     BorderThickness="0"
                     DockPanel.Dock="Right"
                     IsChecked="{Binding IsReadOnly}"
-                    Style="{StaticResource EditSwitch}" />
+                    Style="{StaticResource EditSwitch}">
+                    <!--<local:HelpService.Help>
+                        <DataTemplate>
+                            <TextBlock Text="点击这里修改管理人资料和证件" />
+                        </DataTemplate>
+                    </local:HelpService.Help>-->
+                </ToggleButton>
 
                 <Button
                     Height="50"
@@ -593,7 +603,7 @@
             </StackPanel>
 
 
-
+            <!--  股权结构  -->
             <StackPanel>
                 <Border>
                     <DockPanel LastChildFill="False">
@@ -624,12 +634,78 @@
                     IsReadOnly="True"
                     ItemsSource="{Binding ShareRelations}"
                     Style="{StaticResource DataGrid.NoSelect}">
+                    <DataGrid.RowDetailsTemplate>
+                        <DataTemplate>
+                            <DataGrid
+                                AutoGenerateColumns="False"
+                                HeadersVisibility="None"
+                                ItemsSource="{Binding Children}"
+                                Style="{StaticResource DataGrid.NoSelect}">
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="姓名">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <shared:CopyableTextBlock Text="{Binding Holder.Name}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="认缴金额">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <shared:CopyableTextBlock HorizontalAlignment="Right" Text="{Binding Share}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTextColumn
+                                        Binding="{Binding Ratio, StringFormat=P2}"
+                                        ElementStyle="{StaticResource RightAlignText}"
+                                        Header="占比" />
+
+                                    <!--  编辑/删除  -->
+                                    <DataGridTemplateColumn>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <DockPanel LastChildFill="False">
+                                                    <Button
+                                                        hc:IconElement.Geometry="{StaticResource f.circle-minus}"
+                                                        Command="{Binding DataContext.RemoveShareHolderCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        CommandParameter="{Binding .}"
+                                                        Foreground="Red"
+                                                        Style="{StaticResource ButtonIcon.Small}" />
+
+
+                                                    <Button
+                                                        hc:IconElement.Geometry="{StaticResource f.pen}"
+                                                        Command="{Binding DataContext.EditShareHolderCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        CommandParameter="{Binding .}"
+                                                        Style="{StaticResource ButtonIcon.Small}" />
+                                                </DockPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DataTemplate>
+                    </DataGrid.RowDetailsTemplate>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Binding="{Binding Holder.Name}" Header="持有人" />
-                        <DataGridTextColumn
-                            Binding="{Binding Share}"
-                            ElementStyle="{StaticResource RightAlignText}"
-                            Header="认缴金额" />
+                        <DataGridTemplateColumn Header="姓名">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <shared:CopyableTextBlock Text="{Binding Holder.Name}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Header="认缴金额">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <shared:CopyableTextBlock HorizontalAlignment="Right" Text="{Binding Share}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
                         <DataGridTextColumn
                             Binding="{Binding Ratio, StringFormat=P2}"
                             ElementStyle="{StaticResource RightAlignText}"
