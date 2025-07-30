@@ -115,8 +115,16 @@
                     <Setter Property="Margin" Value="4,0" />
                 </Style>
             </DockPanel.Resources>
-            <Button hc:IconElement.Geometry="{StaticResource f.arrows-rotate}" Command="{Binding RefreshNetValuesCommand}" />
-            <Button hc:IconElement.Geometry="{StaticResource f.file-export}" Command="{Binding ExportNetValuesCommand}" />
+            <Button
+                hc:IconElement.Geometry="{StaticResource f.arrows-rotate}"
+                local:HelpService.Help="重新解析估值表"
+                local:HelpService.Offset="-15,0"
+                Command="{Binding RefreshNetValuesCommand}" />
+            <Button
+                hc:IconElement.Geometry="{StaticResource f.file-export}"
+                local:HelpService.Help="导出净值表"
+                local:HelpService.Offset="10,0"
+                Command="{Binding ExportNetValuesCommand}" />
         </DockPanel>
     </Grid>
 </UserControl>
