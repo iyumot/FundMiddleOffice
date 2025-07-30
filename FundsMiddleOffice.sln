@@ -76,6 +76,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SingleFundNetValueList", "T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.TemplateManager", "FMO.TemplateManager\FMO.TemplateManager.csproj", "{9409B93E-5943-4204-A2AE-75761BFCC476}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CollectTpl", "Tools\CollectTpl\CollectTpl.csproj", "{E607403B-5B40-4565-87E2-0D9B7F386EFA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -190,6 +192,10 @@ Global
 		{9409B93E-5943-4204-A2AE-75761BFCC476}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9409B93E-5943-4204-A2AE-75761BFCC476}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9409B93E-5943-4204-A2AE-75761BFCC476}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E607403B-5B40-4565-87E2-0D9B7F386EFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E607403B-5B40-4565-87E2-0D9B7F386EFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E607403B-5B40-4565-87E2-0D9B7F386EFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E607403B-5B40-4565-87E2-0D9B7F386EFA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -210,6 +216,7 @@ Global
 		{E8FF9855-47C5-4D90-830B-EBC58F8CA328} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{F8CA119F-1DA4-41F3-9666-EEE4BA9CE218} = {00E05DB2-AE20-4AFD-9C9B-B5FB7504FB21}
 		{9409B93E-5943-4204-A2AE-75761BFCC476} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{E607403B-5B40-4565-87E2-0D9B7F386EFA} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E8FF6F9B-A37B-4335-B135-EEEB33A830B1}

@@ -47,41 +47,41 @@
         <DockPanel DockPanel.Dock="Top">
 
 
-            <hc:SimplePanel DockPanel.Dock="Right">
-                <ToggleButton Content="自定义" IsChecked="{Binding ShowCustomFileName}" />
-                <Popup
-                    AllowsTransparency="True"
-                    HorizontalOffset="-300"
-                    IsOpen="{Binding ShowCustomFileName}"
-                    Placement="Bottom"
-                    StaysOpen="False">
-                    <Border Background="WhiteSmoke">
-                        <DockPanel Margin="15">
-                            <Button
-                                Margin="5,0,0,0"
-                                Command="{Binding CustomizeCommand}"
-                                Content="确认"
-                                DockPanel.Dock="Right"
-                                Style="{StaticResource ButtonInfo}" />
+            <DockPanel DockPanel.Dock="Right" Visibility="{Binding SelectedFileName, Converter={StaticResource Object2VisibilityConverter}}">
+                <hc:SimplePanel DockPanel.Dock="Right">
+                    <ToggleButton Content="自定义" IsChecked="{Binding ShowCustomFileName}" />
+                    <Popup
+                        AllowsTransparency="True"
+                        HorizontalOffset="-300"
+                        IsOpen="{Binding ShowCustomFileName}"
+                        Placement="Bottom"
+                        StaysOpen="False">
+                        <Border Background="WhiteSmoke">
+                            <DockPanel Margin="15">
+                                <Button
+                                    Margin="5,0,0,0"
+                                    Command="{Binding CustomizeCommand}"
+                                    Content="确认"
+                                    DockPanel.Dock="Right"
+                                    Style="{StaticResource ButtonInfo}" />
 
-                            <TextBlock VerticalAlignment="Center" Text="新模板文件名" />
-                            <TextBox
-                                MinWidth="220"
-                                Margin="5,0,0,0"
-                                Text="{Binding CustomFileName}" />
-                        </DockPanel>
-                    </Border>
-                </Popup>
-            </hc:SimplePanel>
+                                <TextBlock VerticalAlignment="Center" Text="新模板文件名" />
+                                <TextBox
+                                    MinWidth="220"
+                                    Margin="5,0,0,0"
+                                    Text="{Binding CustomFileName}" />
+                            </DockPanel>
+                        </Border>
+                    </Popup>
+                </hc:SimplePanel>
 
-
-
-            <Button
-                Margin="5,0,0,0"
-                Command="{Binding ModifyCommand}"
-                Content="修改"
-                DockPanel.Dock="Right"
-                Style="{StaticResource ButtonDashedPrimary}" />
+                <Button
+                    Margin="5,0,0,0"
+                    Command="{Binding ModifyCommand}"
+                    Content="修改"
+                    DockPanel.Dock="Right"
+                    Style="{StaticResource ButtonDashedPrimary}" />
+            </DockPanel>
             <ListBox
                 ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
                 ItemsSource="{Binding TplFiles}"
