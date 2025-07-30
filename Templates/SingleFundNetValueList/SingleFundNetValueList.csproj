@@ -12,4 +12,10 @@
     <ProjectReference Include="..\..\FMO.Utilities\FMO.Utilities.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="default.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
