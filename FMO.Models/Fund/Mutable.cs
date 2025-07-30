@@ -116,7 +116,7 @@ public class PortionMutable<T> : Mutable<Dictionary<int, T>>, IPortionMutable wh
         dic[share] = value;
     }
 
-    public (int FlowId, T? Value) GetValue(int share, int flowid)
+    public (int FlowId, T? Value) GetValue(int share, int flowid = int.MaxValue)
     {
         foreach (var x in Changes.Reverse())
         {
