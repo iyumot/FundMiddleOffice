@@ -96,7 +96,7 @@ public class Fund
     /// <summary>
     /// 是否结构化
     /// </summary>
-    public Mutable<bool>? IsStructured { get; set; } //= new Mutable<bool>(nameof(IsStructured), false);
+    //public Mutable<bool>? IsStructured { get; set; } //= new Mutable<bool>(nameof(IsStructured), false);
 
 
     //public Mutable<ShareClass[]>? ShareClasses { get; set; }
