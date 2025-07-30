@@ -115,10 +115,7 @@ public partial class OpenRuleViewModel : ObservableObject
 
 
     public OpenRuleViewModel()
-    {
-        SelectedYear = DateTime.Today.Year;
-
-
+    { 
         Quarters = Enumerable.Range(1, 4).Select(x => new QuarterInfo(x)).ToArray();
         foreach (var item in Quarters)
             item.PropertyChanged += QuarterChanged;
@@ -145,6 +142,8 @@ public partial class OpenRuleViewModel : ObservableObject
         DaySource.Source = Days;
         DaySource.Filter += DaySource_Filter;
 
+
+        SelectedYear = DateTime.Today.Year;
     }
 
     private void MonthSource_Filter(object sender, FilterEventArgs e)
@@ -364,7 +363,12 @@ public partial class OpenRuleViewModel : ObservableObject
 
         Data = days.Select(x => new DayIsOpenViewModel { Date = x.Date, IsWeekEnd = x.Flag.HasFlag(DayFlag.Weekend), IsHoliday = x.Flag.HasFlag(DayFlag.Holiday) }).ToArray();
 
+        var r = Rule?.Apply(SelectedYear);
 
+        for (int i = 0; i < Data!.Length; i++)
+        {
+            Data[i].IsOpen = r[i].Type == OpenType.Fixed;
+        }
 
         //AllDays = days.Select(x => new DayIsOpenViewModel { Day = x.Date, }).ToArray();
 

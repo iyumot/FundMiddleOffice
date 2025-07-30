@@ -752,7 +752,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
             var e = db.GetCollection<FundElements>().FindById(Id);
             OpenRule = openRuleViewModel.Rule;
             e.FundOpenRule.SetValue(openRuleViewModel.Rule, FlowId);
-
+            db.GetCollection<FundElements>().Update(e);
             if (string.IsNullOrWhiteSpace(OpenDayInfo!.NewValue))
                 OpenDayInfo.NewValue = OpenRule.ToString();
         }

@@ -723,7 +723,7 @@
                 Width="60"
                 Background="Green"
                 CornerRadius="5">
-                <StackPanel>
+                <StackPanel VerticalAlignment="Center">
                     <TextBlock
                         Margin="5,10"
                         FontSize="16"
