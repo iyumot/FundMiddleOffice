@@ -34,6 +34,18 @@
 ![Funds](readme/funds.png)
 
 
+# 基金资料
+
+![Funds](readme/fundinfo.png)
+![Funds](readme/fundinfo2.png)
+![Funds](readme/fundinfo-nv.png)
+![Funds](readme/fundinfo-curve.png)
+![Funds](readme/fundinfo-ele.png)
+
+
+
+
+
 # 客户
 |      | 说明 | 状态 |
 |----------|------|------|
