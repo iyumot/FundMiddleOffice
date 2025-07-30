@@ -109,7 +109,7 @@ public class ReadonlyFundInfo
     public int? DurationInMonths { get; set; }
     public BankAccount? CollectionAccount { get; set; }
     public BankAccount? CustodyAccount { get; set; }
-    public ShareClass? ShareClasses { get; set; }
+    public ShareClass? ShareClass { get; set; }
     public decimal? StopLine { get; set; }
     public decimal? WarningLine { get; set; }
     public string? OpenDayInfo { get; set; }
@@ -139,7 +139,14 @@ public class ReadonlyFundInfo
 
 
     public static ReadonlyFundInfo[] Load(Fund fund, FundElements elements)
-    {
+    { 
+        if(elements is null)
+        {
+            var n = new ReadonlyFundInfo();
+            n.FillFrom(fund);
+            return [n];
+        }
+
         // 判断是否分级
         var sc = elements.ShareClasses.Value;
 
@@ -158,6 +165,8 @@ public class ReadonlyFundInfo
 
     private void FillFrom(FundElements elements, ShareClass shareClass)
     {
+        if (shareClass.Name == "单一份额") shareClass.Name = "";
+
         Name = elements.FullName.Value;
         ShortName = elements.ShortName.Value;
         FundModeInfo = elements.FundModeInfo;
@@ -168,7 +177,7 @@ public class ReadonlyFundInfo
         ExpirationDate = elements.ExpirationDate?.Value;
         CollectionAccount = elements.CollectionAccount?.Value;
         CustodyAccount = elements.CustodyAccount?.Value;
-        ShareClasses = shareClass;
+        ShareClass = shareClass;
         StopLine = elements.StopLine?.Value;
         WarningLine = elements.WarningLine?.Value;
         OpenDayInfo = elements.OpenDayInfo?.Value;
@@ -189,13 +198,13 @@ public class ReadonlyFundInfo
         Callback = elements.Callback?.Value;
 
         // 映射 PortionMutable<T> 属性（取默认值）
-        LockingRule = elements.LockingRule?.GetValue(shareClass.Id).Value;
-        ManageFee = elements.ManageFee?.GetValue(shareClass.Id).Value;
+        LockingRule = elements.LockingRule?.GetValue(shareClass.Id, int.MaxValue).Value;
+        ManageFee = elements.ManageFee?.GetValue(shareClass.Id, int.MaxValue).Value;
         ManageFeePay = elements.ManageFeePay?.Value; // 注意这是Mutable
-        SubscriptionRule = elements.SubscriptionRule?.GetValue(shareClass.Id).Value;
-        PurchasRule = elements.PurchasRule?.GetValue(shareClass.Id).Value;
-        RedemptionFee = elements.RedemptionFee?.GetValue(shareClass.Id).Value;
-        PerformanceFeeStatement = elements.PerformanceFeeStatement?.GetValue(shareClass.Id).Value;
+        SubscriptionRule = elements.SubscriptionRule?.GetValue(shareClass.Id, int.MaxValue).Value;
+        PurchasRule = elements.PurchasRule?.GetValue(shareClass.Id, int.MaxValue).Value;
+        RedemptionFee = elements.RedemptionFee?.GetValue(shareClass.Id, int.MaxValue).Value;
+        PerformanceFeeStatement = elements.PerformanceFeeStatement?.GetValue(shareClass.Id, int.MaxValue).Value;
 
 
     }
@@ -204,6 +213,8 @@ public class ReadonlyFundInfo
     private void FillFrom(Fund fund)
     {
         Id = fund.Id;
+        Name = fund.Name;
+        ShortName = fund.ShortName;
         InitiateDate = fund.InitiateDate;
         SetupDate = fund.SetupDate;
         AuditDate = fund.AuditDate;
