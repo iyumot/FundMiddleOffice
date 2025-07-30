@@ -11,7 +11,9 @@ using Serilog;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace FMO;
 
@@ -61,6 +63,10 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
     public partial IList<string>? FundTips { get; set; }
 
 
+
+    public Tool[] Tools { get; set; }
+
+
     /// <summary>
     /// 募集户余额报警
     /// </summary> 
@@ -98,6 +104,11 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
         // 每小时运行一次，判断是不是新的一天
         _dailyTimer = new Timer(x => OnNewDate(), null, 60000, 1000 * 60 * 60);
+
+
+        Tools = [new Tool { ExeName = "FMO.FeeCalc", Icon = GetGeometry("f.sack-dollar"), Foreground = Brushes.MediumPurple },
+                 new Tool { ExeName = "FMO.LearnAssist", Icon = GetGeometry("f.youtube"), Foreground = Brushes.Red }];
+
     }
 
     private void LoadTrusteeMessages()
@@ -285,7 +296,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
         var btrans = db.GetCollection<BankTransaction>().Find(x => x.Time > limit).ToArray();
 
         foreach (var item in tq)
-        { 
+        {
         }
     }
 
@@ -328,6 +339,22 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
     public void OpenDataFolder()
     {
         try { System.Diagnostics.Process.Start("explorer.exe", Path.Combine(Directory.GetCurrentDirectory(), "files")); } catch { }
+    }
+
+
+    [RelayCommand]
+    public void OpenExe(string exeName)
+    {
+        try
+        {
+            var di = new DirectoryInfo(System.Diagnostics.Process.GetCurrentProcess().MainModule!.FileName).Parent!;
+
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = Path.Combine(di.FullName, $"{exeName}.exe"), WorkingDirectory = Directory.GetCurrentDirectory() });
+        }
+        catch (Exception e)
+        {
+            HandyControl.Controls.Growl.Error($"无法启动应用，{e.Message}");
+        }
     }
 
 
@@ -461,7 +488,20 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
 
 
+    public static Geometry? GetGeometry(string resourceKey, string resourceDictionaryPath = "/Icons.xaml")
+    {
+        // 加载资源字典
+        ResourceDictionary resourceDictionary = new ResourceDictionary
+        {
+            Source = new System.Uri(resourceDictionaryPath, System.UriKind.Relative)
+        };
 
+        // 从资源字典中获取Geometry
+        if (resourceDictionary.Contains(resourceKey) && resourceDictionary[resourceKey] is Geometry geometry)
+            return geometry;
+
+        return resourceDictionary["f.ghost"] as Geometry;
+    }
     private void OnNewDate()
     {
         if (DailyUpdateTime.Date == DateTime.Today) return;
@@ -533,4 +573,16 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
     }
 
+
+    public class Tool
+    {
+        public Geometry? Icon { get; set; }
+
+        public required string ExeName { get; set; }
+
+        public Brush Foreground { get; set; } = Brushes.Black;
+
+        public string? ToolTip { get; set; }
+    }
 }
+

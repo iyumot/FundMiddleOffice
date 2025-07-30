@@ -96,16 +96,31 @@
                         Value="{Binding BackupProcess}" />
                 </hc:SimplePanel>
 
-                <Button
-                    hc:IconElement.Geometry="{StaticResource f.sack-dollar}"
-                    Command="{Binding CalcFeeCommand}"
-                    Content="费用计算"
-                    Style="{StaticResource ButtonIcon}" />
 
                 <Button
                     hc:IconElement.Geometry="{StaticResource f.database}"
                     Command="{Binding OpenDbViewerCommand}"
                     Style="{StaticResource ButtonIcon}" />
+
+
+                <ListBox
+                    Background="Transparent"
+                    BorderThickness="0"
+                    ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
+                    ItemsSource="{Binding Tools}"
+                    Style="{StaticResource ListBoxCustom}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Button
+                                hc:IconElement.Geometry="{Binding Icon}"
+                                Command="{Binding DataContext.OpenExeCommand, RelativeSource={RelativeSource AncestorType=local:HomePage}}"
+                                CommandParameter="{Binding ExeName}"
+                                Foreground="{Binding Foreground}"
+                                Style="{StaticResource ButtonIcon}"
+                                ToolTip="{Binding ToolTip}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
             </DockPanel>
         </GroupBox>
 
