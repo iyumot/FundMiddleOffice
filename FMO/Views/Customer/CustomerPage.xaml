@@ -219,7 +219,7 @@
                     Content="生成pfid账号"
                     Style="{StaticResource ButtonDefault.Small}" />
 
-                <hc:SimplePanel>
+                <!--<hc:SimplePanel>
                     <Button
                         hc:IconElement.Geometry="{StaticResource f.file-import}"
                         Command="{Binding ImportQualificationDataCommand}"
@@ -230,7 +230,7 @@
                         VerticalAlignment="Bottom"
                         Visibility="{Binding ImportQualificationDataCommand.IsRunning, Converter={StaticResource Boolean2VisibilityConverter}}"
                         Value="{Binding ImportQualificationProgress}" />
-                </hc:SimplePanel>
+                </hc:SimplePanel>-->
 
 
                 <ToggleButton
