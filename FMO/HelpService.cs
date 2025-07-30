@@ -46,7 +46,7 @@ public static class HelpService
         "Placement",
         typeof(Placement),
         typeof(HelpService),
-        new PropertyMetadata(Placement.LeftTop));
+        new PropertyMetadata(Placement.Bottom));
 
     public static readonly DependencyProperty OffsetProperty =
         DependencyProperty.RegisterAttached(
