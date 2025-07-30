@@ -7,6 +7,7 @@
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
+    Margin="0,5"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
@@ -16,8 +17,10 @@
     <DockPanel>
         <shared:DailyReportGridView />
 
-        <DockPanel>
-            <Button hc:IconElement.Geometry="{StaticResource f.paper-plane}" Command="{Binding GenerateReportCommand}" />
-        </DockPanel>
+        <GroupBox Header="生成报表" Style="{StaticResource GroupBoxTab}">
+            <WrapPanel>
+                <Button Command="{Binding GenerateReportCommand}" Content="净值总览" />
+            </WrapPanel>
+        </GroupBox>
     </DockPanel>
 </UserControl>
