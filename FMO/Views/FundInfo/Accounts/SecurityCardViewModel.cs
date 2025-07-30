@@ -168,6 +168,14 @@ public partial class SecurityCardChangeViewModel : ObservableObject, ISecurityCa
         File = new FileInfo(@$"files\accounts\security\G-{SerialNo}.pdf");
     }
 
+
+    [Obsolete]
+    public int Group { get; } = -1;
+
+
+    [Obsolete]
+    public string? Tag { get; }
+
     public FileInfo File { get; set; }
 
     public int Id { get; set; }
