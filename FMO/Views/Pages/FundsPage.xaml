@@ -55,6 +55,7 @@
                 </DockPanel.Resources>
 
                 <Button
+                    local:HelpService.Help="点此从协会更新"
                     Command="{Binding SyncFromAmacCommand}"
                     Content="更新"
                     Style="{StaticResource ButtonInfo.Small}" />
@@ -107,7 +108,12 @@
 
 
         <!--  列表  -->
-        <ListBox d:ItemsSource="{d:SampleData}" ItemsSource="{Binding DataViewSource.View}">
+        <ListBox
+            d:ItemsSource="{d:SampleData}"
+            local:HelpService.Help="双击打开基金资料卡"
+            local:HelpService.Offset="50,45"
+            local:HelpService.Placement="LeftTop"
+            ItemsSource="{Binding DataViewSource.View}">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <WrapPanel IsItemsHost="True" />

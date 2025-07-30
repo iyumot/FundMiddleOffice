@@ -107,6 +107,8 @@ public partial class SecurityCardViewModel : ObservableObject, ISecurityCard
         using var db = DbHelper.Base();
         var card = db.GetCollection<SecurityCard>().FindById(Id);
 
+        if (card is null) return;
+
         if (Regex.IsMatch(card.CardNo, @"[^B0-9\s]"))
         {
             db.GetCollection<SecurityCard>().Delete(card.Id);
