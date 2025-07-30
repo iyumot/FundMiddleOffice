@@ -152,6 +152,10 @@ public partial class MainWindowViewModel : ObservableObject
         using var db = DbHelper.Base();
         TemplateInfo entity = new(gid, obj.Name, obj.Description, gen.FullName!, obj.Suit, di.FullName);
         db.GetCollection<TemplateInfo>().Upsert(entity);
+
+        foreach (var item in Templates.Where(x=>x.Id == entity.Id).ToArray()) 
+            Templates.Remove(item); 
+
         Templates.Add(entity);
         context.Unload();
     }
