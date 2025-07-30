@@ -29,7 +29,7 @@ public partial class FundInfoPage : UserControl
 
 
 public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<FundShareChangedMessage>, IRecipient<FundDailyUpdateMessage>,
-    IRecipient<FundStrategyChangedMessage>, IRecipient<FundAccountChangedMessage>,IRecipient<EntityChangedMessage<Fund, DateOnly>>
+    IRecipient<FundStrategyChangedMessage>, IRecipient<FundAccountChangedMessage>, IRecipient<EntityChangedMessage<Fund, DateOnly>>
 {
     public Fund Fund { get; init; }
 
@@ -605,20 +605,23 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         var last = DailyValues.FirstOrDefault(x => x.NetValue > 0);
         if (last is null) return;
 
-        var fd = new SaveFileDialog();
-        fd.FileName = $"{FundName} 每日净值 {last.Date:yyyy-MM-dd}.xlsx";
-        fd.Filter = "Excel|*.xlsx";
-        var r = fd.ShowDialog();
-        if (r is null || !r.Value) return;
-
-
-        if (!Tpl.IsExists("sigle_fund_nvlist.xlsx"))
+        // 找模板
+        using var db = DbHelper.Base();
+        var exporters = db.GetCollection<TemplateInfo>().FindAll().Where(x => x.Suit.HasFlag( ExportTypeFlag.SingleFundNetValueList) ).ToList();
+        if(exporters is null || exporters.Count ==0)
         {
-            HandyControl.Controls.Growl.Warning("文件模板不存在");
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "未找到基金净值列表导出模板"));
             return;
         }
 
-        try { Tpl.Generate(fd.FileName, Tpl.GetPath("sigle_fund_nvlist.xlsx"), new { nvs = DailyValues.Where(x => x.NetValue > 0) }); } catch (Exception e) { Log.Error($"{e}"); }
+
+        var wnd = new ExporterWindow
+        {
+            DataContext = new ExporterWindowViewModel(exporters, FundId),
+            Owner = App.Current.MainWindow
+        };
+        wnd.ShowDialog();
+
     }
     #endregion
 
@@ -663,7 +666,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
                 ManagerName = m!.Name,
                 FundName = Fund.Name,
                 RiskLevel = RiskLevel ?? null,
-                StopLine = e.StopLine.Value switch { 0=> "-", var n => n.ToString()}
+                StopLine = e.StopLine.Value switch { 0 => "-", var n => n.ToString() }
             };
 
             var folder = FundHelper.GetFolder(FundId, "Contract\\Attach");

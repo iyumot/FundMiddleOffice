@@ -1,27 +1,18 @@
 ﻿<Window
-    x:Class="FMO.TemplateManager.MainWindow"
+    x:Class="FMO.ExporterWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:hc="https://handyorg.github.io/handycontrol"
-    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-    xmlns:local="clr-namespace:FMO.TemplateManager"
+    xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="模板管理工具"
-    Width="1000"
+    Title="模板导出"
+    Width="800"
     Height="450"
-    AllowDrop="True"
-    Icon="/logo.ico"
-    WindowStartupLocation="CenterScreen"
+    d:DataContext="{d:DesignInstance Type=local:ExporterWindowViewModel}"
+    WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
-    <Window.DataContext>
-        <local:MainWindowViewModel />
-    </Window.DataContext>
-    <i:Interaction.Triggers>
-        <i:EventTrigger EventName="Drop">
-            <i:InvokeCommandAction Command="{Binding AddTemplateCommand}" PassEventArgsToCommand="True" />
-        </i:EventTrigger>
-    </i:Interaction.Triggers>
+
     <DockPanel Margin="8">
         <ListBox
             BorderThickness="0"
@@ -47,8 +38,16 @@
 
         <DockPanel DockPanel.Dock="Top">
 
+            <Button
+                Margin="10,0,0,0"
+                Padding="20,0"
+                Command="{Binding ExportCommand}"
+                CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                Content="导出"
+                DockPanel.Dock="Right"
+                Style="{StaticResource ButtonPrimary}" />
 
-            <DockPanel DockPanel.Dock="Right" Visibility="{Binding SelectedFileName, Converter={StaticResource Object2VisibilityConverter}}">
+            <!--<DockPanel DockPanel.Dock="Right" Visibility="{Binding SelectedFileName, Converter={StaticResource Object2VisibilityConverter}}">
                 <hc:SimplePanel DockPanel.Dock="Right">
                     <ToggleButton Content="自定义" IsChecked="{Binding ShowCustomFileName}" />
                     <Popup
@@ -82,7 +81,7 @@
                     Content="修改"
                     DockPanel.Dock="Right"
                     Style="{StaticResource ButtonDashedPrimary}" />
-            </DockPanel>
+            </DockPanel>-->
             <ListBox
                 ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
                 ItemsSource="{Binding TplFiles}"

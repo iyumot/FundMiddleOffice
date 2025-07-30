@@ -28,8 +28,7 @@ public partial class MainWindow : Window
 public partial class MainWindowViewModel : ObservableObject
 {
     public MainWindowViewModel()
-    {
-        Directory.CreateDirectory("data");
+    { 
         using var db = DbHelper.Base();
         Templates = [.. db.GetCollection<TemplateInfo>().FindAll()];
     }

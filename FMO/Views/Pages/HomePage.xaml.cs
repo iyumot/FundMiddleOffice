@@ -107,7 +107,9 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
 
         Tools = [new Tool { ExeName = "FMO.FeeCalc", Icon = GetGeometry("f.sack-dollar"), Foreground = Brushes.MediumPurple },
-                 new Tool { ExeName = "FMO.LearnAssist", Icon = GetGeometry("f.youtube"), Foreground = Brushes.Red }];
+                 new Tool { ExeName = "FMO.LearnAssist", Icon = GetGeometry("f.youtube"), Foreground = Brushes.Red },
+                 new Tool { ExeName = "FMO.TemplateManager", Icon = GetGeometry("f.table-columns"), Foreground = new SolidColorBrush(Color.FromRgb(42,145,223)) },
+                ];
 
     }
 

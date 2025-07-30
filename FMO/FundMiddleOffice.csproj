@@ -71,6 +71,7 @@
     <ProjectReference Include="..\FMO.Plugin\FMO.Plugin.csproj" />
     <ProjectReference Include="..\FMO.Shared\FMO.Shared.csproj" />
     <ProjectReference Include="..\FMO.SourceGenerator\FMO.SourceGenerator.csproj" OutputItemType="Analyzer" />
+    <ProjectReference Include="..\FMO.TemplateManager\FMO.TemplateManager.csproj" />
     <ProjectReference Include="..\FMO.TPL\FMO.TPL.csproj" />
     <ProjectReference Include="..\FMO.Trustee\FMO.Trustee.csproj" />
     <ProjectReference Include="..\FMO.Utilities\FMO.Utilities.csproj" />

@@ -24,13 +24,13 @@ public class Exporter : IExporter
         var fund = db.GetCollection<Fund>().FindById(fundId);
         if (fund is null) return new ExportInfo("未找到此基金");
 
-        var daily = db.GetDailyCollection(fundId).Find(x=>x.NetValue != 0).OrderBy(x => x.Date).ToList();
-        var last = daily.LastOrDefault();
+        var daily = db.GetDailyCollection(fundId).Find(x=>x.NetValue != 0).OrderByDescending(x => x.Date).ToList();
+        var last = daily.FirstOrDefault();
         if (last is null) return new ExportInfo("此基金没有净值数据");
 
         ExportInfo ExportInfo = new ExportInfo { FileName = $"{fund.Name}-每日净值-{last.Date:yyyy.MM.dd}.xlsx" };
         ExportInfo.Filter = "Excel|*.xlsx";
-        ExportInfo.Data = daily;
+        ExportInfo.Data = new { dy = daily };
 
         return ExportInfo;
     }
