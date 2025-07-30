@@ -17,7 +17,8 @@
         <ListBox
             BorderThickness="0"
             ItemsSource="{Binding Templates}"
-            SelectedItem="{Binding SelectedTemplate}">
+            SelectedItem="{Binding SelectedTemplate}"
+            Visibility="{Binding IsMultiTpl, Converter={StaticResource Boolean2VisibilityConverter}}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <DockPanel Margin="0,4">
@@ -34,7 +35,8 @@
         <Rectangle
             Width="2"
             Margin="4,0"
-            Fill="Gray" />
+            Fill="Gray"
+            Visibility="{Binding IsMultiTpl, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
         <DockPanel DockPanel.Dock="Top">
 
@@ -94,9 +96,13 @@
                 </ListBox.ItemTemplate>
             </ListBox>
         </DockPanel>
-        <DataGrid
-            HeadersVisibility="None"
-            ItemsSource="{Binding Sample}"
-            Style="{StaticResource DataGrid.Small}" />
+
+        <GroupBox Header="预览" Style="{StaticResource GroupBoxTab}">
+            <DataGrid
+                BorderThickness="0"
+                HeadersVisibility="None"
+                ItemsSource="{Binding Sample}"
+                Style="{StaticResource DataGrid.Small}" />
+        </GroupBox>
     </DockPanel>
 </Window>

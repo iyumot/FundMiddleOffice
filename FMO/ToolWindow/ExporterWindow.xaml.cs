@@ -52,7 +52,7 @@ public partial class ExporterWindowViewModel : ObservableObject
     [ObservableProperty]
     public partial DataTable? Sample { get; set; }
 
-
+    public bool IsMultiTpl => Templates.Length > 1;
 
     [ObservableProperty]
     public partial bool ShowCustomFileName { get; set; }
