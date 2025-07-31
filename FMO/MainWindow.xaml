@@ -11,6 +11,7 @@
     Height="450"
     d:Height="900"
     d:Width="1600"
+    Icon="/res/logo.ico"
     SnapsToDevicePixels="True"
     UseLayoutRounding="True"
     WindowStartupLocation="CenterScreen"
