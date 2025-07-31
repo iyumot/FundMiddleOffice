@@ -10,7 +10,7 @@
     xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     d:DataContext="{d:DesignInstance Type=local:ManagerPageViewModel}"
     d:DesignHeight="450"
-    d:DesignWidth="800"
+    d:DesignWidth="1200"
     Tag="管理人"
     mc:Ignorable="d">
     <UserControl.Resources>
@@ -707,10 +707,97 @@
 
 
 
+        <DockPanel>
+            <DockPanel DockPanel.Dock="Top">
+                <Button Command="{Binding AddFlowCommand}" Content="添加工作" />
+            </DockPanel>
+            <ListBox
+                BorderThickness="0"
+                ItemsSource="{Binding Flows}"
+                Style="{StaticResource ListBoxCustom}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel>
+                            <UniformGrid
+                                VerticalAlignment="Top"
+                                Columns="1"
+                                DockPanel.Dock="Right">
+                                <ToggleButton IsChecked="{Binding IsReadOnly}" Style="{StaticResource EditSwitch}" />
+                                <Button
+                                    hc:IconElement.Geometry="{StaticResource f.trash}"
+                                    Command="{Binding RelativeSource={RelativeSource AncestorType=ListBox}, Path=DataContext.DeleteFlowCommand}"
+                                    CommandParameter="{Binding .}"
+                                    Foreground="Red"
+                                    Style="{StaticResource ButtonIcon}"
+                                    Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                            </UniformGrid>
+
+
+                            <shared:ChangeableControl
+                                MinWidth="500"
+                                HorizontalContentAlignment="Stretch"
+                                Binding="{Binding Description, UpdateSourceTrigger=PropertyChanged, Delay=200}"
+                                DockPanel.Dock="Bottom"
+                                Entity="{Binding .}"
+                                IsReadOnly="{Binding IsReadOnly}" />
+
+                            <shared:ChangeableControl
+                                Binding="{Binding Date}"
+                                Entity="{Binding .}"
+                                IsReadOnly="{Binding IsReadOnly}">
+                                <shared:ChangeableControl.EditTemplate>
+                                    <DataTemplate>
+                                        <DatePicker Width="100" SelectedDate="{Binding NewValue, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
+                                    </DataTemplate>
+                                </shared:ChangeableControl.EditTemplate>
+                            </shared:ChangeableControl>
+
+                            <DockPanel
+                                AllowDrop="True"
+                                DockPanel.Dock="Right"
+                                Visibility="{Binding IsTemple, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="Drop">
+                                        <i:InvokeCommandAction Command="{Binding AddSealedFileCommand}" PassEventArgsToCommand="True" />
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+                                <TextBlock VerticalAlignment="Center" Text="用印文件" />
+                                <Button
+                                    hc:IconElement.Geometry="{StaticResource f.folder}"
+                                    Command="{Binding OpenSealedCommand}"
+                                    Style="{StaticResource ButtonIcon}" />
+                            </DockPanel>
+
+                            <DockPanel
+                                AllowDrop="True"
+                                DockPanel.Dock="Right"
+                                Visibility="{Binding IsTemple, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="Drop">
+                                        <i:InvokeCommandAction Command="{Binding AddNormalFileCommand}" PassEventArgsToCommand="True" />
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+                                <TextBlock VerticalAlignment="Center" Text="原始文件" />
+                                <Button
+                                    hc:IconElement.Geometry="{StaticResource f.folder}"
+                                    Command="{Binding OpenNormalCommand}"
+                                    Style="{StaticResource ButtonIcon}" />
+                            </DockPanel>
 
 
 
+                            <shared:ChangeableControl
+                                HorizontalContentAlignment="Stretch"
+                                Binding="{Binding Title, UpdateSourceTrigger=PropertyChanged, Delay=200}"
+                                Entity="{Binding .}"
+                                IsReadOnly="{Binding IsReadOnly}" />
 
-        <TextBlock />
+
+                        </DockPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+
     </DockPanel>
 </UserControl>

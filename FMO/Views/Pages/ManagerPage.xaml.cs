@@ -181,6 +181,9 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     [ObservableProperty]
     public partial bool ShareNotPair { get; set; }
 
+
+    public ObservableCollection<ManagerFlowViewModel> Flows { get; }
+
     public ManagerPageViewModel()
     {
         WeakReferenceMessenger.Default.Register<ParticipantChangedMessage>(this);
@@ -436,9 +439,11 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
             Files = [.. (cef.LegalPersonIdCard ?? new())],
             OnAddFile = (x, y) => SetFile(x => x.LegalPersonIdCard ??= new(), x),
             OnDeleteFile = x => DeleleFile(x => x.LegalPersonIdCard, x),
-        }; 
+        };
         #endregion
 
+
+        Flows = [.. db.GetCollection<ManagerFlow>().FindAll().Select(x => new ManagerFlowViewModel(x))];
 
         //BusinessLicense = mfile?.BusinessLicense is null ? new() : new ObservableCollection<FileInfo>(mfile.BusinessLicense.Files.Select(x => new FileInfo(x.Path)));
         //BusinessLicense.CollectionChanged += BusinessLicense_CollectionChanged;
@@ -616,7 +621,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
             db.GetCollection<Ownership>().Delete(value.Id);
 
             ShareRelations.Remove(value);
-            
+
             ShareNotPair = ShareRelations.Sum(x => x.Share) != RegisterCapital.OldValue;
         }
     }
@@ -667,6 +672,23 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
 
 
 
+    }
+
+    [RelayCommand]
+    public void AddFlow()
+    {
+        Flows.Add(new ManagerFlowViewModel(new()));
+    }
+
+    [RelayCommand]
+    public void DeleteFlow(ManagerFlowViewModel v)
+    {
+        if (v.Id != 0 && HandyControl.Controls.MessageBox.Show($"确认删除【{v.Title.NewValue}】吗？，无法恢复", button: MessageBoxButton.YesNo) == MessageBoxResult.No)
+            return;
+
+        using var db = DbHelper.Base();
+        db.GetCollection<ManagerFlow>().Delete(v.Id);
+        Flows.Remove(v);
     }
 
 
@@ -1194,5 +1216,111 @@ public partial class ParticipantViewModel : ObservableObject
 
 }
 
+
+public partial class ManagerFlowViewModel : EditableControlViewModelBase<ManagerFlow>
+{
+
+    public ChangeableViewModel<ManagerFlow, DateOnly?> Date { get; }
+
+    public ChangeableViewModel<ManagerFlow, string> Title { get; }
+
+    public ChangeableViewModel<ManagerFlow, string> Description { get; }
+
+
+    [ObservableProperty]
+    public partial bool IsTemple { get; set; }
+
+
+    public bool IsFinished { get; set; }
+
+    public ManagerFlowViewModel(ManagerFlow flow)
+    {
+        Id = flow.Id;
+
+        Date = new()
+        {
+            Label = "日期",
+            InitFunc = x => x.Date == default ? null : x.Date,
+            UpdateFunc = (x, y) => { IsTemple = false; x.Date = y ?? default; },
+            ClearFunc = x => x.Date = DateOnly.MinValue,
+        };
+        Date.Init(flow);
+
+        Title = new()
+        {
+            Label = "标题",
+            InitFunc = x => x.Title,
+            UpdateFunc = (x, y) => { IsTemple = false; x.Title = y; },
+            ClearFunc = x => x.Title = string.Empty,
+        };
+        Title.Init(flow);
+
+        Description = new()
+        {
+            Label = "描述",
+            InitFunc = x => x.Description,
+            UpdateFunc = (x, y) => { IsTemple = false; x.Description = y; },
+            ClearFunc = x => x.Description = string.Empty,
+        };
+        Description.Init(flow);
+
+        IsTemple = Id == 0;
+
+
+    }
+
+
+
+    [RelayCommand]
+    public void OpenNormal() => OpenFolder(@$"manager\flow\{Id}\normal");
+
+
+    [RelayCommand]
+    public void OpenSealed() => OpenFolder(@$"manager\flow\{Id}\sealed");
+
+
+    [RelayCommand]
+    public void AddSealedFile(DragEventArgs args) => SaveFile(args, @$"manager\flow\{Id}\sealed");
+
+
+    [RelayCommand]
+    public void AddNormalFile(DragEventArgs args) => SaveFile(args, @$"manager\flow\{Id}\normal");
+
+    private void SaveFile(DragEventArgs e, string folder)
+    {
+        if(e.Data.GetData(DataFormats.FileDrop) is string[] s)
+        {
+            foreach (var item in s)
+            {
+                File.Copy(item, Path.Combine(folder, Path.GetFileName(item)), true);
+            }
+        }
+    }
+
+
+    private void OpenFolder(string folder)
+    {
+        try
+        {
+            DirectoryInfo di = new DirectoryInfo(folder);
+            if (!di.Exists)
+                di.Create();
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = di.FullName,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception e)
+        {
+            Log.Error($"OpenFolder Error {e}");
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "打开文件夹失败"));
+        }
+    }
+
+
+
+    protected override ManagerFlow InitNewEntity() => new ManagerFlow();
+}
 
 
