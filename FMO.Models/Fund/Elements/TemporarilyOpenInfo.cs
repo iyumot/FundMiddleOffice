@@ -15,4 +15,7 @@ public class TemporarilyOpenInfo
     public bool AllowPurchase { get; set; }
 
     public bool AllowRedemption { get; set; }
+
+
+    public override string ToString() => !IsAllowed ? "不允许临开" : (IsLimited ? "仅合同变更、法规变更时，" : "") + $"允许{(AllowPurchase ? "申购" : "")}{(AllowRedemption ? "赎回" : "")}";
 }

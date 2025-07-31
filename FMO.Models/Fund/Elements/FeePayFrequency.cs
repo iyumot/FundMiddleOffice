@@ -22,4 +22,8 @@ public class FeePayInfo
 
     public string? Other { get; set; }
 
+    public override string? ToString()
+    {
+        return Type switch { FeePayFrequency.Month => "按月支付", FeePayFrequency.Quarter => "按季支付", FeePayFrequency.Other => Other, _ => "未设置" };
+    }
 }

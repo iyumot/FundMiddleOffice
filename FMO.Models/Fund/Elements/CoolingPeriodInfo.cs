@@ -17,4 +17,14 @@ public class CoolingPeriodInfo
 
     public string? Other { get; set; }
 
+
+    public override string ToString()
+    {
+        return Type switch
+        {
+            CoolingPeriodType.OneDay => "24小时",
+            CoolingPeriodType.Other => Other ?? "其它",
+            _ => "未知"
+        };
+    }
 }
