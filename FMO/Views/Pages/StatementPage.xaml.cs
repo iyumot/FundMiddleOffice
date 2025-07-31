@@ -1,10 +1,11 @@
-﻿using System.IO;
-using System.Windows.Controls;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.TPL;
 using FMO.Utilities;
+using System.IO;
+using System.Windows.Controls;
 
 namespace FMO;
 
@@ -30,7 +31,7 @@ public partial class StatementPageViewModel : ObservableObject
         try
         {
             using var db = DbHelper.Base();
-            var funds = db.GetCollection<Fund>().Find(x=>x.Status == FundStatus.Normal).ToArray();
+            var funds = db.GetCollection<Fund>().Find(x => x.Status == FundStatus.Normal).ToArray();
 
             var ds = funds.Select(x => new { f = x, d = db.GetDailyCollection(x.Id).FindAll().Where(x => x?.NetValue > 0).MaxBy(x => x.Date) }).ToArray();
 
@@ -50,7 +51,31 @@ public partial class StatementPageViewModel : ObservableObject
             //ExcelTpl.GenerateFromTemplate(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "summary.xlsx"), "nv_summary.xlsx", obj);
         }
         catch (Exception e)
-        { 
+        {
         }
     }
+
+    [RelayCommand]
+    public void GenerateElementSheet()
+    {
+        var context = new ExporterWindowViewModel(ExportTypeFlag.MultiFundElementSheet);
+        if (context.Templates.Length == 0)
+        {
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "没有可用的模板"));
+            return;
+        }
+
+
+
+        var wnd = new ExporterWindow
+        {
+            DataContext = context,
+            Owner = App.Current.MainWindow
+        };
+
+        wnd.ShowDialog();
+    }
+
+
+
 }

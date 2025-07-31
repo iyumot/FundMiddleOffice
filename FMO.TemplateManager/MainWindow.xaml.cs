@@ -150,7 +150,7 @@ public partial class MainWindowViewModel : ObservableObject
         archive.ExtractToDirectory(di.FullName, true);
 
         using var db = DbHelper.Base();
-        TemplateInfo entity = new(gid, obj.Name, obj.Description, gen.FullName!, obj.Suit, di.FullName);
+        TemplateInfo entity = new(gid, obj.Name, obj.Description, gen.FullName!, obj.Suit, obj.Meta, di.FullName);
         db.GetCollection<TemplateInfo>().Upsert(entity);
 
         foreach (var item in Templates.Where(x=>x.Id == entity.Id).ToArray()) 

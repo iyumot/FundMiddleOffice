@@ -18,9 +18,14 @@
         <shared:DailyReportGridView />
 
         <GroupBox Header="生成报表" Style="{StaticResource GroupBoxTab}">
-            <WrapPanel>
+            <hc:UniformSpacingPanel
+                ChildWrapping="Wrap"
+                Spacing="5"
+                VerticalSpacing="5">
                 <Button Command="{Binding GenerateReportCommand}" Content="净值总览" />
-            </WrapPanel>
+
+                <Button Command="{Binding GenerateElementSheetCommand}" Content="要素总览" />
+            </hc:UniformSpacingPanel>
         </GroupBox>
     </DockPanel>
 </UserControl>

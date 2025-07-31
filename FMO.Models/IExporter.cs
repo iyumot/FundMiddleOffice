@@ -82,4 +82,4 @@ public interface IExporter
 /// <param name="Direction"></param>
 public record ExportParameterMeta(string Type, bool Multiple = true, ListSortDirection Direction = ListSortDirection.Ascending);
 
-public record TemplateInfo(string Id, string Name, string Description, string Type,ExportTypeFlag Suit, string Path);
+public record TemplateInfo(string Id, string Name, string Description, string Type,ExportTypeFlag Suit, ExportParameterMeta[]? Meta, string Path);

@@ -82,6 +82,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "Tests\Models\Mode
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TPL", "Tests\TPL\TPL.csproj", "{1349B34D-3C44-4924-BE77-9A29FAC4BA2D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiFundElementSheet", "Templates\MultiFundElementSheet\MultiFundElementSheet.csproj", "{200B1FBA-2E77-43B8-A786-6C2E27D62A3A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -208,6 +210,10 @@ Global
 		{1349B34D-3C44-4924-BE77-9A29FAC4BA2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1349B34D-3C44-4924-BE77-9A29FAC4BA2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1349B34D-3C44-4924-BE77-9A29FAC4BA2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{200B1FBA-2E77-43B8-A786-6C2E27D62A3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{200B1FBA-2E77-43B8-A786-6C2E27D62A3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{200B1FBA-2E77-43B8-A786-6C2E27D62A3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{200B1FBA-2E77-43B8-A786-6C2E27D62A3A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -231,6 +237,7 @@ Global
 		{E607403B-5B40-4565-87E2-0D9B7F386EFA} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{4DB50FD6-F578-4FDB-82BA-1F6B698906F4} = {2DD8BA92-BC83-426F-A5A9-B93B29AFB63B}
 		{1349B34D-3C44-4924-BE77-9A29FAC4BA2D} = {2DD8BA92-BC83-426F-A5A9-B93B29AFB63B}
+		{200B1FBA-2E77-43B8-A786-6C2E27D62A3A} = {00E05DB2-AE20-4AFD-9C9B-B5FB7504FB21}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E8FF6F9B-A37B-4335-B135-EEEB33A830B1}

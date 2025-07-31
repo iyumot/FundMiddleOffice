@@ -4,13 +4,17 @@ using CommunityToolkit.Mvvm.Messaging;
 using ExcelDataReader;
 using FMO.Models;
 using FMO.TPL;
+using FMO.Utilities;
+using LiteDB;
 using Microsoft.Win32;
 using Serilog;
+using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.Loader;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace FMO;
 
@@ -36,7 +40,35 @@ public partial class ExporterWindowViewModel : ObservableObject
         Parameter = parameter;
     }
 
+
+    public ExporterWindowViewModel(ExportTypeFlag flag)
+    {
+        using var db = DbHelper.Base();
+        Templates = db.GetCollection<TemplateInfo>().FindAll().Where(x => (x.Suit & flag) != 0).ToArray();//Find(x => ((int)x.Suit & (int)flag) != 0).ToArray();
+
+        if (Templates.Length == 1)
+            SelectedTemplate = Templates[0];
+
+        ChooseMode = true;
+
+
+    }
+
+
     public TemplateInfo[] Templates { get; set; }
+
+    public bool ChooseMode { get; }
+
+    [ObservableProperty]
+    public partial bool ChooseFund { get; set; }
+
+
+    [ObservableProperty]
+    public partial SelectionMode ChooseFundMode { get; set; }
+
+    [ObservableProperty]
+    public partial FundSelect[]? Funds { get; set; }
+
 
     [ObservableProperty]
     public partial TemplateInfo? SelectedTemplate { get; set; }
@@ -86,7 +118,13 @@ public partial class ExporterWindowViewModel : ObservableObject
         if (!File.Exists(filePath))
             return;
 
-         AssemblyLoadContext context = new AssemblyLoadContext(Guid.NewGuid().ToString(), true);
+        var param = Parameter;
+        if (ChooseMode && param is null)
+        {
+            param = BuildParameter();
+        }
+
+        AssemblyLoadContext context = new AssemblyLoadContext(Guid.NewGuid().ToString(), true);
         try
         {
             var assembly = context.LoadFromAssemblyPath(Path.Combine(SelectedTemplate.Path, "tpl.dll"));
@@ -95,7 +133,7 @@ public partial class ExporterWindowViewModel : ObservableObject
                 return;
             var obj = Activator.CreateInstance(type) as IExporter;
 
-            var data = obj?.Generate(Parameter);
+            var data = obj?.Generate(param);
             if (data?.Data is null)
             {
                 WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "导出失败，未能成功生成数据。"));
@@ -123,6 +161,38 @@ public partial class ExporterWindowViewModel : ObservableObject
     }
 
 
+
+    [RelayCommand]
+    public void SelectAllFunds() => Funds?.ToList().ForEach(x => x.Select(true));
+
+
+
+    [RelayCommand]
+    public void UnselectAllFunds() => Funds?.ToList().ForEach(x => x.Select(false));
+
+
+    [RelayCommand]
+    public void ReverseSelectFunds() => Funds?.ToList().ForEach(x => x.Select(!x.IsSelected));
+
+
+
+
+
+
+    private object? BuildParameter()
+    {
+        Dictionary<string, object?> dic = new();
+        if (ChooseFund)
+        {
+            int[]? value = Funds?.Where(x => x.IsSelected)?.Select(x => x.Id)?.ToArray();
+            if (value is not null)
+                dic.Add(nameof(Fund), value);
+        }
+
+
+        return dic.Count == 1 ? dic.First().Value : dic;
+    }
+
     partial void OnSelectedTemplateChanged(TemplateInfo? value)
     {
         if (value is null)
@@ -133,6 +203,17 @@ public partial class ExporterWindowViewModel : ObservableObject
 
         TplFiles = new DirectoryInfo(value.Path).GetFiles("*.xlsx").Select(x => x.Name[0..^5]);
         SelectedFileName = TplFiles.FirstOrDefault();
+
+        var meta = value.Meta?.FirstOrDefault(x => x.Type == nameof(Fund));
+        ChooseFund = meta is not null;
+
+        if (ChooseFund && Funds is null)
+        {
+            using var db = DbHelper.Base();
+            Funds = db.GetCollection<FundSelect>(nameof(Fund)).FindAll().ToArray();
+            ChooseFundMode = meta!.Multiple ? SelectionMode.Multiple : SelectionMode.Single;
+        }
+
     }
 
     partial void OnSelectedFileNameChanged(string? value)
@@ -153,6 +234,17 @@ public partial class ExporterWindowViewModel : ObservableObject
 
 
 
+    public class FundSelect : Fund, INotifyPropertyChanged
+    {
+        public bool IsSelected { get; set; }
 
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public void Select(bool sel = true)
+        {
+            IsSelected = sel;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+        }
+    }
 
 }

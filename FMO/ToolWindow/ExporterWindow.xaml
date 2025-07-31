@@ -12,7 +12,15 @@
     d:DataContext="{d:DesignInstance Type=local:ExporterWindowViewModel}"
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
-
+    <Window.Resources>
+        <ItemsPanelTemplate x:Key="ItemsWrapPanel">
+            <hc:UniformSpacingPanel
+                ChildWrapping="Wrap"
+                IsItemsHost="True"
+                Spacing="5"
+                VerticalSpacing="5" />
+        </ItemsPanelTemplate>
+    </Window.Resources>
     <DockPanel Margin="8">
         <ListBox
             BorderThickness="0"
@@ -85,24 +93,82 @@
                     Style="{StaticResource ButtonDashedPrimary}" />
             </DockPanel>-->
             <ListBox
-                ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
+                ItemsPanel="{StaticResource ItemsWrapPanel}"
                 ItemsSource="{Binding TplFiles}"
                 SelectedIndex="0"
                 SelectedItem="{Binding SelectedFileName}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding .}" />
+                        <DockPanel>
+                            <ToggleButton
+                                x:Name="tg"
+                                hc:IconElement.Geometry="{StaticResource f.book-open}"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                DockPanel.Dock="Right"
+                                Style="{StaticResource ToggleButtonIconPrimary.Small}" />
+                            <TextBlock VerticalAlignment="Center" Text="{Binding .}" />
+
+                            <Popup
+                                AllowsTransparency="True"
+                                IsOpen="{Binding ElementName=tg, Path=IsChecked}"
+                                Placement="Center"
+                                PlacementTarget="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                                StaysOpen="False">
+                                <GroupBox
+                                    Width="1000"
+                                    Header="预览"
+                                    Style="{StaticResource GroupBoxTab}">
+                                    <DataGrid
+                                        BorderThickness="0"
+                                        HeadersVisibility="None"
+                                        ItemsSource="{Binding DataContext.Sample, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                        Style="{StaticResource DataGrid.Small}" />
+                                </GroupBox>
+                            </Popup>
+                        </DockPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
         </DockPanel>
 
-        <GroupBox Header="预览" Style="{StaticResource GroupBoxTab}">
-            <DataGrid
-                BorderThickness="0"
-                HeadersVisibility="None"
-                ItemsSource="{Binding Sample}"
-                Style="{StaticResource DataGrid.Small}" />
-        </GroupBox>
+
+        <DockPanel Visibility="{Binding ChooseMode, Converter={StaticResource Boolean2VisibilityConverter}}">
+            <TabControl>
+                <TabItem Header="选择基金" Visibility="{Binding ChooseFund, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    <DockPanel>
+                        <hc:UniformSpacingPanel DockPanel.Dock="Top" Spacing="5">
+                            <Button Command="{Binding SelectAllFundsCommand}" Content="全选" />
+                            <Button Command="{Binding UnselectAllFundsCommand}" Content="全不选" />
+                            <Button Command="{Binding ReverseSelectFundsCommand}" Content="反选" />
+                        </hc:UniformSpacingPanel>
+
+                        <ListBox
+                            ItemsPanel="{StaticResource ItemsWrapPanel}"
+                            ItemsSource="{Binding Funds}"
+                            SelectionMode="{Binding ChooseFundMode}">
+                            <ListBox.ItemContainerStyle>
+                                <Style BasedOn="{StaticResource ListBoxItem.AllaysFocus}" TargetType="ListBoxItem">
+                                    <Setter Property="IsSelected" Value="{Binding IsSelected}" />
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <DockPanel>
+                                        <TextBlock VerticalAlignment="Center" Text="{Binding ShortName}" />
+
+                                        <TextBlock
+                                            Margin="5,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="{Binding Code}" />
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+
+                        </ListBox>
+                    </DockPanel>
+                </TabItem>
+            </TabControl>
+        </DockPanel>
     </DockPanel>
 </Window>

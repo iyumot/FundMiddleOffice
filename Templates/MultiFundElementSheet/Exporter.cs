@@ -26,7 +26,7 @@ public class Exporter : IExporter
 
         //文件名
         using var db = DbHelper.Base();
-        var funds = db.GetCollection<Fund>().Find(x => fundIds.Contains(x.Id));
+        var funds = db.GetCollection<Fund>().Find(x => fundIds.Contains(x.Id)).ToArray();
 
         var data = funds.SelectMany(x =>
         {
