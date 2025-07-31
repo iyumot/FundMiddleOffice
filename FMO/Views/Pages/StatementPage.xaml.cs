@@ -76,6 +76,23 @@ public partial class StatementPageViewModel : ObservableObject
         wnd.ShowDialog();
     }
 
+    [RelayCommand]
+    public void OpenTemplateManager()
+    {
+        try
+        {
+            var di = new DirectoryInfo(System.Diagnostics.Process.GetCurrentProcess().MainModule!.FileName).Parent!;
 
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = Path.Combine(di.FullName, $"FMO.TemplateManager.exe"),
+                WorkingDirectory = Directory.GetCurrentDirectory()
+            });
+        }
+        catch (Exception e)
+        {
+            HandyControl.Controls.Growl.Error($"无法启动应用，{e.Message}");
+        }
+    }
 
 }

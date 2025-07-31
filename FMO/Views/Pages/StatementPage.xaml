@@ -17,7 +17,17 @@
     <DockPanel>
         <shared:DailyReportGridView />
 
-        <GroupBox Header="生成报表" Style="{StaticResource GroupBoxTab}">
+        <GroupBox Style="{StaticResource GroupBoxTab}">
+            <GroupBox.Header>
+                <DockPanel LastChildFill="False">
+                    <TextBlock VerticalAlignment="Center" Text="生成报表" />
+                    <Button
+                        hc:IconElement.Geometry="{StaticResource f.table-columns}"
+                        Command="{Binding OpenTemplateManagerCommand}"
+                        Foreground="#2A91DF"
+                        Style="{StaticResource ButtonIcon}" />
+                </DockPanel>
+            </GroupBox.Header>
             <hc:UniformSpacingPanel
                 ChildWrapping="Wrap"
                 Spacing="5"
