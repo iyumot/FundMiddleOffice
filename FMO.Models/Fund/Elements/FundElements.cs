@@ -188,10 +188,11 @@ public class FundElements
 
 
 
-    public static FundElements Create(int fundid)
+    public static FundElements Create(int fundid, int firstFlow)
     {
         var e = new FundElements { Id = fundid, };
         e.ShareClasses.SetValue([new ShareClass { Id = -1, Name = FundElements.SingleShareKey }], 0);
+        e.Callback.SetValue(new CallbackInfo(), firstFlow);
         return e;
     }
 

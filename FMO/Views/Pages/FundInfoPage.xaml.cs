@@ -44,7 +44,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 #pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑添加 "required" 修饰符或声明为可为 null。
 #pragma warning disable CS9264 // 退出构造函数时，不可为 null 的属性必须包含非 null 值。请考虑添加 ‘required’ 修饰符，或将属性声明为可为 null，或添加 ‘[field: MaybeNull, AllowNull]’ 特性。
     [SetsRequiredMembers]
-    public FundInfoPageViewModel(Fund fund, FundElements ele)
+    public FundInfoPageViewModel(Fund fund)
     {
         this.Fund = fund;
 
@@ -58,12 +58,15 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         FundCode = fund.Code;
         FundStatus = fund.Status;
 
+        using var db = DbHelper.Base();
+        FundElements ele = db.GetCollection<FundElements>().FindById(FundId);
+
+
         CollectionAccount = ele.CollectionAccount.Value?.ToString();
         CustodyAccount = ele.CustodyAccount.Value?.ToString();
 
         InitFlows(fund, ele);
-
-
+         
 
         RegistrationLetter = new LatestFileViewModel { Name = "备案函", File = Flows?.Select(x => x switch { RegistrationFlowViewModel a => a.RegistrationLetter, ContractModifyFlowViewModel b => b.RegistrationLetter, _ => null }).Where(x => x is not null && x.File is not null).LastOrDefault()?.File };
 
@@ -74,10 +77,12 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         RiskLevel = ele.RiskLevel?.Value;
 
         // 净值
-        var db = DbHelper.Base();
         DailyValues = new ObservableCollection<DailyValue>(db.GetDailyCollection(Fund.Id).FindAll().OrderByDescending(x => x.Date).IntersectBy(TradingDay.Days, x => x.Date));
         var strategies = db.GetCollection<FundStrategy>().Find(x => x.FundId == fund.Id).ToList();
-        var names = db.GetCollection<FundElements>().FindById(FundId).FullName.Changes.Values.ToArray() ?? [];
+
+         
+
+        var names = ele.FullName.Changes.Values.ToArray() ?? [];
         db.Dispose();
         App.Current.Dispatcher.BeginInvoke(() =>
         {
@@ -142,7 +147,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
     private void InitFlows(Fund fund, FundElements ele)
     {
-        var db = DbHelper.Base();
+        using var db = DbHelper.Base();
         var flows = db.GetCollection<FundFlow>().Find(x => x.FundId == fund.Id).ToList();
         if (!flows.Any(x => x is InitiateFlow))
         {

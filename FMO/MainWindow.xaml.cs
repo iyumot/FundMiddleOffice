@@ -140,12 +140,12 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
     {
         var db = DbHelper.Base();
         var fund = db.GetCollection<Fund>().FindById(message.Id);
-        var ele = db.GetCollection<FundElements>().FindById(message.Id);
-        if (ele is null)
-        {
-            ele = FundElements.Create(message.Id);
-            db.GetCollection<FundElements>().Insert(ele);
-        }
+        //var ele = db.GetCollection<FundElements>().FindById(message.Id);
+        //if (ele is null)
+        //{
+        //    ele = FundElements.Create(message.Id);
+        //    db.GetCollection<FundElements>().Insert(ele);
+        //}
 
         // 检查要求
         //var flows = db.GetCollection<FundFlow>().Find(x => x.FundId == fund.Id).Select(x => x.Id).ToArray();
@@ -158,7 +158,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
         var page = Pages.FirstOrDefault(x => x.Content is FundInfoPage p && p.Tag.ToString() == fund.Name);
         if (page is null)
         {
-            var obj = new FundInfoPage() { Tag = fund.Name, DataContext = new FundInfoPageViewModel(fund, ele) };
+            var obj = new FundInfoPage() { Tag = fund.Name, DataContext = new FundInfoPageViewModel(fund) };
             page = new TabItemInfo { Header = fund.ShortName ?? fund.Name ?? "Fund", Content = obj, };//new TabItem { Header = GenerateHeader(fund.ShortName ?? fund.Name ?? "Fund"), Content = obj };
             Pages.Add(page);
         }
