@@ -43,18 +43,24 @@ public static class FundHelper
         FundStorageMap.AddOrUpdate(fund.Id, folder, (a, b) => folder);
     }
 
-    public static void InitNew(Fund f)
+    /// <summary>
+    /// 初始化一个新的基金
+    /// </summary>
+    /// <param name="fund"></param>
+    public static void InitNew(Fund fund)
     {
-        var name = $"{f.Code}.{f.Name}";
+        var name = $"{fund.Code}.{fund.Name}";
         string folder = $"files\\funds\\{name}";
         Directory.CreateDirectory(folder);
 
         using var db = DbHelper.Base();
-        db.GetCollection<Fund>().Insert(f);
-        db.GetCollection<FundElements>().Insert(new FundElements { Id = f.Id });
+        db.GetCollection<Fund>().Insert(fund);
+        InitiateFlow flow = new() { FundId = fund.Id, ElementFiles = new VersionedFileInfo { Name = "基金要素" }, ContractFiles = new VersionedFileInfo { Name = "基金合同" }, CustomFiles = new() };
+        db.GetCollection<FundFlow>().Insert(flow) ;
+        db.GetCollection<FundElements>().Insert(FundElements.Create(fund.Id, flow.Id));
 
 
-        Map(f, folder);
+        Map(fund, folder);
     }
 
     /// <summary>

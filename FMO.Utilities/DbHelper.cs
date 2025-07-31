@@ -127,7 +127,25 @@ public static class DatabaseAssist
             }
             db.GetCollection<TransferRecord>().Update(d);
 
-            // 
+            ///////////
+            // call 默认是null，和false不一致，所以为每个fund，设置一个默认值
+            var pair = db.GetCollection<FundFlow>().Query().Select(x => new { x.FundId, x.Id }).ToArray().OrderBy(x => x.Id).GroupBy(x => x.FundId).Select(x => new { FundId = x.Key, Id = x.First().Id });
+            foreach (var item in pair)
+            {
+                var ele = db.GetCollection<FundElements>().FindById(item.FundId);
+                if(!ele.Callback.Changes.ContainsKey(item.Id))
+                {
+                    ele.Callback.SetValue(new(),item.Id);
+                    db.GetCollection<FundElements>().Update(ele);
+                }
+            }
+            ////////////////////////////
+
+
+
+
+
+            ////////////////////////
 
             Patch();
         }
