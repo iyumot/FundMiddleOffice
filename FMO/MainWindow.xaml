@@ -6,6 +6,7 @@
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     Title="基金中台"
     Width="800"
     Height="450"
@@ -179,6 +180,32 @@
                 VerticalAlignment="Center"
                 DockPanel.Dock="Right"
                 Text="按F1获取帮助信息" />
+
+
+
+            <ContentControl
+                Margin="20,0"
+                VerticalAlignment="Center"
+                DockPanel.Dock="Right">
+                <ContentControl.Template>
+                    <ControlTemplate>
+                        <hc:SimplePanel>
+                            <TextBlock x:Name="a" Text="{Binding Version, StringFormat=版本号：{0}}" />
+                            <shared:CopyableTextBlock
+                                x:Name="b"
+                                Text="{Binding OrgId}"
+                                Visibility="Collapsed" />
+                        </hc:SimplePanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="a" Property="Visibility" Value="Collapsed" />
+                                <Setter TargetName="b" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </ContentControl.Template>
+            </ContentControl>
+
 
             <TextBlock
                 Margin="20,0,0,0"

@@ -3,9 +3,13 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
+using Org.BouncyCastle.Utilities;
 using Serilog;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -86,10 +90,14 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
     public ObservableCollection<MainMenu> MenuItems { get; }
 
 
+    public Version? Version { get; set; }
+
+    public string? OrgId { get; set; }
+
     public MainWindowViewModel()
     {
         IsActive = true;
-
+        Version = Assembly.GetExecutingAssembly().GetName().Version;
 
         MenuItems = [new MainMenu { Title = "管理人", IconBrush = Brushes.BlueViolet, Command = OpenPageCommand, Parameter = "ManagerPage", Icon = GetGeometry("f.house") },
                     new MainMenu { Title = "基金", IconBrush = Brushes.Violet, Command = OpenPageCommand, Parameter = "FundsPage", Icon = GetGeometry("f.fire")},
@@ -105,6 +113,9 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
         // 管理人名称
         using var db = DbHelper.Base();// DbHelper.Base();
         Title = db.GetCollection<Manager>().FindOne(x => x.IsMaster)?.Name;
+
+        OrgId = CalcOrgId(Title);
+
         if (db.FileStorage.Exists("icon.main"))
         {
             try
@@ -124,6 +135,31 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
             }
         }
     }
+
+    private string? CalcOrgId(string? input) 
+    {
+        // 检查输入是否为空
+        if (string.IsNullOrWhiteSpace(input))
+            return null;
+
+        using (MD5 md5 = MD5.Create())
+        {
+            // 将字符串转换为字节数组
+            byte[] inputBytes = Encoding.UTF8.GetBytes(input);
+
+            // 计算哈希值
+            byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+            // 将字节数组转换为十六进制字符串
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < hashBytes.Length; i++)
+                sb.Append(hashBytes[i].ToString("x2"));
+
+            return sb.ToString(); 
+        }
+    }
+ 
 
     public void Receive(string message)
     {
