@@ -1,4 +1,6 @@
-﻿namespace FMO.TPL;
+﻿using System.ComponentModel;
+
+namespace FMO.TPL;
 
 
 public class ExportInfo
@@ -41,14 +43,14 @@ public enum ExportTypeFlag
     /// </summary>
     SingleFundNetValueList,
 
+    MultiFundElementSheet,
 
 
 
 
 
 
-
-    Custom = 99999
+    Custom = 99999, 
 }
 
 public interface IExporter
@@ -62,7 +64,22 @@ public interface IExporter
 
     ExportTypeFlag Suit { get; }
 
+    ExportParameterMeta[]? Meta { get; }
+
     ExportInfo Generate(object? parameter = null);
 }
+
+
+
+
+/// <summary>
+/// 导出的参数元数据
+/// 比如 Fund Investor 等
+/// 如果未定义parameter，可以通过meta选择参数
+/// </summary>
+/// <param name="Type"></param>
+/// <param name="Multiple"></param>
+/// <param name="Direction"></param>
+public record ExportParameterMeta(string Type, bool Multiple = true, ListSortDirection Direction = ListSortDirection.Ascending);
 
 public record TemplateInfo(string Id, string Name, string Description, string Type,ExportTypeFlag Suit, string Path);

@@ -1,5 +1,5 @@
-﻿using FMO.TPL;
-using FMO.Models;
+﻿using FMO.Models;
+using FMO.TPL;
 using FMO.Utilities;
 
 namespace SingleFundNetValueList;
@@ -14,6 +14,8 @@ public class Exporter : IExporter
 
     public ExportTypeFlag Suit => ExportTypeFlag.SingleFundNetValueList;
 
+    public ExportParameterMeta[]? Meta => [new(nameof(Fund), false)];
+
     public ExportInfo Generate(object? parameter)
     {
         if (parameter is not int fundId)
@@ -24,7 +26,7 @@ public class Exporter : IExporter
         var fund = db.GetCollection<Fund>().FindById(fundId);
         if (fund is null) return new ExportInfo("未找到此基金");
 
-        var daily = db.GetDailyCollection(fundId).Find(x=>x.NetValue != 0).OrderByDescending(x => x.Date).ToList();
+        var daily = db.GetDailyCollection(fundId).Find(x => x.NetValue != 0).OrderByDescending(x => x.Date).ToList();
         var last = daily.FirstOrDefault();
         if (last is null) return new ExportInfo("此基金没有净值数据");
 
