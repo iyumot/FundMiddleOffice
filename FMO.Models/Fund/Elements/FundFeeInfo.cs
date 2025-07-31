@@ -55,7 +55,7 @@ public class RedemptionFeeInfo
 
     public override string? ToString()
     {
-        return !HasFee ? "无" : Type switch
+        return !HasFee ? "-" : Type switch
         {
             FundFeeType.Fix => $"固定费用：{Fee}元 / 年",
             FundFeeType.Ratio => $"{Fee}% / 年",

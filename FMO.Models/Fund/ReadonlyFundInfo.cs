@@ -119,6 +119,8 @@ public class ReadonlyFundInfo
     public AgencyInfo? OutsourcingInfo { get; set; }
     public FundFeeInfo? OutsourcingFee { get; set; }
     public FundInvestmentManager[]? InvestmentManagers { get; set; }
+
+
     public string? InvestmentManager { get; set; }
     public string? PerformanceBenchmarks { get; set; }
     public string? InvestmentObjective { get; set; }
@@ -139,8 +141,8 @@ public class ReadonlyFundInfo
 
 
     public static ReadonlyFundInfo[] Load(Fund fund, FundElements elements)
-    { 
-        if(elements is null)
+    {
+        if (elements is null)
         {
             var n = new ReadonlyFundInfo();
             n.FillFrom(fund);
@@ -167,8 +169,12 @@ public class ReadonlyFundInfo
     {
         if (shareClass.Name == "单一份额") shareClass.Name = "";
 
-        Name = elements.FullName.Value;
-        ShortName = elements.ShortName.Value;
+        var v = elements.FullName.Value;
+        if (!string.IsNullOrWhiteSpace(v)) Name = v;
+        v = elements.ShortName.Value;
+        if (!string.IsNullOrWhiteSpace(v)) ShortName = v;
+
+
         FundModeInfo = elements.FundModeInfo;
         FundModeInfo = elements.FundModeInfo?.Value;
         SealingRule = elements.SealingRule?.Value;
@@ -195,7 +201,7 @@ public class ReadonlyFundInfo
         TemporarilyOpenInfo = elements.TemporarilyOpenInfo?.Value;
         HugeRedemptionRatio = elements.HugeRedemptionRatio?.Value;
         CoolingPeriod = elements.CoolingPeriod?.Value;
-        Callback = elements.Callback?.Value;
+        Callback = elements.Callback?.Value ?? new CallbackInfo();
 
         // 映射 PortionMutable<T> 属性（取默认值）
         LockingRule = elements.LockingRule?.GetValue(shareClass.Id, int.MaxValue).Value;
