@@ -5,8 +5,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO"
-    xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:oxy="http://oxyplot.org/wpf"
     xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     d:DesignHeight="450"
     d:DesignWidth="1200"
@@ -21,19 +21,8 @@
         <StackPanel Width="888" Panel.ZIndex="111">
 
 
-            <Grid DataContext="{Binding FlotContext}">
-                <lvc:CartesianChart
-                    Height="300"
-                    LegendLocation="None"
-                    Series="{Binding Series}">
-                    <lvc:CartesianChart.AxisY>
-                        <lvc:Axis LabelFormatter="{Binding YFormatter}" MinValue="0" />
-                    </lvc:CartesianChart.AxisY>
-                    <lvc:CartesianChart.AxisX>
-                        <lvc:Axis Labels="{Binding Labels}" />
-                    </lvc:CartesianChart.AxisX>
-                </lvc:CartesianChart>
-            </Grid>
+
+            <oxy:PlotView Height="300" Model="{Binding ManageScaleContext}" />
 
 
             <ListBox

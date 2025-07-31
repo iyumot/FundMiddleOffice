@@ -5,8 +5,9 @@ using FMO.IO.AMAC;
 using FMO.Models;
 using FMO.Schedule;
 using FMO.Trustee;
-using FMO.Utilities;
-using LiveCharts;
+using FMO.Utilities; 
+using OxyPlot;
+using OxyPlot.Axes;
 using Serilog;
 using System.IO;
 using System.IO.Compression;
@@ -51,7 +52,6 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
     [ObservableProperty]
     public partial bool IsSelfTesting { get; set; }
 
-    public HomePlotViewModel FlotContext { get; } = new();
 
 
     [ObservableProperty]
@@ -62,6 +62,9 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
     [ObservableProperty]
     public partial IList<string>? FundTips { get; set; }
 
+
+    [ObservableProperty]
+    public partial PlotModel? ManageScaleContext { get; set; }
 
 
     public Tool[] Tools { get; set; }
@@ -265,18 +268,42 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
             App.Current.Dispatcher.BeginInvoke(() =>
             {
-                FlotContext.Series =
-            [
-                new LiveCharts.Wpf.LineSeries
+
+                ManageScaleContext = new PlotModel
                 {
                     Title = "管理规模",
-                    PointGeometry = null,
-                    Values = new ChartValues<double>(sc.Select(x=>x/10000).ToArray())
-                },
-            ];
+                    PlotType = PlotType.XY,
+                    PlotAreaBorderThickness = new OxyThickness(1, 0, 0, 0)
+                };
+                // 添加坐标轴（关键步骤！）
+                ManageScaleContext.Axes.Add(new DateTimeAxis  // X轴用日期轴
+                {
+                    Position = OxyPlot.Axes.AxisPosition.Bottom,
+                    StringFormat = "yyyy-MM" // 日期格式
+                });
+                ManageScaleContext.Axes.Add(new LinearAxis  // Y轴
+                {
+                    Position = OxyPlot.Axes.AxisPosition.Left,
+                    MaximumPadding = 0.1
+                });
 
-                FlotContext.YFormatter = value => value.ToString("N0");
-                FlotContext.Labels = mons.Select(x => x.ToString("yyyy-MM-dd")).ToArray();
+                ManageScaleContext.Series.Add(new OxyPlot.Series.AreaSeries
+                {
+                    ItemsSource = sc.Index().Select(x => new { Date = new DateTime(mons[x.Index], default), Value = x.Item / 10000 }).ToList(),
+                    DataFieldX = "Date",          // 绑定到匿名类型的Date属性
+                    DataFieldY = "Value",         // 绑定到Value属性
+                    MarkerType = MarkerType.None,
+                    LineStyle = LineStyle.Solid,
+                    Color = OxyColors.RoyalBlue,
+                    MarkerFill = OxyColors.RoyalBlue,
+                    InterpolationAlgorithm = InterpolationAlgorithms.CanonicalSpline,
+                    TrackerFormatString = "{2:yyyy-MM}         {4:N0} 万元",
+                    StrokeThickness = 2
+
+                });
+
+                // 自动调整坐标轴范围（关键步骤！）
+                ManageScaleContext.InvalidatePlot(true);
             });
 
 
@@ -535,15 +562,6 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
 
 
-    public partial class HomePlotViewModel : ObservableObject
-    {
-        [ObservableProperty]
-        public partial SeriesCollection? Series { get; set; }
-        [ObservableProperty]
-        public partial string[]? Labels { get; set; }
-        [ObservableProperty]
-        public partial Func<double, string>? YFormatter { get; set; }
-    }
 
 
 
