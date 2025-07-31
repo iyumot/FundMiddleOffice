@@ -133,7 +133,7 @@ namespace FMO.SourceGenerator
             source.AppendLine("        }");
 
             foreach (var property in properties)
-            {
+            { 
                 string pname = property.Name.ToCamelCase();
                 string type = property.Type.ToDisplayString();
                 if (type != "bool" && !type.EndsWith("?")) type += "?";
@@ -192,6 +192,7 @@ namespace FMO.SourceGenerator
             source.AppendLine("             {");
             foreach (var property in properties)
             {
+                if (property.IsReadOnly) continue;
                 var type = property.Type.ToDisplayString();
                 if (type != "bool")
                     source.AppendLine($"                {property.Name} = _{property.Name.ToCamelCase()}??default,");
