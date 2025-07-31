@@ -28,7 +28,7 @@ public partial class FundInfoPage : UserControl
 }
 
 
-public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<FundShareChangedMessage>, IRecipient<FundDailyUpdateMessage>,
+public partial class FundInfoPageViewModel : ObservableRecipient,  IRecipient<FundDailyUpdateMessage>,
     IRecipient<FundStrategyChangedMessage>, IRecipient<FundAccountChangedMessage>, IRecipient<EntityChangedMessage<Fund, DateOnly>>
 {
     public Fund Fund { get; init; }
@@ -58,15 +58,19 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         FundCode = fund.Code;
         FundStatus = fund.Status;
 
+
+        InitFlows(fund);
+
         using var db = DbHelper.Base();
         FundElements ele = db.GetCollection<FundElements>().FindById(FundId);
-
+        if(ele is null)
+        {
+            ele = FundElements.Create(FundId, Flows!.Min(x => x.FlowId));
+            db.GetCollection<FundElements>().Insert(ele);
+        }
 
         CollectionAccount = ele.CollectionAccount.Value?.ToString();
         CustodyAccount = ele.CustodyAccount.Value?.ToString();
-
-        InitFlows(fund, ele);
-         
 
         RegistrationLetter = new LatestFileViewModel { Name = "备案函", File = Flows?.Select(x => x switch { RegistrationFlowViewModel a => a.RegistrationLetter, ContractModifyFlowViewModel b => b.RegistrationLetter, _ => null }).Where(x => x is not null && x.File is not null).LastOrDefault()?.File };
 
@@ -145,7 +149,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     //    };
     //}
 
-    private void InitFlows(Fund fund, FundElements ele)
+    private void InitFlows(Fund fund)
     {
         using var db = DbHelper.Base();
         var flows = db.GetCollection<FundFlow>().Find(x => x.FundId == fund.Id).ToList();
@@ -199,11 +203,11 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
                     break;
 
                 case ContractModifyFlow d:
-                    Flows.Add(new ContractModifyFlowViewModel(d, ele.ShareClasses));
+                    Flows.Add(new ContractModifyFlowViewModel(d));
                     break;
 
                 case ContractFinalizeFlow d:
-                    Flows.Add(new ContractFinalizeFlowViewModel(d, ele.ShareClasses));
+                    Flows.Add(new ContractFinalizeFlowViewModel(d));
                     break;
 
                 case SetupFlow d:
@@ -457,9 +461,8 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         var flow = new ContractModifyFlow { FundId = Fund.Id };
         var db = DbHelper.Base();
         db.GetCollection<FundFlow>().Insert(flow);
-        var ele = db.GetCollection<FundElements>().FindById(Fund.Id);
         db.Dispose();
-        Flows.Add(new ContractModifyFlowViewModel(flow, ele.ShareClasses));
+        Flows.Add(new ContractModifyFlowViewModel(flow));
     }
 
     [RelayCommand]
@@ -729,14 +732,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
 
 
-    public void Receive(FundShareChangedMessage message)
-    {
-        foreach (var f in Flows)
-        {
-            if (f is ContractRelatedFlowViewModel vm && f.FlowId > message.FlowId)
-                vm.InitShare();
-        }
-    }
+     
 
     public void Receive(FundDailyUpdateMessage message)
     {

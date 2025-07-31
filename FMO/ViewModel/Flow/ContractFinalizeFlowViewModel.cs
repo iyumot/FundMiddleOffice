@@ -16,7 +16,7 @@ public partial class ContractFinalizeFlowViewModel : ContractRelatedFlowViewMode
 
 
     [SetsRequiredMembers]
-    public ContractFinalizeFlowViewModel(ContractFinalizeFlow flow, Mutable<ShareClass[]>? shareClass) : base(flow, shareClass)
+    public ContractFinalizeFlowViewModel(ContractFinalizeFlow flow) : base(flow)
     {
         Initialized = true;
     }

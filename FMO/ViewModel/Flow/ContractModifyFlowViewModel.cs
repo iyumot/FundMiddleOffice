@@ -67,7 +67,7 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
 
 
     [SetsRequiredMembers]
-    public ContractModifyFlowViewModel(ContractModifyFlow flow, Mutable<ShareClass[]>? shareClass) : base(flow, shareClass)
+    public ContractModifyFlowViewModel(ContractModifyFlow flow) : base(flow)
     {
         if (flow.Section.HasFlag(ContractModifySection.Name))
             ModifyName = true;
