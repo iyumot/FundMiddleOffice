@@ -1322,5 +1322,3 @@ public partial class ManagerFlowViewModel : EditableControlViewModelBase<Manager
 
     protected override ManagerFlow InitNewEntity() => new ManagerFlow();
 }
-
-
