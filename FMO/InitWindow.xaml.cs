@@ -138,9 +138,16 @@ public partial class InitWindowViewModel : ObservableRecipient, IRecipient<InitS
         var r = dialog.ShowDialog();
         if (r ?? false)
         {
-            Config.Default.WorkFolder = dialog.FolderName;
-            Config.Default.Save();
-
+            // 从注册表读取
+#if RELEASE
+            using (var key = Registry.CurrentUser.CreateSubKey(@$"Software\Nexus")) 
+#else
+            using (var key = Registry.CurrentUser.CreateSubKey(@$"Software\Nexus\Debug")) 
+#endif
+            {
+                if (key != null)
+                    key.SetValue("WorkingFolder", dialog.FolderName);
+            }
             Restart();
         }
     }

@@ -2,6 +2,7 @@
 using FMO.Models;
 using FMO.Plugin;
 using FMO.Utilities;
+using Microsoft.Win32;
 using Serilog;
 using System.IO;
 using System.Windows;
@@ -49,13 +50,45 @@ public partial class App : Application
 
         System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
+#if RELEASE
         // 设置工作目录
-        if (!string.IsNullOrWhiteSpace(Config.Default.WorkFolder))
+        
+        //if (!string.IsNullOrWhiteSpace(Config.Default.WorkFolder))
+        //{
+        //    var di = new DirectoryInfo(Config.Default.WorkFolder);
+        //    if (di.Exists)
+        //        Directory.SetCurrentDirectory(di.FullName);
+        //}
+      // 从注册表读取
+        using (var key = Registry.CurrentUser.OpenSubKey(@$"Software\Nexus"))
         {
-            var di = new DirectoryInfo(Config.Default.WorkFolder);
-            if (di.Exists)
-                Directory.SetCurrentDirectory(di.FullName);
+            if (key != null)
+            {
+                var workFolder = key.GetValue("WorkingFolder") as string;
+                if (!string.IsNullOrWhiteSpace(workFolder))
+                {
+                    var di = new DirectoryInfo(workFolder);
+                    if (di.Exists)                    
+                        Directory.SetCurrentDirectory(di.FullName);                    
+                }
+            }
         }
+#else
+        using (var key = Registry.CurrentUser.OpenSubKey(@$"Software\Nexus\Debug"))
+        {
+            if (key != null)
+            {
+                var workFolder = key.GetValue("WorkingFolder") as string;
+                if (!string.IsNullOrWhiteSpace(workFolder))
+                {
+                    var di = new DirectoryInfo(workFolder);
+                    if (di.Exists)
+                        Directory.SetCurrentDirectory(di.FullName);
+                }
+            }
+        }
+#endif
+
 
         //DbHelper.initpassword();
 
