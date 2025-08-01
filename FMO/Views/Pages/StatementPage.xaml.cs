@@ -91,7 +91,7 @@ public partial class StatementPageViewModel : ObservableObject
         }
         catch (Exception e)
         {
-            HandyControl.Controls.Growl.Error($"无法启动应用，{e.Message}");
+            HandyControl.Controls.Growl.Warning($"无法启动应用，{e.Message}");
         }
     }
 

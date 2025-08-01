@@ -344,7 +344,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
         catch (Exception e)
         {
 
-            HandyControl.Controls.Growl.Error($"无法启动计算器，{e.Message}");
+            HandyControl.Controls.Growl.Warning($"无法启动计算器，{e.Message}");
         }
     }
 
@@ -360,7 +360,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
         catch (Exception e)
         {
 
-            HandyControl.Controls.Growl.Error($"无法启动数据视图，{e.Message}");
+            HandyControl.Controls.Growl.Warning($"无法启动数据视图，{e.Message}");
         }
     }
 
@@ -383,7 +383,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
         }
         catch (Exception e)
         {
-            HandyControl.Controls.Growl.Error($"无法启动应用，{e.Message}");
+            HandyControl.Controls.Growl.Warning($"无法启动应用，{e.Message}");
         }
     }
 

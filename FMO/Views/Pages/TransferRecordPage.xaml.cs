@@ -209,7 +209,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         catch (Exception e)
         {
 
-            HandyControl.Controls.Growl.Error($"无法启动计算器，{e.Message}");
+            HandyControl.Controls.Growl.Warning($"无法启动计算器，{e.Message}");
         }
     }
 

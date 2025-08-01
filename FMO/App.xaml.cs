@@ -60,21 +60,10 @@ public partial class App : Application
         //        Directory.SetCurrentDirectory(di.FullName);
         //}
       // 从注册表读取
-        using (var key = Registry.CurrentUser.OpenSubKey(@$"Software\Nexus"))
-        {
-            if (key != null)
-            {
-                var workFolder = key.GetValue("WorkingFolder") as string;
-                if (!string.IsNullOrWhiteSpace(workFolder))
-                {
-                    var di = new DirectoryInfo(workFolder);
-                    if (di.Exists)                    
-                        Directory.SetCurrentDirectory(di.FullName);                    
-                }
-            }
-        }
+        using (var key = Registry.CurrentUser.OpenSubKey(@$"Software\Nexus"))       
 #else
         using (var key = Registry.CurrentUser.OpenSubKey(@$"Software\Nexus\Debug"))
+#endif        
         {
             if (key != null)
             {
@@ -87,7 +76,7 @@ public partial class App : Application
                 }
             }
         }
-#endif
+
 
 
         //DbHelper.initpassword();
