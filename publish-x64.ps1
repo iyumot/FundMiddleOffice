@@ -19,8 +19,7 @@ $ProjectsToPublish = @(
 
 # 目标平台映射
 $Runtimes = @(
-    @{ Runtime = "win-x64"; Folder = "x64" },
-    #@{ Runtime = "win-x86"; Folder = "x86" }
+    @{ Runtime = "win-x64"; Folder = "x64" }    #@{ Runtime = "win-x86"; Folder = "x86" }
 )
 
 # 创建输出目录
