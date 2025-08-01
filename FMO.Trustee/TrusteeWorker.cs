@@ -89,11 +89,11 @@ public partial class TrusteeWorker : ObservableObject
             cfg = db.GetCollection<WorkConfig>().FindAll().ToArray();
 
 
-        RaisingBalanceConfig = cfg.FirstOrDefault(x => x.Id == nameof(RaisingBalanceConfig)) ?? new(nameof(RaisingBalanceConfig));
-        TransferRecordConfig = cfg.FirstOrDefault(x => x.Id == nameof(TransferRecordConfig)) ?? new(nameof(TransferRecordConfig)) { Interval = 60 * 6 }; // 每6个小时
-        TransferRequestConfig = cfg.FirstOrDefault(x => x.Id == nameof(TransferRequestConfig)) ?? new(nameof(TransferRequestConfig));
-        DailyFeeConfig = cfg.FirstOrDefault(x => x.Id == nameof(DailyFeeConfig)) ?? new(nameof(DailyFeeConfig)) { Interval = 60 * 24 }; // 每天一次
-        RaisingAccountTransctionConfig = cfg.FirstOrDefault(x => x.Id == nameof(RaisingAccountTransctionConfig)) ?? new(nameof(RaisingAccountTransctionConfig));
+        RaisingBalanceConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryRaisingBalance)) ?? new(nameof(ITrustee.QueryRaisingBalance));
+        TransferRecordConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryTransferRecords)) ?? new(nameof(ITrustee.QueryTransferRecords)) { Interval = 60 }; // 每6个小时
+        TransferRequestConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryTransferRequests)) ?? new(nameof(ITrustee.QueryTransferRequests));
+        DailyFeeConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryFundDailyFee)) ?? new(nameof(ITrustee.QueryFundDailyFee)) { Interval = 60 * 12 }; // 每天一次
+        RaisingAccountTransctionConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryRaisingAccountTransction)) ?? new(nameof(ITrustee.QueryRaisingAccountTransction));
 
 
         Trustees = trustees;

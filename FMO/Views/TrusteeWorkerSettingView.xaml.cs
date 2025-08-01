@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using FMO.Trustee;
 using FMO.Utilities;
 using System.Windows.Controls;
+using static FMO.Trustee.TrusteeWorker;
 
 namespace FMO;
 
@@ -35,6 +36,12 @@ public partial class TrusteeWorkerSettingViewModel : ObservableObject
     public TrusteeWorkingConfigViewModel[] Configs { get; set; }
 
 
+    //public TrusteeWorker.WorkConfig[] WorkConfigs { get; set; }
+
+    //public TrusteeWorker.WorkConfig? QueryTransferRequestsConfig { get; set; }
+    
+    //public TrusteeWorkerUniViewModel RaisingBalanceConfig { get; private set; }
+
     public TrusteeWorkerSettingViewModel()
     {
         using var pdb = DbHelper.Platform();
@@ -45,19 +52,32 @@ public partial class TrusteeWorkerSettingViewModel : ObservableObject
         var csc = Create(CSC._Identifier, ranges);
 
         Configs = [cms, citics, csc];
+
+
+        var cfg = pdb.GetCollection<WorkConfig>().FindAll().ToArray();
+
+        //RaisingBalanceConfig = new(cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryRaisingBalance)));
+        //TransferRecordConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryTransferRecords)) ?? new(nameof(ITrustee.QueryTransferRecords)) { Interval = 60 }; // 每6个小时
+        //TransferRequestConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryTransferRequests)) ?? new(nameof(ITrustee.QueryTransferRequests));
+        //DailyFeeConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryFundDailyFee)) ?? new(nameof(ITrustee.QueryFundDailyFee)) { Interval = 60 * 12 }; // 每天一次
+        //RaisingAccountTransctionConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryRaisingAccountTransction)) ?? new(nameof(ITrustee.QueryRaisingAccountTransction));
+
+        //QueryTransferRequestsConfig = WorkConfigs.FirstOrDefault(x => x.Id == "TransferRequestConfig");
     }
 
     private TrusteeWorkingConfigViewModel Create(string idf, TrusteeMethodShotRange[] ranges)
     {
-        var citics = new TrusteeWorkingConfigViewModel { Identifier = idf, };
-        citics.QueryTransferRecord = Create(ranges, idf, nameof(ITrustee.QueryTransferRecords));
-        citics.QueryTransferRequest = Create(ranges, idf, nameof(ITrustee.QueryTransferRequests));
-        citics.QueryRaisingAccountTransction = Create(ranges, idf, nameof(ITrustee.QueryRaisingAccountTransction));
-        citics.QueryRaisingBalance = Create(ranges, idf, nameof(ITrustee.QueryRaisingBalance));
-        citics.QueryFundDailyFee = Create(ranges, idf, nameof(ITrustee.QueryFundDailyFee));
-        return citics;
+        var vm = new TrusteeWorkingConfigViewModel { Identifier = idf, };
+        //vm.QueryTransferRequestConfig = GetConfig(idf, nameof(ITrustee.QueryTransferRecords));
+        vm.QueryTransferRecord = Create(ranges, idf, nameof(ITrustee.QueryTransferRecords));
+        vm.QueryTransferRequest = Create(ranges, idf, nameof(ITrustee.QueryTransferRequests));
+        vm.QueryRaisingAccountTransction = Create(ranges, idf, nameof(ITrustee.QueryRaisingAccountTransction));
+        vm.QueryRaisingBalance = Create(ranges, idf, nameof(ITrustee.QueryRaisingBalance));
+        vm.QueryFundDailyFee = Create(ranges, idf, nameof(ITrustee.QueryFundDailyFee));
+        return vm;
     }
 
+ 
     public TrusteeMethodConfigViewModel Create(TrusteeMethodShotRange[] ranges, string identifier, string method)
     {
         var range = ranges.FirstOrDefault(x => x.Id == identifier + method);
@@ -105,6 +125,8 @@ public partial class TrusteeWorkingConfigViewModel : ObservableObject
 {
     public required string Identifier { get; set; }
 
+
+
     public TrusteeMethodConfigViewModel? QueryTransferRequest { get; set; }
 
     public TrusteeMethodConfigViewModel? QueryTransferRecord { get; set; }
@@ -113,4 +135,22 @@ public partial class TrusteeWorkingConfigViewModel : ObservableObject
     public TrusteeMethodConfigViewModel? QueryFundDailyFee { get; internal set; }
 
  
+}
+
+
+public partial class TrusteeWorkerUniViewModel : ObservableObject
+{
+    public TrusteeWorkerUniViewModel(WorkConfig? workConfig)
+    {
+
+
+    }
+
+    public string? Name { get; set; }
+
+    public string? Id { get; set; }
+
+    [ObservableProperty]
+    public partial int Interval { get; set; }
+
 }
