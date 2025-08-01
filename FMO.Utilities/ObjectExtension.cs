@@ -163,9 +163,11 @@ public static class ObjectExtension
     /// </summary>
     /// <param name="dict"></param>
     /// <param name="mask"></param>
-    public static void ReplaceNullsWithPlaceholder(this Dictionary<string, object> dict, string mask = "未设置")
+    public static Dictionary<string, object> ReplaceNullsWithPlaceholder(this Dictionary<string, object> dict, string mask = "未设置")
     {
-        if (dict == null) return;
+#pragma warning disable CS8603 // 可能返回 null 引用。
+        if (dict == null) return dict;
+#pragma warning restore CS8603 // 可能返回 null 引用。
 
         var keys = dict.Keys.ToList(); // 避免修改时集合被修改
         foreach (var key in keys)
@@ -188,6 +190,7 @@ public static class ObjectExtension
                 ProcessCollection(enumerable, mask);
             }
         }
+        return dict;
     }
 
     private static void ProcessCollection(IEnumerable collection, string mask)

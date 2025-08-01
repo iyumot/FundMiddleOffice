@@ -31,14 +31,14 @@ public class Exporter : IExporter
             Id = x.Id,
             Name = x.Name,
             Code = x.Code,
-            Latest = db.GetDailyCollection(x.Id).Query().OrderByDescending(y=>y.Date).Where(x=>x.NetValue != 0).FirstOrDefault()
+            Latest = db.GetDailyCollection(x.Id).Query().OrderByDescending(y => y.Date).Where(x => x.NetValue != 0).FirstOrDefault()
         });
 
 
         ExportInfo ExportInfo = new ExportInfo { FileName = $"基金汇总表-{DateTime.Now:yyyy.MM.dd}.xlsx" };
         ExportInfo.Filter = "Excel|*.xlsx";
-        var obj = ObjectExtension.ExpandToDictionary(new { f = data });
-        obj.ReplaceNullsWithPlaceholder();
+        var obj = new { f = data.Select(x => x.ExpandToDictionary().ReplaceNullsWithPlaceholder()).ToList() };
+        //obj.ReplaceNullsWithPlaceholder();
         ExportInfo.Data = obj;
 
         return ExportInfo;

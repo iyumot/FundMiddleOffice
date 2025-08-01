@@ -80,7 +80,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CollectTpl", "Tools\Collect
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "Tests\Models\Models.csproj", "{4DB50FD6-F578-4FDB-82BA-1F6B698906F4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TPL", "Tests\TPL\TPL.csproj", "{1349B34D-3C44-4924-BE77-9A29FAC4BA2D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TPLTest", "Tests\TPL\TPLTest.csproj", "{1349B34D-3C44-4924-BE77-9A29FAC4BA2D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiFundElementSheet", "Templates\MultiFundElementSheet\MultiFundElementSheet.csproj", "{200B1FBA-2E77-43B8-A786-6C2E27D62A3A}"
 EndProject
