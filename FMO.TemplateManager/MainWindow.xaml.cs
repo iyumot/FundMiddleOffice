@@ -28,7 +28,7 @@ public partial class MainWindow : Window
 public partial class MainWindowViewModel : ObservableObject
 {
     public MainWindowViewModel()
-    { 
+    {
         using var db = DbHelper.Base();
         Templates = [.. db.GetCollection<TemplateInfo>().FindAll()];
     }
@@ -55,6 +55,9 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     public partial bool ShowCustomFileName { get; set; }
 
+
+    [ObservableProperty]
+    public partial string CustomFileName { get; set; }
 
 
     [RelayCommand]
@@ -90,6 +93,24 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
 
+    [RelayCommand]
+    public void Customize()
+    {
+        try
+        {
+            string target = Path.Combine(SelectedTemplate!.Path, $"{CustomFileName}.xlsx");
+            File.Copy(Path.Combine(SelectedTemplate!.Path, $"{SelectedFileName}.xlsx"), target);
+            TplFiles = TplFiles is null ? [target] : [.. TplFiles, target];
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = target,
+                UseShellExecute = true
+            });
+        }
+        catch { }
+    }
+
+
     partial void OnSelectedTemplateChanged(TemplateInfo? value)
     {
         if (value is null)
@@ -99,6 +120,8 @@ public partial class MainWindowViewModel : ObservableObject
         }
 
         TplFiles = new DirectoryInfo(value.Path).GetFiles("*.xlsx").Select(x => x.Name[0..^5]);
+
+        OnSelectedFileNameChanged(TplFiles?.FirstOrDefault());
     }
 
     partial void OnSelectedFileNameChanged(string? value)
@@ -109,9 +132,13 @@ public partial class MainWindowViewModel : ObservableObject
             return;
         }
 
-        using var fs = new FileStream(Path.Combine(SelectedTemplate.Path, $"{value}.xlsx"), FileMode.Open);
-        using var reader = ExcelDataReader.ExcelReaderFactory.CreateReader(fs);
-        Sample = reader.AsDataSet().Tables[0];
+        try
+        {
+            using var fs = new FileStream(Path.Combine(SelectedTemplate.Path, $"{value}.xlsx"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using var reader = ExcelDataReader.ExcelReaderFactory.CreateReader(fs);
+            Sample = reader.AsDataSet().Tables[0];
+        }
+        catch { }
     }
 
 
@@ -153,8 +180,8 @@ public partial class MainWindowViewModel : ObservableObject
         TemplateInfo entity = new(gid, obj.Name, obj.Description, gen.FullName!, obj.Suit, obj.Meta, di.FullName);
         db.GetCollection<TemplateInfo>().Upsert(entity);
 
-        foreach (var item in Templates.Where(x=>x.Id == entity.Id).ToArray()) 
-            Templates.Remove(item); 
+        foreach (var item in Templates.Where(x => x.Id == entity.Id).ToArray())
+            Templates.Remove(item);
 
         Templates.Add(entity);
         context.Unload();
