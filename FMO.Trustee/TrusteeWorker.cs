@@ -76,7 +76,7 @@ public partial class TrusteeWorker : ObservableObject
     private WorkConfig TransferRequestConfig { get; set; }
     private WorkConfig RaisingAccountTransctionConfig { get; set; }
 
-
+    (WorkConfig Config, IAsyncRelayCommand Command)[] tasks;
 
     public TrusteeWorker(ITrustee[] trustees)
     {
@@ -110,8 +110,32 @@ public partial class TrusteeWorker : ObservableObject
         //{
         //    f.Trustee
         //}
+        tasks = [
+                // 募集余额查询任务：
+                // 使用 RaisingBalanceConfig 配置（如执行间隔、上次运行时间等）
+                // 触发 QueryRaisingBalanceOnceCommand 命令执行单次查询
+                (Config: RaisingBalanceConfig, Command: QueryRaisingBalanceOnceCommand),
 
+                // 募集户流水查询任务：
+                // 使用 RaisingAccountTransctionConfig 配置
+                // 触发 QueryRaisingAccountTransctionOnceCommand 命令执行单次查询
+                (Config: RaisingAccountTransctionConfig, Command: QueryRaisingAccountTransctionOnceCommand),
 
+                // 交易申请查询任务：
+                // 使用 TransferRequestConfig 配置
+                // 触发 QueryTransferRequestOnceCommand 命令执行单次查询
+                (Config: TransferRequestConfig, Command: QueryTransferRequestOnceCommand),
+
+                // 交易确认查询任务：
+                // 使用 TransferRecordConfig 配置
+                // 触发 QueryTransferRecordOnceCommand 命令执行单次查询
+                (Config: TransferRecordConfig, Command: QueryTransferRecordOnceCommand),
+
+                // 日常费用查询任务：
+                // 使用 DailyFeeConfig 配置
+                // 触发 QueryDailyFeeOnceCommand 命令执行单次查询
+                (Config: DailyFeeConfig, Command: QueryDailyFeeOnceCommand)
+             ];
     }
 
 
@@ -679,37 +703,17 @@ public partial class TrusteeWorker : ObservableObject
         var now = DateTime.Now;
         var minuteIndex = now.Ticks / TimeSpan.TicksPerMinute;
 
-        (WorkConfig Config, IAsyncRelayCommand Command)[] tasks = [
-                                                                    // 募集余额查询任务：
-                                                                    // 使用 RaisingBalanceConfig 配置（如执行间隔、上次运行时间等）
-                                                                    // 触发 QueryRaisingBalanceOnceCommand 命令执行单次查询
-                                                                    (Config: RaisingBalanceConfig, Command: QueryRaisingBalanceOnceCommand),
 
-                                                                    // 募集户流水查询任务：
-                                                                    // 使用 RaisingAccountTransctionConfig 配置
-                                                                    // 触发 QueryRaisingAccountTransctionOnceCommand 命令执行单次查询
-                                                                    (Config: RaisingAccountTransctionConfig, Command: QueryRaisingAccountTransctionOnceCommand),
 
-                                                                    // 交易申请查询任务：
-                                                                    // 使用 TransferRequestConfig 配置
-                                                                    // 触发 QueryTransferRequestOnceCommand 命令执行单次查询
-                                                                    (Config: TransferRequestConfig, Command: QueryTransferRequestOnceCommand),
-
-                                                                    // 交易确认查询任务：
-                                                                    // 使用 TransferRecordConfig 配置
-                                                                    // 触发 QueryTransferRecordOnceCommand 命令执行单次查询
-                                                                    (Config: TransferRecordConfig, Command: QueryTransferRecordOnceCommand),
-
-                                                                    // 日常费用查询任务：
-                                                                    // 使用 DailyFeeConfig 配置
-                                                                    // 触发 QueryDailyFeeOnceCommand 命令执行单次查询
-                                                                    (Config: DailyFeeConfig, Command: QueryDailyFeeOnceCommand)
-        ];
+        // 是否非工作时间 8-19点
+        bool offwork = (now.Hour < 8 || now.Hour >= 19);
 
 
         foreach (var (Config, Command) in tasks)
         {
-            if (minuteIndex % Config.Interval == 0)
+            var interval = offwork && 60 > Config.Interval ? 60 : Config.Interval;
+
+            if (minuteIndex % interval == 0)
             {
                 await Config.Semaphore.WaitAsync();
                 try
