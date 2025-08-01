@@ -28,31 +28,20 @@ public partial class StatementPageViewModel : ObservableObject
     [RelayCommand]
     public void GenerateReport()
     {
-        try
+        var context = new ExporterWindowViewModel(ExportTypeFlag.MultiFundSummary);
+        if (context.Templates.Length == 0)
         {
-            using var db = DbHelper.Base();
-            var funds = db.GetCollection<Fund>().Find(x => x.Status == FundStatus.Normal).ToArray();
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "没有可用的模板"));
+            return;
+        } 
 
-            var ds = funds.Select(x => new { f = x, d = db.GetDailyCollection(x.Id).FindAll().Where(x => x?.NetValue > 0).MaxBy(x => x.Date) }).ToArray();
-
-            var obj = new
-            {
-                Funds = ds.Select(x => new
-                {
-                    Name = x.f.Name,
-                    Code = x.f.Code,
-                    LastDate = x.d!.Date,
-                    NetAsset = x.d.NetAsset / 10000,
-                    NetValue = x.d.NetValue
-                })
-            };
-
-            Tpl.Generate(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "summary.xlsx"), Tpl.GetPath("nv_summary.xlsx"), obj);
-            //ExcelTpl.GenerateFromTemplate(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "summary.xlsx"), "nv_summary.xlsx", obj);
-        }
-        catch (Exception e)
+        var wnd = new ExporterWindow
         {
-        }
+            DataContext = context,
+            Owner = App.Current.MainWindow
+        };
+
+        wnd.ShowDialog();
     }
 
     [RelayCommand]

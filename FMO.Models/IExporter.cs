@@ -43,14 +43,14 @@ public enum ExportTypeFlag
     /// </summary>
     SingleFundNetValueList,
 
-    MultiFundElementSheet,
+    MultiFundElementSheet = 2,
+
+    MultiFundSummary = 4,
 
 
 
 
-
-
-    Custom = 99999, 
+    Custom = 99999,
 }
 
 public interface IExporter
@@ -58,7 +58,7 @@ public interface IExporter
 
     string Id { get; }
 
-    string Name { get;  }
+    string Name { get; }
 
     string Description { get; }
 
@@ -82,4 +82,4 @@ public interface IExporter
 /// <param name="Direction"></param>
 public record ExportParameterMeta(string Type, bool Multiple = true, ListSortDirection Direction = ListSortDirection.Ascending);
 
-public record TemplateInfo(string Id, string Name, string Description, string Type,ExportTypeFlag Suit, ExportParameterMeta[]? Meta, string Path);
+public record TemplateInfo(string Id, string Name, string Description, string Type, ExportTypeFlag Suit, ExportParameterMeta[]? Meta, string Path);
