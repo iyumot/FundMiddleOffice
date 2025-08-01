@@ -185,5 +185,7 @@ public partial class MainWindowViewModel : ObservableObject
 
         Templates.Add(entity);
         context.Unload();
+
+        HandyControl.Controls.Growl.Info($"{entity.Name}    更新完成");
     }
 }
