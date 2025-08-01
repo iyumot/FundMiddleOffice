@@ -128,6 +128,13 @@ public abstract class TrusteeApiBase : ITrustee
         _db.GetCollection<LogInfo>().Insert(new LogInfo { Identifier = Identifier, Log = message, Method = caller, Content = json, Time = DateTime.Now });
     }
 
+    public void Log<T>(string? caller, IEnumerable<T> list)
+    {
+        using (var db = DbHelper.Platform())
+            db.GetCollection<T>($"{Identifier}_{caller}").Insert(list);
+    }
+
+
     protected void LogRun(string? caller, Dictionary<string, object> formatedParams, string? json)
     {
         _db.GetCollection<TrusteeCallHistory>().Insert(new TrusteeCallHistory(Identifier, caller ?? "unknown", DateTime.Now, System.Text.Json.JsonSerializer.Serialize(formatedParams), json));

@@ -187,7 +187,7 @@ public partial class CITICS : TrusteeApiBase
             }
 
             // 排除失败的
-            return new(result.Code, list.Where(x=>x.Source != "failed").ToArray());
+            return new(result.Code, list.Where(x => x.Source != "failed").ToArray());
         }
 
         return new(result.Code, null);
@@ -223,7 +223,7 @@ public partial class CITICS : TrusteeApiBase
     {
         var part = "/v1/fs/queryRaiseAccFlowForApi";
 
-        var ts = Split(begin, end, 90); 
+        var ts = Split(begin, end, 90);
         List<BankTransaction> transactions = new();
         foreach (var (b, e) in ts)
         {
@@ -231,7 +231,7 @@ public partial class CITICS : TrusteeApiBase
             if (result.Code != ReturnCode.Success) return result;
 
             if (result.Data is not null)
-                transactions.AddRange(result.Data); 
+                transactions.AddRange(result.Data);
         }
 
         return new(ReturnCode.Success, transactions.ToArray());
@@ -505,7 +505,7 @@ public partial class CITICS : TrusteeApiBase
             for (int i = 0; i < 19; i++) // 防止无限循环，最多99次 
             {
                 json = await Query(part, formatedParams);
-                LogRun(caller, formatedParams,json);
+                LogRun(caller, formatedParams, json);
 
                 try
                 {
@@ -535,9 +535,14 @@ public partial class CITICS : TrusteeApiBase
                         break;
 
                     var data = ret.Data.Deserialize<QueryRoot<TJSON>>()!;
+
+                    // 记录返回的类型，用于debug
+                    if (data.List is not null)
+                        Log(caller, data!.List);
+
                     list.AddRange(data.List!);
 
-                    if (data.Total == 0) break; 
+                    if (data.Total == 0) break;
 
                     var page = data.PageNum;// (int)formatedParams["pageNum"];
 

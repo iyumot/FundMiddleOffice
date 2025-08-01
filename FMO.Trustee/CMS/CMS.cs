@@ -248,7 +248,7 @@ public partial class CMS : TrusteeApiBase
             {
 
                 var json = await Query(interfaceId, formatedParams);
-                LogRun(caller, formatedParams,json);
+                LogRun(caller, formatedParams, json);
 
                 try
                 {
@@ -269,8 +269,12 @@ public partial class CMS : TrusteeApiBase
                         break;// return new(ReturnCode.Success, []);
 
                     // 解析实际数据
-                    var data = JsonSerializer.Deserialize<TJSON[]>(ret.Data!);
-                    list.AddRange(data!);
+                    var data = JsonSerializer.Deserialize<TJSON[]>(ret.Data);
+                    if (data is not null && data.Length > 0)
+                        list.AddRange(data);
+
+                    // 记录返回的类型，用于debug
+                    Log(caller, data!);
 
                     // 数据获取是否齐全
                     var pi = JsonSerializer.Deserialize<PaginationInfo>(ret.Page!)!;

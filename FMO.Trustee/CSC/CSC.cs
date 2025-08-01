@@ -1,4 +1,5 @@
 using FMO.Models;
+using FMO.Utilities;
 using LiteDB;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
@@ -297,6 +298,9 @@ public partial class CSC : TrusteeApiBase
                     total += data!.Data.Data.Length;
                     list.AddRange(data.Data.Data);
 
+                    // 记录返回的类型，用于debug
+                    Log(caller, data!.Data.Data);
+
                     // 数据获取全
                     if (data!.Data.TotalCount >= total)
                         break;
@@ -317,6 +321,7 @@ public partial class CSC : TrusteeApiBase
             Log(caller, null, e.Message);
             return new(ReturnCode.Unknown, null);
         }
+
 
         Log(caller, null, "OK");
         return new(ReturnCode.Success, list.Select(x => transfer(x)).ToArray());
