@@ -274,7 +274,7 @@ public class StringSubstringConverter : IValueConverter
 
             var startStr = rangeMatch.Groups[1].Value.Trim();
             Index startIndex = ParseToIndex(startStr);
-            if(rangeMatch.Groups.Count <= 1) return input[startIndex];
+            if (rangeMatch.Groups.Count <= 1) return input[startIndex];
 
             var endStr = rangeMatch.Groups[2].Value.Trim();
             if (string.IsNullOrWhiteSpace(endStr))
@@ -297,12 +297,69 @@ public class StringSubstringConverter : IValueConverter
         bool end = value.StartsWith("^");
         var vv = end ? value.Substring(1) : value;
         int.TryParse(vv, out int offset);
- 
+
         return new Index(offset, end);
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
         throw new NotImplementedException();
+    }
+}
+
+public class OADateConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+
+        switch (value)
+        {
+            case double oaDate:
+                return DateTime.FromOADate(oaDate);
+            case DateTime dateTime:
+                return dateTime.ToOADate();
+            default:
+                break;
+        }
+        return value;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        switch (value)
+        {
+            case double oaDate:
+                return DateTime.FromOADate(oaDate);
+            case DateTime dateTime:
+                return dateTime.ToOADate();
+            default:
+                break;
+        }
+        return value;
+    }
+}
+
+
+public class ScaleNumberConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        double mul = double.TryParse(parameter?.ToString(), out var dd) ? dd : 1d;// switch { double d => d, _ => 1 };
+        return value switch { double d => To(d * mul), _ => value };
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+
+
+    private string To(double d)
+    {
+        if (d < 10000) return $"{d:N0}元";
+        else if (d < 1e8) return $"{d / 10000:N0}万";
+        else if (d < 1e9) return $"{d / 1e8:N2}亿";
+        else if (d < 1e10) return $"{d / 1e8:N1}亿";
+        return $"{d / 1e8:N0}亿";
     }
 }

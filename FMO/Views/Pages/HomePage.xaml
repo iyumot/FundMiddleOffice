@@ -16,13 +16,78 @@
     <UserControl.DataContext>
         <local:HomePageViewModel />
     </UserControl.DataContext>
+    <UserControl.Resources>
+        <local:OADateConverter x:Key="OADateConverter" />
+        <local:ScaleNumberConverter x:Key="ScaleNumberConverter" />
+
+        <ControlTemplate x:Key="CustomTrackerTemplate" TargetType="ContentControl">
+            <oxy:TrackerControl
+                Background="Transparent"
+                BorderThickness="0"
+                Position="{Binding Position}">
+                <oxy:TrackerControl.Content>
+                    <Border
+                        Padding="12,10,12,10"
+                        Background="#1e1e2e"
+                        BorderBrush="#6c7086"
+                        BorderThickness="1"
+                        CornerRadius="6">
+                        <StackPanel>
+                            <!--  数据区域  -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    Margin="0,0,8,0"
+                                    Foreground="#a6adc8"
+                                    Text="日期:" />
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Grid.Column="1"
+                                    Foreground="#cdd6f4"
+                                    Text="{Binding DataPoint.X, Converter={StaticResource OADateConverter}, StringFormat=yyyy/MM}" />
+
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="0"
+                                    Margin="0,4,8,0"
+                                    Foreground="#a6adc8"
+                                    Text="金额:" />
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    FontWeight="SemiBold"
+                                    Foreground="#a6e3a1"
+                                    Text="{Binding DataPoint.Y, Converter={StaticResource ScaleNumberConverter}, ConverterParameter=10000}" />
+                            </Grid>
+
+                        </StackPanel>
+                    </Border>
+                </oxy:TrackerControl.Content>
+            </oxy:TrackerControl>
+        </ControlTemplate>
+    </UserControl.Resources>
     <DockPanel>
 
         <StackPanel Width="888" Panel.ZIndex="111">
 
 
 
-            <oxy:PlotView Height="300" Model="{Binding ManageScaleContext}" />
+            <oxy:PlotView Height="300" Model="{Binding ManageScaleContext}">
+                <oxy:PlotView.TrackerDefinitions>
+                    <oxy:TrackerDefinition TrackerKey="CustomTracker" TrackerTemplate="{StaticResource CustomTrackerTemplate}" />
+                </oxy:PlotView.TrackerDefinitions>
+            </oxy:PlotView>
 
 
             <ListBox

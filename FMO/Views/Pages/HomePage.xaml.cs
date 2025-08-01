@@ -283,7 +283,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
                 });
                 ManageScaleContext.Axes.Add(new LinearAxis  // Y轴
                 {
-                    Position = OxyPlot.Axes.AxisPosition.Left,
+                    Position = OxyPlot.Axes.AxisPosition.Left, 
                     MaximumPadding = 0.1
                 });
 
@@ -298,7 +298,8 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
                     MarkerFill = OxyColors.RoyalBlue,
                     InterpolationAlgorithm = InterpolationAlgorithms.CanonicalSpline,
                     TrackerFormatString = "{2:yyyy-MM}         {4:N0} 万元",
-                    StrokeThickness = 2
+                    StrokeThickness = 2,
+                    TrackerKey = "CustomTracker"
 
                 });
 
