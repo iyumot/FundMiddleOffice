@@ -530,7 +530,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
             var acc = db.GetCollection<AmacAccount>().FindById("human");
             if (acc is null || string.IsNullOrWhiteSpace(acc.Name) || string.IsNullOrWhiteSpace(acc.Password))
             {
-                HandyControl.Controls.Growl.Error($"获取管理人成员失败，没有有效的账号密码");
+                HandyControl.Controls.Growl.Error($"请在【平台】中，设置协会的账号和密码");
                 return;
             }
 
@@ -539,7 +539,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
             switch (result.Code)
             {
                 case AmacReturn.AccountError:
-                    HandyControl.Controls.Growl.Error($"获取管理人成员失败，账号密码错误");
+                    HandyControl.Controls.Growl.Error($"获取管理人成员失败，账号密码错误，请在【平台】中，修改账号");
                     return;
                 case AmacReturn.Browser:
                 case AmacReturn.InvalidResponse:
