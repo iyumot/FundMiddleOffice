@@ -11,6 +11,7 @@
     <RootNamespace>FMO</RootNamespace>
     <ApplicationIcon>res\logo.ico</ApplicationIcon>
     <AnalysisLevel>latest</AnalysisLevel>
+	  <RuntimeIdentifiers>win-x64;win-x86</RuntimeIdentifiers>
 
     <Version>1.1.0</Version>
     <AssemblyVersion>1.1.0.0</AssemblyVersion>
@@ -73,16 +74,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DatabaseViewer\DatabaseViewer.csproj" />
     <ProjectReference Include="..\FMO.Automation\FMO.Schedule.csproj" />
-    <ProjectReference Include="..\FMO.FeeCalc\FMO.FeeCalc.csproj" />
     <ProjectReference Include="..\FMO.Interop\FMO.IO.AMAC\FMO.IO.AMAC.csproj" />
     <ProjectReference Include="..\FMO.InterOp\FMO.IO.DS\FMO.IO.DS.csproj" />
     <ProjectReference Include="..\FMO.PDF\FMO.PDF.csproj" TargetFramework="net9.0-windows" />
     <ProjectReference Include="..\FMO.Plugin\FMO.Plugin.csproj" />
     <ProjectReference Include="..\FMO.Shared\FMO.Shared.csproj" />
     <ProjectReference Include="..\FMO.SourceGenerator\FMO.SourceGenerator.csproj" OutputItemType="Analyzer" />
-    <ProjectReference Include="..\FMO.TemplateManager\FMO.TemplateManager.csproj" />
     <ProjectReference Include="..\FMO.TPL\FMO.TPL.csproj" />
     <ProjectReference Include="..\FMO.Trustee\FMO.Trustee.csproj" />
     <ProjectReference Include="..\FMO.Utilities\FMO.Utilities.csproj" />

@@ -1,46 +1,117 @@
-# é…ç½®å‚æ•°
-$SolutionDir = Split-Path $PSScriptRoot -Parent
-$OutputDir = Join-Path $SolutionDir "PublishOutput"
-$Projects = @(
-    "FMO\FundMiddleOffice.csproj",
-    "DatabaseViewer\DatabaseViewer.csproj"
-    # æ·»åŠ æ›´å¤šé¡¹ç›®è·¯å¾„
+clear
+Write-Host ¡°¿ªÊ¼´ò°ü"
+# publish.ps1
+# ¾²Ä¬·¢²¼£ºÖ»Êä³ö³É¹¦»òÊ§°Ü
+# ·¢²¼ÏîÄ¿µ½ E:\nexus\x64 ºÍ E:\nexus\x86
+
+$SolutionRoot = Get-Location
+$NexusRoot = "E:\nexus"
+
+# Òª·¢²¼µÄÏîÄ¿ÁĞ±í
+$ProjectsToPublish = @(
+
+    "FMO.PeiXunAssist",
+    "DatabaseViewer",
+    "FMO.TemplateManager",
+    "FMO.LearnAssist" ,
+   "FundMiddleOffice"
 )
 
-# åˆ›å»ºè¾“å‡ºç›®å½•
-if (!(Test-Path $OutputDir)) {
-    New-Item -ItemType Directory -Path $OutputDir | Out-Null
-}
+# Ä¿±êÆ½Ì¨Ó³Éä
+$Runtimes = @(
+    @{ Runtime = "win-x64"; Folder = "x64" },
+    #@{ Runtime = "win-x86"; Folder = "x86" }
+)
 
-Write-Host "================================" -ForegroundColor Green
-Write-Host "å¼€å§‹å‘å¸ƒæ‰€æœ‰é¡¹ç›®åˆ°: $OutputDir" -ForegroundColor Green
-Write-Host "================================" -ForegroundColor Green
-
-# å‘å¸ƒæ¯ä¸ªé¡¹ç›®
-foreach ($projectPath in $Projects) {
-    $fullProjectPath = Join-Path $SolutionDir $projectPath
-    $projectName = [System.IO.Path]::GetFileNameWithoutExtension($projectPath)
-    
-    Write-Host "æ­£åœ¨å‘å¸ƒ $projectName..." -ForegroundColor Yellow
-    
-    # æ‰§è¡Œå‘å¸ƒå‘½ä»¤
-    $publishArgs = "publish", "$fullProjectPath", "-c", "Release", "-o", "$OutputDir", "--no-restore"
-    & dotnet @publishArgs
-    
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "âŒ $projectName å‘å¸ƒå¤±è´¥ï¼" -ForegroundColor Red
-        exit 1
-    } else {
-        Write-Host "âœ… $projectName å‘å¸ƒæˆåŠŸï¼" -ForegroundColor Green
+# ´´½¨Êä³öÄ¿Â¼
+$OutputDirs = $Runtimes | ForEach-Object { Join-Path $NexusRoot $_.Folder }
+foreach ($dir in $OutputDirs) {
+    if (-not (Test-Path $dir)) {
+        New-Item -ItemType Directory -Path $dir | Out-Null
     }
 }
 
-Write-Host "================================" -ForegroundColor Green
-Write-Host "ğŸ‰ æ‰€æœ‰é¡¹ç›®å‘å¸ƒå®Œæˆï¼" -ForegroundColor Green
-Write-Host "è¾“å‡ºä½ç½®: $OutputDir" -ForegroundColor Green
-Write-Host "================================" -ForegroundColor Green
+# ²éÕÒËùÓĞÏîÄ¿ÎÄ¼ş
+$AllProjects = Get-ChildItem -Path $SolutionRoot -Recurse -Include *.csproj, *.vbproj
 
-# å¯é€‰ï¼šæ‰“å¼€è¾“å‡ºç›®å½•
-# explorer $OutputDir
+# ±éÀúÃ¿¸öÏîÄ¿
+foreach ($projectName in $ProjectsToPublish) {
+    $projectFile = $AllProjects | Where-Object { $_.BaseName -eq $projectName }
 
-Pause
+    if (-not $projectFile) {
+        Write-Host "?? Î´ÕÒµ½ÏîÄ¿: $projectName" -ForegroundColor Yellow
+        continue
+    }
+
+    $projectPath = $projectFile.FullName
+    $projectDir = $projectFile.DirectoryName
+
+    foreach ($rt in $Runtimes) {
+        $runtime = $rt.Runtime
+        $publishPath = Join-Path $NexusRoot $rt.Folder
+        Write-Host " $projectName ($runtime) ... " -NoNewline
+
+        # ¹¹ÔìÃüÁîĞĞ²ÎÊı
+        $args = @(
+            "publish", $projectPath,
+            "--framework", "net9.0-windows",
+            "--runtime", $runtime,
+            "--self-contained", "true",
+            "--output", $publishPath,
+            "-c", "Release",
+            "--nologo",
+            "-p:PublishSingleFile=false",
+            "-p:IncludeNativeLibrariesForSelfExtract=true",
+            "-p:DebugType=None",
+            "-p:DebugSymbols=false",
+            "-p:SupportedCultures=zh-Hans",
+            "-p:SatelliteResourceLanguages=zh-Hans"
+        )
+
+        try {
+            # Ê¹ÓÃ Start-Process ÍêÈ«¸ôÀë½ø³Ì£¬³¹µ×ÆÁ±ÎÊä³ö
+            $process = Start-Process -FilePath "dotnet" -ArgumentList $args `
+                -WorkingDirectory $projectDir `
+                -Wait `
+                -WindowStyle Hidden `
+                -PassThru
+
+            if ($process.ExitCode -eq 0) {
+                Write-Host " ³É¹¦" -ForegroundColor Green
+            } else {
+                Write-Host " Ê§°Ü" -ForegroundColor Red
+            }
+        } catch {
+            Write-Host "? Òì³£" -ForegroundColor Red
+        }
+    }
+}
+
+# ========== ·¢²¼È«²¿Íê³Éºó£¬Í³Ò»ÇåÀí¿ÕÓïÑÔÎÄ¼ş¼Ğ ==========
+Write-Host "?? ÕıÔÚÇåÀí x64 ºÍ x86 ÖĞµÄ¿ÕÓïÑÔÎÄ¼ş¼Ğ..." -ForegroundColor Cyan
+
+$languageFolders = @("zh-Hans", "zh-CN", "en", "fr", "de", "ja", "ko", "ru", "es", "it", "pt", "tr", "cs", "pl", "pt-BR")
+$outputSubDirs = @("x64", "x86")
+
+foreach ($subDir in $outputSubDirs) {
+    $rootDir = Join-Path $NexusRoot $subDir
+    if (-not (Test-Path $rootDir)) { continue }
+
+    foreach ($lang in $languageFolders) {
+        $folder = Join-Path $rootDir $lang
+        if (Test-Path $folder) {
+            try {
+                $items = Get-ChildItem $folder -ErrorAction SilentlyContinue
+                if ($items.Count -eq 0) {
+                    Remove-Item $folder -Recurse -Force
+                    Write-Host "? ÒÑÉ¾³ı¿ÕÎÄ¼ş¼Ğ: $subDir\$lang" -ForegroundColor Gray
+                }
+            } catch {
+                Write-Host "?? ÎŞ·¨´¦ÀíÎÄ¼ş¼Ğ: $folder" -ForegroundColor Yellow
+            }
+        }
+    }
+}
+
+Write-Host " ·¢²¼Íê³É£¡" -ForegroundColor Yellow
+ 

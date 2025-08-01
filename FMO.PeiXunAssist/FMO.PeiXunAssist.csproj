@@ -9,6 +9,7 @@
     <BaseOutputPath>..\FMO\bin</BaseOutputPath>
 	  <LangVersion>preview</LangVersion>
 	  <ApplicationIcon>pei.ico</ApplicationIcon>
+	  <RuntimeIdentifiers>win-x64;win-x86</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>
