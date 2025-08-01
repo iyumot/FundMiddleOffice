@@ -44,7 +44,11 @@ public partial class MainWindowViewModel : ObservableObject
     public partial IEnumerable<string>? TplFiles { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsDefault))]
     public partial string? SelectedFileName { get; set; }
+
+
+    public bool IsDefault => SelectedFileName == "default";
 
 
     [ObservableProperty]

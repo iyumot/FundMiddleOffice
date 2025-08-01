@@ -9,7 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="模板管理工具"
     Width="1000"
-    Height="450"
+    Height="650"
     AllowDrop="True"
     Icon="/logo.ico"
     WindowStartupLocation="CenterScreen"
@@ -82,7 +82,8 @@
                         Command="{Binding ModifyCommand}"
                         Content="修改"
                         DockPanel.Dock="Right"
-                        Style="{StaticResource ButtonDashedPrimary}" />
+                        Style="{StaticResource ButtonDashedPrimary}"
+                        Visibility="{Binding IsDefault, Converter={StaticResource Boolean2VisibilityReConverter}}" />
                 </DockPanel>
                 <ListBox
                     ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
