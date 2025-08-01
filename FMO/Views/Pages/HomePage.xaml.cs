@@ -5,9 +5,10 @@ using FMO.IO.AMAC;
 using FMO.Models;
 using FMO.Schedule;
 using FMO.Trustee;
-using FMO.Utilities; 
+using FMO.Utilities;
 using OxyPlot;
 using OxyPlot.Axes;
+using OxyPlot.Series;
 using Serilog;
 using System.IO;
 using System.IO.Compression;
@@ -65,6 +66,9 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
     [ObservableProperty]
     public partial PlotModel? ManageScaleContext { get; set; }
+
+    [ObservableProperty]
+    public partial PlotModel? BuySellIn7DaysContext { get; set; }
 
 
     public Tool[] Tools { get; set; }
@@ -202,8 +206,13 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
         using var db = DbHelper.Base();
         var status = db.GetCollection<Fund>().FindAll().Select(x => x.Status).ToList();
 
+        PlotManageScale(db);
 
+        PlotBuySellIn7Days(db);
+    }
 
+    private void PlotManageScale(BaseDatabase db)
+    {
         // 计算管理规模
         var fids = db.GetCollection<Fund>().FindAll().Select(x => x.Id).ToList();
         if (fids.Count > 0)
@@ -283,7 +292,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
                 });
                 ManageScaleContext.Axes.Add(new LinearAxis  // Y轴
                 {
-                    Position = OxyPlot.Axes.AxisPosition.Left, 
+                    Position = OxyPlot.Axes.AxisPosition.Left,
                     MaximumPadding = 0.1
                 });
 
@@ -310,8 +319,50 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
         }
 
+    }
+
+
+    private void PlotFundType(BaseDatabase db)
+    {
 
     }
+
+
+    private void PlotBuySellIn7Days(BaseDatabase db)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        var data = db.GetCollection<TransferRequest>().Find(x => today.DayNumber - x.RequestDate.DayNumber < 7);
+
+
+        var model = new PlotModel
+        {
+
+            PlotAreaBorderThickness = new OxyThickness(0) // 饼图通常不需要边框
+        };
+
+        // 创建 PieSeries
+        var pieSeries = new PieSeries
+        {
+            StrokeThickness = 2.0,
+            InsideLabelPosition = 0.8,
+            AngleSpan = 360,
+            StartAngle = 0
+        };
+        pieSeries.Slices.Add(new PieSlice("买入", 100) { Fill = OxyColors.Green, IsExploded = true });
+        pieSeries.Slices.Add(new PieSlice("卖出", 50) { Fill = OxyColors.Red});
+        ;
+
+        model.Series.Add(pieSeries);
+
+        BuySellIn7DaysContext = model;
+        // 自动调整坐标轴范围（关键步骤！）
+        BuySellIn7DaysContext.InvalidatePlot(true);
+    }
+
+
+
+
+
 
     /// <summary>
     /// 检查交易申请与流水是否匹配

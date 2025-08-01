@@ -90,6 +90,16 @@
             </oxy:PlotView>
 
 
+            <hc:UniformSpacingPanel Spacing="8">
+                <oxy:PlotView
+                    Width="200"
+                    Height="200"
+                    Model="{Binding BuySellIn7DaysContext}" />
+
+
+            </hc:UniformSpacingPanel>
+
+
             <ListBox
                 Height="200"
                 Margin="0,10,0,0"
