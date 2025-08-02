@@ -63,3 +63,16 @@ public class BankTransaction
     /// </summary>
     public required string Serial { get; set; }
 }
+
+
+/// <summary>
+/// 本方账号关联基金
+/// </summary>
+public class RaisingBankTransaction : BankTransaction
+{
+
+    public int FundId { get; set; }
+
+    public string? FundCode { get; set; }
+
+}

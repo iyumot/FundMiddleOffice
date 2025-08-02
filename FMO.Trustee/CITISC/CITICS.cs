@@ -219,20 +219,28 @@ public partial class CITICS : TrusteeApiBase
         return r;
     }
 
-    public override async Task<ReturnWrap<BankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end)
+    public override async Task<ReturnWrap<RaisingBankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end)
     {
         var part = "/v1/fs/queryRaiseAccFlowForApi";
 
         var ts = Split(begin, end, 90);
-        List<BankTransaction> transactions = new();
+        List<RaisingBankTransaction> transactions = new();
         foreach (var (b, e) in ts)
         {
-            var result = await SyncWork<BankTransaction, BankTransactionJson>(part, new { beginDate = $"{b:yyyyMMdd}", endDate = $"{e:yyyyMMdd}" }, x => x.ToObject());
+            var result = await SyncWork<RaisingBankTransaction, BankTransactionJson>(part, new { beginDate = $"{b:yyyyMMdd}", endDate = $"{e:yyyyMMdd}" }, x => x.ToObject());
             if (result.Code != ReturnCode.Success) return result;
 
             if (result.Data is not null)
                 transactions.AddRange(result.Data);
         }
+
+        // 对齐到基金
+        using var db = DbHelper.Base();
+        foreach (var item in transactions)
+            item.FundId = db.FindFund(item.FundCode)?.Id ?? 0;
+
+        if (transactions.Any(x => x.FundId == 0))
+            Serilog.Log.Error($"募资流水 {string.Join(',', transactions.Where(x => x.FundId == 0).Select(x=> $"{x.AccountName}-{x.FundCode}"))} 未找到对应基金");
 
         return new(ReturnCode.Success, transactions.ToArray());
     }

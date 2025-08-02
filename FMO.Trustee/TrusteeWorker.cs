@@ -580,7 +580,7 @@ public partial class TrusteeWorker : ObservableObject
                     {
                         // ¶ÔÆëÊý¾Ý   
 
-                        db.GetCollection<BankTransaction>().Upsert(rc.Data);
+                        db.GetCollection<RaisingBankTransaction>().Upsert(rc.Data);
                     }
 
                     if (range is null) range = new(tr.Identifier + nameof(tr.QueryRaisingAccountTransction), begin, end);

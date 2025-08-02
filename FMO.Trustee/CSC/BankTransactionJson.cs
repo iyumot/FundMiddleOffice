@@ -113,11 +113,12 @@ public partial class CSC
         public string Status { get; set; }
 
 
-        public BankTransaction ToObject()
+        public RaisingBankTransaction ToObject()
         {
-            return new BankTransaction
+            return new RaisingBankTransaction
             {
                 Id = $"{OurAccount}|{TransactionNo}",
+                FundCode = FundCode,
                 Time = DateTime.ParseExact(TradeDate + TradeTime, "yyyyMMddHHmmss", null),
                 Amount = ParseDecimal(Amount),
                 AccountNo = OurAccount,

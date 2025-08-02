@@ -148,10 +148,10 @@ public partial class CSC : TrusteeApiBase
     /// <param name="begin"></param>
     /// <param name="end"></param>
     /// <returns></returns>
-    public override async Task<ReturnWrap<BankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end)
+    public override async Task<ReturnWrap<RaisingBankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end)
     {
         var part = "/institution/tgpt/erp/raise/query/findRaiseAccountDetailList";
-        var result = await SyncWork<BankTransaction, RaisingBankTransactionJson>(part, new { beginDate = begin.ToString("yyyyMMdd"), endDate = end.ToString("yyyyMMdd") }, x => x.ToObject());
+        var result = await SyncWork<RaisingBankTransaction, RaisingBankTransactionJson>(part, new { beginDate = begin.ToString("yyyyMMdd"), endDate = end.ToString("yyyyMMdd") }, x => x.ToObject());
 
 
         return result;

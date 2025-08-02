@@ -60,7 +60,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
     public CollectionViewSource TranscationSource { get; set; } = new();
 
-    public ObservableCollection<BankTranscationViewModel>? BankTransactions { get; set; }
+    public ObservableCollection<RaisingBankTranscationViewModel>? BankTransactions { get; set; }
 
     FileSystemWatcher? watcher;
 
@@ -85,7 +85,9 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
                 Records = [.. tr.Select(x => new TransferRecordViewModel(x))];
                 Requests = new ObservableCollection<TransferRequest>(tr2);
                 Orders = [.. t3.Select(x => new TransferOrderViewModel(x))];
-                BankTransactions = [..db.GetCollection<BankTransaction>().FindAll().Select(x=>new BankTranscationViewModel(x))];
+
+                var funds = db.GetCollection<Fund>().FindAll().Select(x => (x.Id, x.Name, x.Code)).ToArray();
+                BankTransactions = [.. db.GetCollection<RaisingBankTransaction>().FindAll().Select(x => new RaisingBankTranscationViewModel(x, funds))];
 
 
                 foreach (var o in Orders)
@@ -415,8 +417,16 @@ partial class TransferOrderViewModel
     public bool IsComfirmed { get => field; set { field = value; OnPropertyChanged(nameof(IsComfirmed)); } }
 }
 
-[AutoChangeableViewModel(typeof(BankTransaction))]
-partial class BankTranscationViewModel
+[AutoChangeableViewModel(typeof(RaisingBankTransaction))]
+partial class RaisingBankTranscationViewModel
 {
+    public RaisingBankTranscationViewModel(RaisingBankTransaction? instance, (int Id, string Name, string Code)[] funds) : this(instance)
+    {
+        if (instance is null) return;
+        var fund = funds.FirstOrDefault(x => x.Id == instance.FundId);
+        FundName = fund.Name;
 
+    }
+
+    public string FundName { get; }
 }

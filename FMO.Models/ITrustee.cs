@@ -71,7 +71,7 @@ public interface ITrustee
     /// <param name="begin"></param>
     /// <param name="end"></param>
     /// <returns></returns>
-    Task<ReturnWrap<BankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end);
+    Task<ReturnWrap<RaisingBankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end);
 
 
 

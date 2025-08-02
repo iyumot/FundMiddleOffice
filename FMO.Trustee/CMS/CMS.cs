@@ -1,4 +1,5 @@
 using FMO.Models;
+using FMO.Utilities;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
@@ -142,22 +143,30 @@ public partial class CMS : TrusteeApiBase
     }
 
 
-    public override async Task<ReturnWrap<BankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end)
+    public override async Task<ReturnWrap<RaisingBankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end)
     {
         // 查询区间大于1个月，需要多次查询 
         var ts = Split(begin, end, 30);
 
-        List<BankTransaction> transactions = new();
+        List<RaisingBankTransaction> transactions = new();
 
         foreach (var (b, e) in ts)
         {
-            var data = await SyncWork<BankTransaction, BankTransactionJson>(1002, new { ksrq = $"{b:yyyyMMdd}", jsrq = $"{e:yyyyMMdd}" }, x => x.ToObject());
+            var data = await SyncWork<RaisingBankTransaction, RaisingBankTransactionJson>(1002, new { ksrq = $"{b:yyyyMMdd}", jsrq = $"{e:yyyyMMdd}" }, x => x.ToObject());
             if (data.Code != ReturnCode.Success)
                 return data;
 
             if (data.Data?.Length > 0)
                 transactions.AddRange(data.Data);
         }
+
+        // 对齐到基金
+        using var db = DbHelper.Base();
+        foreach (var item in transactions)
+            item.FundId = db.FindFund(item.FundCode)?.Id ?? 0;
+
+        if (transactions.Any(x => x.FundId == 0))
+            Serilog.Log.Error($"募资流水 {string.Join(',', transactions.Where(x => x.FundId == 0).Select(x => $"{x.AccountName}-{x.FundCode}"))} 未找到对应基金");
 
         return new(ReturnCode.Success, transactions.ToArray());
     }
