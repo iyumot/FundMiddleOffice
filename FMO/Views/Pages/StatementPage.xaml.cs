@@ -31,7 +31,7 @@ public partial class StatementPageViewModel : ObservableObject
         var context = new ExporterWindowViewModel(ExportTypeFlag.MultiFundSummary);
         if (context.Templates.Length == 0)
         {
-            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "没有可用的模板"));
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "没有可用的模板或者模板已被删除"));
             return;
         } 
 
@@ -50,7 +50,7 @@ public partial class StatementPageViewModel : ObservableObject
         var context = new ExporterWindowViewModel(ExportTypeFlag.MultiFundElementSheet);
         if (context.Templates.Length == 0)
         {
-            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "没有可用的模板"));
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "没有可用的模板或者模板已被删除"));
             return;
         }
 
