@@ -280,13 +280,13 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     {
         switch (TabIndex)
         {
-            case 0:
+            case 1:
                 AddOrder(); break;
 
-            case 1:
-                AddRequest(); break;
+            //case 1:
+            //    AddRequest(); break;
 
-            case 2:
+            case 3:
                 AddRecord(); break;
             default:
                 break;
