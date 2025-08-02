@@ -229,23 +229,6 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(file.Path) { UseShellExecute = true }); } catch { }
     }
 
-    [RelayCommand]
-    public void DeleteOrder(TransferOrderViewModel order)
-    {
-        if (HandyControl.Controls.MessageBox.Show("是否确认删除订单？", button: System.Windows.MessageBoxButton.YesNo) == System.Windows.MessageBoxResult.Yes)
-        {
-            using var db = DbHelper.Base();
-            db.GetCollection<TransferOrder>().Delete(order.Id);
-
-            var rr = db.GetCollection<TransferRecord>().Find(x => x.OrderId == order.Id).ToArray();
-            foreach (var item in rr)
-                item.OrderId = 0;
-            db.GetCollection<TransferRecord>().Update(rr);
-
-            DataTracker.LinkOrder(rr);
-            Orders!.Remove(order);
-        }
-    }
 
 
     [RelayCommand]
@@ -265,6 +248,10 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         if (r?.FundId is not null)
             DataTracker.CheckShareIsPair(r.FundId.Value);
     }
+
+
+
+
 
     [RelayCommand]
     public void DeleteRequest(TransferRequest r)
@@ -320,6 +307,39 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         wnd.DataContext = context;
         if (wnd.ShowDialog() switch { true => false, _ => true })
             return;
+    }
+
+
+
+    [RelayCommand]
+    public void DeleteOrder(TransferOrderViewModel order)
+    {
+        if (HandyControl.Controls.MessageBox.Show("是否确认删除订单？", button: System.Windows.MessageBoxButton.YesNo) == System.Windows.MessageBoxResult.Yes)
+        {
+            using var db = DbHelper.Base();
+            db.GetCollection<TransferOrder>().Delete(order.Id);
+
+            var rr = db.GetCollection<TransferRecord>().Find(x => x.OrderId == order.Id).ToArray();
+            foreach (var item in rr)
+                item.OrderId = 0;
+            db.GetCollection<TransferRecord>().Update(rr);
+
+            DataTracker.LinkOrder(rr);
+            Orders!.Remove(order);
+        }
+    }
+
+    [RelayCommand]
+    public void AbortOrder(TransferOrderViewModel r)
+    {
+        using var db = DbHelper.Base();
+        var obj = db.GetCollection<TransferOrder>().FindById(r.Id);
+        if (obj is not null)
+        {
+            obj.IsAborted = !obj.IsAborted;
+            db.GetCollection<TransferOrder>().Update(obj);
+        }
+
     }
 
     public void Receive(TransferRecord message)
@@ -415,6 +435,7 @@ partial class TransferRecordViewModel
 partial class TransferOrderViewModel
 {
     public bool IsComfirmed { get => field; set { field = value; OnPropertyChanged(nameof(IsComfirmed)); } }
+
 }
 
 [AutoChangeableViewModel(typeof(RaisingBankTransaction))]

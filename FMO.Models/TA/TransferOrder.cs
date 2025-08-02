@@ -60,6 +60,12 @@ public class TransferOrder
     public string? Source { get; set; }
 
     /// <summary>
+    /// 已废弃
+    /// </summary>
+    public bool IsAborted { get; set; }
+
+
+    /// <summary>
     /// 合同
     /// </summary>
     public FileStorageInfo? Contract { get; set; }

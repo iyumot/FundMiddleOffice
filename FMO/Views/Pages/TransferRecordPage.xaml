@@ -17,6 +17,10 @@
         <Style x:Key="CenterText" TargetType="TextBlock">
             <Setter Property="HorizontalAlignment" Value="Center" />
         </Style>
+
+        <Style x:Key="RightText" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
     </UserControl.Resources>
     <Grid>
 
@@ -199,8 +203,8 @@
                             ElementStyle="{StaticResource CenterText}"
                             Header="份额类别" />
                         <DataGridTextColumn
-                            Binding="{Binding Number, Converter={StaticResource ZeroToBlankConverter}}"
-                            ElementStyle="{StaticResource CenterText}"
+                            Binding="{Binding Number, StringFormat=N2}"
+                            ElementStyle="{StaticResource RightText}"
                             Header="金额/份额" />
 
                         <DataGridTemplateColumn Header="申请单">
@@ -292,13 +296,40 @@
                         <DataGridTemplateColumn>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button
-                                        hc:IconElement.Geometry="{StaticResource f.trash}"
-                                        BorderThickness="0"
-                                        Command="{Binding DataContext.DeleteOrderCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
-                                        CommandParameter="{Binding .}"
-                                        Foreground="Red"
-                                        Style="{StaticResource ButtonIcon.Small}" />
+                                    <UniformGrid
+                                        x:Name="actionPanel"
+                                        Rows="1"
+                                        Visibility="Collapsed">
+
+                                        <ToggleButton
+                                            Command="{Binding DataContext.AbortOrderCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
+                                            CommandParameter="{Binding .}"
+                                            IsChecked="{Binding IsAborted}"
+                                            Style="{StaticResource ToggleButtonFlip.Small}">
+                                            <Viewbox Height="16" ToolTip="废弃订单">
+                                                <Path Data="{StaticResource f.ban}" Fill="Red" />
+                                            </Viewbox>
+                                            <hc:StatusSwitchElement.CheckedElement>
+                                                <Viewbox Height="16" ToolTip="恢复订单">
+                                                    <Path Data="{StaticResource f.reply}" Fill="Black" />
+                                                </Viewbox>
+                                            </hc:StatusSwitchElement.CheckedElement>
+                                        </ToggleButton>
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.trash}"
+                                            BorderThickness="0"
+                                            Command="{Binding DataContext.DeleteOrderCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
+                                            CommandParameter="{Binding .}"
+                                            Foreground="Red"
+                                            Style="{StaticResource ButtonIcon.Small}"
+                                            Visibility="{Binding IsAborted, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                                    </UniformGrid>
+                                    <DataTemplate.Triggers>
+                                        <!--  监听行的鼠标悬停状态  -->
+                                        <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                            <Setter TargetName="actionPanel" Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
