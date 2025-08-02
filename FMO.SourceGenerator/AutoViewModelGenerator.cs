@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
@@ -113,7 +114,9 @@ namespace FMO.SourceGenerator
             source.AppendLine("    {");
             source.AppendLine("        public event PropertyChangedEventHandler? PropertyChanged;");
 
-            var properties = targetTypeSymbol.GetMembers().OfType<IPropertySymbol>();
+            //var properties = targetTypeSymbol.GetMembers().OfType<IPropertySymbol>();
+            // 使用新的方法获取属性，只包含用户自定义类的属性
+            var properties = GetUserDefinedPublicProperties(targetTypeSymbol).ToList();
 
             // 构造函数
             source.AppendLine($"        public {classSymbol.Name}({targetTypeSymbol.ToDisplayString()}? instance)");
@@ -210,6 +213,37 @@ namespace FMO.SourceGenerator
             source.AppendLine("}");
 
             return source.ToString();
+        }
+
+
+        // 只获取用户自定义类的公共实例属性（排除系统类）
+        private static IEnumerable<IPropertySymbol> GetUserDefinedPublicProperties(ITypeSymbol type)
+        {
+            var currentType = type;
+            while (currentType != null && IsUserDefinedType(currentType))
+            {
+                foreach (var property in currentType.GetMembers()
+                    .OfType<IPropertySymbol>()
+                    .Where(p => p.DeclaredAccessibility == Accessibility.Public && !p.IsStatic))
+                {
+                    yield return property;
+                }
+                currentType = currentType.BaseType;
+            }
+        }
+
+        // 判断是否为用户自定义类型（非系统类型）
+        private static bool IsUserDefinedType(ITypeSymbol type)
+        {
+            // 系统类型通常在以下命名空间下
+            var systemNamespaces = new[] { "System", "Microsoft", "Unity", "Windows" };
+
+            // 如果类型没有命名空间，可能是用户自定义的
+            if (string.IsNullOrEmpty(type.ContainingNamespace?.ToString()))
+                return true;
+
+            // 检查是否在系统命名空间下
+            return !systemNamespaces.Any(ns => type.ContainingNamespace.ToString().StartsWith(ns));
         }
     }
 
