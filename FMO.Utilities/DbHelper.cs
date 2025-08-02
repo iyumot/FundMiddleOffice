@@ -13,7 +13,8 @@ public static class DatabaseAssist
 {
     private static Dictionary<int, Action<BaseDatabase>> patchs = new()
     {
-        {2, db=>{
+        [2] = db =>
+        {
             // 6.30 解决中信ta，有unset
             var haser = db.GetCollection<TransferRecord>().Find(x => x.Source != null && x.Source.Contains("citics")).Any(x => x.CustomerName == "unset");
             using (var pdb = DbHelper.Platform()) //删除记录
@@ -22,63 +23,119 @@ public static class DatabaseAssist
                 pdb.GetCollection("TrusteeMethodShotRange").Delete("trustee_cmsQueryTransferRecords");
             }
             db.GetCollection<TransferRecord>().DeleteMany(x => x.Source == "" || x.Source == null);
-        } },
+        },
 
-        {5, db=>{
-        using var pdb = DbHelper.Platform();
-            if (!pdb.GetCollectionNames().Contains($"TrusteeMethodShotRange{5}"))
-                pdb.RenameCollection("TrusteeMethodShotRange", $"TrusteeMethodShotRange{5}");
-        } },
-
-        {11, db=>{
-            var da = db.GetCollection(nameof(Investor)).FindAll().ToArray();
-            foreach (var item in da)
+        [5] = db =>
             {
-                if (item.ContainsKey("RiskLevel"))
-                    item[nameof(RiskEvaluation)] = ((RiskEvaluation)(int)Enum.Parse<RiskLevel>(item[nameof(RiskLevel)].AsString)).ToString();
-            }
-            db.GetCollection(nameof(Investor)).Update(da);
-        } },
+                using var pdb = DbHelper.Platform();
+                if (!pdb.GetCollectionNames().Contains($"TrusteeMethodShotRange{5}"))
+                    pdb.RenameCollection("TrusteeMethodShotRange", $"TrusteeMethodShotRange{5}");
+            },
 
-        {22, db=>{
-            db.GetCollection(nameof(InvestorBankAccount)).Insert(db.GetCollection("customer_accounts").FindAll().ToArray());
-            //db.RenameCollection("customer_accounts", nameof(InvestorBankAccount));
-        }},
+        [11] = db =>
+             {
+                 var da = db.GetCollection(nameof(Investor)).FindAll().ToArray();
+                 foreach (var item in da)
+                 {
+                     if (item.ContainsKey("RiskLevel"))
+                         item[nameof(RiskEvaluation)] = ((RiskEvaluation)(int)Enum.Parse<RiskLevel>(item[nameof(RiskLevel)].AsString)).ToString();
+                 }
+                 db.GetCollection(nameof(Investor)).Update(da);
+             },
 
-        {23, db=>{
-            var o = db.GetCollection<TransferOrder>().FindAll().ToArray();
-            var rr = db.GetCollection<TransferRecord>().FindAll().ToArray();
-            foreach (var item in o)
+        [22] = db =>
             {
-                if(rr.FirstOrDefault(x=>x.OrderId == item.Id) is TransferRecord r)
+                db.GetCollection(nameof(InvestorBankAccount)).Insert(db.GetCollection("customer_accounts").FindAll().ToArray());
+                //db.RenameCollection("customer_accounts", nameof(InvestorBankAccount));
+
+            },
+
+        [23] = db =>
+            {
+                var o = db.GetCollection<TransferOrder>().FindAll().ToArray();
+                var rr = db.GetCollection<TransferRecord>().FindAll().ToArray();
+                foreach (var item in o)
                 {
-                    item.FundName = r.FundName;
-                    item.ShareClass = r.ShareClass;
+                    if (rr.FirstOrDefault(x => x.OrderId == item.Id) is TransferRecord r)
+                    {
+                        item.FundName = r.FundName;
+                        item.ShareClass = r.ShareClass;
+                    }
                 }
-            }
-            db.GetCollection<TransferOrder>().Update(o);
-        } },
-        {24, db=>{
-            var rr = db.GetCollection<TransferRecord>().Find(x=>x.Type == TransferRecordType.Redemption || x.Type == TransferRecordType.ForceRedemption).OrderBy(x=>x.ConfirmedDate).ToArray();
-            foreach (var item in rr.Where(x=>x.ConfirmedShare == 0))
-            {
-                // citics 多保存的错误赎回
-                if(rr.Any(x=>x.ConfirmedDate == item.ConfirmedDate && x.CustomerId == item.CustomerId && x.FundId == item.FundId && x.RequestAmount == item.RequestAmount && x.RequestShare == item.RequestShare && x.ConfirmedShare >0))
-                    db.GetCollection<TransferRecord>().Delete(item.Id);
-            }
-        } },
+                db.GetCollection<TransferOrder>().Update(o);
 
-    {25, db=>{
-            var d = db.GetCollection<InvestorQualification>().Find(x=>x.InvestorId == 0).ToArray();
-            var cc = db.GetCollection<Investor>().FindAll().ToArray();
-
-            foreach (var item in d)
+            },
+        [24] = db =>
             {
-                if(cc.FirstOrDefault(x=>x.Name == item.InvestorName && x.Identity?.Id == item.IdentityCode) is Investor investor)
-                    item.InvestorId = investor.Id;
+                var rr = db.GetCollection<TransferRecord>().Find(x => x.Type == TransferRecordType.Redemption || x.Type == TransferRecordType.ForceRedemption).OrderBy(x => x.ConfirmedDate).ToArray();
+                foreach (var item in rr.Where(x => x.ConfirmedShare == 0))
+                {
+                    // citics 多保存的错误赎回
+                    if (rr.Any(x => x.ConfirmedDate == item.ConfirmedDate && x.CustomerId == item.CustomerId && x.FundId == item.FundId && x.RequestAmount == item.RequestAmount && x.RequestShare == item.RequestShare && x.ConfirmedShare > 0))
+                        db.GetCollection<TransferRecord>().Delete(item.Id);
+                }
+
+            },
+
+        [25] = db =>
+            {
+                var d = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == 0).ToArray();
+                var cc = db.GetCollection<Investor>().FindAll().ToArray();
+
+                foreach (var item in d)
+                {
+                    if (cc.FirstOrDefault(x => x.Name == item.InvestorName && x.Identity?.Id == item.IdentityCode) is Investor investor)
+                        item.InvestorId = investor.Id;
+                }
+                db.GetCollection<InvestorQualification>().Update(d);
+
+            },
+        [27] = db =>
+        {
+            var doc = db.GetCollection(nameof(FundBankAccount)).FindAll();
+            foreach (var item in doc)
+            {
+                item["Id"] = item["Number"];
             }
-            db.GetCollection<InvestorQualification>().Update(d);
-        } },
+            db.GetCollection(nameof(FundBankAccount)).Update(doc);
+        },
+
+        [29] = db =>
+        {
+            var t = db.GetCollection<RaisingBankTransaction>(nameof(BankTransaction)).FindAll().ToArray();
+
+            Dictionary<string, int> map = new();
+
+            foreach (var item in t)
+            {
+                var n = item.AccountName;
+                if (!string.IsNullOrWhiteSpace(n) && map.TryGetValue(n, out int id))
+                {
+                    item.FundId = id;
+                    continue;
+                }
+
+                var (f, c) = db.FindByName(n);
+                if (f is not null)
+                {
+                    item.FundId = f.Id;
+                    map[n] = f.Id;
+                    continue;
+                }
+
+                // 尝试通过账号查找
+                if (db.GetCollection<FundBankAccount>().FindOne(x => x.Id == item.AccountNo) is FundBankAccount fundAccount)
+                {
+                    item.FundId = fundAccount.FundId;
+                    item.FundCode = fundAccount.FundCode;
+                    map[n] = fundAccount.FundId;
+                }
+
+                else Log.Error($"RaisingBankTransaction 未找到对应的基金 {item.PrintProperties()} ");
+            }
+
+            db.GetCollection<RaisingBankTransaction>().Upsert(t);
+        }
     };
 
 
@@ -133,9 +190,9 @@ public static class DatabaseAssist
             foreach (var item in pair)
             {
                 var ele = db.GetCollection<FundElements>().FindById(item.FundId);
-                if(!ele.Callback.Changes.ContainsKey(item.Id))
+                if (!ele.Callback.Changes.ContainsKey(item.Id))
                 {
-                    ele.Callback.SetValue(new(),item.Id);
+                    ele.Callback.SetValue(new(), item.Id);
                     db.GetCollection<FundElements>().Update(ele);
                 }
             }
@@ -201,145 +258,7 @@ public static class DatabaseAssist
         }
     }
 
-    //private static void Patch()
-    //{
-    //    using var db = DbHelper.Base();
-    //    var col = db.GetCollection<PatchRecord>();
 
-
-    //    if (col.FindById(2) is null)
-    //    {
-    //        // 6.30 解决中信ta，有unset
-    //        var haser = db.GetCollection<TransferRecord>().Find(x => x.Source != null && x.Source.Contains("citics")).Any(x => x.CustomerName == "unset");
-    //        using (var pdb = DbHelper.Platform()) //删除记录
-    //        {
-    //            pdb.GetCollection("TrusteeMethodShotRange").Delete("trustee_citicsQueryTransferRecords");
-    //            pdb.GetCollection("TrusteeMethodShotRange").Delete("trustee_cmsQueryTransferRecords");
-    //        }
-    //        db.GetCollection<TransferRecord>().DeleteMany(x => x.Source == "" || x.Source == null);
-
-    //        col.Insert(new PatchRecord(2, DateTime.Now));
-    //    }
-
-    //    // 清空work记录
-    //    var id = 5;
-    //    if (col.FindById(id) is null)
-    //    {
-    //        using var pdb = DbHelper.Platform();
-    //        if (!pdb.GetCollectionNames().Contains($"TrusteeMethodShotRange{id}"))
-    //            pdb.RenameCollection("TrusteeMethodShotRange", $"TrusteeMethodShotRange{id}");
-    //        //    pdb.DropCollection("TrusteeMethodShotRange");
-
-    //        col.Upsert(new PatchRecord(id, DateTime.Now));
-    //    }
-
-    //    // citics QueryTransferRecords 数据不全，清除记录
-    //    id = 6;
-    //    if (col.FindById(id) is null)
-    //    {
-    //        using var pdb = DbHelper.Platform();
-    //        pdb.GetCollection("TrusteeMethodShotRange").Delete("trustee_citicsQueryTransferRecords");
-
-    //        col.Upsert(new PatchRecord(id, DateTime.Now));
-    //    }
-
-    //    // 修复 citics ta 认购类型错误
-    //    id = 7;
-    //    if (col.FindById(id) is null)
-    //    {
-    //        using var pdb = DbHelper.Base();
-    //        var old = pdb.GetCollection<TransferRecord>().Find(x => x.Source == "api").ToArray();
-
-    //        foreach (var item in old.Where(x => x.Type == TransferRecordType.Subscription && x.ConfirmedShare == 0))
-    //        {
-    //            var r = old.FirstOrDefault(x => x.ExternalId!.StartsWith(item.ExternalId!));
-    //            if (r is not null)
-    //            {
-    //                r.Type = TransferRecordType.Subscription;
-    //                pdb.GetCollection<TransferRecord>().Update(r);
-    //            }
-    //        }
-
-    //        col.Upsert(new PatchRecord(id, DateTime.Now));
-    //    }
-
-    //    id = 8;
-    //    if (col.FindById(id) is null)
-    //    {
-    //        var old = db.GetCollection<TransferRecord>().DeleteMany(x => x.ConfirmedShare == 0 && (x.Type == TransferRecordType.UNK || x.Type == TransferRecordType.Subscription));
-
-    //        col.Upsert(new PatchRecord(id, DateTime.Now));
-    //    }
-
-
-    //    id = 9;
-    //    if (col.FindById(id) is null)
-    //    {
-    //        db.GetCollection<Investor>().DeleteMany(x => x.Name == "unset" || x.Name.Contains("test"));
-    //        // 异常投资人数据
-    //        var bad = db.GetCollection<Investor>().FindAll().ToArray();
-    //        foreach (var (i, item) in bad.Index())
-    //        {
-    //            var exi = bad[..i].FirstOrDefault(y => y.Identity?.Id == item.Identity?.Id);
-    //            if (exi is null)
-    //                continue;
-
-
-    //            var ta = db.GetCollection<TransferRecord>().Find(x => x.CustomerId == item.Id).ToArray();
-    //            foreach (var t in ta)
-    //                t.CustomerId = exi.Id;
-
-    //            var tq = db.GetCollection<TransferRequest>().Find(x => x.CustomerId == item.Id).ToArray();
-    //            foreach (var t in tq)
-    //                t.CustomerId = exi.Id;
-
-    //            if (ta.Length > 0)
-    //                db.GetCollection<TransferRecord>().Update(ta);
-    //            if (tq.Length > 0)
-    //                db.GetCollection<TransferRequest>().Update(tq);
-
-    //            db.GetCollection<Investor>().Delete(item.Id);
-    //        }
-
-
-
-    //        col.Upsert(new PatchRecord(id, DateTime.Now));
-    //    }
-
-
-    //    id = 10;
-    //    if (col.FindById(id) is null)
-    //    {
-    //        db.GetCollection<InvestorQualification>().DeleteMany(x => x.Date == default);
-
-    //        col.Upsert(new PatchRecord(id, DateTime.Now));
-    //    }
-
-    //    id = 11;
-    //    if (col.FindById(id) is null)
-    //    {
-    //        var da = db.GetCollection(nameof(Investor)).FindAll().ToArray();
-    //        foreach (var item in da)
-    //        {
-    //            //        if (item.TryGetValue("RiskLevel", out var riskLevelObj) &&
-    //            //Enum.IsDefined(typeof(RiskLevel), riskLevelObj))
-    //            //        {
-    //            //            // 将 RiskLevel 的值转为 int 再映射成 RiskEvaluation 枚举
-    //            //            var riskLevelValue = (int)riskLevelObj;
-    //            //            if (Enum.IsDefined(typeof(RiskEvaluation), riskLevelValue))
-    //            //            {
-    //            //                item[nameof(RiskEvaluation)] = (RiskEvaluation)riskLevelValue;
-    //            //            }
-    //            //        }
-
-    //            if (item.ContainsKey("RiskLevel"))
-    //                item[nameof(RiskEvaluation)] = ((RiskEvaluation)(int)Enum.Parse<RiskLevel>(item[nameof(RiskLevel)].AsString)).ToString();
-    //        }
-    //        db.GetCollection(nameof(Investor)).Update(da);
-
-    //        col.Upsert(new PatchRecord(id, DateTime.Now));
-    //    }
-    //}
 
 }
 
@@ -375,6 +294,8 @@ public class BaseDatabase : LiteDatabase
 
     public (Fund? Fund, string? Class) FindByName(string name)
     {
+        if (string.IsNullOrWhiteSpace(name)) return default;
+
         var fund = GetCollection<Fund>().FindOne(x => x.Name == name);
         if (fund is not null) return (fund, null);
 

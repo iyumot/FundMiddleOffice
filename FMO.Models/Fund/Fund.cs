@@ -118,37 +118,7 @@ public class Fund
     public string? Trustee { get; set; }
 
 
-
-
-    /// <summary>
-    /// 主募集账户
-    /// </summary>
-    //public Mutable<BankAccount>? CollectionAccount { get; set; }
-
-
-    /// <summary>
-    /// 主托管账户
-    /// </summary>
-    //public Mutable<BankAccount>? CustodyAccount { get; set; }
-
-
-
-    ///// <summary>
-    ///// 要素
-    ///// 与份额类别相关的聚合在这里
-    ///// 与产品相关的放在上面
-    ///// </summary>
-    //public Mutable<Factors>? Factors { get; set; }
-
-
-
-    ///// <summary>
-    ///// 管理费
-    ///// </summary>
-    //public Mutable<PortionFactor<string>>? ManagerFee { get; set; }
-
-
-
+     
 
 
     public static string? GetDefaultShortName(string? name) => string.IsNullOrWhiteSpace(name) ? null : Regex.Replace(name, @"私募\w+基金|集合\w+计划", "");

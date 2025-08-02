@@ -145,9 +145,14 @@ public class FundSingletonAccounts
 /// </summary>
 public class FundBankAccount : BankAccount
 {
+    public new string Id => Number ?? "";
+
     public int FundId { get; set; }
 
     public string? FundCode { get; set; }
+
+
+    public FundAccountType Type { get; set; }
 
     /// <summary>
     /// 销户

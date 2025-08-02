@@ -149,12 +149,13 @@
 
             <TabItem Margin="0,0,10,0" Header="募集户流水">
                 <DataGrid
+                    EnableRowVirtualization="True"
                     IsReadOnly="True"
                     ItemsSource="{Binding TranscationSource.View}"
                     Style="{StaticResource DataGrid.Small}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding Time, StringFormat=yyyy.MM.dd  HH:mm:ss}" Header="时间" />
-                        <DataGridTextColumn Binding="{Binding AccountName}" Header="本方户名" />
+                        <DataGridTextColumn Binding="{Binding This}" Header="本方" />
 
 
                         <DataGridTextColumn Binding="{Binding Direction}" Header="方向" />
@@ -171,6 +172,7 @@
             <TabItem Header="订单">
                 <DataGrid
                     AutoGenerateColumns="False"
+                    EnableRowVirtualization="True"
                     IsReadOnly="True"
                     ItemsSource="{Binding OrderSource.View}"
                     Style="{StaticResource DataGrid.NoSelect}">

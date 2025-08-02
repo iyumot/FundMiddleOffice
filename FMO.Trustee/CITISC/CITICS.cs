@@ -315,11 +315,11 @@ public partial class CITICS : TrusteeApiBase
             {
                 var old = db.GetCollection<FundBankAccount>().FindAll().ToArray();
                 // Í¬²½id
-                foreach (var d in result.Data)
-                {
-                    if (old.FirstOrDefault(x => x.Number == d.Number) is FundBankAccount o)
-                        d.Id = o.Id;
-                }
+                //foreach (var d in result.Data)
+                //{
+                    //if (old.FirstOrDefault(x => x.Number == d.Number) is FundBankAccount o)
+                    //    d.Id = o.Id;
+                //}
                 db.GetCollection<FundBankAccount>().Upsert(result.Data);
             }
         }

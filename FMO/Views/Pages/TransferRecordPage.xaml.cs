@@ -426,7 +426,11 @@ partial class RaisingBankTranscationViewModel
         var fund = funds.FirstOrDefault(x => x.Id == instance.FundId);
         FundName = fund.Name;
 
+        This = string.IsNullOrWhiteSpace(FundName) ? instance.AccountName : FundName;
     }
 
     public string FundName { get; }
+
+
+    public string This { get; }
 }
