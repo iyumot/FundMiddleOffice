@@ -318,6 +318,7 @@
                 <shared:CopyableTextBlock FontWeight="Bold" Text="{Binding RiskLevel}" />
 
 
+                <TextBlock Text="{Binding FundStatus}" DockPanel.Dock="Right"/>
 
                 <shared:CopyableTextBlock Text="{Binding FundShortName}" />
 

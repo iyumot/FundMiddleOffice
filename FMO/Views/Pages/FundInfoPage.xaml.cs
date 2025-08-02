@@ -29,7 +29,8 @@ public partial class FundInfoPage : UserControl
 
 
 public partial class FundInfoPageViewModel : ObservableRecipient,  IRecipient<FundDailyUpdateMessage>,
-    IRecipient<FundStrategyChangedMessage>, IRecipient<FundAccountChangedMessage>, IRecipient<EntityChangedMessage<Fund, DateOnly>>
+    IRecipient<FundStrategyChangedMessage>, IRecipient<FundAccountChangedMessage>, IRecipient<EntityChangedMessage<Fund, DateOnly>>,
+    IRecipient<EntityChangedMessage<Fund, FundStatus>>
 {
     public Fund Fund { get; init; }
 
@@ -499,7 +500,9 @@ public partial class FundInfoPageViewModel : ObservableRecipient,  IRecipient<Fu
         db.GetCollection<Fund>().Update(fund);
         db.Dispose();
         Flows.Add(new LiquidationFlowViewModel(flow));
-        WeakReferenceMessenger.Default.Send(new FundStatusChangedMessage(default, default) { FundId = fund.Id, Status = fund.Status });
+
+        WeakReferenceMessenger.Default.Send(new EntityChangedMessage<Fund,FundStatus>(fund, nameof(Fund.Status), fund.Status));
+        //WeakReferenceMessenger.Default.Send(new FundStatusChangedMessage(default, default) { FundId = fund.Id, Status = fund.Status });
     }
 
 
@@ -520,7 +523,8 @@ public partial class FundInfoPageViewModel : ObservableRecipient,  IRecipient<Fu
             fund.Status = FundStatus.Normal;
             db.GetCollection<Fund>().Update(fund);
 
-            WeakReferenceMessenger.Default.Send(new FundStatusChangedMessage(default, default) { FundId = fund.Id, Status = fund.Status });
+            WeakReferenceMessenger.Default.Send(new EntityChangedMessage<Fund, FundStatus>(fund, nameof(Fund.Status), fund.Status));
+            //WeakReferenceMessenger.Default.Send(new FundStatusChangedMessage(default, default) { FundId = fund.Id, Status = fund.Status });
         }
         Flows.Remove(flow);
     }
@@ -793,6 +797,11 @@ public partial class FundInfoPageViewModel : ObservableRecipient,  IRecipient<Fu
             default:
                 break;
         }
+    }
+
+    public void Receive(EntityChangedMessage<Fund, FundStatus> message)
+    {
+        FundStatus = message.Value;
     }
 }
 
