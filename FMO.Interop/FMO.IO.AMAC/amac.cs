@@ -245,7 +245,10 @@ public static class AmacAssist
                 break;
 
             case string s when s.Contains("运作状态"):
-                fund.Status = EnumHelper.FromDescription<FundStatus>(value.Trim());
+                // 当开始清算，但协会还没更新时，不要覆盖状态
+                if (EnumHelper.FromDescription<FundStatus>(value.Trim()) is FundStatus fundStatus && !(fundStatus == FundStatus.Normal && fund.Status == FundStatus.StartLiquidation))
+                    fund.Status = fundStatus;
+                
                 break;
 
 
