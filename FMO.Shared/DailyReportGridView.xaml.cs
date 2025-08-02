@@ -32,7 +32,7 @@ public partial class DailyReportGridView : UserControl
 }
 
 
-public partial class DailyReportGridViewModel : ObservableRecipient, IRecipient<FundDailyUpdateMessage>, IRecipient<FundStatusChangedMessage>
+public partial class DailyReportGridViewModel : ObservableRecipient, IRecipient<FundDailyUpdateMessage>, IRecipient<EntityChangedMessage<Fund,FundStatus>>
 {
 
     [ObservableProperty]
@@ -127,30 +127,30 @@ public partial class DailyReportGridViewModel : ObservableRecipient, IRecipient<
         Data = tmp;
     }
 
-    public void Receive(FundStatusChangedMessage message)
+    public void Receive(EntityChangedMessage<Fund, FundStatus> message)
     {
         if (Data is null) return;
 
-        if (message.Status >= FundStatus.StartLiquidation)
+        if (message.Value >= FundStatus.StartLiquidation)
         {
-            var f = Data?.FirstOrDefault(x => x.FundId == message.FundId);
+            var f = Data?.FirstOrDefault(x => x.FundId == message.Entity.Id);
 
             if (f is not null)
                 Data = Data!.Except([f]).ToArray();
         }
-        else if (message.Status == FundStatus.Normal && !Data.Any(x => x.FundId == message.FundId))
+        else if (message.Value == FundStatus.Normal && !Data.Any(x => x.FundId == message.Entity.Id))
         {
 
             //最近的交易日
             var td = TradingDay.Current;
             using var db = DbHelper.Base();
-            var fund = db.GetCollection<Fund>().FindById(message.FundId);
+            var fund = db.GetCollection<Fund>().FindById(message.Entity.Id);
             if (fund is null) return;
 
             DailyReportItem item = new DailyReportItem { FundId = fund.Id, FundName = fund.ShortName, FundCode = fund.Code };
 
 
-            var dy = db.GetDailyCollection(message.FundId).Query().OrderByDescending(x => x.Date).Where(x => x.NetValue > 0 && x.CumNetValue > 0).Limit(5).ToArray();
+            var dy = db.GetDailyCollection(message.Entity.Id).Query().OrderByDescending(x => x.Date).Where(x => x.NetValue > 0 && x.CumNetValue > 0).Limit(5).ToArray();
             if (!dy.Any()) return;
 
             item.Daily = dy.First();
@@ -178,6 +178,7 @@ public partial class DailyReportGridViewModel : ObservableRecipient, IRecipient<
         }
     }
 
+   
 
     public partial class DailyReportItem : ObservableObject
     {
