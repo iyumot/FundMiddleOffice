@@ -44,14 +44,17 @@ public partial class ExporterWindowViewModel : ObservableObject
     public ExporterWindowViewModel(ExportTypeFlag flag)
     {
         using var db = DbHelper.Base();
-        Templates = db.GetCollection<TemplateInfo>().FindAll().Where(x => (x.Suit & flag) != 0).ToArray();//Find(x => ((int)x.Suit & (int)flag) != 0).ToArray();
+        // 排除不存在的模板
+        Templates = db.GetCollection<TemplateInfo>().FindAll().Where(x => (x.Suit & flag) != 0).Where(x => Directory.Exists(x.Path)).ToArray();//Find(x => ((int)x.Suit & (int)flag) != 0).ToArray();
+
+        if (Templates.Length == 0)
+            return;
+
 
         if (Templates.Length == 1)
             SelectedTemplate = Templates[0];
 
         ChooseMode = true;
-
-
     }
 
 
@@ -201,19 +204,30 @@ public partial class ExporterWindowViewModel : ObservableObject
             return;
         }
 
-        TplFiles = new DirectoryInfo(value.Path).GetFiles("*.xlsx").Select(x => x.Name[0..^5]);
-        SelectedFileName = TplFiles.FirstOrDefault();
-
-        var meta = value.Meta?.FirstOrDefault(x => x.Type == nameof(Fund));
-        ChooseFund = meta is not null;
-
-        if (ChooseFund && Funds is null)
+        try
         {
-            using var db = DbHelper.Base();
-            Funds = db.GetCollection<FundSelect>(nameof(Fund)).FindAll().ToArray();
-            ChooseFundMode = meta!.Multiple ? SelectionMode.Multiple : SelectionMode.Single;
-        }
+            TplFiles = new DirectoryInfo(value.Path).GetFiles("*.xlsx").Select(x => x.Name[0..^5]);
+            SelectedFileName = TplFiles.FirstOrDefault();
 
+            var meta = value.Meta?.FirstOrDefault(x => x.Type == nameof(Fund));
+            ChooseFund = meta is not null;
+
+            if (ChooseFund && Funds is null)
+            {
+                using var db = DbHelper.Base();
+                Funds = db.GetCollection<FundSelect>(nameof(Fund)).FindAll().ToArray();
+                ChooseFundMode = meta!.Multiple ? SelectionMode.Multiple : SelectionMode.Single;
+            }
+        }
+        catch (DirectoryNotFoundException e)
+        {
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "模板丢失，请重新导入模板"));
+        }
+        catch (Exception e)
+        {
+            Log.Error(e, $"打开模板失败，{value.Name} {value.Id}");
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "打开模板失败，请查看log"));
+        }
     }
 
     partial void OnSelectedFileNameChanged(string? value)
