@@ -300,9 +300,29 @@
                         <DataGrid
                             Padding="20"
                             AutoGenerateColumns="False"
+                            IsReadOnly="True"
                             ItemsSource="{Binding InvestorDetail}"
                             Style="{StaticResource DataGrid.Small}">
                             <DataGrid.Columns>
+                                <DataGridTemplateColumn>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Background="Black"
+                                                CornerRadius="8"
+                                                Visibility="{Binding IsLiquidating, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                                <TextBlock
+                                                    Margin="3,1"
+                                                    FontSize="11"
+                                                    Foreground="White"
+                                                    Text="清" />
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
                                 <DataGridTextColumn Binding="{Binding ConfirmedDate, StringFormat=yyyy-MM-dd}" Header="日期" />
 
                                 <DataGridTextColumn Binding="{Binding ShareClass}" Header="分级" />

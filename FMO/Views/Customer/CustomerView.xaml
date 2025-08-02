@@ -731,7 +731,7 @@
                                                                 VerticalAlignment="Center"
                                                                 Background="Black"
                                                                 CornerRadius="8"
-                                                                Visibility="{Binding RedemptionOnClear, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                                                Visibility="{Binding IsLiquidating, Converter={StaticResource Boolean2VisibilityConverter}}">
                                                                 <TextBlock
                                                                     Margin="3,1"
                                                                     FontSize="11"
@@ -749,7 +749,7 @@
                                                             <DataTrigger Binding="{Binding HasOrder}" Value="False">
                                                                 <Setter TargetName="btn" Property="Foreground" Value="Red" />
                                                             </DataTrigger>
-                                                            <DataTrigger Binding="{Binding RedemptionOnClear}" Value="True">
+                                                            <DataTrigger Binding="{Binding IsLiquidating}" Value="True">
                                                                 <Setter TargetName="btn" Property="Visibility" Value="Collapsed" />
                                                             </DataTrigger>
                                                         </DataTemplate.Triggers>

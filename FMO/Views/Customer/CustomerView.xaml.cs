@@ -278,11 +278,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
                 share += rvm[i].ShareChange();
             }
 
-            // 检查是不是清盘时的赎回
-            if ((rvm[^1].Type == TransferRecordType.Redemption || rvm[^1].Type == TransferRecordType.ForceRedemption) &&
-                db.GetCollection<Fund>().FindById(rvm[0].FundId) is Fund ff && ff.ClearDate != default && rvm[^1].ConfirmedDate > ff.ClearDate)
-                rvm[^1].RedemptionOnClear = true;
-
+ 
 
 
             TransferRecordByFund rbf = new()

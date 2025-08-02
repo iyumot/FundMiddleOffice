@@ -135,6 +135,41 @@ public static class DatabaseAssist
             }
 
             db.GetCollection<RaisingBankTransaction>().Upsert(t);
+        },
+
+        [37] = db =>
+        {
+            var fundclearinfo = db.GetCollection<Fund>().Query().Select(x => new { x.Id, x.ShortName, x.Status, x.ClearDate }).ToList().Where(x => x.Status >= FundStatus.StartLiquidation).ToList();
+            var fundids = fundclearinfo.Select(x => x.Id).ToList();
+            var groupedRecords = db.GetCollection<TransferRecord>().Query().Where(x => fundids.Contains(x.FundId)).OrderBy(x => x.ConfirmedDate).ToList().GroupBy(x => x.FundId);
+
+            //Parallel.ForEach(groupedRecords, ft =>
+            foreach (var ft in groupedRecords)
+            {
+                var fid = ft.Key;
+                // 检查 
+                if (ft.Sum(x => x.ShareChange()) != 0)
+                {
+                    Log.Error($"Fund {fid} 在清算后，还有份额，请检查数据");
+                    continue;
+                }
+
+                DateOnly last = default;
+                foreach (var item in ft.Reverse())
+                {
+                    if (item.Type != TransferRecordType.Redemption && item.Type != TransferRecordType.ForceRedemption)
+                        continue;
+
+                    if (last == default)
+                        last = item.ConfirmedDate;
+                    else if (item.ConfirmedDate != last)
+                        break;
+
+                    item.IsLiquidating = true;
+                    db.GetCollection<TransferRecord>().Update(item);
+                }
+            }//);
+
         }
     };
 
@@ -197,9 +232,6 @@ public static class DatabaseAssist
                 }
             }
             ////////////////////////////
-
-
-
 
 
             ////////////////////////
