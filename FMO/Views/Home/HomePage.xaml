@@ -165,71 +165,6 @@
             </hc:UniformSpacingPanel>
 
 
-            <ContentControl Content="{Binding BuySellNearDaysViewModel}" Visibility="{Binding BuySellIn7DaysContext, Converter={StaticResource Object2VisibilityConverter}}">
-                <ContentControl.ContentTemplate>
-                    <DataTemplate>
-                        <hc:SimplePanel>
-                            <hc:UniformSpacingPanel>
-                                <TextBlock FontWeight="Bold" Text="近7日认申购" />
-                                <ToggleButton
-                                    Content="{Binding BuyCount}"
-                                    IsChecked="{Binding ShowBuyList}"
-                                    Style="{StaticResource ToggleButton.HyperlinkLike}" />
-                                <TextBlock Text="笔" />
-
-
-                                <TextBlock
-                                    Margin="10,0,0,0"
-                                    FontWeight="Bold"
-                                    Text="近7日赎回" />
-                                <ToggleButton
-                                    Content="{Binding SellCount}"
-                                    IsChecked="{Binding ShowSellList}"
-                                    Style="{StaticResource ToggleButton.HyperlinkLike}" />
-                                <TextBlock Text="笔" />
-                            </hc:UniformSpacingPanel>
-
-                            <Popup
-                                AllowsTransparency="True"
-                                IsOpen="{Binding ShowBuyList}"
-                                StaysOpen="False">
-                                <Border>
-                                    <DataGrid
-                                        AutoGenerateColumns="False"
-                                        ItemsSource="{Binding BuyRequests}"
-                                        Style="{StaticResource DataGrid.Small}">
-                                        <DataGrid.Columns>
-                                            <DataGridTextColumn Binding="{Binding Id}" Header="Id" />
-                                            <DataGridTextColumn Binding="{Binding Name}" Header="投资人" />
-                                        </DataGrid.Columns>
-                                    </DataGrid>
-                                </Border>
-                            </Popup>
-                            <Popup
-                                AllowsTransparency="True"
-                                IsOpen="{Binding ShowSellList}"
-                                StaysOpen="False">
-                                <Border>
-                                    <DataGrid
-                                        AutoGenerateColumns="False"
-                                        ItemsSource="{Binding SellRequests}"
-                                        Style="{StaticResource DataGrid.Small}">
-                                        <DataGrid.Columns>
-                                            <DataGridTextColumn Binding="{Binding Id}" Header="Id" />
-                                            <DataGridTextColumn Binding="{Binding CustomerName}" Header="投资人" />
-                                            <DataGridTextColumn Binding="{Binding RequestDate}" Header="日期" />
-                                            <DataGridTextColumn Binding="{Binding RequestType}" Header="类型" />
-                                            <DataGridTextColumn Binding="{Binding RequestAmount}" Header="金额" />
-                                            <DataGridTextColumn Binding="{Binding RequestShare}" Header="份额" />
-                                        </DataGrid.Columns>
-                                    </DataGrid>
-                                </Border>
-                            </Popup>
-                        </hc:SimplePanel>
-                    </DataTemplate>
-                </ContentControl.ContentTemplate>
-            </ContentControl>
-
 
 
             <ListBox
@@ -321,7 +256,89 @@
         </GroupBox>
 
 
-        <WrapPanel>
+        <hc:UniformSpacingPanel
+            Margin="0,10"
+            DockPanel.Dock="Top"
+            Orientation="Vertical">
+
+            <!--  近期申赎情况  -->
+            <ContentControl Content="{Binding BuySellNearDaysViewModel}" Visibility="{Binding BuySellIn7DaysContext, Converter={StaticResource Object2VisibilityConverter}}">
+                <ContentControl.ContentTemplate>
+                    <DataTemplate>
+                        <hc:SimplePanel>
+                            <hc:UniformSpacingPanel>
+                                <TextBlock FontWeight="Bold" Text="近7日认申购" />
+                                <ToggleButton
+                                    Content="{Binding BuyCount}"
+                                    IsChecked="{Binding ShowBuyList}"
+                                    Style="{StaticResource ToggleButton.HyperlinkLike}" />
+                                <TextBlock Text="笔" />
+
+
+                                <TextBlock
+                                    Margin="10,0,0,0"
+                                    FontWeight="Bold"
+                                    Text="赎回" />
+                                <ToggleButton
+                                    Content="{Binding SellCount}"
+                                    IsChecked="{Binding ShowSellList}"
+                                    Style="{StaticResource ToggleButton.HyperlinkLike}" />
+                                <TextBlock Text="笔" />
+                            </hc:UniformSpacingPanel>
+
+                            <Popup
+                                AllowsTransparency="True"
+                                IsOpen="{Binding ShowBuyList}"
+                                StaysOpen="False">
+                                <Border>
+                                    <DataGrid
+                                        AutoGenerateColumns="False"
+                                        ItemsSource="{Binding BuyRequests}"
+                                        Style="{StaticResource DataGrid.Small}">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Binding="{Binding Id}" Header="Id" />
+                                            <DataGridTextColumn Binding="{Binding RequestDate, StringFormat=yyyy-MM-dd}" Header="日期" />
+                                            <DataGridTextColumn Binding="{Binding FundName}" Header="基金" />
+                                            <DataGridTextColumn Binding="{Binding CustomerName}" Header="投资人" />
+                                            <DataGridTextColumn Binding="{Binding RequestType}" Header="类型" />
+                                            <DataGridTextColumn Binding="{Binding RequestAmount}" Header="金额" />
+                                            <DataGridTextColumn Binding="{Binding RequestShare}" Header="份额" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </Border>
+                            </Popup>
+                            <Popup
+                                AllowsTransparency="True"
+                                IsOpen="{Binding ShowSellList}"
+                                StaysOpen="False">
+                                <Border>
+                                    <DataGrid
+                                        AutoGenerateColumns="False"
+                                        ItemsSource="{Binding SellRequests}"
+                                        Style="{StaticResource DataGrid.Small}">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Binding="{Binding Id}" Header="Id" />
+                                            <DataGridTextColumn Binding="{Binding RequestDate, StringFormat=yyyy-MM-dd}" Header="日期" />
+                                            <DataGridTextColumn Binding="{Binding FundName}" Header="基金" />
+                                            <DataGridTextColumn Binding="{Binding CustomerName}" Header="投资人" />
+                                            <DataGridTextColumn Binding="{Binding RequestType}" Header="类型" />
+                                            <DataGridTextColumn Binding="{Binding RequestAmount}" Header="金额" />
+                                            <DataGridTextColumn Binding="{Binding RequestShare}" Header="份额" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </Border>
+                            </Popup>
+                        </hc:SimplePanel>
+                    </DataTemplate>
+                </ContentControl.ContentTemplate>
+            </ContentControl>
+        </hc:UniformSpacingPanel>
+
+
+        <WrapPanel Margin="0,10,0,0">
+
+
+
             <Border BorderBrush="AliceBlue" BorderThickness="1">
                 <ContentControl Content="{Binding RaisingAccountTip}">
                     <ContentControl.ContentTemplate>
