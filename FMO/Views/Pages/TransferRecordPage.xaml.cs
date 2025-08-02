@@ -44,9 +44,9 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsRecordTabSelected))]
-    public partial int TabIndex { get; set; } = 2;
+    public partial int TabIndex { get; set; } = 3;
 
-    public bool IsRecordTabSelected => TabIndex == 2;
+    public bool IsRecordTabSelected => TabIndex == 3;
 
     [ObservableProperty]
     public partial ObservableCollection<TransferRequest>? Requests { get; set; }
@@ -57,6 +57,10 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
 
     public CollectionViewSource RequestsSource { get; set; } = new();
+
+    public CollectionViewSource TranscationSource { get; set; } = new();
+
+    public ObservableCollection<BankTranscationViewModel>? BankTransactions { get; set; }
 
     FileSystemWatcher? watcher;
 
@@ -81,6 +85,8 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
                 Records = [.. tr.Select(x => new TransferRecordViewModel(x))];
                 Requests = new ObservableCollection<TransferRequest>(tr2);
                 Orders = [.. t3.Select(x => new TransferOrderViewModel(x))];
+                BankTransactions = [..db.GetCollection<BankTransaction>().FindAll().Select(x=>new BankTranscationViewModel(x))];
+
 
                 foreach (var o in Orders)
                 {
@@ -107,8 +113,8 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
                 RequestsSource.Source = Requests;
                 OrderSource.Source = Orders;
 
-
-
+                TranscationSource.Source = BankTransactions;
+                TranscationSource.SortDescriptions.Add(new SortDescription(nameof(BankTransaction.Time), ListSortDirection.Descending));
             });
         });
 
@@ -407,4 +413,10 @@ partial class TransferRecordViewModel
 partial class TransferOrderViewModel
 {
     public bool IsComfirmed { get => field; set { field = value; OnPropertyChanged(nameof(IsComfirmed)); } }
+}
+
+[AutoChangeableViewModel(typeof(BankTransaction))]
+partial class BankTranscationViewModel
+{
+
 }

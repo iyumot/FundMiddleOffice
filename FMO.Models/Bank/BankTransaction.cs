@@ -1,8 +1,10 @@
-﻿namespace FMO.Models;
+﻿using System.ComponentModel;
+
+namespace FMO.Models;
 
 
-
-public enum TransctionDirection { Pay, Receive, Cancel };
+[TypeConverter(typeof(EnumDescriptionTypeConverter))]
+public enum TransctionDirection { [Description("付")] Pay, [Description("收")] Receive, [Description("取消")] Cancel };
 
 /// <summary>
 /// 银行流水
