@@ -349,7 +349,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
             StartAngle = 0
         };
         pieSeries.Slices.Add(new PieSlice("买入", 100) { Fill = OxyColors.Green, IsExploded = true });
-        pieSeries.Slices.Add(new PieSlice("卖出", 50) { Fill = OxyColors.Red});
+        pieSeries.Slices.Add(new PieSlice("卖出", 50) { Fill = OxyColors.Red });
         ;
 
         model.Series.Add(pieSeries);
@@ -370,11 +370,16 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
     private void DailyCheckRequestIsWell()
     {
         var today = DateOnly.FromDateTime(DateTime.Now);
-        var limit = DateTime.Today.AddDays(-2);
+        var limit = today.AddDays(-7);
+        var limitt = new DateTime(limit);
         using var db = DbHelper.Base();
-        // 2日内的request
-        var tq = db.GetCollection<TransferRequest>().Find(x => today.DayNumber - x.RequestDate.DayNumber < 2).ToArray();
-        var btrans = db.GetCollection<BankTransaction>().Find(x => x.Time > limit).ToArray();
+        // 7日内的request
+        var tq = db.GetCollection<TransferRequest>().Find(x => x.RequestDate > limit).ToArray();
+        var btrans = db.GetCollection<BankTransaction>().Find(x => x.Time > limitt).ToArray();
+
+        tq.Where(x =)
+
+
 
         foreach (var item in tq)
         {
