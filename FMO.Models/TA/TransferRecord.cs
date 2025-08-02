@@ -113,6 +113,12 @@ public class TransferRecord : IEquatable<TransferRecord>
     public string? Agency { get; set; }
 
     /// <summary>
+    /// 表示是清盘时的赎回记录
+    /// 没有order 和 request 
+    /// </summary>
+    public bool IsLiquidating { get; set; }
+
+    /// <summary>
     /// 数据来源
     /// </summary>
     public string? Source { get; set; }
