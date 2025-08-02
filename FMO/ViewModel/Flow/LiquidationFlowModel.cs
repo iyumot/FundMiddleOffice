@@ -117,8 +117,11 @@ public partial class LiquidationFlowViewModel : FlowViewModel
             using var db = DbHelper.Base();
             if (db.GetCollection<Fund>().FindById(FundId) is Fund f)
             {
+                if (f.Status < FundStatus.StartLiquidation)
+                    f.Status = FundStatus.StartLiquidation;
                 f.ClearDate = DateOnly.FromDateTime(Date.Value);
                 db.GetCollection<Fund>().Update(f);
+                WeakReferenceMessenger.Default.Send(new EntityChangedMessage<Fund, FundStatus>(f, nameof(Fund.Status), f.Status));
                 WeakReferenceMessenger.Default.Send(new EntityChangedMessage<Fund, DateOnly>(f, nameof(Fund.ClearDate), f.ClearDate));
             }
         }
