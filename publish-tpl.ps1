@@ -1,16 +1,16 @@
 clear
-Write-Host ¡°¿ªÊ¼´ò°ü ËùÓĞÄ£°å"
+Write-Host â€œå¼€å§‹æ‰“åŒ… æ‰€æœ‰æ¨¡æ¿"
 
 
 # BuildAndPackageTemplates.ps1
-# ĞŞÕı°æ£º½öÊÕ¼¯¹¹½¨Êä³öÄ¿Â¼£¨bin\Release\net9.0\£©ÖĞµÄ tpl.dll ºÍ .xlsx ÎÄ¼ş
+# ä¿®æ­£ç‰ˆï¼šä»…æ”¶é›†æ„å»ºè¾“å‡ºç›®å½•ï¼ˆbin\Release\net9.0\ï¼‰ä¸­çš„ tpl.dll å’Œ .xlsx æ–‡ä»¶
 
 $Root = Get-Location
 $TemplatesDir = Join-Path $Root "Templates"
 $OutputDir = Join-Path $Root "deftpl"
 
 if (-not (Test-Path $TemplatesDir)) {
-    Write-Error " Templates Ä¿Â¼²»´æÔÚ: $TemplatesDir"
+    Write-Error " Templates ç›®å½•ä¸å­˜åœ¨: $TemplatesDir"
     exit 1
 }
 
@@ -21,7 +21,7 @@ if (-not (Test-Path $OutputDir)) {
 $Projects = Get-ChildItem -Path $TemplatesDir -Directory
 
 if ($Projects.Count -eq 0) {
-    Write-Warning " Templates ÖĞÃ»ÓĞ×ÓÏîÄ¿¡£"
+    Write-Warning " Templates ä¸­æ²¡æœ‰å­é¡¹ç›®ã€‚"
     exit 0
 }
 
@@ -34,22 +34,22 @@ foreach ($Project in $Projects) {
     $TargetFramework = "net9.0"
     $OutputBinDir = Join-Path $ProjectPath "bin\Release\$TargetFramework"
 
-    Write-Host " ¿ªÊ¼¹¹½¨ÏîÄ¿: $ProjectName (.NET $TargetFramework, Release)" -ForegroundColor Cyan
+    Write-Host " å¼€å§‹æ„å»ºé¡¹ç›®: $ProjectName (.NET $TargetFramework, Release)" -ForegroundColor Cyan
 
-    # ²éÕÒ .csproj
+    # æŸ¥æ‰¾ .csproj
     $CspojFile = Get-ChildItem -Path $ProjectPath -Filter "*.csproj" -File | Select-Object -First 1
     if (-not $CspojFile) {
-        Write-Warning " Î´ÕÒµ½ .csproj ÎÄ¼ş£¬Ìø¹ı: $ProjectName"
+        Write-Warning " æœªæ‰¾åˆ° .csproj æ–‡ä»¶ï¼Œè·³è¿‡: $ProjectName"
         continue
     }
 
-    # ÇåÀí¾ÉÊä³ö
+    # æ¸…ç†æ—§è¾“å‡º
     $BinDir = Join-Path $ProjectPath "bin"
     $ObjDir = Join-Path $ProjectPath "obj"
     if (Test-Path $BinDir) { Remove-Item $BinDir -Recurse -Force -ErrorAction SilentlyContinue }
     if (Test-Path $ObjDir) { Remove-Item $ObjDir -Recurse -Force -ErrorAction SilentlyContinue }
 
-    # ¹¹½¨²ÎÊı
+    # æ„å»ºå‚æ•°
     $BuildArgs = @(
         "build"
         $CspojFile.FullName
@@ -64,35 +64,35 @@ foreach ($Project in $Projects) {
         "/v:quiet"
     )
 
-    # Ö´ĞĞ¹¹½¨
+    # æ‰§è¡Œæ„å»º
     dotnet @BuildArgs
     if ($LASTEXITCODE -ne 0) {
-        Write-Error " ¹¹½¨Ê§°Ü: $ProjectName"
+        Write-Error " æ„å»ºå¤±è´¥: $ProjectName"
         continue
     }
 
-    # ¼ì²éÊä³öÄ¿Â¼ÊÇ·ñ´æÔÚ
+    # æ£€æŸ¥è¾“å‡ºç›®å½•æ˜¯å¦å­˜åœ¨
     if (-not (Test-Path $OutputBinDir)) {
-        Write-Error " ¹¹½¨Êä³öÄ¿Â¼²»´æÔÚ: $OutputBinDir"
+        Write-Error " æ„å»ºè¾“å‡ºç›®å½•ä¸å­˜åœ¨: $OutputBinDir"
         continue
     }
 
-    # ? Ö»ÊÕ¼¯Êä³öÄ¿Â¼ÖĞµÄ tpl.dll ºÍ .xlsx ÎÄ¼ş
+    # ? åªæ”¶é›†è¾“å‡ºç›®å½•ä¸­çš„ tpl.dll å’Œ .xlsx æ–‡ä»¶
     $DllFile = Join-Path $OutputBinDir "tpl.dll"
     if (-not (Test-Path $DllFile)) {
-        Write-Error " Î´Éú³É tpl.dll: $DllFile"
+        Write-Error " æœªç”Ÿæˆ tpl.dll: $DllFile"
         continue
     }
 
-    # ? Ö»´ÓÊä³öÄ¿Â¼ÕÒ .xlsx
+    # ? åªä»è¾“å‡ºç›®å½•æ‰¾ .xlsx
     $XlsxInOutput = Get-ChildItem -Path $OutputBinDir -Filter "*.xlsx" -File | ForEach-Object { $_.FullName }
     $PackFiles = @($DllFile) + $XlsxInOutput
 
     if ($PackFiles.Count -eq 1) {
-        Write-Warning " Êä³öÄ¿Â¼ÖĞÃ»ÓĞ .xlsx ÎÄ¼ş: $OutputBinDir"
+        Write-Warning " è¾“å‡ºç›®å½•ä¸­æ²¡æœ‰ .xlsx æ–‡ä»¶: $OutputBinDir"
     }
 
-    # ×¼±¸Ñ¹Ëõ°ü
+    # å‡†å¤‡å‹ç¼©åŒ…
     $ZipFilePath = Join-Path $OutputDir "$ProjectName.zip"
     if (Test-Path $ZipFilePath) { Remove-Item $ZipFilePath -Force }
 
@@ -100,7 +100,7 @@ foreach ($Project in $Projects) {
     if (Test-Path $TempDir) { Remove-Item $TempDir -Recurse -Force }
     New-Item -ItemType Directory -Path $TempDir -Force | Out-Null
 
-    # ¸´ÖÆÎÄ¼ş£¨±ÜÃâÖØÃû£©
+    # å¤åˆ¶æ–‡ä»¶ï¼ˆé¿å…é‡åï¼‰
     foreach ($file in $PackFiles) {
         $fileName = Split-Path $file -Leaf
         $dest = Join-Path $TempDir $fileName
@@ -115,14 +115,14 @@ foreach ($Project in $Projects) {
         Copy-Item $file $dest
     }
 
-    # Ñ¹Ëõ
+    # å‹ç¼©
     try {
         Add-Type -AssemblyName System.IO.Compression.FileSystem
         [System.IO.Compression.ZipFile]::CreateFromDirectory($TempDir, $ZipFilePath)
-        Write-Host " ´ò°ü³É¹¦: $ZipFilePath" -ForegroundColor Green
+        Write-Host " æ‰“åŒ…æˆåŠŸ: $ZipFilePath" -ForegroundColor Green
     }
     catch {
-        Write-Error " Ñ¹ËõÊ§°Ü: $_"
+        Write-Error " å‹ç¼©å¤±è´¥: $_"
     }
     finally {
         Remove-Item $TempDir -Recurse -Force -ErrorAction SilentlyContinue
@@ -131,4 +131,4 @@ foreach ($Project in $Projects) {
     Start-Sleep -Milliseconds 200
 }
 
-Write-Host " ËùÓĞÏîÄ¿´ò°üÍê³É£¡Êä³öÄ¿Â¼: $OutputDir" -ForegroundColor Yellow
+Write-Host " æ‰€æœ‰é¡¹ç›®æ‰“åŒ…å®Œæˆï¼è¾“å‡ºç›®å½•: $OutputDir" -ForegroundColor Yellow
