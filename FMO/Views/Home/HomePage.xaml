@@ -76,6 +76,71 @@
                 </oxy:TrackerControl.Content>
             </oxy:TrackerControl>
         </ControlTemplate>
+
+        <Style x:Key="ToggleButton.HyperlinkLike" TargetType="ToggleButton">
+            <!--  基础样式设置  -->
+            <Setter Property="Foreground" Value="#0066CC" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Padding" Value="2,0,2,0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <!--  使用附加属性设置文本装饰  -->
+            <Setter Property="TextBlock.TextDecorations" Value="Underline" />
+
+            <!--  模板定义  -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+
+                            <hc:SimplePanel x:Name="content">
+                                <ContentPresenter
+                                    Margin="5,0"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    Content="{TemplateBinding Content}"
+                                    ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}" />
+
+                                <Line
+                                    VerticalAlignment="Bottom"
+                                    Stroke="{TemplateBinding Foreground}"
+                                    X1="0"
+                                    X2="{Binding ElementName=content, Path=ActualWidth}" />
+                            </hc:SimplePanel>
+                        </Border>
+
+                        <!--  触发器定义 - 处理交互状态  -->
+                        <ControlTemplate.Triggers>
+                            <!--  按下状态  -->
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Foreground" Value="#001166" />
+                            </Trigger>
+
+                            <!--  选中状态  -->
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Foreground" Value="#800080" />
+                                <Setter Property="FontWeight" Value="Bold" />
+                            </Trigger>
+
+                            <!--  禁用状态  -->
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="#999999" />
+                                <Setter Property="Cursor" Value="Arrow" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </UserControl.Resources>
     <DockPanel>
 
@@ -98,6 +163,73 @@
 
 
             </hc:UniformSpacingPanel>
+
+
+            <ContentControl Content="{Binding BuySellNearDaysViewModel}" Visibility="{Binding BuySellIn7DaysContext, Converter={StaticResource Object2VisibilityConverter}}">
+                <ContentControl.ContentTemplate>
+                    <DataTemplate>
+                        <hc:SimplePanel>
+                            <hc:UniformSpacingPanel>
+                                <TextBlock FontWeight="Bold" Text="近7日认申购" />
+                                <ToggleButton
+                                    Content="{Binding BuyCount}"
+                                    IsChecked="{Binding ShowBuyList}"
+                                    Style="{StaticResource ToggleButton.HyperlinkLike}" />
+                                <TextBlock Text="笔" />
+
+
+                                <TextBlock
+                                    Margin="10,0,0,0"
+                                    FontWeight="Bold"
+                                    Text="近7日赎回" />
+                                <ToggleButton
+                                    Content="{Binding SellCount}"
+                                    IsChecked="{Binding ShowSellList}"
+                                    Style="{StaticResource ToggleButton.HyperlinkLike}" />
+                                <TextBlock Text="笔" />
+                            </hc:UniformSpacingPanel>
+
+                            <Popup
+                                AllowsTransparency="True"
+                                IsOpen="{Binding ShowBuyList}"
+                                StaysOpen="False">
+                                <Border>
+                                    <DataGrid
+                                        AutoGenerateColumns="False"
+                                        ItemsSource="{Binding BuyRequests}"
+                                        Style="{StaticResource DataGrid.Small}">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Binding="{Binding Id}" Header="Id" />
+                                            <DataGridTextColumn Binding="{Binding Name}" Header="投资人" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </Border>
+                            </Popup>
+                            <Popup
+                                AllowsTransparency="True"
+                                IsOpen="{Binding ShowSellList}"
+                                StaysOpen="False">
+                                <Border>
+                                    <DataGrid
+                                        AutoGenerateColumns="False"
+                                        ItemsSource="{Binding SellRequests}"
+                                        Style="{StaticResource DataGrid.Small}">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Binding="{Binding Id}" Header="Id" />
+                                            <DataGridTextColumn Binding="{Binding CustomerName}" Header="投资人" />
+                                            <DataGridTextColumn Binding="{Binding RequestDate}" Header="日期" />
+                                            <DataGridTextColumn Binding="{Binding RequestType}" Header="类型" />
+                                            <DataGridTextColumn Binding="{Binding RequestAmount}" Header="金额" />
+                                            <DataGridTextColumn Binding="{Binding RequestShare}" Header="份额" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </Border>
+                            </Popup>
+                        </hc:SimplePanel>
+                    </DataTemplate>
+                </ContentControl.ContentTemplate>
+            </ContentControl>
+
 
 
             <ListBox
