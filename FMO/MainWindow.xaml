@@ -310,39 +310,6 @@
 
 
 
-        <ListBox
-            Grid.Row="2"
-            HorizontalAlignment="Center"
-            BorderBrush="Transparent"
-            ItemsSource="{Binding MenuItems}"
-            Style="{StaticResource ListBoxCustom}">
-            <ListBox.ItemTemplate>
-                <DataTemplate DataType="local:MainMenu">
-                    <Button
-                        Margin="0,10"
-                        Background="Transparent"
-                        Command="{Binding Command}"
-                        CommandParameter="{Binding Parameter}"
-                        Style="{StaticResource ButtonCustom}">
-                        <DockPanel>
-                            <TextBlock
-                                Margin="0,4,0,0"
-                                HorizontalAlignment="Center"
-                                DockPanel.Dock="Bottom"
-                                FontSize="11"
-                                Foreground="Black"
-                                Text="{Binding Title}" />
-                            <Viewbox Width="26" Height="26">
-                                <Path Data="{Binding Icon}" Fill="{Binding IconBrush}" />
-                            </Viewbox>
-                        </DockPanel>
-                    </Button>
-
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-
-
 
         <TabControl
             Grid.Row="1"
@@ -353,6 +320,46 @@
             ItemContainerStyle="{StaticResource TabItem.Home}"
             ItemsSource="{Binding Pages}" />
 
+
+
+        <ListBox
+            Grid.Row="2"
+            HorizontalAlignment="Stretch"
+            Panel.ZIndex="99"
+            BorderBrush="Transparent"
+            ItemsSource="{Binding MenuItems}"
+            Style="{StaticResource ListBoxCustom}">
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="local:MainMenu">
+
+                    <Button
+                        Margin="0,8"
+                        Background="Transparent"
+                        Command="{Binding Command}"
+                        CommandParameter="{Binding Parameter}"
+                        Style="{StaticResource ButtonCustom}">
+                        <hc:Badge
+                            Background="Red"
+                            ShowBadge="{Binding HasTip}"
+                            Status="Dot"
+                            ToolTip="{Binding Tip}">
+                            <DockPanel Margin="6,0">
+                                <TextBlock
+                                    Margin="0,4,0,0"
+                                    HorizontalAlignment="Center"
+                                    DockPanel.Dock="Bottom"
+                                    FontSize="11"
+                                    Foreground="Black"
+                                    Text="{Binding Title}" />
+                                <Viewbox Width="26" Height="26">
+                                    <Path Data="{Binding Icon}" Fill="{Binding IconBrush}" />
+                                </Viewbox>
+                            </DockPanel>
+                        </hc:Badge>
+                    </Button>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
 
 
         <ScrollViewer

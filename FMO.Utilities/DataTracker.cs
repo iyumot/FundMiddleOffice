@@ -3,6 +3,7 @@ using FMO.Models;
 using FMO.Trustee;
 using Serilog;
 using System.Collections;
+using System.Collections.Concurrent;
 
 namespace FMO.Utilities;
 
@@ -20,9 +21,22 @@ public enum TipType
     /// </summary>
     FundNoTARecord,
     OverDue,
+
+
+
+
+    TANoOwner,
+
+
+
+
+
+
 }
 
 public record class FundTip(int FundId, string FundName, TipType Type, string? Tip);
+
+public record UniformTip(TipType Type, object? Tip);
 
 public record FundTipMessage(int FundId);
 
@@ -36,6 +50,12 @@ public static class DataTracker
 {
 
     public static FundTipList FundTips { get; } = new();
+
+    public static ConcurrentDictionary<TipType, string?> UniformTips { get; } = new();
+
+ 
+
+
 
     static DataTracker()
     {
@@ -239,6 +259,20 @@ public static class DataTracker
     }
 
     /// <summary>
+    /// 检查TA中的fundid,investor id是不是0
+    /// </summary>
+    public static void CheckTAMissOwner()
+    {
+        using var db = DbHelper.Base();
+        var e1 = db.GetCollection<TransferRequest>().Count(x => x.FundId == 0 || x.CustomerId == 0);
+        var e2 = db.GetCollection<TransferRecord>().Count(x => x.FundId == 0 || x.CustomerId == 0);
+
+        if (e1 + e2 > 0)
+            WeakReferenceMessenger.Default.Send(new UniformTip(TipType.TANoOwner, $"发现未关联Request {e1}个，Record {e2}个"));
+    }
+
+
+    /// <summary>
     /// 检查并匹配订单
     /// </summary>
     /// <param name="db"></param>
@@ -246,6 +280,10 @@ public static class DataTracker
     {
         var orders = db.GetCollection<TransferOrder>().FindAll().ToArray();
         var tas = db.GetCollection<TransferRecord>().FindAll().Where(x => TransferRecord.RequireOrder(x.Type)).ToArray();
+
+        // 检查缺失request
+        var miss = db.GetCollection<TransferMapping>().Find(x => x.RequestId == 0 && x.RecordId != 0).ToList();
+
 
         // 清除不存在的order
         var bad = tas.Where(x => x.OrderId != 0).ExceptBy(orders.Select(x => x.Id), x => x.OrderId).ToArray();
@@ -385,10 +423,10 @@ public static class DataTracker
     }
 
 
-    public static void OnNewTransferRecord(TransferRecord r)
-    {
+    //public static void OnNewTransferRecord(TransferRecord r)
+    //{
 
-    }
+    //}
 
 
 
@@ -491,6 +529,77 @@ public static class DataTracker
     {
         foreach (var item in same)
             WeakReferenceMessenger.Default.Send(new TransferRecordLinkOrderMessage(item.Id, item.OrderId));
+    }
+
+    public static void OnBatchTransferRequest(TransferRequest[] data)
+    {
+        // 匹配订单
+        using var db = DbHelper.Base();
+        // 找已知的map
+        var rids = data.Select(x => x.Id).ToList();
+        var mapTable = db.GetCollection<TransferMapping>();
+        var exists = mapTable.Find(x => rids.Contains(x.Id)).ToList();
+
+        foreach (var req in data)
+        {
+            var old = exists.FirstOrDefault(x => x.RecordId == req.Id) ?? new() { RequestId = req.Id };
+
+            // 未匹配order
+            if (old.OrderId == 0)
+            {
+                // 找RequestDate前最后一个order
+                if (db.GetCollection<TransferOrder>().Find(x => x.FundId == req.FundId && x.InvestorId == req.CustomerId && x.Date <= req.RequestDate).MaxBy(x => x.Date) is TransferOrder order)
+                {
+                    // 验证order 没有匹配
+                    if (mapTable.FindOne(x => x.OrderId == order.Id) is TransferMapping conflict)
+                    {
+                        if (conflict.RequestId != req.Id)
+                            Log.Error($"Order {conflict.Id} 匹配冲突，已匹配 {conflict.RequestId}，待匹配 {req.Id}");
+                        else old.Merge(conflict);
+                    }
+                }
+            }
+
+            // 未匹配record
+            if (old.RecordId == 0)
+            {
+                if (db.GetCollection<TransferRecord>().Find(x => x.ExternalRequestId == req.ExternalId) is TransferRecord record)
+                {
+                    old.RecordId = record.Id;
+                }
+            }
+
+            // 未匹配流水
+            if (string.IsNullOrWhiteSpace(old.TransactionId))
+            {
+                bool isbuy = req.IsBuy();
+                var banks = db.GetCollection<InvestorBankAccount>().Find(x => x.OwnerId == req.CustomerId).Select(x => x.Number);
+                if (isbuy)
+                {
+                    var limit = new DateTime(req.RequestDate, TimeOnly.MaxValue);
+                    foreach (var t in db.GetCollection<RaisingBankTransaction>().Find(x => x.FundId == req.FundId && x.Direction == TransctionDirection.Receive
+                            && x.Time <= limit && (banks.Contains(x.CounterNo) || x.CounterName == req.CustomerName)).OrderByDescending(x => x.Time))
+                    {
+                        if (t.Amount == req.RequestAmount)
+                            old.TransactionId = t.Id;
+
+                    }
+                }
+
+
+            }
+
+            mapTable.Update(old);
+        }
+
+
+        // 通知
+        try
+        {
+            foreach (var item in data)
+                WeakReferenceMessenger.Default.Send(item);
+        }
+        catch { }
     }
 }
 
@@ -605,3 +714,27 @@ public class FundTipList : ThreadSafeList<FundTip>
         }
     }
 }
+
+//public class UniformTipList : ThreadSafeList<UniformTip>
+//{
+//    public override void Add(UniformTip item)
+//    {
+//        _lock.EnterWriteLock();
+//        bool add = false;
+//        try
+//        {
+//            // 不重复添加
+//            if (!_innerList.Any(x => x.Type == item.Type))
+//            {
+//                _innerList.Add(item);
+//                add = true;
+//            }
+//        }
+//        finally
+//        {
+//            _lock.ExitWriteLock();
+//            if (add)
+//                CollectionChanged?.Invoke();
+//        }
+//    }
+//}

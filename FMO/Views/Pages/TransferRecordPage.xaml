@@ -21,15 +21,17 @@
         <Style x:Key="RightText" TargetType="TextBlock">
             <Setter Property="HorizontalAlignment" Value="Right" />
         </Style>
+
+
     </UserControl.Resources>
     <Grid>
 
         <!--  首部  -->
         <DockPanel
             Margin="450,8,0,0"
-            HorizontalAlignment="Left"
             VerticalAlignment="Top"
-            Panel.ZIndex="99">
+            Panel.ZIndex="99"
+            LastChildFill="False">
 
             <CheckBox
                 Content="显示全部类型"
@@ -47,6 +49,50 @@
                 Background="PaleGoldenrod"
                 Command="{Binding CalcFeeCommand}"
                 Content="费用计算器" />
+
+            <!--  tip  -->
+            <DockPanel DockPanel.Dock="Right" Visibility="{Binding DataHasError, Converter={StaticResource Boolean2VisibilityConverter}}">
+                <ContentControl Content="{Binding .}">
+                    <ContentControl.ContentTemplate>
+                        <DataTemplate>
+                            <DockPanel>
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontSize="16"
+                                    Foreground="Red"
+                                    Text="数据有异常" />
+                                <Popup
+                                    x:Name="pop"
+                                    AllowsTransparency="True"
+                                    HorizontalOffset="120"
+                                    Placement="Left"
+                                    StaysOpen="False"
+                                    VerticalOffset="30">
+                                    <Border Background="Orange">
+                                        <ListBox
+                                            Margin="20,10"
+                                            Background="Transparent"
+                                            BorderBrush="Transparent"
+                                            FontSize="15"
+                                            ItemsSource="{Binding ErrorMessage}"
+                                            Style="{StaticResource ListBoxCustom}" />
+                                    </Border>
+                                </Popup>
+                            </DockPanel>
+                            <DataTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="pop" Property="IsOpen" Value="True" />
+                                </Trigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </ContentControl.ContentTemplate>
+                </ContentControl>
+                <Button
+                    Margin="8,0"
+                    Command="{Binding TryHandleDataErrorCommand}"
+                    Content="尝试处理" />
+            </DockPanel>
+
 
             <!--  搜索  -->
             <hc:SimplePanel Margin="10,0">
@@ -156,7 +202,9 @@
                     EnableRowVirtualization="True"
                     IsReadOnly="True"
                     ItemsSource="{Binding TranscationSource.View}"
-                    Style="{StaticResource DataGrid.Small}">
+                    Style="{StaticResource DataGrid.Small}"
+                    VirtualizingStackPanel.IsVirtualizing="True"
+                    VirtualizingStackPanel.VirtualizationMode="Recycling">
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding Time, StringFormat=yyyy.MM.dd  HH:mm:ss}" Header="时间" />
                         <DataGridTextColumn Binding="{Binding This}" Header="本方" />
@@ -179,7 +227,9 @@
                     EnableRowVirtualization="True"
                     IsReadOnly="True"
                     ItemsSource="{Binding OrderSource.View}"
-                    Style="{StaticResource DataGrid.NoSelect}">
+                    Style="{StaticResource DataGrid.NoSelect}"
+                    VirtualizingStackPanel.IsVirtualizing="True"
+                    VirtualizingStackPanel.VirtualizationMode="Recycling">
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding Id}" />
                         <DataGridTemplateColumn>
@@ -347,7 +397,9 @@
                     EnableRowVirtualization="True"
                     IsReadOnly="True"
                     ItemsSource="{Binding RequestsSource.View}"
-                    Style="{StaticResource DataGrid.NoSelect}">
+                    Style="{StaticResource DataGrid.NoSelect}"
+                    VirtualizingStackPanel.IsVirtualizing="True"
+                    VirtualizingStackPanel.VirtualizationMode="Recycling">
                     <DataGrid.Columns>
                         <DataGridTemplateColumn>
                             <DataGridTemplateColumn.CellTemplate>
@@ -399,7 +451,9 @@
                     EnableRowVirtualization="True"
                     IsReadOnly="True"
                     ItemsSource="{Binding RecordsSource.View}"
-                    Style="{StaticResource DataGrid.NoSelect}">
+                    Style="{StaticResource DataGrid.NoSelect}"
+                    VirtualizingStackPanel.IsVirtualizing="True"
+                    VirtualizingStackPanel.VirtualizationMode="Recycling">
                     <DataGrid.Columns>
                         <DataGridTemplateColumn>
                             <DataGridTemplateColumn.CellTemplate>
@@ -438,7 +492,7 @@
                                         <Path
                                             Data="{StaticResource f.sheet-plastic}"
                                             Fill="Red"
-                                            Visibility="{Binding RedemptionOnClear, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                                            Visibility="{Binding IsLiquidating, Converter={StaticResource Boolean2VisibilityReConverter}}" />
                                     </Viewbox>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>

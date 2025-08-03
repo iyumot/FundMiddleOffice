@@ -7,6 +7,7 @@ using FMO.Utilities;
 using Serilog;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Controls;
@@ -55,6 +56,15 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     [ObservableProperty]
     public partial bool ShowOnlySignable { get; set; }
 
+    /// <summary>
+    /// 数据有问题
+    /// </summary>
+    [ObservableProperty]
+    public partial bool DataHasError { get; set; }
+
+
+    [ObservableProperty]
+    public partial List<string>? ErrorMessage { get; set; }
 
     public CollectionViewSource RequestsSource { get; set; } = new();
 
@@ -69,56 +79,79 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         ShowOnlySignable = true;
         WeakReferenceMessenger.Default.RegisterAll(this);
 
-        RequestsSource.Filter += (s, e) => e.Accepted = string.IsNullOrWhiteSpace(SearchKeyword) ? true : SearchPair(e.Item, SearchKeyword);
-        RecordsSource.Filter += (s, e) => e.Accepted = FilterRecord(e.Item);
 
         Task.Run(() =>
         {
             using var db = DbHelper.Base();
 
             var tr = db.GetCollection<TransferRecord>().FindAll();
-            IOrderedEnumerable<TransferRequest> tr2 = db.GetCollection<TransferRequest>().FindAll().OrderByDescending(x => x.RequestDate);
+            var tr2 = db.GetCollection<TransferRequest>().FindAll().OrderByDescending(x => x.RequestDate).ToArray();
             var t3 = db.GetCollection<TransferOrder>().FindAll();
+            var map = db.GetCollection<TransferMapping>().FindAll().ToArray();
+            //var mapd = map.ToDictionary(x => x.OrderId, x => x);
+
+            CheckDataError(db);
+
+            var records = tr.Select(x => new TransferRecordViewModel(x)).ToArray();
+            var orders = t3.Select(x => new TransferOrderViewModel(x)).ToArray();
+
+            var funds = db.GetCollection<Fund>().FindAll().Select(x => (x.Id, x.Name, x.Code, x.ClearDate)).ToArray();
+            var transaction = db.GetCollection<RaisingBankTransaction>().FindAll().Select(x => new RaisingBankTranscationViewModel(x, funds!)).ToArray();
+
+
+            //foreach (var o in orders)
+            //{
+            //    if (mapd.TryGetValue(o.Id!.Value, out var m))
+            //        o.IsComfirmed = m.RequestId != 0;
+            //    //if (tr.Any(x => x.OrderId == o.Id))
+            //    //    o.IsComfirmed = true;
+            //}
+
+
+            //foreach (var ft in records.OrderBy(x => x.ConfirmedDate).GroupBy(x => x.FundId))
+            //{
+            //    var last = ft.Last().ConfirmedDate;
+            //    var may = ft.Where(x => x.ConfirmedDate == last && (x.Type == TransferRecordType.Redemption || x.Type == TransferRecordType.ForceRedemption)).ToArray();
+            //    if (may.Length == 0) continue;
+
+            //    if (funds.FirstOrDefault(x => x.Id == ft.Key) is var ff && ff.ClearDate != default && last > ff.ClearDate)
+            //        foreach (var item in may)
+            //            item.RedemptionOnClear = true;
+            //}
+
+
 
             App.Current.Dispatcher.BeginInvoke(() =>
             {
-                Records = [.. tr.Select(x => new TransferRecordViewModel(x))];
-                Requests = new ObservableCollection<TransferRequest>(tr2);
-                Orders = [.. t3.Select(x => new TransferOrderViewModel(x))];
-
-                var funds = db.GetCollection<Fund>().FindAll().Select(x => (x.Id, x.Name, x.Code)).ToArray();
-                BankTransactions = [.. db.GetCollection<RaisingBankTransaction>().FindAll().Select(x => new RaisingBankTranscationViewModel(x, funds))];
-
-
-                foreach (var o in Orders)
-                {
-                    if (tr.Any(x => x.OrderId == o.Id))
-                        o.IsComfirmed = true;
-                }
-
-                foreach (var ft in Records.OrderBy(x => x.ConfirmedDate).GroupBy(x => x.FundId))
-                {
-                    var last = ft.Last().ConfirmedDate;
-                    var may = ft.Where(x => x.ConfirmedDate == last && (x.Type == TransferRecordType.Redemption || x.Type == TransferRecordType.ForceRedemption)).ToArray();
-                    if (may.Length == 0) continue;
-
-                    if (db.GetCollection<Fund>().FindById(ft.Key) is Fund ff && ff.ClearDate != default && last > ff.ClearDate)
-                        foreach (var item in may)
-                            item.RedemptionOnClear = true;
-                }
-
+                Records = [.. records];
                 RecordsSource.SortDescriptions.Add(new SortDescription(nameof(TransferRecordViewModel.ConfirmedDate), ListSortDirection.Descending));
+                RecordsSource.Source = Records;
+
+
+                RecordsSource.Filter += (s, e) => e.Accepted = FilterRecord(e.Item);
+            });
+
+            App.Current.Dispatcher.BeginInvoke(() =>
+            {
+                Requests = [.. tr2];
+                Orders = [.. orders];
+                BankTransactions = [.. transaction];
+
                 RequestsSource.SortDescriptions.Add(new SortDescription(nameof(TransferRequest.RequestDate), ListSortDirection.Descending));
                 OrderSource.SortDescriptions.Add(new SortDescription(nameof(TransferOrderViewModel.Date), ListSortDirection.Descending));
 
-                RecordsSource.Source = Records;
                 RequestsSource.Source = Requests;
                 OrderSource.Source = Orders;
 
                 TranscationSource.Source = BankTransactions;
                 TranscationSource.SortDescriptions.Add(new SortDescription(nameof(BankTransaction.Time), ListSortDirection.Descending));
+
+
+                RequestsSource.Filter += (s, e) => e.Accepted = string.IsNullOrWhiteSpace(SearchKeyword) ? true : SearchPair(e.Item, SearchKeyword);
             });
         });
+
+
 
         try
         {
@@ -160,6 +193,38 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
             Log.Error($"{e}");
         }
     }
+
+    private void CheckDataError(BaseDatabase db)
+    {
+        var err_req = db.GetCollection<TransferRequest>().Count(x => x.FundId == 0 || x.CustomerId == 0);
+        var err_rec = db.GetCollection<TransferRecord>().Count(x => x.FundId == 0 || x.CustomerId == 0);
+
+        List<string> list = new();
+        if (err_req > 0) list.Add($"发现未关联Request {err_req}个");
+        if (err_rec > 0) list.Add($"发现未关联Record {err_rec}个");
+        ErrorMessage = list;
+
+        DataHasError = list.Count > 0;
+    }
+
+    // 通用调试日志写入方法（无文件操作）
+    void LogDebug(string message)
+    {
+        var fullMessage = $"[{DateTime.Now:HH:mm:ss.fff}] {message}";
+
+        // 1. 调试输出窗口
+        Debug.WriteLine(fullMessage);
+
+        // 2. 控制台输出
+        //Console.WriteLine(fullMessage);
+
+        // 3. 调试器即时窗口（如果附加了调试器）
+        //if (Debugger.IsAttached)
+        //{
+        //    Debugger.Log(0, "DataLoad", fullMessage + Environment.NewLine);
+        //}
+    }
+
 
 
     private bool FilterRecord(object obj)
@@ -342,6 +407,95 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
     }
 
+
+    [RelayCommand]
+    public void TryHandleDataError()
+    {
+        using var db = DbHelper.Base();
+        var err = db.GetCollection<TransferRequest>().Find(x => x.FundId == 0).ToList();
+        foreach (var item in err)
+        {
+            if (db.FindFund(item.FundCode) is Fund fund)
+            {
+                item.FundId = fund.Id;
+                if (Requests?.FirstOrDefault(x => x.Id == item.Id) is TransferRequest v)
+                    v.FundId = item.Id;
+            }
+        }
+
+        db.GetCollection<TransferRequest>().Update(err);
+
+
+        var customers = db.GetCollection<Investor>().FindAll().ToList();
+        err = db.GetCollection<TransferRequest>().Find(x => x.CustomerId == 0).ToList();
+        foreach (var r in err)
+        {
+            // 此项可能存在重复Id的bug，不用name是因为名字中有（）-等，在不同情景下，全角半角不一样
+            var c = customers.FirstOrDefault(x => /*x.Name == r.CustomerName &&*/ x.Identity?.Id == r.CustomerIdentity);
+            if (c is null)
+            {
+                c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
+                db.GetCollection<Investor>().Insert(c);
+            }
+
+            // 添加数据 
+            r.CustomerId = c.Id;
+
+
+            if (Records?.FirstOrDefault(x => x.Id == r.Id) is TransferRecordViewModel v)
+                v.CustomerId = r.Id;
+        }
+        db.GetCollection<TransferRequest>().Update(err);
+
+        //////////////////////////////////
+
+        var err2 = db.GetCollection<TransferRecord>().Find(x => x.FundId == 0).ToList();
+        foreach (var item in err2)
+        {
+            if (db.FindFund(item.FundCode) is Fund fund)
+            {
+                item.FundId = fund.Id;
+                if (Records?.FirstOrDefault(x => x.Id == item.Id) is TransferRecordViewModel v)
+                    v.FundId = item.Id;
+            }
+        }
+
+        db.GetCollection<TransferRecord>().Update(err2);
+
+
+        err2 = db.GetCollection<TransferRecord>().Find(x => x.CustomerId == 0).ToList();
+        foreach (var r in err)
+        {
+            // 此项可能存在重复Id的bug，不用name是因为名字中有（）-等，在不同情景下，全角半角不一样
+            var c = customers.FirstOrDefault(x => /*x.Name == r.CustomerName &&*/ x.Identity?.Id == r.CustomerIdentity);
+            if (c is null)
+            {
+                c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
+                db.GetCollection<Investor>().Insert(c);
+            }
+
+
+            // 添加数据 
+            r.CustomerId = c.Id;
+
+
+            if (Records?.FirstOrDefault(x => x.Id == r.Id) is TransferRecordViewModel v)
+                v.CustomerId = r.Id;
+        }
+        db.GetCollection<TransferRecord>().Update(err2);
+
+
+        CheckDataError(db);
+
+        WeakReferenceMessenger.Default.Send(new UniformTip(TipType.TANoOwner, DataHasError ? "处理后任然存在未绑定到基金和投资的人TA" : null));
+    }
+
+
+
+
+
+
+
     public void Receive(TransferRecord message)
     {
         var old = Records!.FirstOrDefault(x => x.Id == message.Id);
@@ -392,10 +546,7 @@ partial class TransferRecordViewModel
 
     public bool FirstTrade { get; set; }
 
-    /// <summary>
-    /// 清盘时的赎回，不需要申请
-    /// </summary>
-    public bool RedemptionOnClear { get; set; }
+
 
     [RelayCommand]
     public void ModifyOrder()
@@ -441,7 +592,7 @@ partial class TransferOrderViewModel
 [AutoChangeableViewModel(typeof(RaisingBankTransaction))]
 partial class RaisingBankTranscationViewModel
 {
-    public RaisingBankTranscationViewModel(RaisingBankTransaction? instance, (int Id, string Name, string Code)[] funds) : this(instance)
+    public RaisingBankTranscationViewModel(RaisingBankTransaction? instance, (int Id, string Name, string Code, DateOnly ClearDate)[] funds) : this(instance)
     {
         if (instance is null) return;
         var fund = funds.FirstOrDefault(x => x.Id == instance.FundId);

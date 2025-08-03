@@ -293,13 +293,9 @@ public partial class TrusteeWorker : ObservableObject
 
                         db.GetCollection<TransferRequest>().Upsert(rc.Data);
 
-                        // 通知
-                        try
-                        {
-                            foreach (var item in rc.Data)
-                                WeakReferenceMessenger.Default.Send(item);
-                        }
-                        catch { }
+
+                        // 统一更新处理
+                        DataTracker.OnBatchTransferRequest(rc.Data); 
                     }
 
 

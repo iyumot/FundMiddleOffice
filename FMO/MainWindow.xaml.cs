@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
-using Org.BouncyCastle.Utilities;
 using Serilog;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -11,7 +10,6 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -45,7 +43,7 @@ public partial class MainWindow : HandyControl.Controls.Window
             this.DragMove();
     }
 
-     
+
 }
 
 
@@ -136,7 +134,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
         }
     }
 
-    private string? CalcOrgId(string? input) 
+    private string? CalcOrgId(string? input)
     {
         // 检查输入是否为空
         if (string.IsNullOrWhiteSpace(input))
@@ -156,10 +154,10 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
             for (int i = 0; i < hashBytes.Length; i++)
                 sb.Append(hashBytes[i].ToString("x2"));
 
-            return sb.ToString(); 
+            return sb.ToString();
         }
     }
- 
+
 
     public void Receive(string message)
     {
@@ -418,8 +416,13 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
 }
 
 
-public partial class MainMenu
+public partial class MainMenu : ObservableObject, IRecipient<UniformTip>
 {
+    public MainMenu()
+    {
+        WeakReferenceMessenger.Default.RegisterAll(this);
+    }
+
     public required string Title { get; set; }
 
     public required Brush IconBrush { get; set; }
@@ -432,4 +435,31 @@ public partial class MainMenu
 
 
     public object? Parameter { get; set; }
-} 
+
+    [ObservableProperty]
+    public partial string? Tip { get; set; }
+
+    [ObservableProperty]
+    public partial bool HasTip { get; set; }
+
+    public void Receive(UniformTip message)
+    {
+        switch (message.Type)
+        {
+            case TipType.TANoOwner:
+                if (Title == "TA")
+                {
+                    if (message.Tip is null)
+                    {
+                        HasTip = false;
+                        break;
+                    }
+                    HasTip = true;
+                    Tip = message.Tip.ToString();
+                }
+                break;
+            default:
+                break;
+        }
+    }
+}
