@@ -1,4 +1,5 @@
 using FMO.Models;
+using FMO.Trustee.JsonCMS;
 using FMO.Utilities;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
@@ -237,7 +238,7 @@ public partial class CMS : TrusteeApiBase
         return content;
     }
 
-    protected async Task<ReturnWrap<TEntity>> SyncWork<TEntity, TJSON>(int interfaceId, object? param, Func<TJSON, TEntity> transfer, [CallerMemberName] string? caller = null)
+    protected async Task<ReturnWrap<TEntity>> SyncWork<TEntity, TJSON>(int interfaceId, object? param, Func<TJSON, TEntity> transfer, [CallerMemberName] string? caller = null) where TJSON : JsonBase
     {
         // 校验
         if (CheckBreforeSync() is ReturnCode rc && rc != ReturnCode.Success) return new(rc, null);
@@ -257,7 +258,6 @@ public partial class CMS : TrusteeApiBase
             {
 
                 var json = await Query(interfaceId, formatedParams);
-                LogRun(caller, formatedParams, json);
 
                 try
                 {
@@ -283,7 +283,7 @@ public partial class CMS : TrusteeApiBase
                         list.AddRange(data);
 
                     // 记录返回的类型，用于debug
-                    Log(caller, data!);
+                    CacheJson(caller, data!);
 
                     // 数据获取是否齐全
                     var pi = JsonSerializer.Deserialize<PaginationInfo>(ret.Page!)!;
@@ -306,8 +306,8 @@ public partial class CMS : TrusteeApiBase
             Log(caller, null, e.Message);
             return new(ReturnCode.Unknown, null);
         }
-
-        Log(caller, null, "OK");
+         
+        Log(caller, null, list.Count == 0 ? "OK [Empty]" : $"OK [{list[0].Id}-{list[^1].Id}]");
         return new(ReturnCode.Success, list.Select(x => transfer(x)).ToArray());
     }
 

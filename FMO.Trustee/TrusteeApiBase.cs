@@ -128,7 +128,7 @@ public abstract class TrusteeApiBase : ITrustee
         _db.GetCollection<LogInfo>().Insert(new LogInfo { Identifier = Identifier, Log = message, Method = caller, Content = json, Time = DateTime.Now });
     }
 
-    public void Log<T>(string? caller, IEnumerable<T> list)
+    protected void CacheJson<T>(string? caller, IEnumerable<T> list)
     {
         using (var db = DbHelper.Platform())
             db.GetCollection<T>($"{Identifier}_{caller}").Insert(list);
@@ -155,10 +155,12 @@ public abstract class TrusteeApiBase : ITrustee
     /// <param name="identifier"></param>
     /// <param name="method"></param>
     /// <param name="info"></param>
-    protected static void ReportJsonUnexpected(string identifier, string method, string info)
+    public static void ReportJsonUnexpected(string identifier, string method, string info)
     {
         _db.GetCollection<LogInfo>().Insert(new LogInfo { Identifier = identifier, Log = info, Method = method, Content = "解析异常", Time = DateTime.Now });
     }
+
+  
     protected virtual Dictionary<string, object> GenerateParams(object? obj)
     {
         Dictionary<string, object>? dic = new();
@@ -288,3 +290,60 @@ public abstract class TrusteeApiBase : ITrustee
         public string? Log { get; set; }
     }
 }
+
+
+public class JsonBase
+{
+    private static ILiteDatabase _db { get; } = new LiteDatabase(@$"FileName=data\platformlog.db;Connection=Shared");
+
+
+    public int Id { get; set; }
+
+
+    protected static decimal ParseDecimal(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return 0;
+
+        if (decimal.TryParse(value, out var result))
+            return result;
+
+        throw new FormatException($"无法将 '{value}' 解析为decimal类型");
+    }
+
+    protected void ReportJsonUnexpected(string identifier, string method, string info)
+    {
+        _db.GetCollection<TrusteeJsonUnexpected>().Insert(new TrusteeJsonUnexpected(identifier, method, info));
+    }
+
+
+    protected static string ParseCurrency(string currencyCode)
+    {
+        switch (currencyCode)
+        {
+            case "156":
+                return "CNY"; // 人民币
+            case "250":
+                return "CHF"; // 瑞士法郎
+            case "280":
+                return "DEM"; // 德国马克（已停用）
+            case "344":
+                return "HKD"; // 港元
+            case "392":
+                return "JPY"; // 日元
+            case "826":
+                return "GBP"; // 英镑
+            case "840":
+                return "USD"; // 美元
+            case "954":
+                return "EUR"; // 欧元
+            default:
+                return "";  // 或者抛出异常，根据需要处理无效编码
+        }
+    }
+}
+
+public record TrusteeJsonUnexpected(string Identifier, string Method, string Message);
+
+
+public record JsonEntityMap(int Id, object EntityId);

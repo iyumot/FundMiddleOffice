@@ -1,4 +1,5 @@
 using FMO.Models;
+using FMO.Trustee.JsonCSC;
 using FMO.Utilities;
 using LiteDB;
 using System.Net.Http;
@@ -254,7 +255,7 @@ public partial class CSC : TrusteeApiBase
     /// <param name="func"></param>
     /// <param name="param">object 或 Dictionary<string, object></param>
     /// <returns></returns>
-    protected async Task<ReturnWrap<TEntity>> SyncWork<TEntity, TJSON>(string part, object? param, Func<TJSON, TEntity> transfer, [CallerMemberName] string? caller = null)
+    protected async Task<ReturnWrap<TEntity>> SyncWork<TEntity, TJSON>(string part, object? param, Func<TJSON, TEntity> transfer, [CallerMemberName] string? caller = null) where TJSON:JsonBase
     {
         // 校验
         if (CheckBreforeSync() is ReturnCode rc && rc != ReturnCode.Success) return new(rc, null);
@@ -299,7 +300,7 @@ public partial class CSC : TrusteeApiBase
                     list.AddRange(data.Data.Data);
 
                     // 记录返回的类型，用于debug
-                    Log(caller, data!.Data.Data);
+                    CacheJson(caller, data!.Data.Data);
 
                     // 数据获取全
                     if (data!.Data.TotalCount >= total)
@@ -323,7 +324,7 @@ public partial class CSC : TrusteeApiBase
         }
 
 
-        Log(caller, null, "OK");
+        Log(caller, null, list.Count == 0 ? "OK [Empty]" : $"OK [{list[0].Id}-{list[^1].Id}]");
         return new(ReturnCode.Success, list.Select(x => transfer(x)).ToArray());
     }
 

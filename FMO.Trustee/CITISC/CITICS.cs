@@ -1,4 +1,5 @@
 using FMO.Models;
+using FMO.Trustee.JsonCITICS;
 using FMO.Utilities;
 using LiteDB;
 using System.Net.Http;
@@ -240,7 +241,7 @@ public partial class CITICS : TrusteeApiBase
             item.FundId = db.FindFund(item.FundCode)?.Id ?? 0;
 
         if (transactions.Any(x => x.FundId == 0))
-            Serilog.Log.Error($"募资流水 {string.Join(',', transactions.Where(x => x.FundId == 0).Select(x=> $"{x.AccountName}-{x.FundCode}"))} 未找到对应基金");
+            Serilog.Log.Error($"募资流水 {string.Join(',', transactions.Where(x => x.FundId == 0).Select(x => $"{x.AccountName}-{x.FundCode}"))} 未找到对应基金");
 
         return new(ReturnCode.Success, transactions.ToArray());
     }
@@ -317,8 +318,8 @@ public partial class CITICS : TrusteeApiBase
                 // 同步id
                 //foreach (var d in result.Data)
                 //{
-                    //if (old.FirstOrDefault(x => x.Number == d.Number) is FundBankAccount o)
-                    //    d.Id = o.Id;
+                //if (old.FirstOrDefault(x => x.Number == d.Number) is FundBankAccount o)
+                //    d.Id = o.Id;
                 //}
                 db.GetCollection<FundBankAccount>().Upsert(result.Data);
             }
@@ -489,7 +490,7 @@ public partial class CITICS : TrusteeApiBase
     }
 
 
-    protected async Task<ReturnWrap<TEntity>> SyncWork<TEntity, TJSON>(string part, object? param, Func<TJSON, TEntity> transfer, [CallerMemberName] string? caller = null)
+    protected async Task<ReturnWrap<TEntity>> SyncWork<TEntity, TJSON>(string part, object? param, Func<TJSON, TEntity> transfer, [CallerMemberName] string? caller = null) where TJSON : JsonBase
     {
         // 校验
         if (CheckBreforeSync() is ReturnCode rc && rc != ReturnCode.Success) return new(rc, null);
@@ -546,7 +547,7 @@ public partial class CITICS : TrusteeApiBase
 
                     // 记录返回的类型，用于debug
                     if (data.List is not null)
-                        Log(caller, data!.List);
+                        CacheJson(caller, data!.List);
 
                     list.AddRange(data.List!);
 
@@ -574,7 +575,7 @@ public partial class CITICS : TrusteeApiBase
             return new(ReturnCode.Unknown, null);
         }
 
-        Log(caller, null, "OK");
+        Log(caller, null, list.Count == 0 ? "OK [Empty]" : $"OK [{list[0].Id}-{list[^1].Id}]");
         return new(ReturnCode.Success, list.Select(x => transfer(x)).ToArray());
     }
 
