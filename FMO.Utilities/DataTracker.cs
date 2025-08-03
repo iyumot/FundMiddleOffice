@@ -454,6 +454,33 @@ public static class DataTracker
         var ids = records.Select(x => x.FundId).Distinct().ToList();
         var funds = db.GetCollection<Fund>().Find(x => ids.Contains(x.Id)).ToList();
         DataTracker.CheckShareIsPair(funds);
+
+
+        // 检查基金是否份额是否为0，如果是这样，最后的ta设为清盘
+        var fsr = db.GetCollection<FundShareRecord>();
+        foreach (var id in ids)
+        {
+            var r = fsr.Find(x => x.FundId == id).OrderByDescending(x => x.Date).First();
+            if (r.Share == 0) //清盘
+            {
+                var last = r.Date;
+                foreach (var item in db.GetCollection<TransferRecord>().Find(x => x.FundId == id && x.ConfirmedDate == r.Date))
+                {
+                    if (item.Type != TransferRecordType.Redemption && item.Type != TransferRecordType.ForceRedemption)
+                        continue;
+
+                    if (last == default)
+                        last = item.ConfirmedDate;
+                    else if (item.ConfirmedDate != last)
+                        break;
+
+                    item.IsLiquidating = true;
+                    db.GetCollection<TransferRecord>().Update(item);
+                }
+            }
+        }
+
+
     }
 
     /// <summary>
