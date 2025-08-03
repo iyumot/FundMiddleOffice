@@ -3,9 +3,12 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.IO.AMAC;
 using FMO.Models;
+using FMO.Trustee;
 using FMO.Utilities;
 using Microsoft.Win32;
 using System.Net.NetworkInformation;
+using System.Text;
+using System.Text.Json;
 using System.Windows;
 
 namespace FMO;
@@ -126,6 +129,10 @@ public partial class InitWindowViewModel : ObservableRecipient, IRecipient<InitS
             AsAdvisor = x.IsAdvisor
         }));
 
+        // 增加默认的platfrom proxy
+        var b64 = "eyJJZCI6MCwiVXNlUHJveHkiOnRydWUsIlByb3h5VXJsIjoiaHR0cDovLzExNy43Mi41OS4xNDU6MTU3NyIsIlByb3h5VXNlciI6InRncCIsIlByb3h5UGFzc3dvcmQiOiJoNDMyMDlmd2o0MjA5NGhrMjM5ZiJ9";
+        if (JsonSerializer.Deserialize(Encoding.UTF8.GetString(Convert.FromBase64String(b64)), typeof(TrusteeUnifiedConfig)) is TrusteeUnifiedConfig config)
+            db.GetCollection<TrusteeUnifiedConfig>().Insert(config);
 
         Restart();
 
@@ -142,7 +149,7 @@ public partial class InitWindowViewModel : ObservableRecipient, IRecipient<InitS
 #if RELEASE
             using (var key = Registry.CurrentUser.CreateSubKey(@$"Software\Nexus")) 
 #else
-            using (var key = Registry.CurrentUser.CreateSubKey(@$"Software\Nexus\Debug")) 
+            using (var key = Registry.CurrentUser.CreateSubKey(@$"Software\Nexus\Debug"))
 #endif
             {
                 if (key != null)
