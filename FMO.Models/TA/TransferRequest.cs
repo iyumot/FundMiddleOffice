@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using FMO.Utilities;
+using System.ComponentModel;
 
 namespace FMO.Models;
 
@@ -98,5 +99,11 @@ public class TransferRequest
     public string? Agency { get; set; }
 
     public string? ShareClass { get; set; }
+
+
+    /// <summary>
+    /// 需要order
+    /// </summary>
+    public bool OrderRequired => TAHelper.RequiredOrder(RequestType);
 }
 

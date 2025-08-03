@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using FMO.Utilities;
+using System.ComponentModel;
 
 namespace FMO.Models;
 
@@ -117,6 +118,11 @@ public class TransferRecord : IEquatable<TransferRecord>
     /// 没有order 和 request 
     /// </summary>
     public bool IsLiquidating { get; set; }
+
+    /// <summary>
+    /// 需要order
+    /// </summary>
+    public bool OrderRequired => TAHelper.RequiredOrder(Type);
 
     /// <summary>
     /// 数据来源
