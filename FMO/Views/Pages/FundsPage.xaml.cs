@@ -4,10 +4,12 @@ using CommunityToolkit.Mvvm.Messaging;
 using FMO.IO.AMAC;
 using FMO.Models;
 using FMO.Utilities;
+using Microsoft.Win32;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.IO.Compression;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -68,6 +70,9 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
 
     [ObservableProperty]
     public partial string? FundKeyword { get; set; }
+
+
+    public BatchImportViewModel BatchImportViewModel { get; } = new();
 
     /// <summary>
     [SetsRequiredMembers]
@@ -245,6 +250,11 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
             WeakReferenceMessenger.Default.Send(f);
         }
     }
+
+
+
+
+
 
     private void UiConfig_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -427,3 +437,121 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
     }
 }
 
+
+
+public partial class BatchImportViewModel : ObservableObject
+{
+
+    public bool IsRunning => RunCount > 0;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsRunning))]
+    public partial int RunCount { get; set; }
+
+    [ObservableProperty]
+    public partial double BatchImportSheetProgess { get; set; }
+
+
+
+    [RelayCommand]
+    public async Task BatchImportSheet()
+    {
+        ++RunCount;
+
+        var fd = new OpenFileDialog();
+        fd.Filter = "压缩文件|*.zip;*.rar;*";
+        if (!fd.ShowDialog() ?? true) return;
+
+        var path = fd.FileName;
+
+        await Task.Run(() =>
+        {
+            using var fs = new FileStream(path, FileMode.Open);
+            var zip = new ZipArchive(fs);
+
+            List<(string? FundName, Fund? Fund, string File, DailyValue? Daily, Stream? Stream)> ds = new();
+
+            BatchImportSheetProgess = 0;
+            double unit = 50.0 / zip.Entries.Count;
+
+            using var db = DbHelper.Base();
+            var funds = db.GetCollection<Fund>().FindAll().ToList();
+
+            foreach (var item in zip.Entries)
+            {
+                if (Path.GetExtension(item.Name) switch { ".xls" or ".xlsx" => false, _ => true })
+                    continue;
+
+                var stream = new MemoryStream();
+                using var es = item.Open();
+                es.CopyTo(stream);
+
+                var (fn, code, daily) = ValuationSheetHelper.ParseExcel(stream);
+
+                ds.Add((fn, funds.FirstOrDefault(x => x.Code == code || x.Name == fn), item.Name, daily, stream));
+                App.Current.Dispatcher.BeginInvoke(() => BatchImportSheetProgess += unit);
+            }
+
+
+            List<DailyValue> days = new();
+            foreach (var x in ds)
+            {
+
+                if (x.Daily is null)
+                    continue;
+
+                days.Add(x.Daily);
+                var fund = x.Fund;
+                if (fund is null)
+                {
+                    // 文件保存到
+                    Directory.CreateDirectory("files\\unk_sheets");
+
+                    using var stream = new FileStream($"files\\unk_sheets\\{x.File}", FileMode.Create);
+                    x.Stream!.Seek(0, SeekOrigin.Begin);
+                    x.Stream!.CopyTo(stream);
+                    stream.Close();
+
+                    App.Current.Dispatcher.BeginInvoke(() => BatchImportSheetProgess += unit);
+                    continue;
+                }
+
+
+                x.Daily.FundId = fund.Id;
+
+                ///保存
+                var folder = FundHelper.GetFolder(fund.Id, "Sheet");
+                if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+
+                var di = new FileInfo(Path.Combine(folder, x.File));
+                if (di.Exists && di.Length == x.Stream!.Length)
+                {
+                    App.Current.Dispatcher.BeginInvoke(() => BatchImportSheetProgess += unit);
+                    continue;
+                }
+                using var fss = di.OpenWrite();
+                x.Stream!.Seek(0, SeekOrigin.Begin);
+                x.Stream!.CopyTo(fss);
+                x.Daily.SheetPath = Path.GetRelativePath(Directory.GetCurrentDirectory(), di.FullName);
+                fss.Flush();
+
+                App.Current.Dispatcher.BeginInvoke(() => BatchImportSheetProgess += unit);
+            }
+
+
+            foreach (var group in ds.Where(x => x.Fund is not null && x.Daily is not null).GroupBy(x => x.Fund!.Id))
+            {
+                db.GetDailyCollection(group.Key).Upsert(group.Select(y => y.Daily!));
+
+                WeakReferenceMessenger.Default.Send(new FundDailyUpdateMessage(group.Key, group.MaxBy(y => y.Daily!.Date).Daily!));
+            }
+
+
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Success, $"载入{ds.Count}个估值表"));
+            BatchImportSheetProgess = 100;
+
+        }).ContinueWith((x) => --RunCount);
+
+    }
+
+}
