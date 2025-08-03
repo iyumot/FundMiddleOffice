@@ -132,8 +132,17 @@ public partial class FundTAViewModel : ObservableObject
     [ObservableProperty]
     public partial bool InvestorDetailIsOpen { get; set; }
 
+
+    [ObservableProperty]
+    public partial bool InvestorViewIsOpen { get; set; }
+
+    [ObservableProperty]
+    public partial CustomerViewModel? InvestorViewModel { get; set; }
+
+
     [ObservableProperty]
     public partial IEnumerable<TransferRecord>? InvestorDetail { get; set; }
+
 
     [RelayCommand]
     public void ShowInvestorDetail(InvestorShareViewModel v)
@@ -142,6 +151,13 @@ public partial class FundTAViewModel : ObservableObject
         InvestorDetail = Records.Where(x => x.CustomerId == v.Id);
     }
 
+
+    [RelayCommand]
+    public void ViewInvestor(InvestorShareViewModel v)
+    { 
+        InvestorViewIsOpen = true;
+        InvestorViewModel = new CustomerViewModel(v.Id);
+    }
 
     [RelayCommand]
     public void Export()
@@ -224,4 +240,6 @@ public class InvestorShareViewModel
     public decimal? Proportion { get; set; }
 
     public decimal Profit => Asset + Withdraw - Deposit;
+
+
 }

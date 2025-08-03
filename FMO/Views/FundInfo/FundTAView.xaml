@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
@@ -237,7 +238,36 @@
                     ScrollViewer.VerticalScrollBarVisibility="Auto"
                     Style="{StaticResource DataGrid.Small}">
                     <DataGrid.Columns>
-                        <DataGridTemplateColumn CellTemplate="{StaticResource DT.NameCell}" Header="投资人" />
+                        <!--<DataGridTemplateColumn CellTemplate="{StaticResource DT.NameCell}" />-->
+                        <DataGridTemplateColumn Header="投资人">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <DockPanel LastChildFill="False">
+                                        <shared:CopyableControl HorizontalAlignment="Left">
+                                            <!--<i:Interaction.Triggers>
+                                                <i:EventTrigger EventName="MouseDoubleClick">
+                                                    <i:InvokeCommandAction Command="{Binding Data.ViewInvestorCommand, Source={StaticResource proxy}}" CommandParameter="{Binding .}" />
+                                                </i:EventTrigger>
+                                            </i:Interaction.Triggers>-->
+                                            <TextBlock Foreground="Black" Text="{Binding Name}" />
+                                        </shared:CopyableControl>
+                                        <Button
+                                            x:Name="view"
+                                            hc:IconElement.Geometry="{StaticResource f.book-open}"
+                                            Command="{Binding Data.ViewInvestorCommand, Source={StaticResource proxy}}"
+                                            CommandParameter="{Binding .}"
+                                            Style="{StaticResource ButtonIcon.Small}"
+                                            Visibility="Collapsed" />
+                                    </DockPanel>
+                                    <DataTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="view" Property="Visibility" Value="Visible" />
+                                        </Trigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
                         <DataGridTemplateColumn CellTemplate="{StaticResource DT.ShareCell}" Header="持有份额" />
 
                         <DataGridTextColumn
@@ -336,6 +366,22 @@
                                 <DataGridTextColumn Binding="{Binding ExternalId}" Header="流水号" />
                             </DataGrid.Columns>
                         </DataGrid>
+                    </Border>
+                </Popup>
+
+
+                <Popup
+                    AllowsTransparency="True"
+                    HorizontalOffset="-10"
+                    IsOpen="{Binding InvestorViewIsOpen}"
+                    Placement="Left"
+                    PlacementTarget="{Binding RelativeSource={RelativeSource AncestorType=hc:SimplePanel}}"
+                    StaysOpen="False">
+                    <Border
+                        Width="535"
+                        Height="{Binding RelativeSource={RelativeSource AncestorType=TabControl}, Path=ActualHeight}"
+                        Background="WhiteSmoke">
+                        <local:CustomerView Margin="10" DataContext="{Binding InvestorViewModel}" />
                     </Border>
                 </Popup>
             </hc:SimplePanel>
