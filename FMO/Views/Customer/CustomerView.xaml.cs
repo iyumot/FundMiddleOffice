@@ -95,9 +95,9 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
 
 
 
-    public ChangeableViewModel<Investor, IDType> IDType { get; } = new() { InitFunc = x => x.Identity.Type, UpdateFunc = (x, y) => x.Identity = x.Identity with { Type = y }, ClearFunc = x => x.Identity = x.Identity with { Type = default }, Label = "证件类型" };
+    public ChangeableViewModel<Investor, IDType> IDType { get; }
 
-    public ChangeableViewModel<Investor, string> Identity { get; } = new() { InitFunc = x => x.Identity.Id, UpdateFunc = (x, y) => x.Identity = x.Identity with { Id = y! }, ClearFunc = x => x.Identity = x.Identity with { Id = string.Empty } };
+    public ChangeableViewModel<Investor, string> Identity { get; }
 
     public ChangeableViewModel<Investor, string> Email { get; } = new() { InitFunc = x => x.Email, UpdateFunc = (x, y) => x.Email = y, ClearFunc = x => x.Email = null, Label = "Email" };
 
@@ -215,7 +215,23 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
         Type.PropertyChanged += Type_PropertyChanged;
         Type_PropertyChanged(null, null);
 
+        Identity = new()
+        {
+            InitFunc = x => x.Identity?.Id,
+            UpdateFunc = (x, y) => x.Identity = x.Identity is null ? new Identity { Id = y! } : x.Identity with { Id = y! },
+            ClearFunc = x => x.Identity = x.Identity is null ? null : x.Identity with { Id = string.Empty }
+        };
+
         Identity.Init(investor);
+
+        IDType = new()
+        {
+            InitFunc = x => x.Identity?.Type ?? Models.IDType.Unknown,
+            UpdateFunc = (x, y) => x.Identity = x.Identity is null ? new Identity { Type = y } : x.Identity with { Type = y },
+            ClearFunc = x => x.Identity = x.Identity is null ? null : x.Identity with { Type = default },
+            Label = "证件类型"
+        };
+
         IDType.Init(investor);
 
         Email.Init(investor);
@@ -278,7 +294,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
                 share += rvm[i].ShareChange();
             }
 
- 
+
 
 
             TransferRecordByFund rbf = new()

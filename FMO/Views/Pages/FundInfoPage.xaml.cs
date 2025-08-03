@@ -598,7 +598,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient,  IRecipient<Fu
                     DailySource.View.Refresh();
 
 
-                    WeakReferenceMessenger.Default.Send(new FundDailyUpdateMessage(default, default) { FundId = Fund.Id, Daily = avaliable.Select(x => x.daily).OrderBy(x => x.Date).FirstOrDefault()! });
+                    WeakReferenceMessenger.Default.Send(new FundDailyUpdateMessage(FundId,  avaliable.Select(x => x.daily).OrderBy(x => x?.Date).FirstOrDefault()!));
                 });
             }
             catch (Exception e)

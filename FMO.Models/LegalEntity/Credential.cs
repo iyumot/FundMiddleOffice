@@ -129,7 +129,7 @@ public record class Identity
     /// <summary>
     /// 证件号码
     /// </summary>
-    public required string Id { get; set; }
+    public string Id { get; set; } = "";
 
     /// <summary>
     /// 证件类型

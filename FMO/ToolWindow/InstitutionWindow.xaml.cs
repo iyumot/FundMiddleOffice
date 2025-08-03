@@ -8,9 +8,7 @@ using Serilog;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
-using System.Windows.Data;
 using static FMO.ManagerPageViewModel;
-using static FMO.OwnershipMapViewModel;
 
 namespace FMO;
 
@@ -126,7 +124,7 @@ public partial class InstitutionWindowViewModel : EditableControlViewModelBase<I
     public partial bool ShowFileList { get; set; }
 
     public ObservableCollection<RelationViewModel> ShareRelations { get; }
-    
+
     /// <summary>
     /// 股权与注册资本不一致
     /// </summary>
@@ -214,7 +212,7 @@ public partial class InstitutionWindowViewModel : EditableControlViewModelBase<I
             InitFunc = x => new BooleanDate { IsLongTerm = x.ExpireDate == DateOnly.MaxValue, Date = x.ExpireDate == default || x.ExpireDate == DateOnly.MaxValue ? null : new DateTime(x.ExpireDate, default) },
             UpdateFunc = (x, y) => x.ExpireDate = y is null || y.Date is null ? default : (y.IsLongTerm ? DateOnly.MaxValue : DateOnly.FromDateTime(y.Date.Value)),
             ClearFunc = x => x.ExpireDate = default,
-            DisplayFunc = x => x.IsLongTerm ? "长期" : x?.Date?.ToString("yyyy-MM-dd")
+            DisplayFunc = x => x?.IsLongTerm switch { null => "未设置", true => "长期", _ => x?.Date?.ToString("yyyy-MM-dd") }
         };
         ExpireDate.Init(org);
 
@@ -244,7 +242,7 @@ public partial class InstitutionWindowViewModel : EditableControlViewModelBase<I
             Label = "统一信用代码",
             InitFunc = x => x.Identity?.Id,
             UpdateFunc = (x, y) => x.Identity = new Identity { Id = y, Type = x.Identity?.Type ?? IDType.UnifiedSocialCreditCode, Other = x.Identity?.Other },
-            ClearFunc = x => x.Identity = new Identity { Id = "", Type = x.Identity?.Type ?? IDType.UnifiedSocialCreditCode, Other = x.Identity?.Other}
+            ClearFunc = x => x.Identity = new Identity { Id = "", Type = x.Identity?.Type ?? IDType.UnifiedSocialCreditCode, Other = x.Identity?.Other }
         };
         InstitutionCode.Init(org);
 
@@ -363,7 +361,7 @@ public partial class InstitutionWindowViewModel : EditableControlViewModelBase<I
         AccountOpeningLicense.Files = [.. (cef.AccountOpeningLicense ?? new())];
         CharterDocument.Files = [.. (cef.CharterDocument ?? new())];
         LegalPersonIdCard.Files = [.. (cef.LegalPersonIdCard ?? new())];
-  
+
     }
 
     private FileStorageInfo? SetFile(Func<InstitutionCertifications, List<FileStorageInfo>> func, FileInfo fi)
@@ -446,7 +444,7 @@ public partial class InstitutionWindowViewModel : EditableControlViewModelBase<I
         ShareNotPair = ShareRelations.Sum(x => x.Share) != manager.RegisterCapital;
 
     }
- 
+
 
     [RelayCommand]
     public void RemoveShareHolder(RelationViewModel value)
@@ -479,7 +477,7 @@ public partial class InstitutionWindowViewModel : EditableControlViewModelBase<I
 
     }
 
- 
+
 
 
     public override Institution? EntityOverride(ILiteDatabase db)

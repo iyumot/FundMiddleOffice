@@ -71,7 +71,7 @@ public partial class ManagerMemberViewModel : EditableControlViewModelBase<Parti
             Label = "证件类型",
             InitFunc = x => x.Identity?.Type,
             UpdateFunc = (x, y) => x.Identity = x.Identity is null ? new Identity { Id = "", Type = y ?? default } : x.Identity with { Type = y ?? default },
-            ClearFunc = x => x.Identity = x.Identity with { Type = default }
+            ClearFunc = x => x.Identity = x.Identity is null ? null : x.Identity  with { Type = default }
         };
         IdType.Init(person);
 
@@ -79,8 +79,8 @@ public partial class ManagerMemberViewModel : EditableControlViewModelBase<Parti
         {
             Label = "证件号码",
             InitFunc = x => x.Identity?.Id,
-            UpdateFunc = (x, y) => x.Identity = x.Identity with { Id = y ?? "" },
-            ClearFunc = x => x.Identity = x.Identity with { Id = "" }
+            UpdateFunc = (x, y) => x.Identity = x.Identity is null ? new Identity { Id = y! } : x.Identity with { Id = y ?? "" },
+            ClearFunc = x => x.Identity = x.Identity is null ? null : x.Identity with { Id = "" }
         };
         IdNumber.Init(person);
 

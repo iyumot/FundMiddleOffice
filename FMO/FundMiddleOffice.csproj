@@ -44,6 +44,7 @@
 
   <ItemGroup>
     <Compile Remove="Controls\CopyableControl.xaml.cs" />
+    <Compile Remove="Controls\EquityStructureDiagram.xaml.cs" />
     <Compile Remove="Controls\FileDisplay.cs" />
     <Compile Remove="PageView.cs" />
     <Compile Remove="ViewModel\UnitViewModel.cs" />
@@ -58,6 +59,7 @@
 
   <ItemGroup>
     <Page Remove="Controls\CopyableControl.xaml" />
+    <Page Remove="Controls\EquityStructureDiagram.xaml" />
     <Page Remove="Views\TransferRequestPage.xaml" />
   </ItemGroup>
 

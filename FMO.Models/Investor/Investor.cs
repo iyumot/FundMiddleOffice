@@ -59,8 +59,7 @@ public class Investor
         var bb = regex.Replace(b, "");
         return aa == bb;
     }
-
-
+     
 }
 
 

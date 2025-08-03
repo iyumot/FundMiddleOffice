@@ -80,7 +80,10 @@ public abstract class Mission
                 db.GetCollection<Mission>().Upsert(this);
 
         }
-        catch (Exception e) { }
+        catch (Exception e)
+        {
+            Log.Error($"Work {e}");
+        }
 
         IsWorking = false;
         WeakReferenceMessenger.Default.Send(new MissionMessage { Id = Id, IsWorking = false, LastRun = LastRun, NextRun = NextRun });

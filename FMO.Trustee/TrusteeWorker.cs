@@ -172,6 +172,7 @@ public partial class TrusteeWorker : ObservableObject
             catch (Exception e)
             {
                 ret.Add(new(tr.Title, ReturnCode.Unknown));
+                Log.Error($"QueryRaisingBalanceOnce {e}");
             }
         }
 
@@ -324,6 +325,8 @@ public partial class TrusteeWorker : ObservableObject
             catch (Exception e)
             {
                 ret.Add(new(tr.Title, ReturnCode.Unknown));
+
+                Log.Error($"QueryTransferRequestOnce {e}");
             }
         }
 
@@ -444,6 +447,8 @@ public partial class TrusteeWorker : ObservableObject
             catch (Exception e)
             {
                 ret.Add(new(tr.Title, ReturnCode.Unknown));
+
+                Log.Error($"QueryTransferRecordOnce {e}");
             }
         }
 
@@ -520,7 +525,8 @@ public partial class TrusteeWorker : ObservableObject
             }
             catch (Exception e)
             {
-                ret.Add(new(tr.Title, ReturnCode.Unknown));
+                ret.Add(new(tr.Title, ReturnCode.Unknown)); 
+                Log.Error($"QueryDailyFeeOnce {e}");
             }
         }
 
@@ -595,6 +601,7 @@ public partial class TrusteeWorker : ObservableObject
             catch (Exception e)
             {
                 ret.Add(new(tr.Title, ReturnCode.Unknown));
+                Log.Error($"QueryRaisingAccountTransctionOnce {e}");
             }
         }
 

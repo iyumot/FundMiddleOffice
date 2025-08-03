@@ -22,6 +22,6 @@ public static class EnumHelper
         }
 
         throw new InvalidCastException($"{type}中未找到【{str}】对应的值");
-        return  default(T);
+        //return  default(T);
     }
 }

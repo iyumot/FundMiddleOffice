@@ -1,13 +1,13 @@
-﻿using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
 
 namespace FMO;
 
@@ -163,12 +163,12 @@ public partial class AddTAWindowViewModel : ObservableObject
             FundCode = SelectedFund!.Code,
             FundName = SelectedFund!.Name,
             CustomerId = SelectedInvestor!.Id,
-            CustomerIdentity = SelectedInvestor.Identity.Id,
+            CustomerIdentity = SelectedInvestor!.Identity!.Id,
             CustomerName = SelectedInvestor!.Name,
             RequestDate = DateOnly.FromDateTime(RequestDate!.Value),
             RequestAmount = SelectedType switch { TransferRecordType.Subscription or TransferRecordType.Purchase => RequestNumber ?? 0, _ => 0 },
             RequestShare = SelectedType switch { TransferRecordType.Redemption or TransferRecordType.ForceRedemption => RequestNumber ?? 0, _ => 0 },
-            RequestType = SelectedType switch { TransferRecordType.Subscription => TransferRequestType.Subscription, TransferRecordType.Purchase => TransferRequestType.Purchase, TransferRecordType.Redemption => TransferRequestType.Redemption, TransferRecordType.ForceRedemption => TransferRequestType.ForceRedemption },
+            RequestType = SelectedType switch { TransferRecordType.Subscription => TransferRequestType.Subscription, TransferRecordType.Purchase => TransferRequestType.Purchase, TransferRecordType.Redemption => TransferRequestType.Redemption, TransferRecordType.ForceRedemption => TransferRequestType.ForceRedemption, _ => TransferRequestType.UNK },
             CreateDate = DateOnly.FromDateTime(DateTime.Today),
             Source = "manual"
         };

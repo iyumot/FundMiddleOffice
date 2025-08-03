@@ -46,6 +46,7 @@ public static class DateTimeHelper
 
     public static DateOnly? TryFindDate(string? s)
     {
+        if (string.IsNullOrWhiteSpace(s)) return null;
         var m = Regex.Match(s, @"(?<!\d)\s*(\d{4})[-/]?(\d{2})[-/]?(\d{2})\s*(?!\d)");
         if (m.Success && int.Parse(m.Groups[1].Value) is int y && int.Parse(m.Groups[2].Value) is int mm && mm <= 12 && int.Parse(m.Groups[3].Value) is int dd)
         {

@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
-using FMO.Shared;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Windows;
@@ -73,7 +72,7 @@ public partial class OpenRuleViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(AllowDayOrder))]
     public partial FundOpenType SelectedType { get; set; }
 
-    public static FundOpenType[] Types { get; } = [FundOpenType.Closed ,FundOpenType.Daily, FundOpenType.Weekly, FundOpenType.Monthly, FundOpenType.Quarterly, FundOpenType.Yearly,];
+    public static FundOpenType[] Types { get; } = [FundOpenType.Closed, FundOpenType.Daily, FundOpenType.Weekly, FundOpenType.Monthly, FundOpenType.Quarterly, FundOpenType.Yearly,];
 
 
     public bool AllowDayOrder => SelectedType != FundOpenType.Weekly || TradeOrNatrual;
@@ -115,7 +114,7 @@ public partial class OpenRuleViewModel : ObservableObject
 
 
     public OpenRuleViewModel()
-    { 
+    {
         Quarters = Enumerable.Range(1, 4).Select(x => new QuarterInfo(x)).ToArray();
         foreach (var item in Quarters)
             item.PropertyChanged += QuarterChanged;
@@ -363,32 +362,13 @@ public partial class OpenRuleViewModel : ObservableObject
 
         Data = days.Select(x => new DayIsOpenViewModel { Date = x.Date, IsWeekEnd = x.Flag.HasFlag(DayFlag.Weekend), IsHoliday = x.Flag.HasFlag(DayFlag.Holiday) }).ToArray();
 
-        var r = Rule?.Apply(SelectedYear);
+
+        var r = Rule.Apply(SelectedYear);
 
         for (int i = 0; i < Data!.Length; i++)
         {
             Data[i].IsOpen = r[i].Type == OpenType.Fixed;
         }
-
-        //AllDays = days.Select(x => new DayIsOpenViewModel { Day = x.Date, }).ToArray();
-
-        //MonthOfYear = Enumerable.Range(1, 12).Select(x => new MonthInfo { Month = (Month)x, Start = new DateTime(SelectedYear, x, 1), End = new DateTime(SelectedYear, x, 1).AddMonths(1).AddDays(-1) }).ToArray();
-
-        //for (int i = 0; i < 12; i++)
-        //{
-        //    Calendars[i].SelectedDates.Clear();
-        //    Calendars[i].DisplayDateEnd = new DateTime(SelectedYear, i + 1, 1).AddMonths(1).AddDays(-1);
-        //    Calendars[i].DisplayDateStart = new DateTime(SelectedYear, i + 1, 1);
-        //    Calendars[i].BlackoutDates.Clear();
-
-        //    var black = days.Where(x => x.Flag.HasFlag(DayFlag.Weekend) || x.Flag.HasFlag(DayFlag.Holiday)).Select(x => new DateTime(x.Date, default));
-
-        //    foreach (var blackdate in black)
-        //    {
-        //        Calendars[i].BlackoutDates.Add(new CalendarDateRange(blackdate));
-        //    }
-
-        //}
     }
 
 

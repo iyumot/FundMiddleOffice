@@ -366,7 +366,8 @@ public partial class CITICS : TrusteeApiBase
 
             if (r.Code != ReturnCode.Success) return new(r.Code, null);
 
-            balances.AddRange(r.Data);
+            if (r.Data is not null)
+                balances.AddRange(r.Data);
         }
 
 
@@ -473,7 +474,11 @@ public partial class CITICS : TrusteeApiBase
 
             return obj?.Data?.Token;
         }
-        catch (Exception e) { return null; }
+        catch (Exception e)
+        {
+            Log(nameof(GetToken), "", $"CheckCertificate {e}");
+            return null;
+        }
         finally { tokenSlim.Release(); }
     }
 

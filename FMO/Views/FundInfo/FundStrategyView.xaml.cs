@@ -236,7 +236,7 @@ public partial class InvestManagerViewModel : EditableControlViewModelBase<FundI
             InitFunc = x => new PersonInfo(x.PersonId, x.Name!),
             UpdateFunc = (a, b) => { a.Name = b!.Name; a.PersonId = b.Id; },
             ClearFunc = x => x.Name = null,
-            DisplayFunc = x=>x.Name
+            DisplayFunc = x=>x?.Name
         };
         Person.Init(value);
 

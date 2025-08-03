@@ -230,7 +230,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
             Ratio = x.Ratio == 0 ? x.Share / manager!.RegisterCapital : x.Ratio
         }).ToArray();
         ShareRelations = [.. relations.Where(x => x.Institution == manager)];
-        ShareNotPair = rel.Sum(x => x.Share) != manager.RegisterCapital;
+        ShareNotPair = rel.Sum(x => x.Share) != manager!.RegisterCapital;
 
 
         db.Dispose();
@@ -305,7 +305,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
             InitFunc = x => new BooleanDate { IsLongTerm = x.ExpireDate == DateOnly.MaxValue, Date = x.ExpireDate == default || x.ExpireDate == DateOnly.MaxValue ? null : new DateTime(x.ExpireDate, default) },
             UpdateFunc = (x, y) => x.ExpireDate = y is null || y.Date is null ? default : (y.IsLongTerm ? DateOnly.MaxValue : DateOnly.FromDateTime(y.Date.Value)),
             ClearFunc = x => x.ExpireDate = default,
-            DisplayFunc = x => x.IsLongTerm ? "长期" : x?.Date?.ToString("yyyy-MM-dd")
+            DisplayFunc = x => x?.IsLongTerm ?? false ? "长期" : x?.Date?.ToString("yyyy-MM-dd")
         };
         ExpireDate.Init(manager);
 
@@ -647,27 +647,27 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     [RelayCommand]
     public void OpenOwnership()
     {
-        var wnd = new Window();
-        EquityStructureDiagram dig = new();
-        wnd.Content = dig;
-        dig.SetBinding(EquityStructureDiagram.NodesProperty, new Binding(nameof(EquityViewModel.CompanyNodes)));
-        wnd.DataContext = new EquityViewModel();
-        wnd.Owner = App.Current.MainWindow;
-        wnd.ShowDialog();
+        //var wnd = new Window();
+        //EquityStructureDiagram dig = new();
+        //wnd.Content = dig;
+        //dig.SetBinding(EquityStructureDiagram.NodesProperty, new Binding(nameof(EquityViewModel.CompanyNodes)));
+        //wnd.DataContext = new EquityViewModel();
+        //wnd.Owner = App.Current.MainWindow;
+        //wnd.ShowDialog();
 
 
-        using var db = DbHelper.Base();
-        var per = db.GetCollection<IEntity>().FindAll().ToList();
-        per.Insert(0, db.GetCollection<Manager>().FindById(1));
+        //using var db = DbHelper.Base();
+        //var per = db.GetCollection<IEntity>().FindAll().ToList();
+        //per.Insert(0, db.GetCollection<Manager>().FindById(1));
 
 
-        var os = db.GetCollection<Ownership>().FindAll().ToArray();
-        // 解析股权结构图
-        List<OwnershipItem> data = new();
+        //var os = db.GetCollection<Ownership>().FindAll().ToArray();
+        //// 解析股权结构图
+        //List<OwnershipItem> data = new();
 
-        var ins = per.FirstOrDefault(x => x.Id == 1);
-        var oi = new OwnershipItem { Name = ins!.Name };
-        Parse(1, per, os, oi);
+        //var ins = per.FirstOrDefault(x => x.Id == 1);
+        //var oi = new OwnershipItem { Name = ins!.Name };
+        //Parse(1, per, os, oi);
 
 
 

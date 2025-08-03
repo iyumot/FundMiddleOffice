@@ -405,12 +405,12 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
                     if (newValue >= 999)
                     {
-                        ExpirationDate.NewValue = new(2099, 12, 31);
+                        ExpirationDate?.NewValue = new(2099, 12, 31);
                         //ExpirationDate.OldValue = new(2099, 12, 31);
                     }
                     else
                     {
-                        ExpirationDate.NewValue = SetupDate.AddMonths(y.Value).AddDays(-1);
+                        ExpirationDate?.NewValue = SetupDate.AddMonths(y.Value).AddDays(-1);
                         //ExpirationDate.OldValue = ExpirationDate.NewValue;
                     }
                 }

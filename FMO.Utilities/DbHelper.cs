@@ -202,7 +202,7 @@ public static class DatabaseAssist
 
             foreach (var item in d.ExceptBy([0, .. cids], x => x.CustomerId))
             {
-                var tmp = cc.Where(x => x.Identity.Id == item.CustomerIdentity).ToArray();
+                var tmp = cc.Where(x => x.Identity?.Id == item.CustomerIdentity).ToArray();
 
                 // 没有找到investor
                 if (tmp.Length == 0)

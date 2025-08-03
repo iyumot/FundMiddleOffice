@@ -327,8 +327,8 @@ public class DailyValueCurveDrawing : FrameworkElement
             case nameof(DailyValueCurveViewModel.Data):
             case nameof(DailyValueCurveViewModel.StartDate):
             case nameof(DailyValueCurveViewModel.EndDate):
-            case var n when n.Contains("Draw"):
-            case var b when b.Contains("Brush"):
+            case string n when n.Contains("Draw"):
+            case string b when b.Contains("Brush"):
                 Dispatcher.BeginInvoke(() =>
                 {
                     if (DataContext is DailyValueCurveViewModel vm)

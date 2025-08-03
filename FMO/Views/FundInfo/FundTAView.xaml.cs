@@ -191,7 +191,7 @@ public partial class FundTAViewModel : ObservableObject
             var gend= CurrentShares.OrderByDescending(x=> x.Share).Take(10).Join(customers, x => x.Id, x => x.Id, (x, y) => new
             {
                 Name = x.Name,
-                ID = y.Identity.Id,
+                ID = y.Identity?.Id,
                 Amount = x.Asset,
                 Portion = x.Proportion,
                 Phone = y.Phone,

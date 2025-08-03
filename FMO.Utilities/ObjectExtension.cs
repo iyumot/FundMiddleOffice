@@ -75,11 +75,8 @@ public static class ObjectExtension
                 dictionary.Add(property.Name, false);
                 continue;
             }
-            if (value == null)
-            {
-                dictionary.Add(property.Name, null);
-                continue;
-            }
+            if (value is null) 
+                continue; 
 
             if (value is IEnumerable enumerable && !(value is string))
             {

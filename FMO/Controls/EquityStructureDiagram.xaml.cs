@@ -53,9 +53,6 @@ public partial class EquityStructureDiagram : UserControl
         DependencyProperty.Register("TextBrush", typeof(Brush),
             typeof(EquityStructureDiagram), new PropertyMetadata(Brushes.Black));
 
-    public static readonly DependencyProperty FontSizeProperty =
-        DependencyProperty.Register("FontSize", typeof(double),
-            typeof(EquityStructureDiagram), new PropertyMetadata(12.0));
 
     public static readonly DependencyProperty LineThicknessProperty =
         DependencyProperty.Register("LineThickness", typeof(double),
@@ -130,11 +127,6 @@ public partial class EquityStructureDiagram : UserControl
         set { SetValue(TextBrushProperty, value); }
     }
 
-    public double FontSize
-    {
-        get { return (double)GetValue(FontSizeProperty); }
-        set { SetValue(FontSizeProperty, value); }
-    }
 
     public double LineThickness
     {
@@ -384,10 +376,10 @@ public abstract partial class EquityNode : ObservableObject
 public partial class CompanyNode : EquityNode
 {
     [ObservableProperty]
-    private string businessLicense;
+    private string? businessLicense;
 
     [ObservableProperty]
-    private string legalRepresentative;
+    private string? legalRepresentative;
 
     public override string ToString()
     {
@@ -399,7 +391,7 @@ public partial class CompanyNode : EquityNode
 public partial class NaturalPersonNode : EquityNode
 {
     [ObservableProperty]
-    private string idNumber;
+    private string? idNumber;
 
     [ObservableProperty]
     private DateTime birthDate;

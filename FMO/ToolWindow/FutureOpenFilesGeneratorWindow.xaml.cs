@@ -176,8 +176,8 @@ public partial class FutureOpenFilesGeneratorWindowViewModel : ObservableObject
         return new
         {
             Name = participant?.Name,
-            IdType = participant?.Identity.Type switch { IDType.IdentityCard or IDType.Unknown or null => "身份证", var x => EnumDescriptionTypeConverter.GetEnumDescription(x) },
-            Id = participant?.Identity.Id,
+            IdType = participant?.Identity?.Type switch { IDType.IdentityCard or IDType.Unknown or null => "身份证", var x => EnumDescriptionTypeConverter.GetEnumDescription(x) },
+            Id = participant?.Identity?.Id,
             Phone = participant?.Phone,
             Address = participant?.Address,
         };

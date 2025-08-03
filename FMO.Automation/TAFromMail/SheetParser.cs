@@ -78,9 +78,9 @@ public class SheetParser
     }
 
 
-    public virtual TransferRecord[] ParseTASheet(IExcelDataReader reader) => Array.Empty<TransferRecord>();
+    public virtual TransferRecord[] ParseTASheet(IExcelDataReader reader) => [];
 
-    public virtual TransferRecord[] ParseTAConfirm(IExcelDataReader reader) => null;
+    public virtual TransferRecord[] ParseTAConfirm(IExcelDataReader reader) => [];
 
     protected static void PostHandle(TransferRecord r, BaseDatabase db)
     {
@@ -88,7 +88,7 @@ public class SheetParser
         // 对应fund id
 
         // 对应customer
-        var customer = db.GetCollection<Investor>().FindOne(x => x.Name == r.CustomerName && x.Identity.Id == r.CustomerIdentity);
+        var customer = db.GetCollection<Investor>().FindOne(x => x.Name == r.CustomerName && x.Identity != null && x.Identity!.Id == r.CustomerIdentity);
         r.CustomerId = customer?.Id ?? 0;
 
         var fund = db.FindFund(r.FundCode);

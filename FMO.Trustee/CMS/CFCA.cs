@@ -16,23 +16,23 @@ public class SignatureUtils
     /// <summary>
     /// 获取管理签名
     /// </summary>
-    private static string GetManagerSignature(string companyId, string timestamp, string certPath, string password)
-    {
-        // 构造待签名字符串（模拟 MD5）
-        string waitSignStr = "20250101010101"; // 可替换为真正的 MD5(companyId + timestamp)
-        byte[] sourceData = Encoding.UTF8.GetBytes(waitSignStr);
+    //private static string GetManagerSignature(string companyId, string timestamp, string certPath, string password)
+    //{
+    //    // 构造待签名字符串（模拟 MD5）
+    //    string waitSignStr = "20250101010101"; // 可替换为真正的 MD5(companyId + timestamp)
+    //    byte[] sourceData = Encoding.UTF8.GetBytes(waitSignStr);
 
-        // 加载 PFX 证书和私钥
-        var pfxCert = X509CertificateLoader.LoadPkcs12FromFile(certPath, password, X509KeyStorageFlags.Exportable);
-        var bcCert = DotNetUtilities.FromX509Certificate(pfxCert);
-        RSA? rSA = pfxCert.GetRSAPrivateKey();
-        byte[] privateKeyInfoData = rSA.ExportPkcs8PrivateKey();
-        var privateKey = (RsaPrivateCrtKeyParameters)PrivateKeyFactory.CreateKey(privateKeyInfoData);
+    //    // 加载 PFX 证书和私钥
+    //    var pfxCert = X509CertificateLoader.LoadPkcs12FromFile(certPath, password, X509KeyStorageFlags.Exportable);
+    //    var bcCert = DotNetUtilities.FromX509Certificate(pfxCert);
+    //    RSA? rSA = pfxCert.GetRSAPrivateKey();
+    //    byte[] privateKeyInfoData = rSA.ExportPkcs8PrivateKey();
+    //    var privateKey = (RsaPrivateCrtKeyParameters)PrivateKeyFactory.CreateKey(privateKeyInfoData);
 
-        // 调用签名方法
-        byte[] signedBytes = P7SignMessageDetach("SHA256WITHRSA", sourceData, privateKey, bcCert);
-        return Convert.ToBase64String(signedBytes);
-    }
+    //    // 调用签名方法
+    //    byte[] signedBytes = P7SignMessageDetach("SHA256WITHRSA", sourceData, privateKey, bcCert);
+    //    return Convert.ToBase64String(signedBytes);
+    //}
 
     public static string GetManagerSignature(string companyId, string timestamp, X509Certificate2 pfxCert)
     {
@@ -76,7 +76,7 @@ public class SignatureUtils
     public static byte[] P7SignMessageDetach(string signAlg, byte[] sourceData, RsaPrivateCrtKeyParameters privateKey, X509Certificate cert)
     {
         bool isDetached = false; // 不附加原文数据
-        string contentType = null;
+        string? contentType = null;
         X509Certificate[] certs = new[] { cert };
 
         return PackageRSASignedData(isDetached, contentType, sourceData, signAlg, privateKey, certs);

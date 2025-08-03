@@ -260,10 +260,10 @@ public class SM4
         if (ctx.isPadding && ctx.mode == SM4_ENCRYPT)
             input = padding(input, SM4_ENCRYPT);
 
-        using (MemoryStream bins = new MemoryStream(input))
+        using (MemoryStream bins = new MemoryStream(input!))
         using (MemoryStream bous = new MemoryStream())
         {
-            int length = input.Length;
+            int length = input!.Length;
             while (length > 0)
             {
                 byte[] inBlock = new byte[16];
@@ -293,10 +293,10 @@ public class SM4
             input = padding(input, SM4_ENCRYPT);
 
 
-        using (MemoryStream bins = new MemoryStream(input))
+        using (MemoryStream bins = new MemoryStream(input!))
         using (MemoryStream bous = new MemoryStream())
         {
-            int length = input.Length;
+            int length = input!.Length;
             while (length > 0)
             {
                 byte[] inBlock = new byte[16];
@@ -330,10 +330,10 @@ public class SM4
         byte[] realIV = new byte[16];
         Array.Copy(iv, realIV, 16);
 
-        using (MemoryStream bins = new MemoryStream(input))
+        using (MemoryStream bins = new MemoryStream(input!))
         using (MemoryStream bous = new MemoryStream())
         {
-            int length = input.Length;
+            int length = input!.Length;
 
             if (ctx.mode == SM4_ENCRYPT)
             {

@@ -208,11 +208,11 @@ public abstract class TrusteeApiBase : ITrustee
 
         return Domain + part;
 
-#if DEBUG
-        return TestDomain + part;
-#else
-        return Domain + part;
-#endif
+//#if DEBUG
+//        return TestDomain + part;
+//#else
+//        return Domain + part;
+//#endif
     }
 
 

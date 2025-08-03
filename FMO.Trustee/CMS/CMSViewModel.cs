@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
+using Serilog;
 using System.IO;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -114,6 +115,7 @@ public partial class CMSViewModel : TrusteeViewModelBase<CMS>
         catch (Exception e)
         {
             CertIsValid = false;
+            Log.Error($"CheckCertificate {e}");
         }
     }
 }

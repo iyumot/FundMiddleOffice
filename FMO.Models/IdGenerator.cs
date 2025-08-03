@@ -40,7 +40,7 @@ public static class IdGenerator
                 FileAccess.Read,
                 FileShare.ReadWrite
             );
-            var data = JsonSerializer.Deserialize<ConcurrentDictionary<string, int>>(fs);
+            var data = JsonSerializer.Deserialize<ConcurrentDictionary<string, int>>(fs) ?? new();
             foreach (var kvp in data)
             {
                 _idCounters[kvp.Key] = kvp.Value;
@@ -48,7 +48,7 @@ public static class IdGenerator
         }
     }
 
-    private static int _persistCount;
+    //private static int _persistCount;
     private static void SchedulePersist()
     {
         // 每10次变更触发一次持久化（可调节阈值）
@@ -60,7 +60,7 @@ public static class IdGenerator
             {
                 SaveToFile();
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
                 // 添加日志记录
                 //Log.Error($"持久化失败: {ex.Message}");

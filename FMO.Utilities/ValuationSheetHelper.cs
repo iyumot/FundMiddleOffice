@@ -11,7 +11,7 @@ public static class ValuationSheetHelper
 
     public static DailyValue[] ParseMany(FileInfo[] files)
     {
-        List<Fund> funds = null;
+        List<Fund> funds;
         using (var db = DbHelper.Base())
             funds = db.GetCollection<Fund>().FindAll().ToList();
 
@@ -22,7 +22,7 @@ public static class ValuationSheetHelper
 
     public static DailyValue[] ParseMany(FileInfo zipfiles)
     {
-        List<Fund> funds = null;
+        List<Fund> funds;
         using (var db = DbHelper.Base())
             funds = db.GetCollection<Fund>().FindAll().ToList();
 
@@ -110,9 +110,9 @@ public static class ValuationSheetHelper
         for (int j = 0; j < table.Columns.Count; j++)
         {
             var datetmp = table.Rows[Rowid_AccountField - 1][j];
-            if (!(datetmp is DBNull || datetmp == null))
+            if (datetmp is not DBNull && datetmp is not null && datetmp.ToString() is string sdate)
             {
-                var mm = Regex.Match(datetmp.ToString(), @"(\d{4})[-/]*(\d{2})[-/]*(\d{2})");
+                var mm = Regex.Match(sdate, @"(\d{4})[-/]*(\d{2})[-/]*(\d{2})");
                 if (mm.Success)
                 {
                     daily.Date = DateOnly.ParseExact($"{mm.Groups[1]}{mm.Groups[2]:00}{mm.Groups[3]:00}", "yyyyMMdd", null);

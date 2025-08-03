@@ -26,7 +26,7 @@ public class DelayMouseOverExpandBehavior : Behavior<FrameworkElement>
     // 展开延迟时间
     public TimeSpan Delay { get; set; } = TimeSpan.FromSeconds(0.5);
 
-    private DispatcherTimer _timer;
+    private DispatcherTimer? _timer;
 
     private double _originalHeight;
 
@@ -65,13 +65,13 @@ public class DelayMouseOverExpandBehavior : Behavior<FrameworkElement>
     {
         _originalHeight = (sender as FrameworkElement)?.ActualHeight ?? 20;
         // 启动延迟计时器
-        _timer.Start();
+        _timer?.Start();
     }
 
     private void OnMouseLeave(object sender, MouseEventArgs e)
     {
         // 取消延迟展开
-        _timer.Stop();
+        _timer?.Stop();
 
         var element = AssociatedObject;
 
@@ -91,7 +91,7 @@ public class DelayMouseOverExpandBehavior : Behavior<FrameworkElement>
 
     private void OnDelayElapsed(object? sender, EventArgs e)
     {
-        _timer.Stop();
+        _timer?.Stop();
 
         var element = AssociatedObject;
 
