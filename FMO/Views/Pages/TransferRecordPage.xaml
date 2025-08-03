@@ -467,6 +467,13 @@
                                             Style="{StaticResource ButtonIcon.Small}"
                                             Visibility="{Binding FileExists, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
+                                        <Viewbox
+                                            Width="14"
+                                            Height="14"
+                                            Visibility="{Binding LackRequest, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                            <Path Data="{StaticResource f.file-pen}" Fill="Red" />
+                                        </Viewbox>
+
                                         <Button
                                             x:Name="del"
                                             hc:IconElement.Geometry="{StaticResource f.trash}"

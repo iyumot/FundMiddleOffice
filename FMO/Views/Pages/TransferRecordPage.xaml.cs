@@ -98,6 +98,10 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
             var funds = db.GetCollection<Fund>().FindAll().Select(x => (x.Id, x.Name, x.Code, x.ClearDate)).ToArray();
             var transaction = db.GetCollection<RaisingBankTransaction>().FindAll().Select(x => new RaisingBankTranscationViewModel(x, funds!)).ToArray();
 
+            foreach (var item in records.IntersectBy<TransferRecordViewModel, int>(map.Where(x => x.RequestId == 0).Select(x => x.RecordId), x => x.Id))
+                item.LackRequest = true;
+
+
 
             //foreach (var o in orders)
             //{
@@ -546,6 +550,8 @@ partial class TransferRecordViewModel
 
     public bool FirstTrade { get; set; }
 
+
+    public bool LackRequest { get; set; }
 
 
     [RelayCommand]
