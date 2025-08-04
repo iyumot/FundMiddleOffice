@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using static FMO.Trustee.SM4;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -339,15 +340,25 @@ public partial class CSC : TrusteeApiBase
                     }
 
                     // 解析实际数据
-                    var data = JsonSerializer.Deserialize<RetJson<TJSON>>(json);
+                    var data = JsonSerializer.Deserialize<RetJson<JsonElement>>(json);
                     //if(data.Data.RowCount != data.Data.Data.Length)
                     //    return new(ReturnCode., null);
 
-                    total += data!.Data.Data.Length;
-                    list.AddRange(data.Data.Data);
-
                     // 记录返回的类型，用于debug
-                    CacheJson(caller, data!.Data.Data);
+                    //CacheJson(caller, data!.Data.Data);
+
+                    total += data!.Data.Data.Count;
+                    list.AddRange(data.Data.Data.Select(x =>
+                    {
+                        try { return x.Deserialize<TJSON>()!; }
+                        catch (Exception ex)
+                        {
+                            // 记录具体哪个元素反序列化失败
+                            JsonBase.ReportJsonUnexpected(Identifier, caller!, $"Failed to deserialize item. Error: {ex.Message}: {x}");
+                            throw;
+                        }
+                    }));
+
 
                     // 数据获取全
                     if (data!.Data.TotalCount >= total)

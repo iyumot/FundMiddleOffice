@@ -598,13 +598,23 @@ public partial class CITICS : TrusteeApiBase
                     if (ret.Data is JsonValue jv && jv.TryGetValue<string>(out var s) && s.Contains("No Data", StringComparison.OrdinalIgnoreCase))
                         break;
 
-                    var data = ret.Data.Deserialize<QueryRoot<TJSON>>()!;
+                    var data = ret.Data.Deserialize<QueryRoot<JsonElement>>()!;
 
                     // 记录返回的类型，用于debug
-                    if (data.List is not null)
-                        CacheJson(caller, data!.List);
+                    //if (data.List is not null)
+                    //    CacheJson(caller, data!.List);
 
-                    list.AddRange(data.List!);
+                    if (data.List is not null)
+                        list.AddRange(data.List.Select(x =>
+                        {
+                            try { return x.Deserialize<TJSON>()!; }
+                            catch (Exception ex)
+                            {
+                                // 记录具体哪个元素反序列化失败
+                                JsonBase.ReportJsonUnexpected(Identifier, caller!, $"Failed to deserialize item Error: {ex.Message}: {x}.");
+                                throw;
+                            }
+                        }));
 
                     if (data.Total == 0) break;
 
@@ -617,7 +627,7 @@ public partial class CITICS : TrusteeApiBase
                     // 下一页
                     formatedParams["pageNum"] = page + 1;
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Log(caller, json, $"Json Serialize Error {e.Message}");
                     return new(ReturnCode.JsonNotPairToEntity, null);

@@ -36,7 +36,7 @@ public class DataJsonWrap<T>
 {
 
     [JsonPropertyName("result")]
-    public required T[] Data { get; set; }
+    public required List<T> Data { get; set; }
 
     [JsonPropertyName("rowCount")]
     public int RowCount { get; set; }

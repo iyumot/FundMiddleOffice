@@ -321,12 +321,23 @@ public partial class CMS : TrusteeApiBase
                         break;// return new(ReturnCode.Success, []);
 
                     // 解析实际数据
-                    var data = JsonSerializer.Deserialize<TJSON[]>(ret.Data);
-                    if (data is not null && data.Length > 0)
-                        list.AddRange(data);
+                    var data = JsonSerializer.Deserialize<List<JsonElement>>(ret.Data);
 
                     // 记录返回的类型，用于debug
-                    CacheJson(caller, data!);
+                    //CacheJson(caller, data!);
+
+                    if (data is not null && data.Count > 0)
+                        list.AddRange(data.Select(x =>
+                        {
+                            try { return x.Deserialize<TJSON>()!; }
+                            catch (Exception ex)
+                            {
+                                // 记录具体哪个元素反序列化失败
+                                JsonBase.ReportJsonUnexpected(Identifier, caller!, $"Failed to deserialize item Error: {ex.Message}: {x}.");
+                                throw;
+                            }
+                        }));
+
 
                     // 数据获取是否齐全
                     var pi = JsonSerializer.Deserialize<PaginationInfo>(ret.Page!)!;

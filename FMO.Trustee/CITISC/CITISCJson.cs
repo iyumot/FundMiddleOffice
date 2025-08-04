@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
@@ -88,6 +89,49 @@ public class QueryRoot<T>
 
 }
 
+
+
+
+public class QueryRoot 
+{
+    /// <summary>
+    /// 当前页
+    /// </summary>
+    [JsonPropertyName("pageNum")]
+    public int PageNum { get; set; }
+
+    /// <summary>
+    /// 当前页的数量
+    /// </summary>
+    [JsonPropertyName("size")]
+    public int Size { get; set; }
+
+    [JsonPropertyName("total")]
+    public int Total { get; set; }
+
+    /// <summary>
+    /// 结果
+    /// </summary>
+    [JsonPropertyName("list")]
+    public List<JsonElement>? List { get; set; }
+
+    /// <summary>
+    /// 下一页
+    /// </summary>
+    [JsonPropertyName("hasNextPage")]
+    public bool HasNextPage { get; set; }
+
+
+    [JsonPropertyName("pages")]
+    public int Pages { get; set; }
+
+    [JsonPropertyName("navigatePages")]
+    public int NavPages { get; set; }
+
+
+    public int PageCount => Pages == 0 ? NavPages : Pages;
+
+}
 
 public class TokenJson
 {
