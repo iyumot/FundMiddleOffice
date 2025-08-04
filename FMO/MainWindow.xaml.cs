@@ -62,6 +62,7 @@ public partial class TabItemInfo : ObservableObject
     [ObservableProperty]
     public partial bool IsSelected { get; set; }
 
+    public bool IsFund { get; set; }
 }
 
 public partial class MainWindowViewModel : ObservableRecipient, IRecipient<string>, IRecipient<OpenFundMessage>, IRecipient<OpenPageMessage>, IRecipient<ToastMessage>, IRecipient<VerifyMessage>, IRecipient<VerifyResultMessage>
@@ -193,7 +194,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
         if (page is null)
         {
             var obj = new FundInfoPage() { Tag = fund.Name, DataContext = new FundInfoPageViewModel(fund) };
-            page = new TabItemInfo { Header = fund.ShortName ?? fund.Name ?? "Fund", Content = obj, };//new TabItem { Header = GenerateHeader(fund.ShortName ?? fund.Name ?? "Fund"), Content = obj };
+            page = new TabItemInfo { Header = fund.ShortName ?? fund.Name ?? "Fund", IsFund = true, Content = obj, };//new TabItem { Header = GenerateHeader(fund.ShortName ?? fund.Name ?? "Fund"), Content = obj };
             Pages.Add(page);
         }
 

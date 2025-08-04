@@ -21,7 +21,7 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextAlignment" Value="Right" />
             <Setter Property="Foreground" Value="Black" />
-
+            <Setter Property="shared:MaskService.IsMask" Value="True" />
         </Style>
 
 
@@ -33,15 +33,11 @@
         </DataTemplate>
 
         <DataTemplate x:Key="DT.ShareCell">
-            <shared:CopyableControl HorizontalAlignment="Right">
-                <TextBlock Foreground="Black" Text="{Binding Share, StringFormat='###,###,###,###.##'}" />
-            </shared:CopyableControl>
+            <shared:CopyableTextBlock Foreground="Black" Text="{Binding Share, StringFormat='###,###,###,###.##'}" />
         </DataTemplate>
 
         <DataTemplate x:Key="DT.ProfitCell">
-            <shared:CopyableControl HorizontalAlignment="Right">
-                <TextBlock Foreground="Black" Text="{Binding Profit, StringFormat='###,###,###,###.##'}" />
-            </shared:CopyableControl>
+            <shared:CopyableTextBlock Foreground="Black" Text="{Binding Profit, StringFormat='###,###,###,###.##'}" />
         </DataTemplate>
 
         <Style x:Key="DataGridRowStyle" TargetType="{x:Type DataGridRow}">
@@ -243,14 +239,7 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <DockPanel LastChildFill="False">
-                                        <shared:CopyableControl HorizontalAlignment="Left">
-                                            <!--<i:Interaction.Triggers>
-                                                <i:EventTrigger EventName="MouseDoubleClick">
-                                                    <i:InvokeCommandAction Command="{Binding Data.ViewInvestorCommand, Source={StaticResource proxy}}" CommandParameter="{Binding .}" />
-                                                </i:EventTrigger>
-                                            </i:Interaction.Triggers>-->
-                                            <TextBlock Foreground="Black" Text="{Binding Name}" />
-                                        </shared:CopyableControl>
+                                        <shared:CopyableTextBlock Foreground="Black" Text="{Binding Name}" />
                                         <Button
                                             x:Name="view"
                                             hc:IconElement.Geometry="{StaticResource f.book-open}"

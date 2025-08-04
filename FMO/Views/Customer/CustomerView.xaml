@@ -670,10 +670,14 @@
                             <DataTemplate>
                                 <DockPanel>
                                     <DockPanel Margin="0,8,0,0" DockPanel.Dock="Top">
-                                        <TextBlock FontSize="14" Text="{Binding FundName}" />
+                                        <TextBlock
+                                            shared:MaskService.IsMask="True"
+                                            FontSize="14"
+                                            Text="{Binding FundName}" />
 
                                         <TextBlock
                                             Margin="5,0,0,0"
+                                            shared:MaskService.IsMask="True"
                                             FontSize="14"
                                             FontWeight="Bold"
                                             Text="{Binding FundCode}" />

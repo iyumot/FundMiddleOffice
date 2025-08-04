@@ -45,6 +45,7 @@
                         Margin="4,0"
                         HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                         VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                        local:MaskService.IsMask="True"
                         Content="{Binding Binding, RelativeSource={RelativeSource AncestorType=local:ChangeableContainer}}"
                         ContentTemplate="{TemplateBinding ContentTemplate}" />
                 </DockPanel>
@@ -89,7 +90,10 @@
 
 
                                 <local:CopyableControl Margin="10,0,0,0">
-                                    <TextBlock Text="{Binding Binding.Display, RelativeSource={RelativeSource Mode=TemplatedParent}}" TextWrapping="WrapWithOverflow" />
+                                    <TextBlock
+                                        local:MaskService.IsMask="True"
+                                        Text="{Binding Binding.Display, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+                                        TextWrapping="WrapWithOverflow" />
                                 </local:CopyableControl>
 
                             </DockPanel>
@@ -136,6 +140,7 @@
                         Margin="4,1"
                         HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                         VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                        local:MaskService.IsMask="True"
                         Content="{TemplateBinding Binding}"
                         ContentTemplate="{TemplateBinding EditTemplate}" />
                 </DockPanel>
@@ -183,6 +188,7 @@
                 Margin="4,1"
                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                local:MaskService.IsMask="True"
                 Content="{Binding Binding, RelativeSource={RelativeSource TemplatedParent}}"
                 ContentTemplate="{TemplateBinding EditTemplate}" />
 
@@ -222,7 +228,7 @@
         <Setter Property="EditTemplate">
             <Setter.Value>
                 <DataTemplate>
-                    <TextBox Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                    <TextBox local:MaskService.IsMask="True" Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
                 </DataTemplate>
             </Setter.Value>
         </Setter>
@@ -285,6 +291,7 @@
                                 <local:AbbreviationText
                                     x:Name="file"
                                     VerticalContentAlignment="Center"
+                                    local:MaskService.IsMask="True"
                                     Text="{Binding Binding.File.Name, RelativeSource={RelativeSource TemplatedParent}}" />
 
                                 <hc:SimplePanel
@@ -533,6 +540,7 @@
                     x:Name="file"
                     Margin="0,2"
                     VerticalContentAlignment="Center"
+                    local:MaskService.IsMask="True"
                     Text="{Binding Name}" />
 
                 <hc:SimplePanel
@@ -730,6 +738,7 @@
                                 <local:AbbreviationText
                                     x:Name="file"
                                     VerticalContentAlignment="Center"
+                                    local:MaskService.IsMask="True"
                                     Text="{Binding Binding.File.Name, RelativeSource={RelativeSource TemplatedParent}}" />
 
                                 <hc:SimplePanel
@@ -844,6 +853,7 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock
                                 VerticalAlignment="Center"
+                                local:MaskService.IsMask="True"
                                 Text="{TemplateBinding MaskedText}"
                                 TextWrapping="WrapWithOverflow" />
                             <Button

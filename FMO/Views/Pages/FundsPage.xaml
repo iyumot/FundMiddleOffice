@@ -6,6 +6,7 @@
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     d:DesignHeight="450"
     d:DesignWidth="1400"
     Tag="基金总览"
@@ -182,6 +183,7 @@
                             </Viewbox>
                             <TextBlock
                                 HorizontalAlignment="Center"
+                                shared:MaskService.IsMask="True"
                                 FontWeight="Bold"
                                 Text="{Binding MajorName}" />
                             <TextBlock
@@ -265,14 +267,21 @@
                                 </Style>
                             </DockPanel.Resources>
                             <TextBlock
+                                shared:MaskService.IsMask="True"
                                 FontSize="13"
                                 FontWeight="Bold"
                                 Text="{Binding Code}"
                                 Visibility="{Binding DataContext.UiConfig.ShowCode, RelativeSource={RelativeSource AncestorType=ListBox}, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
+                            <DockPanel Visibility="{Binding DataContext.UiConfig.ShowSetupDate, RelativeSource={RelativeSource AncestorType=ListBox}, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                <TextBlock Text="成立日期" />
+                                <TextBlock shared:MaskService.IsMask="True" Text="{Binding SetupDate, StringFormat=yyyy-MM-dd}" />
+                            </DockPanel>
+                            <DockPanel Visibility="{Binding DataContext.UiConfig.ShowAuditDate, RelativeSource={RelativeSource AncestorType=ListBox}, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                <TextBlock Text="备案日期" />
+                                <TextBlock shared:MaskService.IsMask="True" Text="{Binding AuditDate, StringFormat=yyyy-MM-dd}" />
+                            </DockPanel>
 
-                            <TextBlock Text="{Binding SetupDate, StringFormat=成立日期 yyyy-MM-dd}" Visibility="{Binding DataContext.UiConfig.ShowSetupDate, RelativeSource={RelativeSource AncestorType=ListBox}, Converter={StaticResource Boolean2VisibilityConverter}}" />
-                            <TextBlock Text="{Binding AuditDate, StringFormat=备案日期 yyyy-MM-dd}" Visibility="{Binding DataContext.UiConfig.ShowAuditDate, RelativeSource={RelativeSource AncestorType=ListBox}, Converter={StaticResource Boolean2VisibilityConverter}}" />
                         </DockPanel>
                     </DockPanel>
                 </DataTemplate>

@@ -437,6 +437,7 @@
                                 <shared:CopyableControl>
                                     <TextBlock
                                         VerticalAlignment="Center"
+                                        shared:MaskService.IsMask="True"
                                         Text="{Binding Name}"
                                         TextWrapping="Wrap" />
                                 </shared:CopyableControl>

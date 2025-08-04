@@ -6,6 +6,7 @@
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO.Schedule"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
@@ -40,7 +41,10 @@
                 <DataTemplate>
                     <DockPanel>
                         <CheckBox IsChecked="{Binding IsEnabled}" />
-                        <TextBox MinWidth="600" Text="{Binding Url, UpdateSourceTrigger=PropertyChanged, Delay=400}" />
+                        <TextBox
+                            MinWidth="600"
+                            shared:MaskService.IsMask="True"
+                            Text="{Binding Url, UpdateSourceTrigger=PropertyChanged, Delay=400}" />
                     </DockPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>

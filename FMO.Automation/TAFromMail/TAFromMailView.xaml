@@ -6,6 +6,7 @@
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO.Schedule"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     d:DesignHeight="150"
     d:DesignWidth="800"
     mc:Ignorable="d">
@@ -32,6 +33,7 @@
         <hc:TextBox
             Width="200"
             hc:InfoElement.Placeholder="邮箱 user@mail.com"
+            shared:MaskService.IsMask="True"
             Text="{Binding MailName, UpdateSourceTrigger=PropertyChanged, Delay=300}"
             TextAlignment="Center" />
 

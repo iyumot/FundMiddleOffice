@@ -24,12 +24,16 @@ public enum TipType
 
 
 
-
+    /// <summary>
+    /// ta 的fundid 或investorid = 0
+    /// </summary>
     TANoOwner,
 
 
-
-
+    /// <summary>
+    /// 有record 但是没有request
+    /// </summary>
+    TransferRequestMissing,
 
 
 }
@@ -53,8 +57,7 @@ public static class DataTracker
 
     public static ConcurrentDictionary<TipType, string?> UniformTips { get; } = new();
 
- 
-
+  
 
 
     static DataTracker()

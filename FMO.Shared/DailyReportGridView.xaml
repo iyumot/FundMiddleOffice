@@ -6,12 +6,29 @@
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO.Shared"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:shared="clr-namespace:FMO.Shared"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
     <UserControl.Resources>
         <local:ValueToBrushConverter x:Key="ValueToBrushConverter" />
         <local:ValueToForegroundConverter x:Key="ValueToForegroundConverter" />
+
+        <Style x:Key="CenterText" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="shared:MaskService.IsMask" Value="True" />
+        </Style>
+
+        <Style x:Key="RightText" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="shared:MaskService.IsMask" Value="True" />
+        </Style>
+
+        <Style x:Key="LeftText" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="shared:MaskService.IsMask" Value="True" />
+        </Style>
+
 
         <Style x:Key="Style.Date" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{Binding DateBrush}" />
@@ -23,6 +40,7 @@
         </Style>
         <Style x:Key="Style.HC" TargetType="TextBlock">
             <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="shared:MaskService.IsMask" Value="True" /> 
         </Style>
         <Style BasedOn="{StaticResource DataGridColumnHeaderStyle}" TargetType="DataGridColumnHeader">
             <Setter Property="HorizontalContentAlignment" Value="Center" />
@@ -114,8 +132,14 @@
             RowStyle="{StaticResource GridRow}"
             Style="{StaticResource DataGrid.Small}">
             <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding FundCode}" Header="备案号" />
-                <DataGridTextColumn Binding="{Binding FundName}" Header="产品" />
+                <DataGridTextColumn
+                    Binding="{Binding FundCode}"
+                    ElementStyle="{StaticResource LeftText}"
+                    Header="备案号" />
+                <DataGridTextColumn
+                    Binding="{Binding FundName}"
+                    ElementStyle="{StaticResource LeftText}"
+                    Header="产品" />
                 <DataGridTextColumn
                     Binding="{Binding Daily.Date, StringFormat=yyyy-MM-dd}"
                     ElementStyle="{StaticResource Style.Date}"
@@ -124,8 +148,14 @@
                     Binding="{Binding NetAsset, StringFormat=N0}"
                     ElementStyle="{StaticResource Style.HC}"
                     Header="净资产(万)" />
-                <DataGridTextColumn Binding="{Binding Daily.NetValue, StringFormat=N4}" Header="单位净值" />
-                <DataGridTextColumn Binding="{Binding Daily.CumNetValue, StringFormat=N4}" Header="累计净值" />
+                <DataGridTextColumn
+                    Binding="{Binding Daily.NetValue, StringFormat=N4}"
+                    ElementStyle="{StaticResource LeftText}"
+                    Header="单位净值" />
+                <DataGridTextColumn
+                    Binding="{Binding Daily.CumNetValue, StringFormat=N4}"
+                    ElementStyle="{StaticResource LeftText}"
+                    Header="累计净值" />
                 <DataGridTextColumn
                     Binding="{Binding ChangeByPrev, StringFormat={}{0:N2}ₚ, TargetNullValue='-'}"
                     CellStyle="{StaticResource Style.Cell.Value}"

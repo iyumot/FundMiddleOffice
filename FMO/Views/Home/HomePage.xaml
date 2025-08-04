@@ -148,7 +148,11 @@
 
 
 
-            <oxy:PlotView Height="300" Model="{Binding ManageScaleContext}">
+            <oxy:PlotView
+                Height="300"
+                shared:MaskService.BlurRadius="40"
+                shared:MaskService.IsMask="True"
+                Model="{Binding ManageScaleContext}">
                 <oxy:PlotView.TrackerDefinitions>
                     <oxy:TrackerDefinition TrackerKey="CustomTracker" TrackerTemplate="{StaticResource CustomTrackerTemplate}" />
                 </oxy:PlotView.TrackerDefinitions>

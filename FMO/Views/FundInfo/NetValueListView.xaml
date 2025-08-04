@@ -6,6 +6,7 @@
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
@@ -30,6 +31,7 @@
                     TargetType="TextBlock">
                     <Setter Property="VerticalAlignment" Value="Center" />
                     <Setter Property="TextAlignment" Value="Center" />
+                    <Setter Property="shared:MaskService.IsMask" Value="True" />
                 </Style>
                 <Style TargetType="TextBox">
                     <Setter Property="VerticalAlignment" Value="Center" />

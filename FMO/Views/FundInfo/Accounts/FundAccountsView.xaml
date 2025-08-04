@@ -112,6 +112,7 @@
                         <TextBlock
                             Name="card"
                             HorizontalAlignment="Center"
+                            shared:MaskService.IsMask="True"
                             FontSize="16"
                             FontWeight="Bold"
                             Text="{Binding CardNo}" />

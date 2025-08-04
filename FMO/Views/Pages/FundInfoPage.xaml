@@ -330,26 +330,20 @@
                     <BulletDecorator.Bullet>
                         <TextBlock Text="成立日期" />
                     </BulletDecorator.Bullet>
-                    <shared:CopyableControl HorizontalContentAlignment="Left">
-                        <TextBlock Text="{Binding SetupDate, StringFormat=yyyy-MM-dd}" />
-                    </shared:CopyableControl>
+                    <shared:CopyableTextBlock Text="{Binding SetupDate, StringFormat=yyyy-MM-dd}" />
                 </BulletDecorator>
                 <BulletDecorator>
                     <BulletDecorator.Bullet>
                         <TextBlock Text="备案日期" />
                     </BulletDecorator.Bullet>
-                    <shared:CopyableControl HorizontalContentAlignment="Left">
-                        <TextBlock Text="{Binding RegistDate, StringFormat=yyyy-MM-dd}" />
-                    </shared:CopyableControl>
+                    <shared:CopyableTextBlock Text="{Binding RegistDate, StringFormat=yyyy-MM-dd}" />
                 </BulletDecorator>
 
                 <BulletDecorator Visibility="{Binding IsCleared, Converter={StaticResource Boolean2VisibilityConverter}}">
                     <BulletDecorator.Bullet>
                         <TextBlock Text="清算日期" />
                     </BulletDecorator.Bullet>
-                    <shared:CopyableControl HorizontalContentAlignment="Left">
-                        <TextBlock Text="{Binding ClearDate, StringFormat=yyyy-MM-dd}" />
-                    </shared:CopyableControl>
+                    <shared:CopyableTextBlock Text="{Binding ClearDate, StringFormat=yyyy-MM-dd}" />
                 </BulletDecorator>
             </UniformGrid>
 
@@ -366,18 +360,14 @@
                 <BulletDecorator.Bullet>
                     <TextBlock Text="募集账户" />
                 </BulletDecorator.Bullet>
-                <shared:CopyableControl>
-                    <TextBlock Text="{Binding CollectionAccount}" />
-                </shared:CopyableControl>
+                <shared:CopyableTextBlock Text="{Binding CollectionAccount}" />
             </BulletDecorator>
 
             <BulletDecorator>
                 <BulletDecorator.Bullet>
                     <TextBlock Text="托管账户" />
                 </BulletDecorator.Bullet>
-                <shared:CopyableControl>
-                    <TextBlock Text="{Binding CustodyAccount}" />
-                </shared:CopyableControl>
+                <shared:CopyableTextBlock Text="{Binding CustodyAccount}" />
             </BulletDecorator>
 
 

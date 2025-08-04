@@ -15,11 +15,6 @@
     Tag="管理人"
     mc:Ignorable="d">
     <UserControl.Resources>
-        <Style BasedOn="{StaticResource {x:Type shared:ChangeableContainer}}" TargetType="shared:ChangeableContainer">
-            <Setter Property="Margin" Value="0,6" />
-            <Setter Property="Entity" Value="{Binding RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Path=DataContext}" />
-            <Setter Property="IsReadOnly" Value="{Binding RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Path=DataContext.IsReadOnly}" />
-        </Style>
 
         <Style x:Key="RightAlignText" TargetType="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center" />
@@ -231,7 +226,7 @@
 
                 <!--  logo  -->
                 <GroupBox Header="Logo" Style="{StaticResource GroupBoxTab}">
-                    <DockPanel>
+                    <DockPanel shared:MaskService.IsMask="True">
                         <Grid
                             AllowDrop="True"
                             Background="Transparent"
