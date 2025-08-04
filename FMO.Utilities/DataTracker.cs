@@ -7,36 +7,6 @@ using System.Collections.Concurrent;
 
 namespace FMO.Utilities;
 
-public enum TipType
-{
-    None,
-
-    /// <summary>
-    /// 基金份额与估值表不致
-    /// </summary>
-    FundShareNotPair,
-
-    /// <summary>
-    /// 没有TA数据
-    /// </summary>
-    FundNoTARecord,
-    OverDue,
-
-
-
-    /// <summary>
-    /// ta 的fundid 或investorid = 0
-    /// </summary>
-    TANoOwner,
-
-
-    /// <summary>
-    /// 有record 但是没有request
-    /// </summary>
-    TransferRequestMissing,
-
-
-}
 
 public record class FundTip(int FundId, string FundName, TipType Type, string? Tip);
 
@@ -50,14 +20,14 @@ public record FundsTipCountMessage(int Count);
 /// <summary>
 /// 数据校验
 /// </summary>
-public static class DataTracker
+public static partial class DataTracker
 {
 
     public static FundTipList FundTips { get; } = new();
 
     public static ConcurrentDictionary<TipType, string?> UniformTips { get; } = new();
 
-  
+
 
 
     static DataTracker()
@@ -234,7 +204,6 @@ public static class DataTracker
         }
     }
 
-
     public static void CheckInvestorBalance()
     {
         using var db = DbHelper.Base();
@@ -271,9 +240,27 @@ public static class DataTracker
         var e2 = db.GetCollection<TransferRecord>().Count(x => x.FundId == 0 || x.CustomerId == 0);
 
         if (e1 + e2 > 0)
-            WeakReferenceMessenger.Default.Send(new UniformTip(TipType.TANoOwner, $"发现未关联Request {e1}个，Record {e2}个"));
+            UniformTips.AddOrUpdate(TipType.TANoOwner, $"发现未关联Request {e1}个，Record {e2}个", (x, y) => $"发现未关联Request {e1}个，Record {e2}个");
+        else UniformTips.AddOrUpdate(TipType.TANoOwner, x => null, (x, y) => null);
+
+        WeakReferenceMessenger.Default.Send(new TipChangeMessage(TipType.TANoOwner));
+        //WeakReferenceMessenger.Default.Send(new UniformTip(TipType.TANoOwner, $"发现未关联Request {e1}个，Record {e2}个"));
     }
 
+    public static void CheckTransferRequestMissing()
+    {
+        using var db = DbHelper.Base();
+        if (db.GetCollection<TransferMapping>().Count(x => x.RecordId != 0 && x.RequestId == 0) is int cc)
+            UniformTips.AddOrUpdate(TipType.TANoOwner, $"发现未关联Request {cc}个", (x, y) => $"发现未关联Request {cc}个");
+        else UniformTips.AddOrUpdate(TipType.TANoOwner, x => null, (x, y) => null);
+
+        WeakReferenceMessenger.Default.Send(new TipChangeMessage(TipType.TransferRequestMissing));
+    }
+
+
+    //public static Debouncer CheckTAMissOwnerInvoker = new(CheckTAMissOwner, 500);
+
+    //public static Debouncer CheckTransferRequestMissingInvoker = new(CheckTransferRequestMissing, 500);
 
     /// <summary>
     /// 检查并匹配订单
@@ -376,7 +363,6 @@ public static class DataTracker
         db.GetCollection<TransferRecord>().Update(changed);
     }
 
-
     public static bool IsPair(TransferOrder order, TransferRecord record)
     {
         if (order.FundId != record.FundId) return false;
@@ -416,6 +402,10 @@ public static class DataTracker
         }
         return true;
     }
+
+
+    public static string? GetUniformTip(TipType tip) => UniformTips.TryGetValue(tip, out var text) ? text : null;
+
 
     public static void OnFundCleared(Fund f)
     {
@@ -596,6 +586,10 @@ public static class DataTracker
         }
 
 
+        CheckTAMissOwnerInvoker.Invoke();
+        CheckTransferRequestMissingInvoker.Invoke();
+
+
         // 通知
         try
         {
@@ -718,26 +712,3 @@ public class FundTipList : ThreadSafeList<FundTip>
     }
 }
 
-//public class UniformTipList : ThreadSafeList<UniformTip>
-//{
-//    public override void Add(UniformTip item)
-//    {
-//        _lock.EnterWriteLock();
-//        bool add = false;
-//        try
-//        {
-//            // 不重复添加
-//            if (!_innerList.Any(x => x.Type == item.Type))
-//            {
-//                _innerList.Add(item);
-//                add = true;
-//            }
-//        }
-//        finally
-//        {
-//            _lock.ExitWriteLock();
-//            if (add)
-//                CollectionChanged?.Invoke();
-//        }
-//    }
-//}

@@ -90,7 +90,10 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
             var map = db.GetCollection<TransferMapping>().FindAll().ToArray();
             //var mapd = map.ToDictionary(x => x.OrderId, x => x);
 
-            CheckDataError(db);
+            List<string?> list = [DataTracker.GetUniformTip(TipType.TANoOwner), DataTracker.GetUniformTip(TipType.TransferRequestMissing)];
+            ErrorMessage = [.. list.Where(x => x is not null)];
+            DataHasError = list.Count > 0;
+
 
             var records = tr.Select(x => new TransferRecordViewModel(x)).ToArray();
             var orders = t3.Select(x => new TransferOrderViewModel(x)).ToArray();
@@ -200,14 +203,11 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
     private void CheckDataError(BaseDatabase db)
     {
-        var err_req = db.GetCollection<TransferRequest>().Count(x => x.FundId == 0 || x.CustomerId == 0);
-        var err_rec = db.GetCollection<TransferRecord>().Count(x => x.FundId == 0 || x.CustomerId == 0);
+        DataTracker.CheckTAMissOwner();
 
-        List<string> list = new();
-        if (err_req > 0) list.Add($"发现未关联Request {err_req}个");
-        if (err_rec > 0) list.Add($"发现未关联Record {err_rec}个");
-        ErrorMessage = list;
+        List<string?> list = [DataTracker.GetUniformTip(TipType.TANoOwner), DataTracker.GetUniformTip(TipType.TransferRequestMissing)];
 
+        ErrorMessage = [.. list.Where(x => x is not null)];
         DataHasError = list.Count > 0;
     }
 

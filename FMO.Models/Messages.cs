@@ -54,3 +54,6 @@ public record EntityChangedMessage<TEntity,TProperty>(TEntity Entity, string Pro
 /// <param name="RecordId"></param>
 /// <param name="OrderId"></param>
 public record TransferRecordLinkOrderMessage(int RecordId, int OrderId);
+
+
+public record TipChangeMessage(TipType Type);

@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FMO.Models\FMO.Models.csproj" />
+    <ProjectReference Include="..\FMO.SourceGenerator\FMO.SourceGenerator.csproj" OutputItemType="Analyzer" />
   </ItemGroup>
 
 </Project>
