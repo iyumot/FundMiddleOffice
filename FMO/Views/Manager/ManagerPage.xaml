@@ -158,7 +158,7 @@
                     <shared:ChangeableControl Binding="{Binding RealCapital}" EditTemplate="{StaticResource DT.Text.Cap}" />
 
 
-                    <shared:ChangeableControl Binding="{Binding SetupDate}">
+                    <shared:ChangeableControl HorizontalContentAlignment="Left" Binding="{Binding SetupDate}">
                         <shared:ChangeableControl.EditTemplate>
                             <DataTemplate>
                                 <DatePicker SelectedDate="{Binding NewValue}" />
@@ -167,7 +167,7 @@
                     </shared:ChangeableControl>
 
 
-                    <shared:ChangeableControl Binding="{Binding ExpireDate}">
+                    <shared:ChangeableControl HorizontalContentAlignment="Left" Binding="{Binding ExpireDate}">
                         <shared:ChangeableControl.EditTemplate>
                             <DataTemplate>
                                 <DockPanel>
