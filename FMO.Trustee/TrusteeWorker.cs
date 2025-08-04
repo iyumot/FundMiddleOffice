@@ -76,6 +76,12 @@ public partial class TrusteeWorker : ObservableObject
     private WorkConfig TransferRequestConfig { get; set; }
     private WorkConfig RaisingAccountTransctionConfig { get; set; }
 
+
+
+    private WorkConfig NetValueConfig { get; set; }
+
+
+
     (WorkConfig Config, IAsyncRelayCommand Command)[] tasks;
 
     public TrusteeWorker(ITrustee[] trustees)
@@ -94,6 +100,7 @@ public partial class TrusteeWorker : ObservableObject
         TransferRequestConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryTransferRequests)) ?? new(nameof(ITrustee.QueryTransferRequests));
         DailyFeeConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryFundDailyFee)) ?? new(nameof(ITrustee.QueryFundDailyFee)) { Interval = 60 * 12 }; // 每天一次
         RaisingAccountTransctionConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryRaisingAccountTransction)) ?? new(nameof(ITrustee.QueryRaisingAccountTransction));
+        NetValueConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryNetValue)) ?? new(nameof(ITrustee.QueryNetValue)) { Interval = 60 }; // 每6个小时
 
 
         Trustees = trustees;
@@ -134,7 +141,9 @@ public partial class TrusteeWorker : ObservableObject
                 // 日常费用查询任务：
                 // 使用 DailyFeeConfig 配置
                 // 触发 QueryDailyFeeOnceCommand 命令执行单次查询
-                (Config: DailyFeeConfig, Command: QueryDailyFeeOnceCommand)
+                (Config: DailyFeeConfig, Command: QueryDailyFeeOnceCommand),
+
+                (Config: NetValueConfig, Command: QueryNetValueOnceCommand),
              ];
     }
 
@@ -614,7 +623,81 @@ public partial class TrusteeWorker : ObservableObject
         Save(RaisingAccountTransctionConfig);
     }
 
+    /// <summary>
+    /// 查询净值
+    /// </summary>
+    /// <returns></returns>
+    [RelayCommand]
+    public async Task QueryNetValueOnce()
+    {
+        List<WorkReturn> ret = new();
+        // 保存数据库
+        using var db = DbHelper.Base();
+        var funds = db.GetCollection<Fund>().FindAll().ToArray();
+        var StartDateOfAny = StartOfAnyWork();
+        using var pdb = DbHelper.Platform();
+        var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
 
+
+        foreach (var tr in Trustees)
+        {
+            if (!tr.IsValid)
+            {
+                ret.Add(new(tr.Title, ReturnCode.ConfigInvalid));
+                continue;
+            }
+
+            try
+            {
+                // 获取历史区间
+                var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + nameof(tr.QueryNetValue));
+
+                DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
+                if (begin == end) begin = end.AddDays(-10);
+                do
+                {
+                    var rc = await tr.QueryNetValue(begin, end);
+
+                    ///
+                    // 保存数据库 
+                    if (rc.Data is not null)
+                    {
+                        foreach (var item in rc.Data.GroupBy(x=>(x.FundId, x.Class)))
+                        {
+                            var fid = item.Key.FundId;
+                            var c = item.Key.Class;
+                            db.GetDailyCollection(fid, c).Upsert(item);
+                        }
+                    }
+
+                    if (range is null) range = new(tr.Identifier + nameof(tr.QueryNetValue), begin, end);
+                    else range.Merge(begin, end);
+                    pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
+
+                    // 合并记录
+                    ret.Add(new(tr.Title, rc.Code, rc.Data));
+
+                    // 向前一年
+                    end = range.Begin.AddDays(-1);
+                    if (end.Year < 1970) break;
+                    begin = end.AddYears(-1);
+                } while (begin > StartDateOfAny);
+            }
+            catch (Exception e)
+            {
+                ret.Add(new(tr.Title, ReturnCode.Unknown));
+                Log.Error($"QueryNetValueOnce {e}");
+            }
+        }
+
+        // 保存ret，程序加载时恢复，并生成消息
+        //db.DropCollection(TableRaisingBalance);
+        //db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
+
+        WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryNetValue), ret));
+        NetValueConfig.Last = DateTime.Now;
+        Save(NetValueConfig);
+    }
 
 
     [RelayCommand]

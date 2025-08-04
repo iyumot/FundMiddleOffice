@@ -316,7 +316,7 @@ public static class DatabaseAssist
         // var jo = requests.Join(records, x => x.ExternalId, x => x.ExternalId, (x, y) => new { x, y });
 
         // var unp = requests.Select(x=>x.ExternalId).Except(records.Select(x => x.ExternalRequestId)).Except(records.Select(x=>x.ExternalId)).ToList();
-        var  runp = records.ExceptBy(requests.Select(x => x.ExternalId), x=>x.ExternalId).ExceptBy(requests.Select(x => x.ExternalId), x => x.ExternalRequestId).ToList();
+        var runp = records.ExceptBy(requests.Select(x => x.ExternalId), x => x.ExternalId).ExceptBy(requests.Select(x => x.ExternalId), x => x.ExternalRequestId).ToList();
 
         // // 构建时间线
         // var timeline = btr.Select(x => x.Time).Union(orders.Select(x => new DateTime(x.Date, TimeOnly.MinValue))).Union(requests.Select(x => new DateTime(x.RequestDate, TimeOnly.MinValue))).
@@ -338,9 +338,9 @@ public static class DatabaseAssist
                 // cms的ExternalRequestId不匹配
                 if (db.GetCollection<TransferRequest>().FindOne(x => x.FundId == rec.FundId && (x.ExternalId == rec.ExternalRequestId || x.ExternalId == rec.ExternalId)) is TransferRequest req)
                     old.RequestId = req.Id;
-                else if(requests.FirstOrDefault(x => x.FundId == rec.FundId && (x.ExternalId == rec.ExternalRequestId || x.ExternalId == rec.ExternalId)) is TransferRequest req2)
+                else if (requests.FirstOrDefault(x => x.FundId == rec.FundId && (x.ExternalId == rec.ExternalRequestId || x.ExternalId == rec.ExternalId)) is TransferRequest req2)
                     old.RequestId = req2.Id;
-                else if (requests.FirstOrDefault(x =>  (x.ExternalId == rec.ExternalRequestId || x.ExternalId == rec.ExternalId)) is TransferRequest req4)
+                else if (requests.FirstOrDefault(x => (x.ExternalId == rec.ExternalRequestId || x.ExternalId == rec.ExternalId)) is TransferRequest req4)
                     old.RequestId = req4.Id;
             }
 
@@ -409,6 +409,24 @@ public class BaseDatabase : LiteDatabase
         return null;
     }
 
+    public (Fund? Fund, string? Class) FindFundByCode(string? fundCode)
+    {
+        var c = GetCollection<Fund>();
+
+        if (fundCode?.Length > 0)
+        {
+            // code匹配
+            var f = c.FindOne(x => x.Code != null && fundCode == x.Code!);
+            if (f is not null) return (f, null);
+
+            // SNN111 NN111A/B SNN111A/B 这类
+            f = c.FindAll().Where(x => x.Code is not null && fundCode.StartsWith(x.Code![1..])).FirstOrDefault();
+            if (f is not null) return (f, fundCode[5..]);
+        }
+        return default;
+    }
+
+
 
     public (Fund? Fund, string? Class) FindByName(string name)
     {
@@ -432,9 +450,9 @@ public class BaseDatabase : LiteDatabase
     }
 
 
-    public ILiteCollection<DailyValue> GetDailyCollection(int fid)
+    public ILiteCollection<DailyValue> GetDailyCollection(int fid, string? shareClas = null)
     {
-        return GetCollection<DailyValue>($"fv_{fid}");
+        return string.IsNullOrWhiteSpace(shareClas) ? GetCollection<DailyValue>($"fv_{fid}") : GetCollection<DailyValue>($"fv_{fid}_{shareClas}");
     }
 }
 

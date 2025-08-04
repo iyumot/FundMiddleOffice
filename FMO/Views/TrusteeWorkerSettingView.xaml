@@ -84,6 +84,19 @@
 
                 <DataGridTextColumn Binding="{Binding Identifier}" IsReadOnly="True" />
 
+                <DataGridTemplateColumn Header="净值">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ContentControl Content="{Binding QueryNetValue}" ContentTemplate="{StaticResource DT.View}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <ContentControl Content="{Binding QueryNetValue}" ContentTemplate="{StaticResource DT.Edit}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
+
                 <DataGridTemplateColumn Header="交易申请">
                     <!--<DataGridTemplateColumn.HeaderTemplate>
                         <DataTemplate>

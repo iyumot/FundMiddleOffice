@@ -184,7 +184,52 @@ public partial class CSC : TrusteeApiBase
 
 
 
+    public override async Task<ReturnWrap<DailyValue>> QueryNetValue(DateOnly begin, DateOnly end, string? fundCode = null)
+    {
+        var part = "/institution/tgpt/erp/raise/query/findRaiseAccountDetailList";
+        var b = begin; var e = end;
+        object param = fundCode?.Length > 0 ? new { netDateBegin = $"{b:yyyyMMdd}", netDateEnd = $"{e:yyyyMMdd}", fundCode = fundCode } : new { netDateBegin = $"{b:yyyyMMdd}", netDateEnd = $"{e:yyyyMMdd}" };
 
+        var data = await SyncWork<NetValueJson, NetValueJson>(part, param, x => x);
+
+        // map
+        if (data.Code != ReturnCode.Success || data.Data is null)
+            return new ReturnWrap<DailyValue>(data.Code, []);
+
+        using var db = DbHelper.Base();
+
+
+        List<DailyValue> ret = new List<DailyValue>(data.Data.Length);
+        foreach (var item in data.Data.GroupBy(x => x.FundCode))
+        {
+            var code = item.Key;
+
+            if (db.FindFundByCode(code) is var (ff, c) && ff is Fund f)
+            {
+                ret.AddRange(item.Select(x => new DailyValue
+                {
+                    FundId = f.Id,
+                    Class = x.FundLevel switch
+                    {
+                        "0" => c,
+                        string s when int.TryParse(s, out int level) && level >= 1 && level <= 26 =>
+                            ((char)('A' + level - 1)).ToString(),
+                        string s => s
+                    },
+                    Date = DateOnly.ParseExact(x.NetDate, "yyyyMMdd"),
+                    NetValue = ParseDecimal(x.NetAssetVal),
+                    CumNetValue = ParseDecimal(x.TotalAssetVal),
+                    Asset = ParseDecimal(x.AssetTotal),
+                    Share = ParseDecimal(x.AssetShares),
+                    NetAsset = ParseDecimal(x.AssetNet),
+                    Source = DailySource.Custodian
+                }));
+            }
+            else JsonBase.ReportJsonUnexpected(Identifier, "QueryNetValue",  $"Fund Code = {code}");
+        }
+
+        return new ReturnWrap<DailyValue>(ReturnCode.Success, ret.ToArray());
+    }
 
 
 
@@ -255,7 +300,7 @@ public partial class CSC : TrusteeApiBase
     /// <param name="func"></param>
     /// <param name="param">object »ò Dictionary<string, object></param>
     /// <returns></returns>
-    protected async Task<ReturnWrap<TEntity>> SyncWork<TEntity, TJSON>(string part, object? param, Func<TJSON, TEntity> transfer, [CallerMemberName] string? caller = null) where TJSON:JsonBase
+    protected async Task<ReturnWrap<TEntity>> SyncWork<TEntity, TJSON>(string part, object? param, Func<TJSON, TEntity> transfer, [CallerMemberName] string? caller = null) where TJSON : JsonBase
     {
         // Ð£Ñé
         if (CheckBreforeSync() is ReturnCode rc && rc != ReturnCode.Success) return new(rc, null);

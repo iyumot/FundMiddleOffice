@@ -32,7 +32,7 @@ public interface ITrustee
 
     bool Prepare();
 
-    string Title {  get; }
+    string Title { get; }
 
 
     string Identifier { get; }
@@ -87,8 +87,11 @@ public interface ITrustee
     /// </summary>
     /// <param name="fundCode"></param>
     /// <returns></returns>
-    Task<ReturnWrap<FundBankBalance>> QueryRaisingBalance( );
+    Task<ReturnWrap<FundBankBalance>> QueryRaisingBalance();
 
+
+    Task<ReturnWrap<DailyValue>> QueryNetValue(DateOnly begin, DateOnly end, string? fundCode = null);
+     
 }
 
 

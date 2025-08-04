@@ -210,6 +210,7 @@ public partial class PlatformPageViewModel : ObservableObject
         Trustees2 = TrusteeGallay.TrusteeViewModels;
         var work = TrusteeGallay.Worker;
         TrusteeAPIButtons = [
+            new((Geometry)App.Current.Resources["f.table-cells"], work.QueryNetValueOnceCommand, "同步净值"),
             new((Geometry)App.Current.Resources["f.hand-holding-dollar"], work.QueryRaisingBalanceOnceCommand, "同步募集户余额"),
             new((Geometry)App.Current.Resources["f.tornado"], work.QueryRaisingAccountTransctionOnceCommand, "同步募集户流水"),
             new((Geometry)App.Current.Resources["f.bars"], work.QueryTransferRequestOnceCommand, "同步交易申请"),

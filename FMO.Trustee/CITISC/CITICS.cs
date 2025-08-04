@@ -409,6 +409,46 @@ public partial class CITICS : TrusteeApiBase
     }
 
 
+    public override async Task<ReturnWrap<DailyValue>> QueryNetValue(DateOnly begin, DateOnly end, string? fundCode = null)
+    {
+        var part = "/v1/fa/queryFundNetValForApi";
+        var b = begin; var e = end;
+        object param = fundCode?.Length > 0 ? new { netBeginDate = $"{b:yyyyMMdd}", netEndDate = $"{e:yyyyMMdd}", fundCode = fundCode } : new { netBeginDate = $"{b:yyyyMMdd}", netEndDate = $"{e:yyyyMMdd}" };
+
+        var data = await SyncWork<NetValueJson, NetValueJson>(part, param, x => x);
+
+        // map
+        if (data.Code != ReturnCode.Success || data.Data is null)
+            return new ReturnWrap<DailyValue>(data.Code, []);
+
+        using var db = DbHelper.Base();
+
+
+        List<DailyValue> ret = new List<DailyValue>(data.Data.Length);
+        foreach (var item in data.Data.GroupBy(x => x.FundCode))
+        {
+            var code = item.Key;
+
+            if (db.FindFundByCode(code) is var (ff, c) && ff is Fund f)
+            {
+                ret.AddRange(item.Select(x => new DailyValue
+                {
+                    FundId = f.Id,
+                    Class = c,
+                    Date = DateOnly.ParseExact(x.NetDate, "yyyyMMdd"),
+                    NetValue = ParseDecimal(x.NetAssetVal),
+                    CumNetValue = ParseDecimal(x.TotalAssetVal),
+                    Asset = ParseDecimal(x.AssetValue),
+                    Share = ParseDecimal(x.AssetShares),
+                    NetAsset = ParseDecimal(x.AssetNet),
+                    Source = DailySource.Custodian
+                }));
+            }
+            else JsonBase.ReportJsonUnexpected(Identifier, "QueryNetValue", $"Fund Code = {code}");
+        }
+
+        return new ReturnWrap<DailyValue>(ReturnCode.Success, ret.ToArray());
+    }
 
 
     //public   async Task<ReturnWrap<BankTransaction>> QueryShare(DateOnly begin, DateOnly end)

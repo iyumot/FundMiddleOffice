@@ -30,7 +30,9 @@ public class DailyValue
     /// <summary>
     /// 默认-1，避免被赋给第一个
     /// </summary>
-    public int FundId { get; set; } 
+    public int FundId { get; set; }
+
+    public string? Class { get; set; }
 
     public int Id => Date.DayNumber;
 

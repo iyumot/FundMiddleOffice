@@ -69,6 +69,7 @@ public partial class TrusteeWorkerSettingViewModel : ObservableObject
     {
         var vm = new TrusteeWorkingConfigViewModel { Identifier = idf, };
         //vm.QueryTransferRequestConfig = GetConfig(idf, nameof(ITrustee.QueryTransferRecords));
+        vm.QueryNetValue = Create(ranges, idf, nameof(ITrustee.QueryNetValue));
         vm.QueryTransferRecord = Create(ranges, idf, nameof(ITrustee.QueryTransferRecords));
         vm.QueryTransferRequest = Create(ranges, idf, nameof(ITrustee.QueryTransferRequests));
         vm.QueryRaisingAccountTransction = Create(ranges, idf, nameof(ITrustee.QueryRaisingAccountTransction));
@@ -126,6 +127,7 @@ public partial class TrusteeWorkingConfigViewModel : ObservableObject
     public required string Identifier { get; set; }
 
 
+    public TrusteeMethodConfigViewModel? QueryNetValue { get; set; }
 
     public TrusteeMethodConfigViewModel? QueryTransferRequest { get; set; }
 

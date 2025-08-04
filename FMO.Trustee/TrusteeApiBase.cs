@@ -85,7 +85,8 @@ public abstract class TrusteeApiBase : ITrustee
     public abstract Task<ReturnWrap<FundBankBalance>> QueryRaisingBalance();
 
 
-
+    public abstract Task<ReturnWrap<DailyValue>> QueryNetValue(DateOnly begin, DateOnly end, string? fundCode = null);
+     
 
 
     public abstract bool Prepare();
@@ -257,8 +258,7 @@ public abstract class TrusteeApiBase : ITrustee
 
         return list.ToArray();
     }
-
-
+     
     /// <summary>
     /// 设置不可用
     /// </summary>
@@ -266,6 +266,7 @@ public abstract class TrusteeApiBase : ITrustee
     {
         IsValid = false;
     }
+
 
     public class LogInfo
     {
@@ -311,7 +312,7 @@ public class JsonBase
         throw new FormatException($"无法将 '{value}' 解析为decimal类型");
     }
 
-    protected void ReportJsonUnexpected(string identifier, string method, string info)
+    public static void ReportJsonUnexpected(string identifier, string method, string info)
     {
         _db.GetCollection<TrusteeJsonUnexpected>().Insert(new TrusteeJsonUnexpected(identifier, method, info));
     }
