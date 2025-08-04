@@ -27,7 +27,7 @@ public partial class TransferRecordPage : UserControl
 }
 
 
-public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<TransferRecord>, IRecipient<PageTAMessage>, IRecipient<TransferOrder>
+public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<TransferRecord>, IRecipient<PageTAMessage>, IRecipient<TransferOrder>, IRecipient<TipChangeMessage>
 {
     [ObservableProperty]
     public partial ObservableCollection<TransferRecordViewModel>? Records { get; set; }
@@ -58,12 +58,12 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
     /// <summary>
     /// 数据有问题
-    /// </summary>
-    [ObservableProperty]
-    public partial bool DataHasError { get; set; }
+    /// </summary> 
+    public bool DataHasError => (ErrorMessage?.Count ?? 0) > 0;
 
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DataHasError))]
     public partial List<string>? ErrorMessage { get; set; }
 
     public CollectionViewSource RequestsSource { get; set; } = new();
@@ -92,7 +92,6 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
             List<string?> list = [DataTracker.GetUniformTip(TipType.TANoOwner), DataTracker.GetUniformTip(TipType.TransferRequestMissing)];
             ErrorMessage = [.. list.Where(x => x is not null)];
-            DataHasError = list.Count > 0;
 
 
             var records = tr.Select(x => new TransferRecordViewModel(x)).ToArray();
@@ -201,14 +200,13 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         }
     }
 
-    private void CheckDataError(BaseDatabase db)
+    private void CheckDataError()
     {
         DataTracker.CheckTAMissOwner();
 
         List<string?> list = [DataTracker.GetUniformTip(TipType.TANoOwner), DataTracker.GetUniformTip(TipType.TransferRequestMissing)];
 
         ErrorMessage = [.. list.Where(x => x is not null)];
-        DataHasError = list.Count > 0;
     }
 
     // 通用调试日志写入方法（无文件操作）
@@ -489,9 +487,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         db.GetCollection<TransferRecord>().Update(err2);
 
 
-        CheckDataError(db);
-
-        WeakReferenceMessenger.Default.Send(new UniformTip(TipType.TANoOwner, DataHasError ? "处理后任然存在未绑定到基金和投资的人TA" : null));
+        CheckDataError();
     }
 
 
@@ -528,6 +524,11 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         if (old is not null)
             old.UpdateFrom(message);
         else Orders!.Add(new TransferOrderViewModel(message));
+    }
+
+    public void Receive(TipChangeMessage message)
+    {
+        CheckDataError();
     }
 }
 

@@ -423,6 +423,15 @@ public static partial class DataTracker
 
 
 
+    /// <summary>
+    ///  关联订单
+    /// </summary>
+    /// <param name="same"></param>
+    public static void LinkOrder(params TransferRecord[] same)
+    {
+        foreach (var item in same)
+            WeakReferenceMessenger.Default.Send(new TransferRecordLinkOrderMessage(item.Id, item.OrderId));
+    }
 
     public static void OnBatchTransferRecord(IEnumerable<TransferRecord> records)
     {
@@ -512,17 +521,10 @@ public static partial class DataTracker
         }
 
 
+        CheckTAMissOwnerInvoker.Invoke();
+        CheckTransferRequestMissingInvoker.Invoke();
     }
 
-    /// <summary>
-    ///  关联订单
-    /// </summary>
-    /// <param name="same"></param>
-    public static void LinkOrder(params TransferRecord[] same)
-    {
-        foreach (var item in same)
-            WeakReferenceMessenger.Default.Send(new TransferRecordLinkOrderMessage(item.Id, item.OrderId));
-    }
 
     public static void OnBatchTransferRequest(TransferRequest[] data)
     {
