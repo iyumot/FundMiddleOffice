@@ -412,20 +412,28 @@ public partial class CITICS : TrusteeApiBase
     public override async Task<ReturnWrap<DailyValue>> QueryNetValue(DateOnly begin, DateOnly end, string? fundCode = null)
     {
         var part = "/v1/fa/queryFundNetValForApi";
-        var b = begin; var e = end;
-        object param = fundCode?.Length > 0 ? new { netBeginDate = $"{b:yyyyMMdd}", netEndDate = $"{e:yyyyMMdd}", fundCode = fundCode } : new { netBeginDate = $"{b:yyyyMMdd}", netEndDate = $"{e:yyyyMMdd}" };
+  
+        // 查询区间大于1年，需要多次查询 
+        var ts = Split(begin, end, 365);
+        List<NetValueJson> list = new();
 
-        var data = await SyncWork<NetValueJson, NetValueJson>(part, param, x => x);
+        foreach (var (b, e) in ts)
+        {
+            object param = fundCode?.Length > 0 ? new { netBeginDate = $"{b:yyyyMMdd}", netEndDate = $"{e:yyyyMMdd}", fundCode = fundCode } : new { netBeginDate = $"{b:yyyyMMdd}", netEndDate = $"{e:yyyyMMdd}" };
 
-        // map
-        if (data.Code != ReturnCode.Success || data.Data is null)
-            return new ReturnWrap<DailyValue>(data.Code, []);
+            var data = await SyncWork<NetValueJson, NetValueJson>(part, param, x => x);
+            if (data.Code != ReturnCode.Success)
+                return new ReturnWrap<DailyValue>(data.Code, []);
+
+            if (data.Data?.Length > 0)
+                list.AddRange(data.Data);
+        }
 
         using var db = DbHelper.Base();
 
 
-        List<DailyValue> ret = new List<DailyValue>(data.Data.Length);
-        foreach (var item in data.Data.GroupBy(x => x.FundCode))
+        List<DailyValue> ret = new List<DailyValue>(list.Count);
+        foreach (var item in list.GroupBy(x => x.FundCode))
         {
             var code = item.Key;
 

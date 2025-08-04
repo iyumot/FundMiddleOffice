@@ -186,7 +186,7 @@ public partial class CSC : TrusteeApiBase
 
     public override async Task<ReturnWrap<DailyValue>> QueryNetValue(DateOnly begin, DateOnly end, string? fundCode = null)
     {
-        var part = "/institution/tgpt/erp/raise/query/findRaiseAccountDetailList";
+        var part = "/institution/tgpt/erp/product/query/findNetValList";
         var b = begin; var e = end;
         object param = fundCode?.Length > 0 ? new { netDateBegin = $"{b:yyyyMMdd}", netDateEnd = $"{e:yyyyMMdd}", fundCode = fundCode } : new { netDateBegin = $"{b:yyyyMMdd}", netDateEnd = $"{e:yyyyMMdd}" };
 
