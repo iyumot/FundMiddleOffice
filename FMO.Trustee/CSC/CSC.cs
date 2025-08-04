@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.RegularExpressions;
 using static FMO.Trustee.SM4;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -45,6 +46,7 @@ public partial class CSC : TrusteeApiBase
     private List<SubjectFundMapping> FundsInfo { get; set; } = new();
 
 
+    public override bool IsSuit(string? company) => string.IsNullOrWhiteSpace(company) ? false : Regex.IsMatch(company, $"中信建投证券|中信建投证券股份有限公司|{_Identifier}");
 
     public override async Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end)
     {
@@ -225,7 +227,7 @@ public partial class CSC : TrusteeApiBase
                     Source = DailySource.Custodian
                 }));
             }
-            else JsonBase.ReportJsonUnexpected(Identifier, "QueryNetValue",  $"Fund Code = {code}");
+            else JsonBase.ReportJsonUnexpected(Identifier, "QueryNetValue", $"Fund Code = {code}");
         }
 
         return new ReturnWrap<DailyValue>(ReturnCode.Success, ret.ToArray());

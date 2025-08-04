@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using System.Web;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -35,6 +36,7 @@ public partial class CITICS : TrusteeApiBase
 
     private DateTime? TokenTime { get; set; }
 
+    public override bool IsSuit(string? company) => string.IsNullOrWhiteSpace(company) ? false : Regex.IsMatch(company, $"中信证券股份有限公司|中信证券|{_Identifier}");
 
     public override async Task<ReturnWrap<Investor>> QueryInvestors()
     {
@@ -412,7 +414,7 @@ public partial class CITICS : TrusteeApiBase
     public override async Task<ReturnWrap<DailyValue>> QueryNetValue(DateOnly begin, DateOnly end, string? fundCode = null)
     {
         var part = "/v1/fa/queryFundNetValForApi";
-  
+
         // 查询区间大于1年，需要多次查询 
         var ts = Split(begin, end, 365);
         List<NetValueJson> list = new();

@@ -267,6 +267,7 @@ public abstract class TrusteeApiBase : ITrustee
         IsValid = false;
     }
 
+    public abstract bool IsSuit(string? comapny);
 
     public class LogInfo
     {

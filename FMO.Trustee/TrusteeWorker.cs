@@ -23,6 +23,15 @@ public record TrusteeWorkResult(string Method, IList<TrusteeWorker.WorkReturn> R
 
 //public record TrusteeWorkRecord(string Identifier, string Method, DateOnly Begin, DateOnly End, int Count);
 
+/// <summary>
+/// 产品对应api
+/// </summary>
+/// <param name="FundId"></param>
+/// <param name="Identifier"></param>
+public record TrusteeApiMap(int FundId, string Identifier);
+
+
+
 
 public partial class TrusteeWorker : ObservableObject
 {
@@ -91,10 +100,12 @@ public partial class TrusteeWorker : ObservableObject
         timer = new Timer(OnTimer, null, Timeout.Infinite, 1000);
 
         WorkConfig[] cfg;
+        TrusteeApiMap[] maps;
         using (var db = DbHelper.Platform())
+        {
             cfg = db.GetCollection<WorkConfig>().FindAll().ToArray();
-
-
+            maps = db.GetCollection<TrusteeApiMap>().FindAll().ToArray();
+        }
         RaisingBalanceConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryRaisingBalance)) ?? new(nameof(ITrustee.QueryRaisingBalance));
         TransferRecordConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryTransferRecords)) ?? new(nameof(ITrustee.QueryTransferRecords)) { Interval = 60 }; // 每6个小时
         TransferRequestConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryTransferRequests)) ?? new(nameof(ITrustee.QueryTransferRequests));
@@ -102,6 +113,23 @@ public partial class TrusteeWorker : ObservableObject
         RaisingAccountTransctionConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryRaisingAccountTransction)) ?? new(nameof(ITrustee.QueryRaisingAccountTransction));
         NetValueConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryNetValue)) ?? new(nameof(ITrustee.QueryNetValue)) { Interval = 60 }; // 每6个小时
 
+
+        // 基金映射
+        using (var db = DbHelper.Base())
+        {
+            var funds = db.GetCollection<Fund>().Query().Select(x => new { x.Id, x.Trustee }).ToList();
+            var unk = funds.ExceptBy(maps.Select(x => x.FundId), x => x.Id);
+            foreach (var item in unk)
+            {
+                if (trustees.FirstOrDefault(x => x.IsSuit(item.Trustee)) is ITrustee trustee)
+                    Maps.Add(new(item.Id, trustee));
+            }
+            foreach (var item in maps)
+            {
+                if (trustees.FirstOrDefault(x => x.IsSuit(item.Identifier)) is ITrustee trustee)
+                    Maps.Add(new(item.FundId, trustee));
+            }
+        }
 
         Trustees = trustees;
         foreach (var t in trustees)
@@ -305,7 +333,7 @@ public partial class TrusteeWorker : ObservableObject
 
 
                         // 统一更新处理
-                        DataTracker.OnBatchTransferRequest(rc.Data); 
+                        DataTracker.OnBatchTransferRequest(rc.Data);
                     }
 
 
@@ -534,7 +562,7 @@ public partial class TrusteeWorker : ObservableObject
             }
             catch (Exception e)
             {
-                ret.Add(new(tr.Title, ReturnCode.Unknown)); 
+                ret.Add(new(tr.Title, ReturnCode.Unknown));
                 Log.Error($"QueryDailyFeeOnce {e}");
             }
         }
@@ -662,7 +690,7 @@ public partial class TrusteeWorker : ObservableObject
                     // 保存数据库 
                     if (rc.Data is not null)
                     {
-                        foreach (var item in rc.Data.GroupBy(x=>(x.FundId, x.Class)))
+                        foreach (var item in rc.Data.GroupBy(x => (x.FundId, x.Class)))
                         {
                             var fid = item.Key.FundId;
                             var c = item.Key.Class;

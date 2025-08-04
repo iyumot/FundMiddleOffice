@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Web;
 
 namespace FMO.Trustee;
@@ -42,6 +43,7 @@ public partial class CMS : TrusteeApiBase
     private SubjectFundMapping[]? FundsInfo { get; set; }
 
 
+    public override bool IsSuit(string? company) => string.IsNullOrWhiteSpace(company) ? false : Regex.IsMatch(company, $"招商证券|招商证券股份有限公司|{_Identifier}");
 
 
 
