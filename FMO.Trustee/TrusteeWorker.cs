@@ -727,6 +727,28 @@ public partial class TrusteeWorker : ObservableObject
         Save(NetValueConfig);
     }
 
+    public async Task QueryNetValueOnce(int fundId, string code, DateOnly begin, DateOnly end)
+    {
+        if (Maps.LastOrDefault(x => x.FundId == fundId) is FundTrusteePair pair)
+        {
+            var rc = await pair.trustee.QueryNetValue(begin, end, code);
+
+            ///
+            // 保存数据库 
+            if (rc.Data is not null)
+            {
+                using var db = DbHelper.Base();
+                foreach (var item in rc.Data.GroupBy(x => (x.FundId, x.Class)))
+                {
+                    var fid = item.Key.FundId;
+                    var c = item.Key.Class;
+                    db.GetDailyCollection(fid, c).Upsert(item);
+                }
+            }
+        }
+        else WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "未发现对应的API"));
+    }
+
 
     [RelayCommand]
     public void Rebuild(string method)

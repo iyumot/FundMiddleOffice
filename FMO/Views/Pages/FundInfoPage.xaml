@@ -398,7 +398,10 @@
             </DockPanel>
 
 
-            <shared:SingleFileView Binding="{Binding RegistrationLetter}" IsReadOnly="True" />
+            <shared:SingleFileView
+                AllowDrop="False"
+                Binding="{Binding RegistrationLetter}"
+                IsReadOnly="True" />
 
 
         </StackPanel>

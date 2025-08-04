@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
 using FMO.TPL;
+using FMO.Trustee;
 using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
@@ -719,6 +720,28 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         }
     }
 
+    [RelayCommand]
+    public async Task UpdateFromApi()
+    {
+        if (SetupDate is null || SetupDate == default(DateOnly))
+        {
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "请先设置基金的成立日期"));
+            return;
+        }
+        if (FundCode is not null)
+        {
+            await TrusteeGallay.Worker.QueryNetValueOnce(Fund.Id, FundCode, SetupDate.Value, DateOnly.FromDateTime(DateTime.Today));
+            await App.Current.Dispatcher.BeginInvoke(() =>
+            {
+                using var db = DbHelper.Base();
+                var ll = new List<DailyValue>(db.GetDailyCollection(Fund.Id).FindAll().OrderByDescending(x => x.Date).IntersectBy(TradingDay.Days, x => x.Date).ToList());
+
+                DailySource.Source = ll;
+                DailySource.View.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(DailyValue.Date), System.ComponentModel.ListSortDirection.Descending));
+                DailySource.View.Refresh();
+            });
+        }
+    }
 
     partial void OnInitiateFundContractFileChanged(FileInfo? oldValue, FileInfo? newValue)
     {

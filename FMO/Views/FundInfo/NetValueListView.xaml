@@ -116,9 +116,14 @@
                 </Style>
             </DockPanel.Resources>
             <Button
+                hc:IconElement.Geometry="{StaticResource f.cloud-arrow-down}"
+                local:HelpService.Help="从托管同步净值"
+                local:HelpService.Placement="Left"
+                Command="{Binding UpdateFromApiCommand}" />
+            <Button
                 hc:IconElement.Geometry="{StaticResource f.arrows-rotate}"
                 local:HelpService.Help="重新解析估值表"
-                local:HelpService.Offset="-15,0"
+                local:HelpService.Offset="-15,5"
                 Command="{Binding RefreshNetValuesCommand}" />
             <Button
                 hc:IconElement.Geometry="{StaticResource f.file-export}"
