@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
+using FMO.Shared;
 using FMO.TPL;
 using FMO.Utilities;
 using Microsoft.Win32;
@@ -14,7 +15,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 
 namespace FMO;
-
 /// <summary>
 /// FundInfoPage.xaml 的交互逻辑
 /// </summary>
@@ -28,7 +28,7 @@ public partial class FundInfoPage : UserControl
 }
 
 
-public partial class FundInfoPageViewModel : ObservableRecipient,  IRecipient<FundDailyUpdateMessage>,
+public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<FundDailyUpdateMessage>,
     IRecipient<FundStrategyChangedMessage>, IRecipient<FundAccountChangedMessage>, IRecipient<EntityChangedMessage<Fund, DateOnly>>,
     IRecipient<EntityChangedMessage<Fund, FundStatus>>
 {
@@ -52,6 +52,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient,  IRecipient<Fu
         FundId = fund.Id;
         FundName = fund.Name;
         FundShortName = fund.ShortName;
+        TrusteeName = fund.Trustee;
         SetupDate = fund.SetupDate;
         RegistDate = fund.AuditDate;
         ClearDate = fund.ClearDate;
@@ -59,12 +60,20 @@ public partial class FundInfoPageViewModel : ObservableRecipient,  IRecipient<Fu
         FundCode = fund.Code;
         FundStatus = fund.Status;
 
+#pragma warning disable CS8625 // 无法将 null 字面量转换为非 null 的引用类型。
+        RegistrationLetter = new SingleFileViewModel()
+        {
+            Label = "备案函",
+            OnDeleteFile = default,
+            OnSetFile = default,
+        };
+#pragma warning restore CS8625 // 无法将 null 字面量转换为非 null 的引用类型。
 
         InitFlows(fund);
 
         using var db = DbHelper.Base();
         FundElements ele = db.GetCollection<FundElements>().FindById(FundId);
-        if(ele is null)
+        if (ele is null)
         {
             ele = FundElements.Create(FundId, Flows!.Min(x => x.FlowId));
             db.GetCollection<FundElements>().Insert(ele);
@@ -73,7 +82,12 @@ public partial class FundInfoPageViewModel : ObservableRecipient,  IRecipient<Fu
         CollectionAccount = ele.CollectionAccount.Value?.ToString();
         CustodyAccount = ele.CustodyAccount.Value?.ToString();
 
-        RegistrationLetter = new LatestFileViewModel { Name = "备案函", File = Flows?.Select(x => x switch { RegistrationFlowViewModel a => a.RegistrationLetter, ContractModifyFlowViewModel b => b.RegistrationLetter, _ => null }).Where(x => x is not null && x.File is not null).LastOrDefault()?.File };
+        //var lastmodiflow = Flows?.Where(x => x is RegistrationFl switch { RegistrationFlowViewModel a => a.RegistrationLetter, ContractModifyFlowViewModel b => b.RegistrationLetter, _ => null }).LastOrDefault(x => x is not null && x.File is not null);
+        //var filter = $"$.FundId == {FundId} && $.RegistrationLetter != null && $.RegistrationLetter != ''";
+
+        //db.GetCollection(nameof(FundFlow)).Find(filter);
+
+        //RegistrationLetter = new LatestFileViewModel { Name = "备案函", File = Flows?.Select(x => x switch { RegistrationFlowViewModel a => a.RegistrationLetter, ContractModifyFlowViewModel b => b.RegistrationLetter, _ => null }).Where(x => x is not null && x.File is not null).LastOrDefault()?.File };
 
 
         /// 监控估值表文件夹
@@ -85,7 +99,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient,  IRecipient<Fu
         DailyValues = new ObservableCollection<DailyValue>(db.GetDailyCollection(Fund.Id).FindAll().OrderByDescending(x => x.Date).IntersectBy(TradingDay.Days, x => x.Date));
         var strategies = db.GetCollection<FundStrategy>().Find(x => x.FundId == fund.Id).ToList();
 
-         
+
 
         var names = ele.FullName.Changes.Values.ToArray() ?? [];
         db.Dispose();
@@ -153,7 +167,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient,  IRecipient<Fu
     private void InitFlows(Fund fund)
     {
         using var db = DbHelper.Base();
-        var flows = db.GetCollection<FundFlow>().Find(x => x.FundId == fund.Id).ToList();
+        var flows = db.GetCollection<FundFlow>().Find(x => x.FundId == fund.Id).OrderBy(x => x.Id).ToList();
         if (!flows.Any(x => x is InitiateFlow))
         {
             var f = new InitiateFlow { FundId = fund.Id, ElementFiles = new VersionedFileInfo { Name = "基金要素" }, ContractFiles = new VersionedFileInfo { Name = "基金合同" }, CustomFiles = new() };
@@ -205,6 +219,8 @@ public partial class FundInfoPageViewModel : ObservableRecipient,  IRecipient<Fu
 
                 case ContractModifyFlow d:
                     Flows.Add(new ContractModifyFlowViewModel(d));
+                    if (d.RegistrationLetter is not null)
+                        RegistrationLetter?.File = d.RegistrationLetter;
                     break;
 
                 case ContractFinalizeFlow d:
@@ -217,6 +233,8 @@ public partial class FundInfoPageViewModel : ObservableRecipient,  IRecipient<Fu
 
                 case RegistrationFlow d:
                     Flows.Add(new RegistrationFlowViewModel(d));
+                    if (d.RegistrationLetter is not null)
+                        RegistrationLetter?.File = d.RegistrationLetter;
                     break;
 
                 case LiquidationFlow d:
@@ -273,7 +291,9 @@ public partial class FundInfoPageViewModel : ObservableRecipient,  IRecipient<Fu
     /// <param name="e"></param>
     private void RegistrationLetter_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        RegistrationLetter = new LatestFileViewModel { Name = "备案函", File = Flows?.Select(x => x switch { RegistrationFlowViewModel a => a.RegistrationLetter, ContractModifyFlowViewModel b => b.RegistrationLetter, _ => null }).Where(x => x is not null && x.File is not null).LastOrDefault()?.File };
+        if (Flows?.Select(x => x switch { RegistrationFlowViewModel a => a.RegistrationLetter, ContractModifyFlowViewModel b => b.RegistrationLetter, _ => null }).LastOrDefault(x => x is not null && x.File is not null)?.File?.FullName is string s)
+            RegistrationLetter?.File = new FileStorageInfo(s, "", default);
+        //RegistrationLetter = new LatestFileViewModel { Name = "备案函", File = Flows?.Select(x => x switch { RegistrationFlowViewModel a => a.RegistrationLetter, ContractModifyFlowViewModel b => b.RegistrationLetter, _ => null }).Where(x => x is not null && x.File is not null).LastOrDefault()?.File };
     }
 
 
@@ -294,6 +314,9 @@ public partial class FundInfoPageViewModel : ObservableRecipient,  IRecipient<Fu
     [ObservableProperty]
     public partial string? FundShortName { get; set; }
 
+
+    [ObservableProperty]
+    public partial string? TrusteeName { get; set; }
 
     [ObservableProperty]
     public partial string? FundCode { get; set; }
@@ -377,7 +400,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient,  IRecipient<Fu
 
 
     [ObservableProperty]
-    public partial LatestFileViewModel? RegistrationLetter { get; set; }
+    public partial SingleFileViewModel? RegistrationLetter { get; set; }
 
     public ObservableCollection<DailyValue> DailyValues { get; }
 
@@ -501,7 +524,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient,  IRecipient<Fu
         db.Dispose();
         Flows.Add(new LiquidationFlowViewModel(flow));
 
-        WeakReferenceMessenger.Default.Send(new EntityChangedMessage<Fund,FundStatus>(fund, nameof(Fund.Status), fund.Status));
+        WeakReferenceMessenger.Default.Send(new EntityChangedMessage<Fund, FundStatus>(fund, nameof(Fund.Status), fund.Status));
         //WeakReferenceMessenger.Default.Send(new FundStatusChangedMessage(default, default) { FundId = fund.Id, Status = fund.Status });
     }
 
@@ -598,7 +621,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient,  IRecipient<Fu
                     DailySource.View.Refresh();
 
 
-                    WeakReferenceMessenger.Default.Send(new FundDailyUpdateMessage(FundId,  avaliable.Select(x => x.daily).OrderBy(x => x?.Date).FirstOrDefault()!));
+                    WeakReferenceMessenger.Default.Send(new FundDailyUpdateMessage(FundId, avaliable.Select(x => x.daily).OrderBy(x => x?.Date).FirstOrDefault()!));
                 });
             }
             catch (Exception e)
@@ -619,8 +642,8 @@ public partial class FundInfoPageViewModel : ObservableRecipient,  IRecipient<Fu
 
         // 找模板
         using var db = DbHelper.Base();
-        var exporters = db.GetCollection<TemplateInfo>().FindAll().Where(x => x.Suit.HasFlag( ExportTypeFlag.SingleFundNetValueList) ).ToList();
-        if(exporters is null || exporters.Count ==0)
+        var exporters = db.GetCollection<TemplateInfo>().FindAll().Where(x => x.Suit.HasFlag(ExportTypeFlag.SingleFundNetValueList)).ToList();
+        if (exporters is null || exporters.Count == 0)
         {
             WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "未找到基金净值列表导出模板"));
             return;
@@ -736,7 +759,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient,  IRecipient<Fu
 
 
 
-     
+
 
     public void Receive(FundDailyUpdateMessage message)
     {

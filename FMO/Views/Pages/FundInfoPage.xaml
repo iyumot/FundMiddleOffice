@@ -318,18 +318,19 @@
                 <shared:CopyableTextBlock FontWeight="Bold" Text="{Binding RiskLevel}" />
 
 
-                <TextBlock Text="{Binding FundStatus}" DockPanel.Dock="Right"/>
+                <TextBlock DockPanel.Dock="Right" Text="{Binding FundStatus}" />
 
                 <shared:CopyableTextBlock Text="{Binding FundShortName}" />
 
             </DockPanel>
+
 
             <UniformGrid Rows="1">
                 <BulletDecorator>
                     <BulletDecorator.Bullet>
                         <TextBlock Text="成立日期" />
                     </BulletDecorator.Bullet>
-                    <shared:CopyableControl>
+                    <shared:CopyableControl HorizontalContentAlignment="Left">
                         <TextBlock Text="{Binding SetupDate, StringFormat=yyyy-MM-dd}" />
                     </shared:CopyableControl>
                 </BulletDecorator>
@@ -337,7 +338,7 @@
                     <BulletDecorator.Bullet>
                         <TextBlock Text="备案日期" />
                     </BulletDecorator.Bullet>
-                    <shared:CopyableControl>
+                    <shared:CopyableControl HorizontalContentAlignment="Left">
                         <TextBlock Text="{Binding RegistDate, StringFormat=yyyy-MM-dd}" />
                     </shared:CopyableControl>
                 </BulletDecorator>
@@ -346,7 +347,7 @@
                     <BulletDecorator.Bullet>
                         <TextBlock Text="清算日期" />
                     </BulletDecorator.Bullet>
-                    <shared:CopyableControl>
+                    <shared:CopyableControl HorizontalContentAlignment="Left">
                         <TextBlock Text="{Binding ClearDate, StringFormat=yyyy-MM-dd}" />
                     </shared:CopyableControl>
                 </BulletDecorator>
@@ -386,9 +387,18 @@
                 Margin="0,10"
                 Fill="Red" />
 
-            <ContentControl Content="{Binding RegistrationLetter}" Style="{StaticResource SingleFileStyle}" />
+
+            <DockPanel>
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Foreground="Gray"
+                    Style="{x:Null}"
+                    Text="托管机构" />
+                <shared:CopyableTextBlock Margin="5,0,0,0" Text="{Binding TrusteeName}" />
+            </DockPanel>
 
 
+            <shared:SingleFileView Binding="{Binding RegistrationLetter}" IsReadOnly="True" />
 
 
         </StackPanel>
