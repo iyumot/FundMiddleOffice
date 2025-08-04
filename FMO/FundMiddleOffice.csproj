@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0-windows</TargetFramework>
+    <TargetFramework>net9.0-windows</TargetFramework>	
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
@@ -15,7 +15,7 @@
 	 
 	  <!-- 手动设置主版本和次版本 -->
 	  <MajorVersion>1</MajorVersion>
-	  <MinorVersion>0</MinorVersion>
+	  <MinorVersion>1</MinorVersion>
 
 	  <!-- 自动生成Patch版本：基于日期的两位数字 -->
 	  <Patch>$([System.DateTime]::Now.Day)</Patch>
