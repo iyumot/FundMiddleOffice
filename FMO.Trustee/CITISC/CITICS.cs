@@ -617,9 +617,9 @@ public partial class CITICS : TrusteeApiBase
                     // обр╩рЁ
                     formatedParams["pageNum"] = page + 1;
                 }
-                catch
+                catch(Exception e)
                 {
-                    Log(caller, json, "Json Serialize Error");
+                    Log(caller, json, $"Json Serialize Error {e.Message}");
                     return new(ReturnCode.JsonNotPairToEntity, null);
                 }
             }
