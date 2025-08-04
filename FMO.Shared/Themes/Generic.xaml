@@ -676,7 +676,7 @@
 
     <Style TargetType="local:SingleFileView">
         <Setter Property="HorizontalContentAlignment" Value="Left" />
-        <Setter Property="AllowDrop" Value="{Binding IsReadOnly, Converter={StaticResource Boolean2BooleanReConverter}}" />
+        <Setter Property="AllowDrop" Value="{Binding IsReadOnly, RelativeSource={RelativeSource Self}, Converter={StaticResource Boolean2BooleanReConverter}}" />
         <Setter Property="MinHeight" Value="20" />
         <Setter Property="HeaderTemplate">
             <Setter.Value>
