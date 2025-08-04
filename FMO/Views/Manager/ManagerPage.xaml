@@ -337,6 +337,39 @@
                     IsReadOnly="True"
                     ItemsSource="{Binding MemberSource.View}"
                     Style="{StaticResource DataGrid.NoSelect}">
+                    <DataGrid.RowDetailsTemplate>
+                        <DataTemplate>
+                            <Border Background="LightGreen">
+                                <hc:UniformSpacingPanel
+                                    MaxWidth="450"
+                                    Margin="5,0,0,0"
+                                    ChildWrapping="Wrap"
+                                    Spacing="4"
+                                    VerticalSpacing="4">
+                                    <BulletDecorator>
+                                        <BulletDecorator.Bullet>
+                                            <TextBlock Width="70" Text="Email" />
+                                        </BulletDecorator.Bullet>
+                                        <shared:CopyableTextBlock Text="{Binding Email}" />
+                                    </BulletDecorator>
+
+                                    <BulletDecorator>
+                                        <BulletDecorator.Bullet>
+                                            <TextBlock Width="70" Text="职位" />
+                                        </BulletDecorator.Bullet>
+                                        <shared:CopyableTextBlock Text="{Binding Post}" />
+                                    </BulletDecorator>
+
+                                    <BulletDecorator>
+                                        <BulletDecorator.Bullet>
+                                            <TextBlock Width="70" Text="从业证书" />
+                                        </BulletDecorator.Bullet>
+                                        <shared:CopyableTextBlock Text="{Binding CertCode}" />
+                                    </BulletDecorator>
+                                </hc:UniformSpacingPanel>
+                            </Border>
+                        </DataTemplate>
+                    </DataGrid.RowDetailsTemplate>
                     <DataGrid.Columns>
                         <DataGridTemplateColumn Header="姓名">
                             <DataGridTemplateColumn.CellTemplate>

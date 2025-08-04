@@ -13,6 +13,13 @@ public class Participant
     public DateEfficient Efficient { get; set; }
 
     /// <summary>
+    /// 证书编号
+    /// </summary>
+    public string? CertCode { get; set; }
+
+    public string? Post { get; set; }
+
+    /// <summary>
     /// 称谓
     /// </summary>
     public string? Title { get; set; }

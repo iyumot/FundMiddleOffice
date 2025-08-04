@@ -552,15 +552,16 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
 
             // 处理数据
             var data = db.GetCollection<Participant>().FindAll().ToArray();
-            var np = result.Data.Where(x => data.All(y => y.Name != x.Name && y.Identity?.Id != x.Identity?.Id));
-            if (np.Any())
+            foreach (var x in result.Data)
             {
-                db.GetCollection<Participant>().Insert(np);
-
-                foreach (var item in np)
-                    Members.Add(new ParticipantViewModel(item));
+                var old = data.FirstOrDefault(y => y.Name == x.Name && y.Identity?.Id == x.Identity?.Id);
+                x.Id = old?.Id ?? 0;
             }
+            db.GetCollection<Participant>().Upsert(result.Data);
 
+
+            Members = new(db.GetCollection<Participant>().FindAll().ToArray().Select(x => new ParticipantViewModel(x)));
+            MemberSource.View.Refresh();
 
             HandyControl.Controls.Growl.Success($"获取管理人成员成功");
         }
@@ -1134,6 +1135,8 @@ public partial class ParticipantViewModel : ObservableObject
             Address = obj.Address;
             Email = obj.Email;
             Profile = obj.Profile;
+            CertCode = obj.CertCode;
+            Post = obj.Post;
         }
     }
 
@@ -1166,7 +1169,9 @@ public partial class ParticipantViewModel : ObservableObject
 
     [ObservableProperty]
     public partial string? Profile { get; set; }
-
+    
+    public string? CertCode { get;  set; }
+    public string? Post { get; private set; }
     [ObservableProperty]
     public partial FileInfo? IdFile { get; set; }
 

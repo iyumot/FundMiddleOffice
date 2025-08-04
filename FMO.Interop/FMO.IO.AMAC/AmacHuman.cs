@@ -116,6 +116,8 @@ public static class AmacHuman
                     Name = x.username,
                     Email = x.email,
                     Phone = x.mobile,
+                    CertCode = x.certCode,
+                    Post = x.post,
                     Identity = new Identity { Id = x.idNumber!, Type = x.idType switch { "1" => IDType.IdentityCard, _ => IDType.Unknown } },
                 }));
 
