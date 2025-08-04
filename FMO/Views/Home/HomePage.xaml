@@ -155,14 +155,14 @@
             </oxy:PlotView>
 
 
-            <hc:UniformSpacingPanel Spacing="8">
+            <!--<hc:UniformSpacingPanel Spacing="8">
                 <oxy:PlotView
                     Width="200"
                     Height="200"
                     Model="{Binding BuySellIn7DaysContext}" />
 
 
-            </hc:UniformSpacingPanel>
+            </hc:UniformSpacingPanel>-->
 
 
 
