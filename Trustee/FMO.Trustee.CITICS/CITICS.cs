@@ -1,4 +1,4 @@
-using FMO.Models; 
+using FMO.Models;
 using FMO.Utilities;
 using LiteDB;
 using System.Net.Http;
@@ -746,16 +746,18 @@ public partial class CITICS : TrusteeApiBase
         return ReturnCode.Success;
     }
 
-    public class APIConfig : IAPIConfig
-    {
-        public string Id { get; } = "trustee_citics";
-
-        public string? CustomerAuth { get; set; }
-
-        public string? Token { get; set; }
-
-        public DateTime? TokenTime { get; set; }
-
-    }
 
 }
+
+public class APIConfig : IAPIConfig
+{
+    public string Id { get; } = "trustee_citics";
+
+    public string? CustomerAuth { get; set; }
+
+    public string? Token { get; set; }
+
+    public DateTime? TokenTime { get; set; }
+
+}
+

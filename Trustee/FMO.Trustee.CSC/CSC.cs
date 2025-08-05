@@ -551,17 +551,17 @@ public partial class CSC : TrusteeApiBase
     }
     #endregion
 
-    public class APIConfig : IAPIConfig
-    {
-        public string Id { get; } = "trustee_csc";
 
-        public string? APIKey { get; set; }
 
-        public string? APISecret { get; set; }
+}
+internal class APIConfig : IAPIConfig
+{
+    public string Id { get; } = "trustee_csc";
 
-        public string? EncryptKey { get; set; }
+    public string? APIKey { get; set; }
 
-    }
+    public string? APISecret { get; set; }
 
+    public string? EncryptKey { get; set; }
 
 }

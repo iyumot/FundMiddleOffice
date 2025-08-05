@@ -1,13 +1,18 @@
 
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
 using LiteDB;
 using System.Net;
-using System.Net.Http;
 using System.Reflection;
 
 namespace FMO.Trustee;
 
+
+public interface IAPIConfig
+{
+    public string Id { get; }
+}
 
 public abstract class TrusteeApiBase : ITrustee
 {
@@ -86,7 +91,7 @@ public abstract class TrusteeApiBase : ITrustee
 
 
     public abstract Task<ReturnWrap<DailyValue>> QueryNetValue(DateOnly begin, DateOnly end, string? fundCode = null);
-     
+
 
 
     public abstract bool Prepare();
@@ -104,8 +109,9 @@ public abstract class TrusteeApiBase : ITrustee
     public bool LoadConfig()
     {
         using var db = DbHelper.Platform();
-        var config = db.GetCollection<IAPIConfig>().FindById(Identifier);
-        return LoadConfigOverride(config);
+        try { if (db.GetCollection<IAPIConfig>().FindById(Identifier) is IAPIConfig config) return LoadConfigOverride(config); }
+        catch { WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Error, $"加载{Title}的配置文件出错")); }
+        return false;
     }
 
     protected abstract bool LoadConfigOverride(IAPIConfig config);
@@ -161,7 +167,7 @@ public abstract class TrusteeApiBase : ITrustee
         _db.GetCollection<LogInfo>().Insert(new LogInfo { Identifier = identifier, Log = info, Method = method, Content = "解析异常", Time = DateTime.Now });
     }
 
-  
+
     protected virtual Dictionary<string, object> GenerateParams(object? obj)
     {
         Dictionary<string, object>? dic = new();
@@ -209,11 +215,11 @@ public abstract class TrusteeApiBase : ITrustee
 
         return Domain + part;
 
-//#if DEBUG
-//        return TestDomain + part;
-//#else
-//        return Domain + part;
-//#endif
+        //#if DEBUG
+        //        return TestDomain + part;
+        //#else
+        //        return Domain + part;
+        //#endif
     }
 
 
@@ -258,7 +264,7 @@ public abstract class TrusteeApiBase : ITrustee
 
         return list.ToArray();
     }
-     
+
     /// <summary>
     /// 设置不可用
     /// </summary>

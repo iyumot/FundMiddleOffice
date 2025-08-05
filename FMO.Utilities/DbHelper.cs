@@ -5,6 +5,7 @@ using Serilog;
 using System.Configuration;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 namespace FMO.Utilities;
 
 internal record PatchRecord(int Id, DateTime Time);
@@ -175,7 +176,23 @@ public static class DatabaseAssist
         [42] = UpdateTASchcame,
 
         //[44] = MapTA
+
+        [48] = ChangeAPIConfig,
     };
+
+    private static void ChangeAPIConfig(BaseDatabase database)
+    {
+        using var db = DbHelper.Platform();
+        var config = db.GetCollection("IAPIConfig").FindAll().ToArray();
+        foreach (var item in config)
+        {
+            var idf = item["_id"].AsString.Split('_')[1];
+            item["_type"] = $"FMO.Trustee.APIConfig,FMO.Trustee.{idf.ToUpper()},";
+        }
+         
+
+        db.GetCollection("IAPIConfig").Update(config);
+    }
 
 
     /// <summary>

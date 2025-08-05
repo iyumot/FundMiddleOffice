@@ -98,11 +98,6 @@ public interface ITrustee
 
 
 
-public interface IAPIConfig
-{
-    public string Id { get; }
-}
-
 
 public record ReturnWrap<T>(ReturnCode Code, T[]? Data);
 

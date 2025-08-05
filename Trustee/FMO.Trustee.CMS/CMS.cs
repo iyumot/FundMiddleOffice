@@ -326,7 +326,7 @@ public partial class CMS : TrusteeApiBase
                     //CacheJson(caller, data!);
                     var options = new JsonSerializerOptions
                     {
-                        PropertyNameCaseInsensitive = true, 
+                        PropertyNameCaseInsensitive = true,
                     };
                     if (data is not null && data.Count > 0)
                         list.AddRange(data.Select(x =>
@@ -366,7 +366,7 @@ public partial class CMS : TrusteeApiBase
         Log(caller, null, list.Count == 0 ? "OK [Empty]" : $"OK [{list[0].Id}-{list[^1].Id}]");
 
         try { var dd = list.Select(x => transfer(x)).ToArray(); return new(ReturnCode.Success, dd); }
-        catch(Exception e) { Log(e.Message); return new (ReturnCode.ObjectTransformError, []); }
+        catch (Exception e) { Log(e.Message); return new(ReturnCode.ObjectTransformError, []); }
     }
 
 
@@ -453,24 +453,24 @@ public partial class CMS : TrusteeApiBase
         return param;
     }
 
-
-    public class APIConfig : IAPIConfig
-    {
-        public string Id { get; } = "trustee_cms";
-
-
-        public string? CompanyId { get; set; }
-
-        public int? ServerType { get; set; }
-
-        public string? LicenceKey { get; set; }
-
-        public string? UserNo { get; set; }
-
-        public byte[]? PFX { get; set; }
-
-        public string? Password { get; set; }
-    }
-
-
 }
+internal class APIConfig : IAPIConfig
+{
+    public string Id { get; } = "trustee_cms";
+
+
+    public string? CompanyId { get; set; }
+
+    public int? ServerType { get; set; }
+
+    public string? LicenceKey { get; set; }
+
+    public string? UserNo { get; set; }
+
+    public byte[]? PFX { get; set; }
+
+    public string? Password { get; set; }
+}
+
+
+

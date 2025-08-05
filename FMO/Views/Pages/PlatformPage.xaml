@@ -2,12 +2,14 @@
     x:Class="FMO.PlatformPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:citics="clr-namespace:FMO.Trustee;assembly=FMO.Trustee.CITICS"
+    xmlns:cms="clr-namespace:FMO.Trustee;assembly=FMO.Trustee.CMS"
+    xmlns:csc="clr-namespace:FMO.Trustee;assembly=FMO.Trustee.CSC"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
-    xmlns:trust="clr-namespace:FMO.Trustee;assembly=FMO.Trustee"
     d:DataContext="{d:DesignInstance Type=local:PlatformPageViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="1300"
@@ -125,7 +127,7 @@
         </DataTemplate>
 
 
-        <DataTemplate DataType="{x:Type trust:CSCViewModel}">
+        <DataTemplate DataType="{x:Type csc:CSCViewModel}">
             <StackPanel>
                 <BulletDecorator>
                     <BulletDecorator.Bullet>
@@ -152,7 +154,7 @@
         </DataTemplate>
 
 
-        <DataTemplate DataType="{x:Type trust:CITISCViewModel}">
+        <DataTemplate DataType="{x:Type citics:CITISCViewModel}">
             <BulletDecorator>
                 <BulletDecorator.Bullet>
                     <TextBlock Text="Custom Auth" />
@@ -162,7 +164,7 @@
         </DataTemplate>
 
 
-        <DataTemplate DataType="{x:Type trust:CMSViewModel}">
+        <DataTemplate DataType="{x:Type cms:CMSViewModel}">
             <StackPanel>
                 <BulletDecorator>
                     <BulletDecorator.Bullet>

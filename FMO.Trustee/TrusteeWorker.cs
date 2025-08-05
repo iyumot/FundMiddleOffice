@@ -661,6 +661,7 @@ public partial class TrusteeWorker : ObservableObject
         using var db = DbHelper.Base();
         var funds = db.GetCollection<Fund>().Query().Select(x => new { x.Id, x.Code, x.SetupDate, x.ClearDate, x.LastUpdate, x.Status }).ToList();
 
+        // ÒÑÇåÅÌµÄ
         foreach (var fund in funds.Where(x=>x.Status > FundStatus.StartLiquidation))
         {
 
