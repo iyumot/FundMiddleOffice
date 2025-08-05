@@ -294,7 +294,7 @@ public abstract class TrusteeApiBase : ITrustee
 }
 
 
-public class JsonBase
+internal class JsonBase
 {
     private static ILiteDatabase _db { get; } = new LiteDatabase(@$"FileName=data\platformlog.db;Connection=Shared");
 

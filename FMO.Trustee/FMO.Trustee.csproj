@@ -9,12 +9,30 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
+    <Compile Remove="CITISC\**" />
+    <Compile Remove="CMS\**" />
+    <Compile Remove="CSC\**" />
+    <EmbeddedResource Remove="CITISC\**" />
+    <EmbeddedResource Remove="CMS\**" />
+    <EmbeddedResource Remove="CSC\**" />
+    <None Remove="CITISC\**" />
+    <None Remove="CMS\**" />
+    <None Remove="CSC\**" />
+    <Page Remove="CITISC\**" />
+    <Page Remove="CMS\**" />
+    <Page Remove="CSC\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="TrusteeApiBase.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\FMO.Models\FMO.Models.csproj" />
     <ProjectReference Include="..\FMO.Utilities\FMO.Utilities.csproj" />
+    <ProjectReference Include="..\Trustee\FMO.Trustee.CITICS\FMO.Trustee.CITICS.csproj" />
+    <ProjectReference Include="..\Trustee\FMO.Trustee.CMS\FMO.Trustee.CMS.csproj" />
+    <ProjectReference Include="..\Trustee\FMO.Trustee.CSC\FMO.Trustee.CSC.csproj" />
   </ItemGroup>
 
 </Project>

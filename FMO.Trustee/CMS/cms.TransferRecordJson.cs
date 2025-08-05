@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace FMO.Trustee.JsonCMS;
 
-public class TransferRecordJson : JsonBase
+internal class TransferRecordJson : JsonBase
 {
 
     [JsonPropertyName("custName")]

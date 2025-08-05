@@ -9,7 +9,7 @@ namespace FMO.Trustee.JsonCMS;
 /// <summary>
 /// 基金费用信息实体类
 /// </summary>
-public class FundDailyFeeJson : JsonBase
+internal class FundDailyFeeJson : JsonBase
 {
     /// <summary>
     /// 产品名称（必填，最大长度300）

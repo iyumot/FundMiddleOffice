@@ -1,11 +1,11 @@
 using System.Text.Json.Serialization;
 
-namespace FMO.Trustee.JsonCSC;
+namespace FMO.Trustee;
 
 
 #pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑添加 "required" 修饰符或声明为可为 null。
 
-public class RetJson
+internal class RetJson
 {
     [JsonPropertyName("retCode")]
     public string Code { get; set; }
@@ -19,7 +19,7 @@ public class RetJson
 
 
 
-public class RetJson<T>
+internal class RetJson<T>
 {
     [JsonPropertyName("retCode")]
     public string Code { get; set; }
@@ -32,7 +32,7 @@ public class RetJson<T>
     public required DataJsonWrap<T> Data { get; set; }
 }
 
-public class DataJsonWrap<T>
+internal class DataJsonWrap<T>
 {
 
     [JsonPropertyName("result")]

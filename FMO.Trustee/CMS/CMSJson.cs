@@ -4,7 +4,7 @@ namespace FMO.Trustee.JsonCMS;
 
 #pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑添加 "required" 修饰符或声明为可为 null。
 
-public class JsonRoot
+internal class JsonRoot
 {
     [JsonPropertyName("resultcode")]
     public string Code { get; set; }
@@ -36,7 +36,7 @@ public class PaginationInfo
     public int Count { get; set; }
 }
 
-public class JsonRoot<T>
+internal class JsonRoot<T>
 {
     [JsonPropertyName("resultcode")]
     public string Code { get; set; }

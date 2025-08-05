@@ -8,7 +8,7 @@ namespace FMO.Trustee.JsonCITICS;
 /// <summary>
 /// 金融产品费用数据模型
 /// </summary>
-public class FundDailyFeeJson : JsonBase
+internal class FundDailyFeeJson : JsonBase
 {
     /// <summary>
     /// 产品代码

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>FMO.Trustee</RootNamespace>
+	  <LangVersion>preview</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FMO.TrusteeInterface\FMO.TrusteeInterface.csproj" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
+	</ItemGroup>
+
+</Project>
