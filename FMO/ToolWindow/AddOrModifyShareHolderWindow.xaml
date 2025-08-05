@@ -6,6 +6,7 @@
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     Title="股权关系"
     Width="450"
     Height="180"
@@ -27,6 +28,7 @@
         <StackPanel>
             <TextBlock
                 HorizontalAlignment="Center"
+                shared:MaskService.IsMask="True"
                 FontSize="14"
                 FontWeight="Black"
                 Text="{Binding Institution.Name}" />
