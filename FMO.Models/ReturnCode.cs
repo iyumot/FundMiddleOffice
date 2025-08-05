@@ -29,6 +29,12 @@ public enum ReturnCode
     DataIsNotWellFormed,
 
     /// <summary>
+    /// ToObject有问题
+    /// </summary>
+    ObjectTransformError,
+
+
+    /// <summary>
     /// 返回的json无法正常解析成对应的类
     /// </summary>
     JsonNotPairToEntity,

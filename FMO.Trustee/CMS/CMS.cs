@@ -325,11 +325,14 @@ public partial class CMS : TrusteeApiBase
 
                     // 记录返回的类型，用于debug
                     //CacheJson(caller, data!);
-
+                    var options = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true, 
+                    };
                     if (data is not null && data.Count > 0)
                         list.AddRange(data.Select(x =>
                         {
-                            try { return x.Deserialize<TJSON>()!; }
+                            try { return x.Deserialize<TJSON>(options)!; }
                             catch (Exception ex)
                             {
                                 // 记录具体哪个元素反序列化失败
@@ -362,7 +365,9 @@ public partial class CMS : TrusteeApiBase
         }
 
         Log(caller, null, list.Count == 0 ? "OK [Empty]" : $"OK [{list[0].Id}-{list[^1].Id}]");
-        return new(ReturnCode.Success, list.Select(x => transfer(x)).ToArray());
+
+        try { var dd = list.Select(x => transfer(x)).ToArray(); return new(ReturnCode.Success, dd); }
+        catch(Exception e) { Log(e.Message); return new (ReturnCode.ObjectTransformError, []); }
     }
 
 
