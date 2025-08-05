@@ -51,6 +51,13 @@ public partial class LiquidationFlowViewModel : FlowViewModel
         {
             Label = "清算承诺函",
             SaveFolder = FundHelper.GetFolder(FundId, "Liquidation"),
+            SpecificFileName = x =>
+            {
+                using var db = DbHelper.Base();
+                var fund = db.GetCollection<Fund>().FindById(FundId);
+
+                return $"{fund.Name}_清算承诺函_{Date:yyyy年MM月dd日}{x}";
+            },
             GetProperty = x => x switch { LiquidationFlow f => f.SealedCommitmentLetter, _ => null },
             SetProperty = (x, y) => { if (x is LiquidationFlow f) f.SealedCommitmentLetter = y; },
         }; SealedCommitmentLetter.Init(flow);
