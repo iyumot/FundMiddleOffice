@@ -658,74 +658,88 @@ public partial class TrusteeWorker : ObservableObject
     [RelayCommand]
     public async Task QueryNetValueOnce()
     {
-        List<WorkReturn> ret = new();
-        // 保存数据库
         using var db = DbHelper.Base();
-        var funds = db.GetCollection<Fund>().FindAll().ToArray();
-        var StartDateOfAny = StartOfAnyWork();
-        using var pdb = DbHelper.Platform();
-        var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
+        var funds = db.GetCollection<Fund>().Query().Select(x => new { x.Id, x.Code, x.SetupDate, x.ClearDate, x.LastUpdate, x.Status }).ToList();
 
-
-        foreach (var tr in Trustees)
+        foreach (var fund in funds.Where(x=>x.Status > FundStatus.StartLiquidation))
         {
-            if (!tr.IsValid)
-            {
-                ret.Add(new(tr.Title, ReturnCode.ConfigInvalid));
-                continue;
-            }
 
-            try
-            {
-                // 获取历史区间
-                var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + nameof(tr.QueryNetValue));
-
-                DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
-                if (begin == end) begin = end.AddDays(-10);
-                do
-                {
-                    var rc = await tr.QueryNetValue(begin, end);
-
-                    ///
-                    // 保存数据库 
-                    if (rc.Data is not null)
-                    {
-                        foreach (var item in rc.Data.GroupBy(x => (x.FundId, x.Class)))
-                        {
-                            var fid = item.Key.FundId;
-                            var c = item.Key.Class;
-                            db.GetDailyCollection(fid, c).Upsert(item);
-                        }
-                    }
-
-                    if (range is null) range = new(tr.Identifier + nameof(tr.QueryNetValue), begin, end);
-                    else range.Merge(begin, end);
-                    pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
-
-                    // 合并记录
-                    ret.Add(new(tr.Title, rc.Code, rc.Data));
-
-                    // 向前一年
-                    end = range.Begin.AddDays(-1);
-                    if (end.Year < 1970) break;
-                    begin = end.AddYears(-1);
-                } while (begin > StartDateOfAny);
-            }
-            catch (Exception e)
-            {
-                ret.Add(new(tr.Title, ReturnCode.Unknown));
-                Log.Error($"QueryNetValueOnce {e}");
-            }
         }
+        
 
-        // 保存ret，程序加载时恢复，并生成消息
-        //db.DropCollection(TableRaisingBalance);
-        //db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
 
-        WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryNetValue), ret));
-        NetValueConfig.Last = DateTime.Now;
-        Save(NetValueConfig);
+
     }
+    //public async Task QueryNetValueOnce()
+    //{
+    //    List<WorkReturn> ret = new();
+    //    // 保存数据库
+    //    using var db = DbHelper.Base();
+    //    var funds = db.GetCollection<Fund>().FindAll().ToArray();
+    //    var StartDateOfAny = StartOfAnyWork();
+    //    using var pdb = DbHelper.Platform();
+    //    var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
+
+
+    //    foreach (var tr in Trustees)
+    //    {
+    //        if (!tr.IsValid)
+    //        {
+    //            ret.Add(new(tr.Title, ReturnCode.ConfigInvalid));
+    //            continue;
+    //        }
+
+    //        try
+    //        {
+    //            // 获取历史区间
+    //            var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + nameof(tr.QueryNetValue));
+
+    //            DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
+    //            if (begin == end) begin = end.AddDays(-10);
+    //            do
+    //            {
+    //                var rc = await tr.QueryNetValue(begin, end);
+
+    //                ///
+    //                // 保存数据库 
+    //                if (rc.Data is not null)
+    //                {
+    //                    foreach (var item in rc.Data.GroupBy(x => (x.FundId, x.Class)))
+    //                    {
+    //                        var fid = item.Key.FundId;
+    //                        var c = item.Key.Class;
+    //                        db.GetDailyCollection(fid, c).Upsert(item);
+    //                    }
+    //                }
+
+    //                if (range is null) range = new(tr.Identifier + nameof(tr.QueryNetValue), begin, end);
+    //                else range.Merge(begin, end);
+    //                pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
+
+    //                // 合并记录
+    //                ret.Add(new(tr.Title, rc.Code, rc.Data));
+
+    //                // 向前一年
+    //                end = range.Begin.AddDays(-1);
+    //                if (end.Year < 1970) break;
+    //                begin = end.AddYears(-1);
+    //            } while (begin > StartDateOfAny);
+    //        }
+    //        catch (Exception e)
+    //        {
+    //            ret.Add(new(tr.Title, ReturnCode.Unknown));
+    //            Log.Error($"QueryNetValueOnce {e}");
+    //        }
+    //    }
+
+    //    // 保存ret，程序加载时恢复，并生成消息
+    //    //db.DropCollection(TableRaisingBalance);
+    //    //db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
+
+    //    WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryNetValue), ret));
+    //    NetValueConfig.Last = DateTime.Now;
+    //    Save(NetValueConfig);
+    //}
 
     public async Task QueryNetValueOnce(int fundId, string code, DateOnly begin, DateOnly end)
     {
