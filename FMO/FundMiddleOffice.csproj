@@ -18,14 +18,15 @@
 	  <MinorVersion>1</MinorVersion>
 
 	  <!-- 自动生成Patch版本：基于日期的两位数字 -->
-	  <Patch>$([System.DateTime]::Now.Day)</Patch>
+	  <!--<Patch>$([System.DateTime]::Now.Day)</Patch>-->
 
 	  <!-- 自动生成修订号：基于时间的三位数字 -->
-	  <TotalSeconds>$([System.DateTime]::Now.TimeOfDay.TotalSeconds)</TotalSeconds>
-	  <Revision>$([MSBuild]::Modulo($(TotalSeconds), 1000).ToString('000'))</Revision>
+	  <!--<TotalSeconds>$([System.DateTime]::Now.TimeOfDay.TotalSeconds)</TotalSeconds>
+	  <Revision>$([MSBuild]::Modulo($(TotalSeconds), 1000).ToString('000'))</Revision>-->
 
 	  <!-- 组合完整版本号 -->
-	  <Version>$(MajorVersion).$(MinorVersion).$(Patch).$(Revision)</Version>
+	  <!--<Version>$(MajorVersion).$(MinorVersion).$(Patch).$(Revision)</Version>-->
+    <Version>1.1.4.348</Version>
 	  <FileVersion>$(Version)</FileVersion>
     <Version>$(Version)</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
