@@ -110,7 +110,7 @@ public abstract class TrusteeApiBase : ITrustee
     {
         using var db = DbHelper.Platform();
         try { if (db.GetCollection<IAPIConfig>().FindById(Identifier) is IAPIConfig config) return LoadConfigOverride(config); }
-        catch { WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Error, $"加载{Title}的配置文件出错")); }
+        catch/*(Exception e) */{ WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Error, $"加载{Title}的配置文件出错")); }
         return false;
     }
 

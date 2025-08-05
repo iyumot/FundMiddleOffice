@@ -177,7 +177,7 @@ public static class DatabaseAssist
 
         //[44] = MapTA
 
-        [48] = ChangeAPIConfig,
+        [49] = ChangeAPIConfig,
     };
 
     private static void ChangeAPIConfig(BaseDatabase database)
@@ -187,7 +187,7 @@ public static class DatabaseAssist
         foreach (var item in config)
         {
             var idf = item["_id"].AsString.Split('_')[1];
-            item["_type"] = $"FMO.Trustee.APIConfig,FMO.Trustee.{idf.ToUpper()},";
+            item["_type"] = $"FMO.Trustee.APIConfig,FMO.Trustee.{idf.ToUpper()}";
         }
          
 

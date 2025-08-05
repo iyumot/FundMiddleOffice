@@ -65,48 +65,44 @@ foreach ($projectName in $ProjectsToPublish) {
         Write-Host "(无编译) " -ForegroundColor Gray -NoNewline
     }
 
-    # 增加详细日志（可选）
     if ($Verbose) {
-        $args += "--verbosity" ; $args += "minimal"  # 或 "normal"
+        $args += "--verbosity"; $args += "minimal"
     }
 
     try {
-        # 捕获输出用于判断是否“实际构建”
-        $outputLog = New-TemporaryFile
+        # 直接调用 dotnet，捕获标准输出和错误输出
+        $output = & dotnet @args 2>&1
 
-        $process = Start-Process -FilePath "dotnet" -ArgumentList $args `
-            -WorkingDirectory $projectDir `
-            -Wait `
-            -WindowStyle Hidden `
-            -PassThru `
-            -RedirectStandardOutput $outputLog
+        # 获取最后的退出码
+        $exitCode = $LASTEXITCODE
 
-        $output = Get-Content $outputLog -Raw
+        # 将输出合并为字符串用于匹配
+        $outputStr = $output -join "`n"
 
-        # 清理临时文件
-        Remove-Item $outputLog
-
-        # 分析输出：MSBuild 通常会输出 "项目是最新的" 或 "Project is up to date"
-        if ($output -match "up\s+to\s+date|最新|最新版本") {
+        # 判断是否“项目已是最新”
+        if ($outputStr -match "up\s+to\s+date|最新|最新版本") {
             Write-Host "跳过（项目已是最新）" -ForegroundColor Gray
             continue
         }
 
-        # 检查退出码
-        if ($process.ExitCode -eq 0) {
+        # 检查结果
+        if ($exitCode -eq 0) {
             Write-Host "成功" -ForegroundColor Green
         } else {
-            Write-Host "失败 (退出码: $($process.ExitCode))" -ForegroundColor Red
+            Write-Host "失败 (退出码: $exitCode)" -ForegroundColor Red
             if ($Verbose) {
-                Write-Host $output
+                Write-Host $outputStr
             }
         }
     } catch {
         Write-Host "失败 (异常: $($_.Exception.Message))" -ForegroundColor Red
+        if ($Verbose) {
+            Write-Host ($_.ScriptStackTrace)
+        }
     }
 }
 
-# ========== 清理空语言文件夹 ==========
+# ========== 清理空的语言文件夹 ==========
 Write-Host "`n清理空的语言文件夹..." -ForegroundColor Cyan
 
 $languageFolders = @("zh-Hans", "zh-CN", "en", "fr", "de", "ja", "ko", "ru", "es", "it", "pt", "tr", "cs", "pl", "pt-BR")
