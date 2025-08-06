@@ -437,7 +437,7 @@
                 BorderBrush="{DynamicResource PrimaryBrush}"
                 BorderThickness="1"
                 CornerRadius="6"
-                DataContext="{Binding PfidDirectAccount}">
+                DataContext="{Binding PfidDirect}">
                 <DockPanel Margin="5,0">
 
                     <DockPanel
