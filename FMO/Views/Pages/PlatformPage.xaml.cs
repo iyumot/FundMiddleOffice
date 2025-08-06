@@ -1004,7 +1004,7 @@ public partial class PfidDirectViewModel : ObservableObject
         Identifier = account.Id;
         Name = account.Name;
         Password = account.Password;
-
+        Key = account.Key;
     }
 
 
