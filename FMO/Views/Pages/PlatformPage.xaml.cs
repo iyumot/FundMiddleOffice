@@ -9,7 +9,6 @@ using FMO.Trustee;
 using FMO.Utilities;
 using Serilog;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
@@ -90,7 +89,7 @@ public partial class ProxyViewModel : ObservableObject
             IsAvailiable = resp.StatusCode == HttpStatusCode.OK;
             ProxyChecked?.Invoke(IsAvailiable);
 
-            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Success, $"代理连接成功")); 
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Success, $"代理连接成功"));
         }
         catch (Exception e)
         {
@@ -120,7 +119,7 @@ public partial class PlatformPageViewModel : ObservableObject
 
     public AmacAccountViewModel[] AmacAccounts { get; set; }
 
-
+    public PfidDirectViewModel PfidDirect { get; set; }
 
     [ObservableProperty]
     public partial bool UseProxyForTrustee { get; set; }
@@ -204,7 +203,9 @@ public partial class PlatformPageViewModel : ObservableObject
         if (acc.All(x => x.Id != "xinpi"))
             acc.Add(new AmacAccount("xinpi", "", "", false));
 
-        AmacAccounts = acc.Select(x => new AmacAccountViewModel(x)).ToArray();
+        AmacAccounts = acc.Where(x=> x.Id != "pfiddirect").Select(x => new AmacAccountViewModel(x)).ToArray();
+
+        PfidDirect = new((acc.FirstOrDefault(x => x is PfidDirectAccount) as PfidDirectAccount)?? new PfidDirectAccount("pfiddirect","","","", false));
 
 
         Trustees2 = TrusteeGallay.TrusteeViewModels;
@@ -887,9 +888,9 @@ public partial class AmacAccountViewModel : ObservableObject
 
     private AmacAccount _account;
 
-    public bool IsChanged => Name != _account.Name || Password != _account.Password;
+    public virtual bool IsChanged => Name != _account.Name || Password != _account.Password;
 
-    public bool CanSave => !string.IsNullOrWhiteSpace(Name) && !string.IsNullOrWhiteSpace(Password) && IsChanged;
+    public virtual bool CanSave => !string.IsNullOrWhiteSpace(Name) && !string.IsNullOrWhiteSpace(Password) && IsChanged;
 
     [ObservableProperty]
     public partial bool IsReadOnly { get; set; } = true;
@@ -957,5 +958,64 @@ public partial class AmacAccountViewModel : ObservableObject
     {
         if (Url?.Length > 10)
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(Url) { UseShellExecute = true });
+    }
+}
+
+
+public partial class PfidDirectViewModel : ObservableObject
+{
+    public string Identifier { get; }
+
+
+    private PfidDirectAccount _account;
+
+    public virtual bool IsChanged => Name != _account.Name || Password != _account.Password || Key != _account.Key;
+
+    public virtual bool CanSave => !string.IsNullOrWhiteSpace(Name) && !string.IsNullOrWhiteSpace(Password) && IsChanged;
+
+    [ObservableProperty]
+    public partial bool IsReadOnly { get; set; } = true;
+
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsChanged))]
+    [NotifyPropertyChangedFor(nameof(CanSave))]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    public partial string? Name { get; set; }
+
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsChanged))]
+    [NotifyPropertyChangedFor(nameof(CanSave))]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    public partial string? Password { get; set; }
+
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsChanged))]
+    [NotifyPropertyChangedFor(nameof(CanSave))]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    public partial string? Key { get; set; }
+
+    [SetsRequiredMembers]
+    public PfidDirectViewModel(PfidDirectAccount account)
+    {
+        _account = account;
+        Identifier = account.Id;
+        Name = account.Name;
+        Password = account.Password;
+
+    }
+
+
+    [RelayCommand(CanExecute = nameof(CanSave))]
+    public void Save()
+    {
+        _account = _account with { Name = Name!, Password = Password!, Key = Key! };
+        using var db = DbHelper.Base();
+        db.GetCollection<AmacAccount>().Upsert(_account);
+
+        OnPropertyChanged(nameof(IsChanged));
+        OnPropertyChanged(nameof(CanSave));
     }
 }
