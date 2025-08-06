@@ -5,7 +5,6 @@ using Serilog;
 using System.Configuration;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 namespace FMO.Utilities;
 
 internal record PatchRecord(int Id, DateTime Time);
@@ -179,16 +178,29 @@ public static class DatabaseAssist
 
         [49] = ChangeAPIConfig,
         [51] = ChangeAmacAccount,
+        [54] = ChangeAmacAccount2
     };
 
+    private static void ChangeAmacAccount2(BaseDatabase database)
+    {
+        database.GetCollection<AmacReportAccount>().Delete("pmg");
+
+        if (database.GetCollection<AmacReportAccount>().FindById("pfiddirect") is AmacReportAccount a)
+        {
+            database.GetCollection<AmacReportAccount>().Insert(a with { Id = "pmg" });
+
+            database.GetCollection<AmacReportAccount>().Delete("pfiddirect");
+        }
+    }
+
     private static void ChangeAmacAccount(BaseDatabase database)
-    { 
+    {
         var config = database.GetCollection("AmacAccount").FindAll().ToArray();
         foreach (var item in config)
         {
             if (!item.ContainsKey("_type")) continue;
             var str = item["_type"].AsString.Split(',');
-            item["_type"] = $"{str[0].Replace("IO.AMAC","Models")},FMO.Models";
+            item["_type"] = $"{str[0].Replace("IO.AMAC", "Models")},FMO.Models";
         }
 
 
@@ -204,7 +216,7 @@ public static class DatabaseAssist
             var idf = item["_id"].AsString.Split('_')[1];
             item["_type"] = $"FMO.Trustee.APIConfig,FMO.Trustee.{idf.ToUpper()}";
         }
-         
+
 
         db.GetCollection("IAPIConfig").Update(config);
     }

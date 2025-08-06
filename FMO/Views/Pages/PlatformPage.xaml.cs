@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.IO;
-using FMO.IO.AMAC;
 using FMO.IO.DS;
 using FMO.Models;
 using FMO.Trustee;
@@ -119,7 +118,8 @@ public partial class PlatformPageViewModel : ObservableObject
 
     public AmacAccountViewModel[] AmacAccounts { get; set; }
 
-    public PfidDirectViewModel PfidDirect { get; set; }
+    public AmacDirectViewModel[] DirectAccounts { get; set; }
+
 
     [ObservableProperty]
     public partial bool UseProxyForTrustee { get; set; }
@@ -194,18 +194,27 @@ public partial class PlatformPageViewModel : ObservableObject
         using var db = DbHelper.Base();
         var acc = db.GetCollection<AmacAccount>().FindAll().ToList();
 
-        if (acc.All(x => x.Id != "ambers"))
-            acc.Add(new AmacAccount("ambers", "", "", false));
-        if (acc.All(x => x.Id != "human"))
-            acc.Add(new AmacAccount("human", "", "", false));
-        if (acc.All(x => x.Id != "peixun"))
-            acc.Add(new AmacAccount("peixun", "", "", false));
-        if (acc.All(x => x.Id != "xinpi"))
-            acc.Add(new AmacAccount("xinpi", "", "", false));
+        string[] ids = ["ambers", "human", "peixun", "xinpi"];
 
-        AmacAccounts = acc.Where(x=> x.Id != "pfiddirect").Select(x => new AmacAccountViewModel(x)).ToArray();
+        acc = acc.Where(x => ids.Contains(x.Id)).ToList();
 
-        PfidDirect = new((acc.FirstOrDefault(x => x is PfidDirectAccount) as PfidDirectAccount)?? new PfidDirectAccount("pfiddirect","","","", false));
+        foreach (var item in ids)
+        {
+            if (acc.All(x => x.Id != item))
+                acc.Add(new AmacAccount(item, "", "", false));
+        }
+
+        AmacAccounts = acc.Select(x => new AmacAccountViewModel(x)).ToArray();
+
+        ids = ["pmg", "pof"];
+        var dacc = db.GetCollection<AmacReportAccount>().FindAll().ToList();
+        foreach (var item in ids)
+        {
+            if (dacc.All(x => x.Id != item))
+                dacc.Add(new AmacReportAccount(item, "", "", "", false));
+        }
+
+        DirectAccounts = dacc.Select(x => new AmacDirectViewModel(x)).ToArray();
 
 
         Trustees2 = TrusteeGallay.TrusteeViewModels;
@@ -962,12 +971,13 @@ public partial class AmacAccountViewModel : ObservableObject
 }
 
 
-public partial class PfidDirectViewModel : ObservableObject
+public partial class AmacDirectViewModel : ObservableObject
 {
     public string Identifier { get; }
 
+    public string? Title { get; set; }
 
-    private PfidDirectAccount _account;
+    private AmacReportAccount _account;
 
     public virtual bool IsChanged => Name != _account.Name || Password != _account.Password || Key != _account.Key;
 
@@ -998,9 +1008,12 @@ public partial class PfidDirectViewModel : ObservableObject
     public partial string? Key { get; set; }
 
     [SetsRequiredMembers]
-    public PfidDirectViewModel(PfidDirectAccount account)
+    public AmacDirectViewModel(AmacReportAccount account)
     {
         _account = account;
+
+        Title = account.Id switch { "pmg" => "运营系统", "pof" => "信披系统", _ => "" };
+
         Identifier = account.Id;
         Name = account.Name;
         Password = account.Password;
@@ -1013,7 +1026,7 @@ public partial class PfidDirectViewModel : ObservableObject
     {
         _account = _account with { Name = Name!, Password = Password!, Key = Key! };
         using var db = DbHelper.Base();
-        db.GetCollection<AmacAccount>().Upsert(_account);
+        db.GetCollection<AmacReportAccount>().Upsert(_account);
 
         OnPropertyChanged(nameof(IsChanged));
         OnPropertyChanged(nameof(CanSave));
