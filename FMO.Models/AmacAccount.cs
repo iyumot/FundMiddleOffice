@@ -1,4 +1,4 @@
-﻿namespace FMO.IO.AMAC;
+﻿namespace FMO.Models;
 
 public record class AmacAccount(string Id, string Name, string Password, bool IsValid);
 

@@ -178,7 +178,22 @@ public static class DatabaseAssist
         //[44] = MapTA
 
         [49] = ChangeAPIConfig,
+        [51] = ChangeAmacAccount,
     };
+
+    private static void ChangeAmacAccount(BaseDatabase database)
+    { 
+        var config = database.GetCollection("AmacAccount").FindAll().ToArray();
+        foreach (var item in config)
+        {
+            if (!item.ContainsKey("_type")) continue;
+            var str = item["_type"].AsString.Split(',');
+            item["_type"] = $"{str[0].Replace("IO.AMAC","Models")},FMO.Models";
+        }
+
+
+        database.GetCollection("AmacAccount").Update(config);
+    }
 
     private static void ChangeAPIConfig(BaseDatabase database)
     {
