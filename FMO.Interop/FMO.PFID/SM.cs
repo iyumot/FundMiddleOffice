@@ -77,12 +77,7 @@ public static class Sm2Utils
         {
             // 1. 获取SM2曲线参数
             var curve = GMNamedCurves.GetByName("sm2p256v1");
-            var domainParams = new ECDomainParameters(
-                curve.Curve,
-                curve.G,
-                curve.N,
-                curve.H,
-                curve.GetSeed());
+            var domainParams = new ECDomainParameters(curve.Curve, curve.G, curve.N);
 
             // 2. 解析公钥
             byte[] publicKeyBytes = Hex.Decode(publicKey);
@@ -90,8 +85,10 @@ public static class Sm2Utils
             var publicKeyParam = new ECPublicKeyParameters(publicKeyPoint, domainParams);
 
             // 3. 创建并初始化SM2引擎
-            var sm2Engine = new SM2Engine(new SM3Digest());
-            sm2Engine.Init(true, new ParametersWithRandom(publicKeyParam, new SecureRandom()));
+            var sm2Engine = new SM2Engine();
+            var rand = new SecureRandom();
+            //rand.SetSeed(11);
+            sm2Engine.Init(true, new ParametersWithRandom(publicKeyParam, rand));
 
             // 4. 加密数据
             byte[] input = Encoding.UTF8.GetBytes(data);
