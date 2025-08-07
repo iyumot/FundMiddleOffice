@@ -16,6 +16,24 @@ public record FundTipMessage(int FundId);
 
 public record FundsTipCountMessage(int Count);
 
+public record EntityIndentify(Type Type, object Id, int FundId);
+
+
+public enum ValidationMethod { }
+public class DataValidationInfo
+{
+    public ValidationMethod Method { get; set; }
+
+    /// <summary>
+    /// 关联的类实例
+    /// </summary>
+    public EntityIndentify[] Related { get; set; } = [];
+
+
+
+
+
+}
 
 /// <summary>
 /// 数据校验
@@ -28,7 +46,7 @@ public static partial class DataTracker
     public static ConcurrentDictionary<TipType, string?> UniformTips { get; } = new();
 
 
-
+    public static ThreadSafeList<DataValidationInfo> validationInfos { get; } = new(); 
 
     static DataTracker()
     {
@@ -179,6 +197,11 @@ public static partial class DataTracker
 
         FundTips.Remove(x => x.Type == TipType.FundShareNotPair);
         WeakReferenceMessenger.Default.Send(new FundTipMessage(fid));
+
+        DataValidationInfo validationInfo = new DataValidationInfo
+        {
+            Related = [new(typeof(DailyValue), 0, fid), new(typeof(TransferRecord), 0, fid)]
+        };
     }
 
 
@@ -495,6 +518,8 @@ public static partial class DataTracker
         var funds = db.GetCollection<Fund>().Find(x => ids.Contains(x.Id)).ToList();
         DataTracker.CheckShareIsPair(funds);
 
+        OnUpdateValidation(records);
+
 
         // 检查基金是否份额是否为0，如果是这样，最后的ta设为清盘
         var fsr = db.GetCollection<FundShareRecord>();
@@ -525,6 +550,13 @@ public static partial class DataTracker
         CheckTransferRequestMissingInvoker.Invoke();
     }
 
+    private static void OnUpdateValidation(IEnumerable<TransferRecord> records)
+    {
+        foreach (var item in validationInfos)
+        {
+            if(item.Related.FirstOrDefault(x=>x.Type == typeof(TransferRecord)) is EntityIndentify idf && idf.Id == )
+        }
+    }
 
     public static void OnBatchTransferRequest(TransferRequest[] data)
     {
