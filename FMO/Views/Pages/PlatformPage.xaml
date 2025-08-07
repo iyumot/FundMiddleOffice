@@ -723,7 +723,7 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Binding="{Binding Identifier}" Header="托管" />
                             <DataGridTextColumn Binding="{Binding Method}" Header="方法" />
-                            <DataGridTextColumn Binding="{Binding Time, StringFormat=HH:mm:ss}" Header="时间" />
+                            <DataGridTextColumn Binding="{Binding Time, StringFormat=MM-dd HH:mm:ss}" Header="时间" />
 
                             <DataGridTextColumn MaxWidth="700">
                                 <DataGridTextColumn.Binding>
