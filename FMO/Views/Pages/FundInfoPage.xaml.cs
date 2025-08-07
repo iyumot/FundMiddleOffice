@@ -112,6 +112,9 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         });
 
         var ll = DailyValues;
+
+        debouncerDaily = new(() => DailySource.View.Refresh());
+
         CurveViewDataContext = new DailyValueCurveViewModel
         {
             FundId = Fund.Id,
@@ -405,6 +408,8 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
     public ObservableCollection<DailyValue> DailyValues { get; }
 
+    private Debouncer debouncerDaily;
+
     public CollectionViewSource DailySource { get; } = new();
 
 
@@ -607,23 +612,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
                 if (!avaliable.Any()) return;
 
 
-                using var db = DbHelper.Base();
-                var c = db.GetDailyCollection(Fund.Id);
-                c.Upsert(avaliable.Select(x => x.daily!));
-
-
-                App.Current.Dispatcher.BeginInvoke(() =>
-                {
-                    var ll = new List<DailyValue>(db.GetDailyCollection(Fund.Id).FindAll().OrderByDescending(x => x.Date).IntersectBy(TradingDay.Days, x => x.Date).ToList());
-
-
-                    DailySource.Source = ll;
-                    DailySource.View.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(DailyValue.Date), System.ComponentModel.ListSortDirection.Descending));
-                    DailySource.View.Refresh();
-
-
-                    WeakReferenceMessenger.Default.Send(new FundDailyUpdateMessage(FundId, avaliable.Select(x => x.daily).OrderBy(x => x?.Date).FirstOrDefault()!));
-                });
+                DataTracker.OnDailyValue(avaliable.Select(x => x.daily!));
             }
             catch (Exception e)
             {
@@ -795,6 +784,8 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
             DailyValues.Add(message.Daily);
 
             CurveViewDataContext.Data = DailyValues.OrderBy(x => x.Date).ToList();
+
+            debouncerDaily.Invoke();
         }
     }
 

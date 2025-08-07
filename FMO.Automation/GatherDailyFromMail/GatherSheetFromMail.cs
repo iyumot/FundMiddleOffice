@@ -283,14 +283,8 @@ public class GatherDailyFromMailMission : Mission
                 fs.Flush();
             }
 
-            using (var db = DbHelper.Base())
-            {
-                foreach (var x in ds.Where(x => x.Fund is not null && x.Daily is not null))
-                {
-                    db.GetDailyCollection(x.Fund!.Id).Upsert(x.Daily!);
-                    WeakReferenceMessenger.Default.Send(new FundDailyUpdateMessage(x.Fund.Id, x.Daily!));
-                }
-            }
+
+            DataTracker.OnDailyValue(ds.Where(x => x.Fund is not null && x.Daily is not null).Select(x => x.Daily!)); 
 
             gz.Attachments = attachments.ToArray();
 

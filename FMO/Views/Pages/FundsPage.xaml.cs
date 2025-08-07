@@ -539,12 +539,7 @@ public partial class BatchImportViewModel : ObservableObject
             }
 
 
-            foreach (var group in ds.Where(x => x.Fund is not null && x.Daily is not null).GroupBy(x => x.Fund!.Id))
-            {
-                db.GetDailyCollection(group.Key).Upsert(group.Select(y => y.Daily!));
-
-                WeakReferenceMessenger.Default.Send(new FundDailyUpdateMessage(group.Key, group.MaxBy(y => y.Daily!.Date).Daily!));
-            }
+            DataTracker.OnDailyValue(ds.Where(x => x.Fund is not null && x.Daily is not null).Select(x => x.Daily!));
 
 
             WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Success, $"载入{ds.Count}个估值表"));

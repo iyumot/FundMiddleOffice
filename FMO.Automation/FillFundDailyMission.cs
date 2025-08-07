@@ -40,7 +40,7 @@ public class FillFundDailyMission : Mission
                 if (idx >= idt) continue;
 
                 var add = TradingDay.Days[idx..idt].Select(x => new DailyValue { Date = x, FundId = f.Id });
-                if (add.Any()) db.GetDailyCollection(f.Id).Insert(add);
+                if (add.Any()) DataTracker.OnDailyValue(add);//db.GetDailyCollection(f.Id).Insert(add);
             }
 
             Serilog.Log.Information("FillFundDailyMission Done");
