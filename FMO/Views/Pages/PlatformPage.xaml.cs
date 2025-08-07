@@ -163,6 +163,8 @@ public partial class PlatformPageViewModel : ObservableObject, IRecipient<Truste
 
     public PlatformPageViewModel()
     {
+        WeakReferenceMessenger.Default.RegisterAll(this);
+
         /// 读取所有托管插件
         /// 
 
@@ -283,27 +285,40 @@ public partial class PlatformPageViewModel : ObservableObject, IRecipient<Truste
 
 
     [RelayCommand]
-    public async Task QueryNetValueOnce() => await TrusteeGallay.Worker.QueryNetValueOnce();
-
-
-    [RelayCommand]
-    public async Task QueryRaisingAccountTransctionOnce() => await TrusteeGallay.Worker.QueryRaisingAccountTransctionOnce();
-
+    public async Task QueryNetValueOnce()
+    {
+        await Task.Run(() => TrusteeGallay.Worker.QueryNetValueOnce());
+    }
 
     [RelayCommand]
-    public async Task QueryTransferRecordOnce() => await TrusteeGallay.Worker.QueryTransferRecordOnce();
-
-
-    [RelayCommand]
-    public async Task QueryDailyFeeOnce() => await TrusteeGallay.Worker.QueryDailyFeeOnce();
-
+    public async Task QueryRaisingAccountTransctionOnce()
+    {
+        await Task.Run(() => TrusteeGallay.Worker.QueryRaisingAccountTransctionOnce());
+    }
 
     [RelayCommand]
-    public async Task QueryTransferRequestOnce() => await TrusteeGallay.Worker.QueryTransferRequestOnce();
-
+    public async Task QueryTransferRecordOnce()
+    {
+        await Task.Run(() => TrusteeGallay.Worker.QueryTransferRecordOnce());
+    }
 
     [RelayCommand]
-    public async Task QueryRaisingBalanceOnce() => await TrusteeGallay.Worker.QueryRaisingBalanceOnce();
+    public async Task QueryDailyFeeOnce()
+    {
+        await Task.Run(() => TrusteeGallay.Worker.QueryDailyFeeOnce());
+    }
+
+    [RelayCommand]
+    public async Task QueryTransferRequestOnce()
+    {
+        await Task.Run(() => TrusteeGallay.Worker.QueryTransferRequestOnce());
+    }
+
+    [RelayCommand]
+    public async Task QueryRaisingBalanceOnce()
+    {
+        await Task.Run(() => TrusteeGallay.Worker.QueryRaisingBalanceOnce());
+    }
 
 
 

@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
 using LiteDB;
+using Serilog;
 using System.Net;
 using System.Reflection;
 
@@ -149,9 +150,16 @@ public abstract class TrusteeApiBase : ITrustee
 
     public static LogInfo[]? GetLogs()
     {
-        var dic = _db.GetCollection<LogInfo>().FindAll().OrderByDescending(x => x.Time).GroupBy(x => x.Identifier).ToDictionary(x => x.Key, x => x.GroupBy(y => y.Method ?? "").ToDictionary(y => y.Key, y => y.Take(5)));
-        return dic.SelectMany(x => x.Value.SelectMany(y => y.Value)).OrderByDescending(x => x.Time).ToArray();
-
+        try
+        {
+            var dic = _db.GetCollection<LogInfo>().Query().OrderByDescending(x => x.Time).Limit(1000).ToList().GroupBy(x => x.Identifier).ToDictionary(x => x.Key, x => x.GroupBy(y => y.Method ?? "").ToDictionary(y => y.Key, y => y.Take(5)));
+            return dic.SelectMany(x => x.Value.SelectMany(y => y.Value)).OrderByDescending(x => x.Time).ToArray();
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error($"Can Not Load Log {ex.Message}");
+            return [];
+        }
         // return _db.GetCollection<LogInfo>().FindAll().GroupBy(x=>x.Identifier).Select(x=> (x.Key, x.GroupBy(x=>x.Method).Select(y=> (y.Key, y.Take(5))))).ToArray();
     }
 
@@ -162,10 +170,10 @@ public abstract class TrusteeApiBase : ITrustee
     /// <param name="identifier"></param>
     /// <param name="method"></param>
     /// <param name="info"></param>
-    public static void ReportJsonUnexpected(string identifier, string method, string info)
-    {
-        _db.GetCollection<LogInfo>().Insert(new LogInfo { Identifier = identifier, Log = info, Method = method, Content = "解析异常", Time = DateTime.Now });
-    }
+    //public static void ReportJsonUnexpected(string identifier, string method, string info)
+    //{
+    //    _db.GetCollection<LogInfo>().Insert(new LogInfo { Identifier = identifier, Log = info, Method = method, Content = "解析异常", Time = DateTime.Now });
+    //}
 
 
     protected virtual Dictionary<string, object> GenerateParams(object? obj)

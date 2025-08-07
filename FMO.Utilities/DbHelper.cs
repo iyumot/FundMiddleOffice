@@ -178,8 +178,16 @@ public static class DatabaseAssist
 
         [49] = ChangeAPIConfig,
         [51] = ChangeAmacAccount,
-        [54] = ChangeAmacAccount2
+        [54] = ChangeAmacAccount2,
+
+        [55] = FixLogInfo,
     };
+
+    private static void FixLogInfo(BaseDatabase database)
+    {
+        using var db = new LiteDatabase(@$"FileName=data\platformlog.db;Connection=Shared");
+        db.GetCollection("LogInfo").DeleteMany(x => !x["_id"].IsInt32);
+    }
 
     private static void ChangeAmacAccount2(BaseDatabase database)
     {

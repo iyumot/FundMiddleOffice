@@ -660,7 +660,7 @@
                                 DockPanel.Dock="Bottom"
                                 IsIndeterminate="True"
                                 Style="{StaticResource ProgressBarSuccess}"
-                                Visibility="{Binding Command.IsRunning, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                                Visibility="{Binding IsRunning, Converter={StaticResource Boolean2VisibilityConverter}}" />
                             <Button
                                 hc:IconElement.Geometry="{Binding Icon}"
                                 Command="{Binding Command}"

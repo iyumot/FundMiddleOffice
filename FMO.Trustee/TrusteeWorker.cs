@@ -73,7 +73,8 @@ public partial class TrusteeWorker : ObservableObject
 
     internal List<FundTrusteePair> Maps { get; } = new();
 
-    private Timer timer;
+
+    //private PeriodicTimer periodicTimer;
 
     ITrustee[] Trustees { get; }
 
@@ -91,13 +92,12 @@ public partial class TrusteeWorker : ObservableObject
 
 
 
-    (WorkConfig Config, Task Command)[] tasks;
+    (WorkConfig Config, Func<Task> Command)[] tasks;
 
     public TrusteeWorker(ITrustee[] trustees)
     {
         WeakReferenceMessenger.Default.RegisterAll(this);
 
-        timer = new Timer(OnTimer, null, Timeout.Infinite, 1000);
 
         WorkConfig[] cfg;
         TrusteeApiMap[] maps;
@@ -149,29 +149,29 @@ public partial class TrusteeWorker : ObservableObject
                 // 募集余额查询任务：
                 // 使用 RaisingBalanceConfig 配置（如执行间隔、上次运行时间等）
                 // 触发 QueryRaisingBalanceOnceCommand 命令执行单次查询
-                (Config: RaisingBalanceConfig, Command: QueryRaisingBalanceOnce()),
+                (Config: RaisingBalanceConfig, Command: QueryRaisingBalanceOnce),
 
                 // 募集户流水查询任务：
                 // 使用 RaisingAccountTransctionConfig 配置
                 // 触发 QueryRaisingAccountTransctionOnceCommand 命令执行单次查询
-                (Config: RaisingAccountTransctionConfig, Command: QueryRaisingAccountTransctionOnce()),
+                (Config: RaisingAccountTransctionConfig, Command: QueryRaisingAccountTransctionOnce),
 
                 // 交易申请查询任务：
                 // 使用 TransferRequestConfig 配置
                 // 触发 QueryTransferRequestOnceCommand 命令执行单次查询
-                (Config: TransferRequestConfig, Command: QueryTransferRequestOnce()),
+                (Config: TransferRequestConfig, Command: QueryTransferRequestOnce),
 
                 // 交易确认查询任务：
                 // 使用 TransferRecordConfig 配置
                 // 触发 QueryTransferRecordOnceCommand 命令执行单次查询
-                (Config: TransferRecordConfig, Command: QueryTransferRecordOnce()),
+                (Config: TransferRecordConfig, Command: QueryTransferRecordOnce),
 
                 // 日常费用查询任务：
                 // 使用 DailyFeeConfig 配置
                 // 触发 QueryDailyFeeOnceCommand 命令执行单次查询
-                (Config: DailyFeeConfig, Command: QueryDailyFeeOnce()),
+                (Config: DailyFeeConfig, Command: QueryDailyFeeOnce),
 
-                (Config: NetValueConfig, Command: QueryNetValueOnce()),
+                (Config: NetValueConfig, Command: QueryNetValueOnce),
              ];
     }
 
@@ -690,7 +690,7 @@ public partial class TrusteeWorker : ObservableObject
         {
 
         }
-    } 
+    }
     #endregion
 
     /// <summary>
@@ -732,7 +732,7 @@ public partial class TrusteeWorker : ObservableObject
     /// </summary>
     /// <returns></returns>
     public async Task QueryNetValueOnce() => await RunTask(QueryNetValueImpl());
-     
+
     public async Task QueryNetValueOnce(int fundId, string code, DateOnly begin, DateOnly end)
     {
         if (Maps.LastOrDefault(x => x.FundId == fundId) is FundTrusteePair pair)
@@ -755,7 +755,7 @@ public partial class TrusteeWorker : ObservableObject
         else WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "未发现对应的API"));
     }
 
-     
+
     private async Task RunTask(Task task, [CallerMemberName] string name = "")
     {
         WeakReferenceMessenger.Default.Send(new TrusteeRunMessage(name, true));
@@ -850,12 +850,10 @@ public partial class TrusteeWorker : ObservableObject
     //    }
     //}
 
-    private async void OnTimer(object? state)
+    private async void LoopOnce()
     {
         var now = DateTime.Now;
         var minuteIndex = now.Ticks / TimeSpan.TicksPerMinute;
-
-
 
         // 是否非工作时间 8-19点
         bool offwork = (now.Hour < 8 || now.Hour >= 19);
@@ -872,12 +870,7 @@ public partial class TrusteeWorker : ObservableObject
                 {
                     if (minuteIndex / Config.Interval != Config.GetLastRunIndex())
                     {
-                        // 调度到 UI 线程执行
-                        //await Application.Current.Dispatcher.InvokeAsync(async () =>
-                        //{
-                        //if (Command.CanExecute(null))
-                        await Task;
-                        //});
+                        await Task();
                     }
                 }
                 catch (Exception ex)
@@ -892,8 +885,15 @@ public partial class TrusteeWorker : ObservableObject
         }
     }
 
-    internal void Start() => timer.Change(0, 15000);
-
+    internal void Start()
+    {
+        Task.Run(async () =>
+        {
+            using var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+            while (await periodicTimer.WaitForNextTickAsync())
+                LoopOnce();
+        });
+    }
     private void Save(WorkConfig workConfig)
     {
         using var db = DbHelper.Platform();
