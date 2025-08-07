@@ -370,7 +370,7 @@ public static class DatabaseAssist
         /// 上对应request 下对应 transaction
         // 找已知的map 
         var rids = records.Select(x => x.Id).ToList();
-        var mapTable = db.GetCollection<TransferMapping>(); mapTable.DeleteMany(x => true);
+        var mapTable = db.GetCollection<TransferMapping>();
         var exists = mapTable.Find(x => rids.Contains(x.RecordId)).ToList();
         foreach (var rec in records)
         {

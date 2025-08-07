@@ -57,3 +57,5 @@ public record TransferRecordLinkOrderMessage(int RecordId, int OrderId);
 
 
 public record TipChangeMessage(TipType Type);
+
+public record TrusteeRunMessage(string Name, bool IsRunning);

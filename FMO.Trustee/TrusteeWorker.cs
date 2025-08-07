@@ -6,7 +6,7 @@ using FMO.Utilities;
 using LiteDB;
 using Serilog;
 using System.Diagnostics.CodeAnalysis;
-using System.Windows;
+using System.Runtime.CompilerServices;
 
 namespace FMO.Trustee;
 
@@ -91,7 +91,7 @@ public partial class TrusteeWorker : ObservableObject
 
 
 
-    (WorkConfig Config, IAsyncRelayCommand Command)[] tasks;
+    (WorkConfig Config, Task Command)[] tasks;
 
     public TrusteeWorker(ITrustee[] trustees)
     {
@@ -149,39 +149,39 @@ public partial class TrusteeWorker : ObservableObject
                 // 募集余额查询任务：
                 // 使用 RaisingBalanceConfig 配置（如执行间隔、上次运行时间等）
                 // 触发 QueryRaisingBalanceOnceCommand 命令执行单次查询
-                (Config: RaisingBalanceConfig, Command: QueryRaisingBalanceOnceCommand),
+                (Config: RaisingBalanceConfig, Command: QueryRaisingBalanceOnce()),
 
                 // 募集户流水查询任务：
                 // 使用 RaisingAccountTransctionConfig 配置
                 // 触发 QueryRaisingAccountTransctionOnceCommand 命令执行单次查询
-                (Config: RaisingAccountTransctionConfig, Command: QueryRaisingAccountTransctionOnceCommand),
+                (Config: RaisingAccountTransctionConfig, Command: QueryRaisingAccountTransctionOnce()),
 
                 // 交易申请查询任务：
                 // 使用 TransferRequestConfig 配置
                 // 触发 QueryTransferRequestOnceCommand 命令执行单次查询
-                (Config: TransferRequestConfig, Command: QueryTransferRequestOnceCommand),
+                (Config: TransferRequestConfig, Command: QueryTransferRequestOnce()),
 
                 // 交易确认查询任务：
                 // 使用 TransferRecordConfig 配置
                 // 触发 QueryTransferRecordOnceCommand 命令执行单次查询
-                (Config: TransferRecordConfig, Command: QueryTransferRecordOnceCommand),
+                (Config: TransferRecordConfig, Command: QueryTransferRecordOnce()),
 
                 // 日常费用查询任务：
                 // 使用 DailyFeeConfig 配置
                 // 触发 QueryDailyFeeOnceCommand 命令执行单次查询
-                (Config: DailyFeeConfig, Command: QueryDailyFeeOnceCommand),
+                (Config: DailyFeeConfig, Command: QueryDailyFeeOnce()),
 
-                (Config: NetValueConfig, Command: QueryNetValueOnceCommand),
+                (Config: NetValueConfig, Command: QueryNetValueOnce()),
              ];
     }
 
+    #region Impl
 
     /// <summary>
     /// 获取募集户余额
     /// </summary>
     /// <returns></returns>
-    [RelayCommand]
-    public async Task QueryRaisingBalanceOnce()
+    private async Task QueryRaisingBalanceImpl()
     {
         try
         {
@@ -238,8 +238,7 @@ public partial class TrusteeWorker : ObservableObject
     /// 
     /// </summary>
     /// <returns></returns>
-    [RelayCommand]
-    public async Task QueryTransferRequestOnce()
+    private async Task QueryTransferRequestImpl()
     {
         try
         {
@@ -385,7 +384,7 @@ public partial class TrusteeWorker : ObservableObject
             Save(TransferRequestConfig);
         }
         catch (Exception e)
-        { 
+        {
             Log.Error($"{nameof(QueryRaisingAccountTransctionOnce)} {e.Message}");
         }
     }
@@ -396,8 +395,7 @@ public partial class TrusteeWorker : ObservableObject
     /// 获取交易确认记录
     /// </summary>
     /// <returns></returns>
-    [RelayCommand]
-    public async Task QueryTransferRecordOnce()
+    private async Task QueryTransferRecordImpl()
     {
         try
         {
@@ -523,8 +521,7 @@ public partial class TrusteeWorker : ObservableObject
     /// 获取每日费用明细
     /// </summary>
     /// <returns></returns>
-    [RelayCommand]
-    public async Task QueryDailyFeeOnce()
+    private async Task QueryDailyFeeImpl()
     {
         try
         {
@@ -601,181 +598,141 @@ public partial class TrusteeWorker : ObservableObject
         catch (Exception e)
         {
             Log.Error($"{nameof(QueryRaisingAccountTransctionOnce)} {e.Message}");
-        } 
+        }
     }
-
 
 
     /// <summary>
     /// 获取募集户流水
     /// </summary>
     /// <returns></returns>
-    [RelayCommand]
-    public async Task QueryRaisingAccountTransctionOnce()
+    private async Task QueryRaisingAccountTransctionImpl()
     {
-        try
+        List<WorkReturn> ret = new();
+        // 保存数据库
+        using var db = DbHelper.Base();
+        var funds = db.GetCollection<Fund>().FindAll().ToArray();
+        var StartDateOfAny = StartOfAnyWork();
+        using var pdb = DbHelper.Platform();
+        var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
+
+
+        foreach (var tr in Trustees)
         {
-            List<WorkReturn> ret = new();
-            // 保存数据库
-            using var db = DbHelper.Base();
-            var funds = db.GetCollection<Fund>().FindAll().ToArray();
-            var StartDateOfAny = StartOfAnyWork();
-            using var pdb = DbHelper.Platform();
-            var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
-
-
-            foreach (var tr in Trustees)
+            if (!tr.IsValid)
             {
-                if (!tr.IsValid)
-                {
-                    ret.Add(new(tr.Title, ReturnCode.ConfigInvalid));
-                    continue;
-                }
-
-                try
-                {
-                    // 获取历史区间
-                    var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + nameof(tr.QueryRaisingAccountTransction));
-
-                    DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
-                    do
-                    {
-                        var rc = await tr.QueryRaisingAccountTransction(begin, end);
-
-                        ///
-                        // 保存数据库 
-                        if (rc.Data is not null)
-                        {
-                            // 对齐数据   
-
-                            db.GetCollection<RaisingBankTransaction>().Upsert(rc.Data);
-                        }
-
-                        if (range is null) range = new(tr.Identifier + nameof(tr.QueryRaisingAccountTransction), begin, end);
-                        else range.Merge(begin, end);
-                        pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
-
-                        // 合并记录
-                        ret.Add(new(tr.Title, rc.Code, rc.Data));
-
-                        // 向前一年
-                        end = range.Begin.AddDays(-1);
-                        if (end.Year < 1970) break;
-                        begin = end.AddYears(-1);
-                    } while (begin > StartDateOfAny);
-                }
-                catch (Exception e)
-                {
-                    ret.Add(new(tr.Title, ReturnCode.Unknown));
-                    Log.Error($"QueryRaisingAccountTransctionOnce {e}");
-                }
+                ret.Add(new(tr.Title, ReturnCode.ConfigInvalid));
+                continue;
             }
 
-            // 保存ret，程序加载时恢复，并生成消息
-            //db.DropCollection(TableRaisingBalance);
-            //db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
+            try
+            {
+                // 获取历史区间
+                var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + nameof(tr.QueryRaisingAccountTransction));
 
-            WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryRaisingAccountTransction), ret));
-            RaisingAccountTransctionConfig.Last = DateTime.Now;
-            Save(RaisingAccountTransctionConfig);
+                DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
+                do
+                {
+                    var rc = await tr.QueryRaisingAccountTransction(begin, end);
+
+                    ///
+                    // 保存数据库 
+                    if (rc.Data is not null)
+                    {
+                        // 对齐数据   
+
+                        db.GetCollection<RaisingBankTransaction>().Upsert(rc.Data);
+                    }
+
+                    if (range is null) range = new(tr.Identifier + nameof(tr.QueryRaisingAccountTransction), begin, end);
+                    else range.Merge(begin, end);
+                    pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
+
+                    // 合并记录
+                    ret.Add(new(tr.Title, rc.Code, rc.Data));
+
+                    // 向前一年
+                    end = range.Begin.AddDays(-1);
+                    if (end.Year < 1970) break;
+                    begin = end.AddYears(-1);
+                } while (begin > StartDateOfAny);
+            }
+            catch (Exception e)
+            {
+                ret.Add(new(tr.Title, ReturnCode.Unknown));
+                Log.Error($"QueryRaisingAccountTransctionOnce {e}");
+            }
         }
-        catch (Exception e)
-        {
-            Log.Error($"{nameof(QueryRaisingAccountTransctionOnce)} {e.Message}");
-        }
+
+        // 保存ret，程序加载时恢复，并生成消息
+        //db.DropCollection(TableRaisingBalance);
+        //db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
+
+        WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryRaisingAccountTransction), ret));
+        RaisingAccountTransctionConfig.Last = DateTime.Now;
+        Save(RaisingAccountTransctionConfig);
     }
+
+
 
     /// <summary>
     /// 查询净值
     /// </summary>
     /// <returns></returns>
-    [RelayCommand]
-    public async Task QueryNetValueOnce()
+
+    private async Task QueryNetValueImpl()
     {
         using var db = DbHelper.Base();
         var funds = db.GetCollection<Fund>().Query().Select(x => new { x.Id, x.Code, x.SetupDate, x.ClearDate, x.LastUpdate, x.Status }).ToList();
 
         // 已清盘的
-        foreach (var fund in funds.Where(x=>x.Status > FundStatus.StartLiquidation))
+        foreach (var fund in funds.Where(x => x.Status > FundStatus.StartLiquidation))
         {
 
         }
-        
+    } 
+    #endregion
+
+    /// <summary>
+    /// 获取募集户流水
+    /// </summary>
+    /// <returns></returns>
+    public async Task QueryRaisingAccountTransctionOnce() => await RunTask(QueryRaisingAccountTransctionImpl());
+
+    /// <summary>
+    /// 获取交易确认记录
+    /// </summary>
+    /// <returns></returns>
+    public async Task QueryTransferRecordOnce() => await RunTask(QueryTransferRecordImpl());
+
+    /// <summary>
+    /// 获取每日费用明细
+    /// </summary>
+    /// <returns></returns>
+    public async Task QueryDailyFeeOnce() => await RunTask(QueryDailyFeeImpl());
+
+    /// <summary>
+    /// 获取交易申请记录
+    /// 
+    /// 中信不返回当日数据
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    public async Task QueryTransferRequestOnce() => await RunTask(QueryTransferRequestImpl());
+
+    /// <summary>
+    /// 获取募集户余额
+    /// </summary>
+    /// <returns></returns>
+    public async Task QueryRaisingBalanceOnce() => await RunTask(QueryRaisingBalanceImpl());
 
 
-
-    }
-    //public async Task QueryNetValueOnce()
-    //{
-    //    List<WorkReturn> ret = new();
-    //    // 保存数据库
-    //    using var db = DbHelper.Base();
-    //    var funds = db.GetCollection<Fund>().FindAll().ToArray();
-    //    var StartDateOfAny = StartOfAnyWork();
-    //    using var pdb = DbHelper.Platform();
-    //    var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
-
-
-    //    foreach (var tr in Trustees)
-    //    {
-    //        if (!tr.IsValid)
-    //        {
-    //            ret.Add(new(tr.Title, ReturnCode.ConfigInvalid));
-    //            continue;
-    //        }
-
-    //        try
-    //        {
-    //            // 获取历史区间
-    //            var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + nameof(tr.QueryNetValue));
-
-    //            DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
-    //            if (begin == end) begin = end.AddDays(-10);
-    //            do
-    //            {
-    //                var rc = await tr.QueryNetValue(begin, end);
-
-    //                ///
-    //                // 保存数据库 
-    //                if (rc.Data is not null)
-    //                {
-    //                    foreach (var item in rc.Data.GroupBy(x => (x.FundId, x.Class)))
-    //                    {
-    //                        var fid = item.Key.FundId;
-    //                        var c = item.Key.Class;
-    //                        db.GetDailyCollection(fid, c).Upsert(item);
-    //                    }
-    //                }
-
-    //                if (range is null) range = new(tr.Identifier + nameof(tr.QueryNetValue), begin, end);
-    //                else range.Merge(begin, end);
-    //                pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
-
-    //                // 合并记录
-    //                ret.Add(new(tr.Title, rc.Code, rc.Data));
-
-    //                // 向前一年
-    //                end = range.Begin.AddDays(-1);
-    //                if (end.Year < 1970) break;
-    //                begin = end.AddYears(-1);
-    //            } while (begin > StartDateOfAny);
-    //        }
-    //        catch (Exception e)
-    //        {
-    //            ret.Add(new(tr.Title, ReturnCode.Unknown));
-    //            Log.Error($"QueryNetValueOnce {e}");
-    //        }
-    //    }
-
-    //    // 保存ret，程序加载时恢复，并生成消息
-    //    //db.DropCollection(TableRaisingBalance);
-    //    //db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
-
-    //    WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryNetValue), ret));
-    //    NetValueConfig.Last = DateTime.Now;
-    //    Save(NetValueConfig);
-    //}
-
+    /// <summary>
+    /// 查询净值
+    /// </summary>
+    /// <returns></returns>
+    public async Task QueryNetValueOnce() => await RunTask(QueryNetValueImpl());
+     
     public async Task QueryNetValueOnce(int fundId, string code, DateOnly begin, DateOnly end)
     {
         if (Maps.LastOrDefault(x => x.FundId == fundId) is FundTrusteePair pair)
@@ -798,6 +755,16 @@ public partial class TrusteeWorker : ObservableObject
         else WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "未发现对应的API"));
     }
 
+     
+    private async Task RunTask(Task task, [CallerMemberName] string name = "")
+    {
+        WeakReferenceMessenger.Default.Send(new TrusteeRunMessage(name, true));
+
+        try { await task; } catch (Exception e) { Log.Error($"{name} {e.Message}"); }
+
+        WeakReferenceMessenger.Default.Send(new TrusteeRunMessage(name, false));
+    }
+
 
     [RelayCommand]
     public void Rebuild(string method)
@@ -809,79 +776,79 @@ public partial class TrusteeWorker : ObservableObject
 
 
 
-    private async void OnTimer2(object? state)
-    {
-        var t = DateTime.Now;
+    //private async void OnTimer2(object? state)
+    //{
+    //    var t = DateTime.Now;
 
-        // 分钟位
-        var minute = t.Ticks / TimeSpan.TicksPerMinute; //  new DateTime(t.Year, t.Month, t.Day, t.Hour, t.Minute, 0);
-        if (minute % RaisingBalanceConfig.Interval == 0)
-        {
-            await RaisingBalanceConfig.Semaphore.WaitAsync();
-            try
-            {
-                // 检验是否与上次运行时间不一样
-                //if (t.Hour != RaisingBalanceConfig.Last.Hour || t.Minute != RaisingBalanceConfig.Last.Minute)
-                if (minute / RaisingBalanceConfig.Interval != RaisingBalanceConfig.GetLastRunIndex())
-                    await QueryRaisingBalanceOnceCommand.ExecuteAsync(null);
-            }
-            catch { }
-            finally { RaisingBalanceConfig.Semaphore.Release(); }
-        }
+    //    // 分钟位
+    //    var minute = t.Ticks / TimeSpan.TicksPerMinute; //  new DateTime(t.Year, t.Month, t.Day, t.Hour, t.Minute, 0);
+    //    if (minute % RaisingBalanceConfig.Interval == 0)
+    //    {
+    //        await RaisingBalanceConfig.Semaphore.WaitAsync();
+    //        try
+    //        {
+    //            // 检验是否与上次运行时间不一样
+    //            //if (t.Hour != RaisingBalanceConfig.Last.Hour || t.Minute != RaisingBalanceConfig.Last.Minute)
+    //            if (minute / RaisingBalanceConfig.Interval != RaisingBalanceConfig.GetLastRunIndex())
+    //                await QueryRaisingBalanceOnceCommand.ExecuteAsync(null);
+    //        }
+    //        catch { }
+    //        finally { RaisingBalanceConfig.Semaphore.Release(); }
+    //    }
 
-        // 募集户流水
-        if (minute % RaisingAccountTransctionConfig.Interval == 0)
-        {
-            await RaisingAccountTransctionConfig.Semaphore.WaitAsync();
-            try
-            {
-                if (minute / RaisingAccountTransctionConfig.Interval != RaisingAccountTransctionConfig.GetLastRunIndex())
-                    await QueryRaisingAccountTransctionOnceCommand.ExecuteAsync(null);
-            }
-            catch { }
-            finally { RaisingAccountTransctionConfig.Semaphore.Release(); }
-        }
+    //    // 募集户流水
+    //    if (minute % RaisingAccountTransctionConfig.Interval == 0)
+    //    {
+    //        await RaisingAccountTransctionConfig.Semaphore.WaitAsync();
+    //        try
+    //        {
+    //            if (minute / RaisingAccountTransctionConfig.Interval != RaisingAccountTransctionConfig.GetLastRunIndex())
+    //                await QueryRaisingAccountTransctionOnceCommand.ExecuteAsync(null);
+    //        }
+    //        catch { }
+    //        finally { RaisingAccountTransctionConfig.Semaphore.Release(); }
+    //    }
 
-        // 交易申请 
-        if (minute % TransferRequestConfig.Interval == 0)
-        {
-            await TransferRequestConfig.Semaphore.WaitAsync();
-            try
-            {
-                if (minute / TransferRequestConfig.Interval != TransferRequestConfig.GetLastRunIndex())
-                    await QueryTransferRequestOnceCommand.ExecuteAsync(null);
-            }
-            catch { }
-            finally { TransferRequestConfig.Semaphore.Release(); }
-        }
+    //    // 交易申请 
+    //    if (minute % TransferRequestConfig.Interval == 0)
+    //    {
+    //        await TransferRequestConfig.Semaphore.WaitAsync();
+    //        try
+    //        {
+    //            if (minute / TransferRequestConfig.Interval != TransferRequestConfig.GetLastRunIndex())
+    //                await QueryTransferRequestOnceCommand.ExecuteAsync(null);
+    //        }
+    //        catch { }
+    //        finally { TransferRequestConfig.Semaphore.Release(); }
+    //    }
 
-        // 交易确认
-        if (minute % TransferRecordConfig.Interval == 0)
-        {
-            await TransferRecordConfig.Semaphore.WaitAsync();
-            try
-            {
-                if (minute / TransferRecordConfig.Interval != TransferRecordConfig.GetLastRunIndex())
-                    await QueryTransferRecordOnceCommand.ExecuteAsync(null);
-            }
-            catch { }
-            finally { TransferRecordConfig.Semaphore.Release(); }
-        }
+    //    // 交易确认
+    //    if (minute % TransferRecordConfig.Interval == 0)
+    //    {
+    //        await TransferRecordConfig.Semaphore.WaitAsync();
+    //        try
+    //        {
+    //            if (minute / TransferRecordConfig.Interval != TransferRecordConfig.GetLastRunIndex())
+    //                await QueryTransferRecordOnceCommand.ExecuteAsync(null);
+    //        }
+    //        catch { }
+    //        finally { TransferRecordConfig.Semaphore.Release(); }
+    //    }
 
 
-        // 费用
-        if (minute % DailyFeeConfig.Interval == 0)
-        {
-            await DailyFeeConfig.Semaphore.WaitAsync();
-            try
-            {
-                if (minute / DailyFeeConfig.Interval != DailyFeeConfig.GetLastRunIndex())
-                    await QueryDailyFeeOnceCommand.ExecuteAsync(null);
-            }
-            catch { }
-            finally { DailyFeeConfig.Semaphore.Release(); }
-        }
-    }
+    //    // 费用
+    //    if (minute % DailyFeeConfig.Interval == 0)
+    //    {
+    //        await DailyFeeConfig.Semaphore.WaitAsync();
+    //        try
+    //        {
+    //            if (minute / DailyFeeConfig.Interval != DailyFeeConfig.GetLastRunIndex())
+    //                await QueryDailyFeeOnceCommand.ExecuteAsync(null);
+    //        }
+    //        catch { }
+    //        finally { DailyFeeConfig.Semaphore.Release(); }
+    //    }
+    //}
 
     private async void OnTimer(object? state)
     {
@@ -894,7 +861,7 @@ public partial class TrusteeWorker : ObservableObject
         bool offwork = (now.Hour < 8 || now.Hour >= 19);
 
 
-        foreach (var (Config, Command) in tasks)
+        foreach (var (Config, Task) in tasks)
         {
             var interval = offwork && 60 > Config.Interval ? 60 : Config.Interval;
 
@@ -908,8 +875,8 @@ public partial class TrusteeWorker : ObservableObject
                         // 调度到 UI 线程执行
                         //await Application.Current.Dispatcher.InvokeAsync(async () =>
                         //{
-                            //if (Command.CanExecute(null))
-                                await Command.ExecuteAsync(null);
+                        //if (Command.CanExecute(null))
+                        await Task;
                         //});
                     }
                 }

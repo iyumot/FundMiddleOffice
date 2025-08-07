@@ -106,7 +106,7 @@ public partial class ProxyViewModel : ObservableObject
 /// <summary>
 /// Page的vm
 /// </summary>
-public partial class PlatformPageViewModel : ObservableObject
+public partial class PlatformPageViewModel : ObservableObject, IRecipient<TrusteeRunMessage>
 {
 
     private static bool _firstLoad = true;
@@ -220,12 +220,12 @@ public partial class PlatformPageViewModel : ObservableObject
         Trustees2 = TrusteeGallay.TrusteeViewModels;
         var work = TrusteeGallay.Worker;
         TrusteeAPIButtons = [
-            new((Geometry)App.Current.Resources["f.table-cells"], work.QueryNetValueOnceCommand, "同步净值"),
-            new((Geometry)App.Current.Resources["f.hand-holding-dollar"], work.QueryRaisingBalanceOnceCommand, "同步募集户余额"),
-            new((Geometry)App.Current.Resources["f.tornado"], work.QueryRaisingAccountTransctionOnceCommand, "同步募集户流水"),
-            new((Geometry)App.Current.Resources["f.bars"], work.QueryTransferRequestOnceCommand, "同步交易申请"),
-            new((Geometry)App.Current.Resources["f.calendar-days"], work.QueryTransferRecordOnceCommand, "同步交易确认"),
-            new((Geometry)App.Current.Resources["f.file-invoice-dollar"], work.QueryDailyFeeOnceCommand, "同步每日计提费用"), ];
+            new((Geometry)App.Current.Resources["f.table-cells"], QueryNetValueOnceCommand, nameof(TrusteeWorker.QueryNetValueOnce), "同步净值"),
+            new((Geometry)App.Current.Resources["f.hand-holding-dollar"], QueryRaisingBalanceOnceCommand, nameof(TrusteeWorker.QueryRaisingBalanceOnce), "同步募集户余额"),
+            new((Geometry)App.Current.Resources["f.tornado"], QueryRaisingAccountTransctionOnceCommand,  nameof(TrusteeWorker.QueryRaisingAccountTransctionOnce),"同步募集户流水"),
+            new((Geometry)App.Current.Resources["f.bars"], QueryTransferRequestOnceCommand, nameof(TrusteeWorker.QueryTransferRequestOnce), "同步交易申请"),
+            new((Geometry)App.Current.Resources["f.calendar-days"], QueryTransferRecordOnceCommand, nameof(QueryTransferRecordOnce), "同步交易确认"),
+            new((Geometry)App.Current.Resources["f.file-invoice-dollar"], QueryDailyFeeOnceCommand, nameof(QueryDailyFeeOnce), "同步每日计提费用"), ];
 
 
 
@@ -280,6 +280,31 @@ public partial class PlatformPageViewModel : ObservableObject
         window.Owner = App.Current.MainWindow;
         window.ShowDialog();
     }
+
+
+    [RelayCommand]
+    public async Task QueryNetValueOnce() => await TrusteeGallay.Worker.QueryNetValueOnce();
+
+
+    [RelayCommand]
+    public async Task QueryRaisingAccountTransctionOnce() => await TrusteeGallay.Worker.QueryRaisingAccountTransctionOnce();
+
+
+    [RelayCommand]
+    public async Task QueryTransferRecordOnce() => await TrusteeGallay.Worker.QueryTransferRecordOnce();
+
+
+    [RelayCommand]
+    public async Task QueryDailyFeeOnce() => await TrusteeGallay.Worker.QueryDailyFeeOnce();
+
+
+    [RelayCommand]
+    public async Task QueryTransferRequestOnce() => await TrusteeGallay.Worker.QueryTransferRequestOnce();
+
+
+    [RelayCommand]
+    public async Task QueryRaisingBalanceOnce() => await TrusteeGallay.Worker.QueryRaisingBalanceOnce();
+
 
 
     private void UpdateProxy()
@@ -389,6 +414,12 @@ public partial class PlatformPageViewModel : ObservableObject
     internal void OpenDebug()
     {
         AllowWorkReport = true;
+    }
+
+    public void Receive(TrusteeRunMessage message)
+    {
+        if (TrusteeAPIButtons.FirstOrDefault(x => x.Method == message.Name) is SyncButtonInfo btn)
+            btn.IsRunning = message.IsRunning;
     }
 }
 
@@ -872,16 +903,23 @@ public partial class SyncButtonData(Geometry Icon, ICommand Command, SyncButtonD
 
     public SyncProcess SyncProcesser { get; } = SyncProcess;
 
+
     public string Description { get; } = Description;
 
     public delegate Task SyncProcess();
 }
 
 
-public class SyncButtonInfo(Geometry Icon, IAsyncRelayCommand Command, string ToolTip)
+public partial class SyncButtonInfo(Geometry Icon, IAsyncRelayCommand Command, string Method, string ToolTip) : ObservableObject
 {
     public Geometry Icon { get; } = Icon;
     public IAsyncRelayCommand Command { get; } = Command;
+    
+    public string Method { get; } = Method;
+    
+    [ObservableProperty]
+    public partial bool IsRunning { get; set; }
+
     public string ToolTip { get; } = ToolTip;
 }
 
