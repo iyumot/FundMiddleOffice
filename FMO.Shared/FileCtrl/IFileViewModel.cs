@@ -267,7 +267,7 @@ public partial class SingleFileViewModel : ObservableObject, IFileSelector//,IFi
         try
         {
             if (File is null) return;
-            OnDeleteFile(File); 
+            OnDeleteFile(File);
             File = null;
             FileChanged?.Invoke();
         }
@@ -392,8 +392,10 @@ public partial class MultipleFileViewModel : ObservableObject, IFileSelector
         if (file?.Path is null) return;
 
 
-        var obj = new DataObject(DataFormats.FileDrop, new string[] { file.Path });
-        obj.SetText(Path.GetFullPath(file.Path));
+        var obj = new DataObject();
+        string path = Path.GetFullPath(file.Path);
+        obj.SetData(DataFormats.FileDrop, new string[] { path });
+        obj.SetText(path);
         Clipboard.SetDataObject(obj);
     }
 
