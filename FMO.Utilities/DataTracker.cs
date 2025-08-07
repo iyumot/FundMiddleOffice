@@ -554,7 +554,7 @@ public static partial class DataTracker
     {
         foreach (var item in validationInfos)
         {
-            if(item.Related.FirstOrDefault(x=>x.Type == typeof(TransferRecord)) is EntityIndentify idf && idf.Id == )
+            //if(item.Related.FirstOrDefault(x=>x.Type == typeof(TransferRecord)) is EntityIndentify idf && idf.Id == )
         }
     }
 

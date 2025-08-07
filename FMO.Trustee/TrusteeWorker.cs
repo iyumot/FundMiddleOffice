@@ -114,6 +114,15 @@ public partial class TrusteeWorker : ObservableObject
         NetValueConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryNetValue)) ?? new(nameof(ITrustee.QueryNetValue)) { Interval = 60 }; // 每6个小时
 
 
+        RaisingBalanceConfig.Interval = 15;
+        TransferRecordConfig.Interval = 60;
+        TransferRequestConfig.Interval = 60;
+        DailyFeeConfig.Interval = 60 * 12;
+        RaisingAccountTransctionConfig.Interval = 15;
+        NetValueConfig.Interval = 60;
+
+
+
         // 基金映射
         using (var db = DbHelper.Base())
         {
