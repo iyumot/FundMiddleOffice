@@ -87,6 +87,11 @@ public class PFIDReporter
 
 #endif
 
+
+
+
+
+
     /// <summary>
     /// 参数验证在调用前完成
     /// </summary>
@@ -194,10 +199,10 @@ public class PFIDReporter
             Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // 关键：不转义中文
             WriteIndented = false // 是否格式化（可选）
         };
-        var json = JsonSerializer.Serialize(new { handle = handle }, jsonOptions);
+        var json = JsonSerializer.Serialize(new { handle = new string[] { handle } }, jsonOptions);
 
         // 发送请求
-        request.RequestUri = new Uri(fileType < PFIDFileType.RS0001 ? DisclosureUploadUrl : OperationUploadUrl);
+        request.RequestUri = new Uri(fileType < PFIDFileType.RS0001 ? DisclosureResultUrl : OperationResultUrl);
         request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
         await PrintHttpRequestMessageAsync(request);
