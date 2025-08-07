@@ -183,43 +183,50 @@ public partial class TrusteeWorker : ObservableObject
     [RelayCommand]
     public async Task QueryRaisingBalanceOnce()
     {
-        List<WorkReturn> ret = new();
-        // 保存数据库
-        using var db = DbHelper.Base();
-
-        foreach (var tr in Trustees)
+        try
         {
-            if (!tr.IsValid)
+            List<WorkReturn> ret = new();
+            // 保存数据库
+            using var db = DbHelper.Base();
+
+            foreach (var tr in Trustees)
             {
-                ret.Add(new(tr.Title, ReturnCode.ConfigInvalid));
-                continue;
+                if (!tr.IsValid)
+                {
+                    ret.Add(new(tr.Title, ReturnCode.ConfigInvalid));
+                    continue;
+                }
+
+                try
+                {
+                    var rc = await tr.QueryRaisingBalance();
+
+                    ///
+                    // 保存数据库 
+                    if (rc.Data is not null)
+                        db.GetCollection<FundBankBalance>().Upsert(rc.Data);
+
+                    ret.Add(new(tr.Title, rc.Code, rc.Data));
+                }
+                catch (Exception e)
+                {
+                    ret.Add(new(tr.Title, ReturnCode.Unknown));
+                    Log.Error($"QueryRaisingBalanceOnce {e}");
+                }
             }
 
-            try
-            {
-                var rc = await tr.QueryRaisingBalance();
+            // 保存ret，程序加载时恢复，并生成消息
+            db.DropCollection(TableRaisingBalance);
+            db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
 
-                ///
-                // 保存数据库 
-                if (rc.Data is not null)
-                    db.GetCollection<FundBankBalance>().Upsert(rc.Data);
-
-                ret.Add(new(tr.Title, rc.Code, rc.Data));
-            }
-            catch (Exception e)
-            {
-                ret.Add(new(tr.Title, ReturnCode.Unknown));
-                Log.Error($"QueryRaisingBalanceOnce {e}");
-            }
+            WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryRaisingBalance), ret));
+            RaisingBalanceConfig.Last = DateTime.Now;
+            Save(RaisingBalanceConfig);
         }
-
-        // 保存ret，程序加载时恢复，并生成消息
-        db.DropCollection(TableRaisingBalance);
-        db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
-
-        WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryRaisingBalance), ret));
-        RaisingBalanceConfig.Last = DateTime.Now;
-        Save(RaisingBalanceConfig);
+        catch (Exception e)
+        {
+            Log.Error($"{nameof(QueryRaisingAccountTransctionOnce)} {e.Message}");
+        }
     }
 
 
@@ -234,146 +241,153 @@ public partial class TrusteeWorker : ObservableObject
     [RelayCommand]
     public async Task QueryTransferRequestOnce()
     {
-        List<WorkReturn> ret = new();
-        // 保存数据库
-        using var db = DbHelper.Base();
-        var funds = db.GetCollection<Fund>().FindAll().ToArray();
-        var manager = db.GetCollection<Manager>().FindById(1);
-        var StartDateOfAny = StartOfAnyWork();
-        using var pdb = DbHelper.Platform();
-        var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
-        var method = nameof(ITrustee.QueryTransferRequests);
-
-        foreach (var tr in Trustees)
+        try
         {
-            if (!tr.IsValid)
-            {
-                ret.Add(new(tr.Title, ReturnCode.ConfigInvalid));
-                continue;
-            }
+            List<WorkReturn> ret = new();
+            // 保存数据库
+            using var db = DbHelper.Base();
+            var funds = db.GetCollection<Fund>().FindAll().ToArray();
+            var manager = db.GetCollection<Manager>().FindById(1);
+            var StartDateOfAny = StartOfAnyWork();
+            using var pdb = DbHelper.Platform();
+            var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
+            var method = nameof(ITrustee.QueryTransferRequests);
 
-            try
+            foreach (var tr in Trustees)
             {
-                // 获取历史区间
-                var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + method);
-
-                DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
-                do
+                if (!tr.IsValid)
                 {
-                    var rc = await tr.QueryTransferRequests(begin, end);
+                    ret.Add(new(tr.Title, ReturnCode.ConfigInvalid));
+                    continue;
+                }
 
-                    ///
-                    // 保存数据库 
-                    if (rc.Data is not null)
+                try
+                {
+                    // 获取历史区间
+                    var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + method);
+
+                    DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
+                    do
                     {
-                        // 对齐数据   
-                        foreach (var r in rc.Data)
+                        var rc = await tr.QueryTransferRequests(begin, end);
+
+                        ///
+                        // 保存数据库 
+                        if (rc.Data is not null)
                         {
-                            if (r.Agency == manager.Name)
-                                r.Agency = "直销";
-
-
-                            // code 匹配
-                            var f = funds.FirstOrDefault(x => x.Code == r.FundCode);
-                            if (f is not null)
+                            // 对齐数据   
+                            foreach (var r in rc.Data)
                             {
-                                r.FundId = f.Id;
-                                r.FundName = f.Name;
-                                continue;
-                            }
-                            else Log.Error($"QueryTransferRequests 发现未知的产品{r.FundName} {r.FundCode}");
+                                if (r.Agency == manager.Name)
+                                    r.Agency = "直销";
 
-                            // 子份额 在各api中完成
 
-                        }
+                                // code 匹配
+                                var f = funds.FirstOrDefault(x => x.Code == r.FundCode);
+                                if (f is not null)
+                                {
+                                    r.FundId = f.Id;
+                                    r.FundName = f.Name;
+                                    continue;
+                                }
+                                else Log.Error($"QueryTransferRequests 发现未知的产品{r.FundName} {r.FundCode}");
 
-                        var customers = db.GetCollection<Investor>().FindAll().ToList();
-                        foreach (var r in rc.Data)
-                        {
-                            // 此项可能存在重复Id的bug，不用name是因为名字中有（）-等，在不同情景下，全角半角不一样
-                            var c = customers.FirstOrDefault(x => /*x.Name == r.CustomerName &&*/ x.Identity?.Id == r.CustomerIdentity);
-                            if (c is null)
-                            {
-                                c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
-                                db.GetCollection<Investor>().Insert(c);
+                                // 子份额 在各api中完成
+
                             }
 
-
-                            // 添加数据 
-                            r.CustomerId = c.Id;
-                        }
-
-                        // 对齐id 
-                        var olds = db.GetCollection<TransferRequest>().Find(x => x.RequestDate >= rc.Data.Min(x => x.RequestDate));
-                        foreach (var r in rc.Data)
-                        {
-                            // 同日同名
-                            var exi = olds.Where(x => x.ExternalId == r.ExternalId || (x.CustomerName == r.CustomerName && x.CustomerIdentity == r.CustomerIdentity && x.RequestDate == r.RequestDate)).ToList();
-
-                            // 只有一个，替换
-                            if (exi.Count == 1 && (exi[0].Source != "api" || exi[0].ExternalId == r.ExternalId))
+                            var customers = db.GetCollection<Investor>().FindAll().ToList();
+                            foreach (var r in rc.Data)
                             {
-                                r.Id = exi[0].Id;
-                                continue;
+                                // 此项可能存在重复Id的bug，不用name是因为名字中有（）-等，在不同情景下，全角半角不一样
+                                var c = customers.FirstOrDefault(x => /*x.Name == r.CustomerName &&*/ x.Identity?.Id == r.CustomerIdentity);
+                                if (c is null)
+                                {
+                                    c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
+                                    db.GetCollection<Investor>().Insert(c);
+                                }
+
+
+                                // 添加数据 
+                                r.CustomerId = c.Id;
                             }
 
-                            // > 1个
-                            // 存在同ex id，替换
-                            var old = exi.Where(x => x.ExternalId == r.ExternalId);
-                            if (old.Any())
-                                r.Id = old.First().Id;
+                            // 对齐id 
+                            var olds = db.GetCollection<TransferRequest>().Find(x => x.RequestDate >= rc.Data.Min(x => x.RequestDate));
+                            foreach (var r in rc.Data)
+                            {
+                                // 同日同名
+                                var exi = olds.Where(x => x.ExternalId == r.ExternalId || (x.CustomerName == r.CustomerName && x.CustomerIdentity == r.CustomerIdentity && x.RequestDate == r.RequestDate)).ToList();
 
-                            // 如果存在手动录入的，也删除
-                            foreach (var item in exi)
-                                db.GetCollection<TransferRequest>().DeleteMany(item => item.Source == "manual" || item.ExternalId == r.ExternalId);
+                                // 只有一个，替换
+                                if (exi.Count == 1 && (exi[0].Source != "api" || exi[0].ExternalId == r.ExternalId))
+                                {
+                                    r.Id = exi[0].Id;
+                                    continue;
+                                }
 
+                                // > 1个
+                                // 存在同ex id，替换
+                                var old = exi.Where(x => x.ExternalId == r.ExternalId);
+                                if (old.Any())
+                                    r.Id = old.First().Id;
+
+                                // 如果存在手动录入的，也删除
+                                foreach (var item in exi)
+                                    db.GetCollection<TransferRequest>().DeleteMany(item => item.Source == "manual" || item.ExternalId == r.ExternalId);
+
+                            }
+
+                            db.GetCollection<TransferRequest>().Upsert(rc.Data);
+
+
+                            // 统一更新处理
+                            DataTracker.OnBatchTransferRequest(rc.Data);
                         }
 
-                        db.GetCollection<TransferRequest>().Upsert(rc.Data);
 
+                        // 如果有unset，表示数据异常，不保存进度
+                        if (rc.Data?.Any(x => x.CustomerName == "unset" || x.FundName == "unset" || x.CustomerIdentity == "unset") ?? false)
+                        {
+                            ret.Add(new(tr.Title, ReturnCode.DataIsNotWellFormed, rc.Data));
+                            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Error, $"{tr.Title} 获取的交易申请记录数据异常"));
+                            break;
+                        }
+                        // 更新进度
+                        if (range is null) range = new(tr.Identifier + nameof(tr.QueryTransferRequests), begin, end);
+                        else range.Merge(begin, end);
+                        pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
 
-                        // 统一更新处理
-                        DataTracker.OnBatchTransferRequest(rc.Data);
-                    }
+                        // 合并记录
+                        ret.Add(new(tr.Title, rc.Code, rc.Data));
 
+                        // 向前一年
+                        end = range.Begin.AddDays(-1);
+                        if (end.Year < 1970) break;
+                        begin = end.AddYears(-1);
+                    } while (begin > StartDateOfAny);
 
-                    // 如果有unset，表示数据异常，不保存进度
-                    if (rc.Data?.Any(x => x.CustomerName == "unset" || x.FundName == "unset" || x.CustomerIdentity == "unset") ?? false)
-                    {
-                        ret.Add(new(tr.Title, ReturnCode.DataIsNotWellFormed, rc.Data));
-                        WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Error, $"{tr.Title} 获取的交易申请记录数据异常"));
-                        break;
-                    }
-                    // 更新进度
-                    if (range is null) range = new(tr.Identifier + nameof(tr.QueryTransferRequests), begin, end);
-                    else range.Merge(begin, end);
-                    pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
+                }
+                catch (Exception e)
+                {
+                    ret.Add(new(tr.Title, ReturnCode.Unknown));
 
-                    // 合并记录
-                    ret.Add(new(tr.Title, rc.Code, rc.Data));
-
-                    // 向前一年
-                    end = range.Begin.AddDays(-1);
-                    if (end.Year < 1970) break;
-                    begin = end.AddYears(-1);
-                } while (begin > StartDateOfAny);
-
+                    Log.Error($"QueryTransferRequestOnce {e}");
+                }
             }
-            catch (Exception e)
-            {
-                ret.Add(new(tr.Title, ReturnCode.Unknown));
 
-                Log.Error($"QueryTransferRequestOnce {e}");
-            }
+            // 保存ret，程序加载时恢复，并生成消息
+            //db.DropCollection(TableRaisingBalance);
+            //db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
+
+            WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(method, ret));
+            TransferRequestConfig.Last = DateTime.Now;
+            Save(TransferRequestConfig);
         }
-
-        // 保存ret，程序加载时恢复，并生成消息
-        //db.DropCollection(TableRaisingBalance);
-        //db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
-
-        WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(method, ret));
-        TransferRequestConfig.Last = DateTime.Now;
-        Save(TransferRequestConfig);
+        catch (Exception e)
+        { 
+            Log.Error($"{nameof(QueryRaisingAccountTransctionOnce)} {e.Message}");
+        }
     }
 
 
@@ -385,117 +399,124 @@ public partial class TrusteeWorker : ObservableObject
     [RelayCommand]
     public async Task QueryTransferRecordOnce()
     {
-        List<WorkReturn> ret = new();
-        // 保存数据库
-        using var db = DbHelper.Base();
-        var funds = db.GetCollection<Fund>().FindAll().ToArray();
-        var manager = db.GetCollection<Manager>().FindById(1);
-        var StartDateOfAny = StartOfAnyWork();
-
-        using var pdb = DbHelper.Platform();
-        var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
-        var method = nameof(ITrustee.QueryTransferRecords);
-
-
-        foreach (var tr in Trustees)
+        try
         {
-            if (!tr.IsValid)
+            List<WorkReturn> ret = new();
+            // 保存数据库
+            using var db = DbHelper.Base();
+            var funds = db.GetCollection<Fund>().FindAll().ToArray();
+            var manager = db.GetCollection<Manager>().FindById(1);
+            var StartDateOfAny = StartOfAnyWork();
+
+            using var pdb = DbHelper.Platform();
+            var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
+            var method = nameof(ITrustee.QueryTransferRecords);
+
+
+            foreach (var tr in Trustees)
             {
-                ret.Add(new(tr.Title, ReturnCode.ConfigInvalid));
-                continue;
-            }
-
-            try
-            {
-                // 获取历史区间
-                var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + method);
-
-                DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
-
-                do
+                if (!tr.IsValid)
                 {
-                    var rc = await tr.QueryTransferRecords(begin, end);
+                    ret.Add(new(tr.Title, ReturnCode.ConfigInvalid));
+                    continue;
+                }
 
-                    ///
-                    // 保存数据库 
-                    if (rc.Data is not null)
+                try
+                {
+                    // 获取历史区间
+                    var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + method);
+
+                    DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
+
+                    do
                     {
-                        // 对齐数据   
-                        foreach (var r in rc.Data)
+                        var rc = await tr.QueryTransferRecords(begin, end);
+
+                        ///
+                        // 保存数据库 
+                        if (rc.Data is not null)
                         {
-                            if (r.Agency == manager.Name)
-                                r.Agency = "直销";
-
-
-                            // code 匹配
-                            var f = funds.FirstOrDefault(x => x.Code == r.FundCode);
-                            if (f is not null)
+                            // 对齐数据   
+                            foreach (var r in rc.Data)
                             {
-                                r.FundId = f.Id;
-                                r.FundName = f.Name;
-                                continue;
-                            }
-                            else Log.Error($"QueryTransferRequests 发现未知的产品{r.FundName} {r.FundCode}");
+                                if (r.Agency == manager.Name)
+                                    r.Agency = "直销";
 
-                            // 子份额 在各api中完成
+
+                                // code 匹配
+                                var f = funds.FirstOrDefault(x => x.Code == r.FundCode);
+                                if (f is not null)
+                                {
+                                    r.FundId = f.Id;
+                                    r.FundName = f.Name;
+                                    continue;
+                                }
+                                else Log.Error($"QueryTransferRequests 发现未知的产品{r.FundName} {r.FundCode}");
+
+                                // 子份额 在各api中完成
+                            }
+
+                            var customers = db.GetCollection<Investor>().FindAll().ToList();
+                            foreach (var r in rc.Data)
+                            {
+                                var c = customers.FirstOrDefault(x => x.Name == r.CustomerName && x.Identity?.Id == r.CustomerIdentity);
+                                if (c is not null)
+                                {
+                                    r.CustomerId = c.Id;
+                                    continue;
+                                }
+                                else // 添加数据
+                                {
+                                    c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
+                                    db.GetCollection<Investor>().Insert(c);
+                                    r.CustomerId = c.Id;
+                                }
+                            }
+
+
+                            DataTracker.OnBatchTransferRecord(rc.Data);
                         }
 
-                        var customers = db.GetCollection<Investor>().FindAll().ToList();
-                        foreach (var r in rc.Data)
-                        {
-                            var c = customers.FirstOrDefault(x => x.Name == r.CustomerName && x.Identity?.Id == r.CustomerIdentity);
-                            if (c is not null)
-                            {
-                                r.CustomerId = c.Id;
-                                continue;
-                            }
-                            else // 添加数据
-                            {
-                                c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
-                                db.GetCollection<Investor>().Insert(c);
-                                r.CustomerId = c.Id;
-                            }
-                        }
 
 
-                        DataTracker.OnBatchTransferRecord(rc.Data);
-                    }
+                        // 如果有unset，表示数据异常，不保存进度
+                        if (rc.Data?.Any(x => x.CustomerName == "unset" || x.FundName == "unset" || x.CustomerIdentity == "unset") ?? false)
+                            break;
 
+                        // 更新进度
+                        if (range is null) range = new(tr.Identifier + method, begin, end);
+                        else range.Merge(begin, end);
+                        pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
 
+                        // 合并记录
+                        ret.Add(new(tr.Title, rc.Code, rc.Data));
 
-                    // 如果有unset，表示数据异常，不保存进度
-                    if (rc.Data?.Any(x => x.CustomerName == "unset" || x.FundName == "unset" || x.CustomerIdentity == "unset") ?? false)
-                        break;
+                        // 向前一年
+                        end = range.Begin.AddDays(-1);
+                        if (end.Year < 1970) break;
+                        begin = end.AddYears(-1);
+                    } while (begin > StartDateOfAny);
+                }
+                catch (Exception e)
+                {
+                    ret.Add(new(tr.Title, ReturnCode.Unknown));
 
-                    // 更新进度
-                    if (range is null) range = new(tr.Identifier + method, begin, end);
-                    else range.Merge(begin, end);
-                    pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
-
-                    // 合并记录
-                    ret.Add(new(tr.Title, rc.Code, rc.Data));
-
-                    // 向前一年
-                    end = range.Begin.AddDays(-1);
-                    if (end.Year < 1970) break;
-                    begin = end.AddYears(-1);
-                } while (begin > StartDateOfAny);
+                    Log.Error($"QueryTransferRecordOnce {e}");
+                }
             }
-            catch (Exception e)
-            {
-                ret.Add(new(tr.Title, ReturnCode.Unknown));
 
-                Log.Error($"QueryTransferRecordOnce {e}");
-            }
+            // 保存ret，程序加载时恢复，并生成消息
+            //db.DropCollection(TableRaisingBalance);
+            //db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
+
+            WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(method, ret));
+            TransferRecordConfig.Last = DateTime.Now;
+            Save(TransferRecordConfig);
         }
-
-        // 保存ret，程序加载时恢复，并生成消息
-        //db.DropCollection(TableRaisingBalance);
-        //db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
-
-        WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(method, ret));
-        TransferRecordConfig.Last = DateTime.Now;
-        Save(TransferRecordConfig);
+        catch (Exception e)
+        {
+            Log.Error($"{nameof(QueryRaisingAccountTransctionOnce)} {e.Message}");
+        }
     }
 
     /// <summary>
@@ -505,76 +526,82 @@ public partial class TrusteeWorker : ObservableObject
     [RelayCommand]
     public async Task QueryDailyFeeOnce()
     {
-        List<WorkReturn> ret = new();
-        // 保存数据库
-        using var db = DbHelper.Base();
-        var funds = db.GetCollection<Fund>().FindAll().ToArray();
-        var StartDateOfAny = StartOfAnyWork();
-        using var pdb = DbHelper.Platform();
-        var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
-
-        var method = nameof(ITrustee.QueryFundDailyFee);
-
-        foreach (var tr in Trustees)
+        try
         {
-            if (!tr.IsValid)
+            List<WorkReturn> ret = new();
+            // 保存数据库
+            using var db = DbHelper.Base();
+            var funds = db.GetCollection<Fund>().FindAll().ToArray();
+            var StartDateOfAny = StartOfAnyWork();
+            using var pdb = DbHelper.Platform();
+            var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
+
+            var method = nameof(ITrustee.QueryFundDailyFee);
+
+            foreach (var tr in Trustees)
             {
-                ret.Add(new(tr.Title, ReturnCode.ConfigInvalid));
-                continue;
-            }
-
-            try
-            {
-                // 获取历史区间
-                var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + method);
-
-                DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
-
-                do
+                if (!tr.IsValid)
                 {
-                    var rc = await tr.QueryFundDailyFee(begin, end);
+                    ret.Add(new(tr.Title, ReturnCode.ConfigInvalid));
+                    continue;
+                }
 
-                    ///
-                    // 保存数据库 
-                    if (rc.Data is not null)
+                try
+                {
+                    // 获取历史区间
+                    var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + method);
+
+                    DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
+
+                    do
                     {
-                        // 对齐Fund
-                        foreach (var f in rc.Data)
+                        var rc = await tr.QueryFundDailyFee(begin, end);
+
+                        ///
+                        // 保存数据库 
+                        if (rc.Data is not null)
                         {
-                            f.FundId = funds.FirstOrDefault(x => x.Code == f.FundCode)?.Id ?? 0;
+                            // 对齐Fund
+                            foreach (var f in rc.Data)
+                            {
+                                f.FundId = funds.FirstOrDefault(x => x.Code == f.FundCode)?.Id ?? 0;
+                            }
+
+                            db.GetCollection<FundDailyFee>().Upsert(rc.Data);
                         }
 
-                        db.GetCollection<FundDailyFee>().Upsert(rc.Data);
-                    }
+                        if (range is null) range = new(tr.Identifier + method, begin, end);
+                        else range.Merge(begin, end);
+                        pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
 
-                    if (range is null) range = new(tr.Identifier + method, begin, end);
-                    else range.Merge(begin, end);
-                    pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
+                        // 合并记录
+                        ret.Add(new(tr.Title, rc.Code, rc.Data));
 
-                    // 合并记录
-                    ret.Add(new(tr.Title, rc.Code, rc.Data));
-
-                    // 向前一年
-                    end = range.Begin.AddDays(-1);
-                    if (end.Year < 1970) break;
-                    begin = end.AddYears(-1);
-                } while (begin > StartDateOfAny);
+                        // 向前一年
+                        end = range.Begin.AddDays(-1);
+                        if (end.Year < 1970) break;
+                        begin = end.AddYears(-1);
+                    } while (begin > StartDateOfAny);
+                }
+                catch (Exception e)
+                {
+                    ret.Add(new(tr.Title, ReturnCode.Unknown));
+                    Log.Error($"QueryDailyFeeOnce {e}");
+                }
             }
-            catch (Exception e)
-            {
-                ret.Add(new(tr.Title, ReturnCode.Unknown));
-                Log.Error($"QueryDailyFeeOnce {e}");
-            }
+
+            // 保存ret，程序加载时恢复，并生成消息
+            //db.DropCollection(TableRaisingBalance);
+            //db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
+
+            WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(method, ret));
+            DailyFeeConfig.Last = DateTime.Now;
+            Save(DailyFeeConfig);
         }
-
-        // 保存ret，程序加载时恢复，并生成消息
-        //db.DropCollection(TableRaisingBalance);
-        //db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
-
-        WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(method, ret));
-        DailyFeeConfig.Last = DateTime.Now;
-        Save(DailyFeeConfig);
-
+        catch (Exception e)
+        {
+            Log.Error($"{nameof(QueryRaisingAccountTransctionOnce)} {e.Message}");
+        } 
     }
 
 
@@ -586,69 +613,76 @@ public partial class TrusteeWorker : ObservableObject
     [RelayCommand]
     public async Task QueryRaisingAccountTransctionOnce()
     {
-        List<WorkReturn> ret = new();
-        // 保存数据库
-        using var db = DbHelper.Base();
-        var funds = db.GetCollection<Fund>().FindAll().ToArray();
-        var StartDateOfAny = StartOfAnyWork();
-        using var pdb = DbHelper.Platform();
-        var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
-
-
-        foreach (var tr in Trustees)
+        try
         {
-            if (!tr.IsValid)
-            {
-                ret.Add(new(tr.Title, ReturnCode.ConfigInvalid));
-                continue;
-            }
+            List<WorkReturn> ret = new();
+            // 保存数据库
+            using var db = DbHelper.Base();
+            var funds = db.GetCollection<Fund>().FindAll().ToArray();
+            var StartDateOfAny = StartOfAnyWork();
+            using var pdb = DbHelper.Platform();
+            var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
 
-            try
-            {
-                // 获取历史区间
-                var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + nameof(tr.QueryRaisingAccountTransction));
 
-                DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
-                do
+            foreach (var tr in Trustees)
+            {
+                if (!tr.IsValid)
                 {
-                    var rc = await tr.QueryRaisingAccountTransction(begin, end);
+                    ret.Add(new(tr.Title, ReturnCode.ConfigInvalid));
+                    continue;
+                }
 
-                    ///
-                    // 保存数据库 
-                    if (rc.Data is not null)
+                try
+                {
+                    // 获取历史区间
+                    var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + nameof(tr.QueryRaisingAccountTransction));
+
+                    DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
+                    do
                     {
-                        // 对齐数据   
+                        var rc = await tr.QueryRaisingAccountTransction(begin, end);
 
-                        db.GetCollection<RaisingBankTransaction>().Upsert(rc.Data);
-                    }
+                        ///
+                        // 保存数据库 
+                        if (rc.Data is not null)
+                        {
+                            // 对齐数据   
 
-                    if (range is null) range = new(tr.Identifier + nameof(tr.QueryRaisingAccountTransction), begin, end);
-                    else range.Merge(begin, end);
-                    pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
+                            db.GetCollection<RaisingBankTransaction>().Upsert(rc.Data);
+                        }
 
-                    // 合并记录
-                    ret.Add(new(tr.Title, rc.Code, rc.Data));
+                        if (range is null) range = new(tr.Identifier + nameof(tr.QueryRaisingAccountTransction), begin, end);
+                        else range.Merge(begin, end);
+                        pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
 
-                    // 向前一年
-                    end = range.Begin.AddDays(-1);
-                    if (end.Year < 1970) break;
-                    begin = end.AddYears(-1);
-                } while (begin > StartDateOfAny);
+                        // 合并记录
+                        ret.Add(new(tr.Title, rc.Code, rc.Data));
+
+                        // 向前一年
+                        end = range.Begin.AddDays(-1);
+                        if (end.Year < 1970) break;
+                        begin = end.AddYears(-1);
+                    } while (begin > StartDateOfAny);
+                }
+                catch (Exception e)
+                {
+                    ret.Add(new(tr.Title, ReturnCode.Unknown));
+                    Log.Error($"QueryRaisingAccountTransctionOnce {e}");
+                }
             }
-            catch (Exception e)
-            {
-                ret.Add(new(tr.Title, ReturnCode.Unknown));
-                Log.Error($"QueryRaisingAccountTransctionOnce {e}");
-            }
+
+            // 保存ret，程序加载时恢复，并生成消息
+            //db.DropCollection(TableRaisingBalance);
+            //db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
+
+            WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryRaisingAccountTransction), ret));
+            RaisingAccountTransctionConfig.Last = DateTime.Now;
+            Save(RaisingAccountTransctionConfig);
         }
-
-        // 保存ret，程序加载时恢复，并生成消息
-        //db.DropCollection(TableRaisingBalance);
-        //db.GetCollection<WorkReturn>(TableRaisingBalance).Insert(ret);
-
-        WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryRaisingAccountTransction), ret));
-        RaisingAccountTransctionConfig.Last = DateTime.Now;
-        Save(RaisingAccountTransctionConfig);
+        catch (Exception e)
+        {
+            Log.Error($"{nameof(QueryRaisingAccountTransctionOnce)} {e.Message}");
+        }
     }
 
     /// <summary>
@@ -872,11 +906,11 @@ public partial class TrusteeWorker : ObservableObject
                     if (minuteIndex / Config.Interval != Config.GetLastRunIndex())
                     {
                         // 调度到 UI 线程执行
-                        await Application.Current.Dispatcher.InvokeAsync(async () =>
-                        {
-                            if (Command.CanExecute(null))
+                        //await Application.Current.Dispatcher.InvokeAsync(async () =>
+                        //{
+                            //if (Command.CanExecute(null))
                                 await Command.ExecuteAsync(null);
-                        });
+                        //});
                     }
                 }
                 catch (Exception ex)
