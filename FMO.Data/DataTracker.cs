@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Trustee;
+using LiteDB;
 using Serilog;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -35,6 +36,12 @@ public class DataValidationInfo
 
 }
 
+
+
+
+
+
+
 /// <summary>
 /// 数据校验
 /// </summary>
@@ -46,7 +53,7 @@ public static partial class DataTracker
     public static ConcurrentDictionary<TipType, string?> UniformTips { get; } = new();
 
 
-    public static ThreadSafeList<DataValidationInfo> validationInfos { get; } = new(); 
+    public static ThreadSafeList<DataValidationInfo> validationInfos { get; } = new();
 
     static DataTracker()
     {
@@ -445,6 +452,87 @@ public static partial class DataTracker
     //}
 
 
+    public static void OnDailyValue(IEnumerable<DailyValue> dailyValues)
+    {
+        using var db = DbHelper.Base();
+        foreach (var g in dailyValues.GroupBy(x => (x.FundId, x.Class)))
+        {
+            db.GetDailyCollection(g.Key.FundId, g.Key.Class).Upsert(g);
+        }
+
+        // 修改 FundShareRecord
+        // 一个版本是用dv算，当份额与前一日不同时，录入
+        // 一个版本是用ta算， 
+        var comparer = Comparer<DailyValue>.Create((a, b) => a.Date.CompareTo(b.Date));
+        foreach (var g in dailyValues.GroupBy(x => x.FundId))
+        {
+            var fid = g.Key;
+            List<FundShareRecord> add = new();
+            var col = db.GetCollection<FundShareRecord>("fsr_daily");
+
+            // 检查是否与前一天share不一样
+            var sd = g.Min(x => x.Date);
+
+            // 与历史记录比较，补充缺失的部分
+            var last = col.Find(x => x.Date < sd).LastOrDefault();
+            var lastd = last?.Date ?? default;
+            var middle = db.GetDailyCollection(g.Key).Find(x => x.Date >= lastd && x.Date <= sd).OrderBy(x => x.Date).ToList();
+            if (middle.Count > 0  && middle[0].Date  is DateOnly datem && col.FindOne(x => x.FundId == fid && x.Date == datem) == null)
+                add.Add(new FundShareRecord(g.Key, middle[0].Date, middle[0].Share));
+
+            for (int i = 1; i < middle.Count; i++)
+            {
+                if (middle[i - 1].Share != middle[i].Share)
+                    add.Add(new FundShareRecord(g.Key, middle[i].Date, middle[i].Share));
+            }
+
+            if (sd.DayNumber > 20) sd = sd.AddDays(-20);
+            var ed = g.Max(x => x.Date);
+            var ds = db.GetDailyCollection(g.Key).Find(x => x.Date > sd && x.Date < ed).OrderBy(x => x.Date).ToList();
+            foreach (var dy in g)
+            {
+                // 使用二分查找找到前一日记录
+                int index = ds.BinarySearch(dy, comparer);
+
+                DailyValue previous = index < 0 ? ds[~index - 1] : ds[index - 1];
+
+                // 检查份额变化
+                if (previous != null && previous.Share != dy.Share && dy.Share != 0)
+                    add.Add(new FundShareRecord(fid, dy.Date, dy.Share));
+
+                //var pre = ds.FirstOrDefault(x => x.Date < dy.Date);
+                //if (pre != null && pre.Share != dy.Share)
+                //    add.Add(new(g.Key, dy.Date, dy.Share));
+            }
+
+
+
+            col.Upsert(add);
+            var ee = col.Find(x => x.FundId == fid).OrderBy(x => x.Date).ToList();
+
+            // 删除连续相同的值
+            for (int i = 1; i < ee.Count; i++)
+            {
+                if (ee[i].Share == ee[i - 1].Share)
+                    col.Delete(ee[i].Id);
+            }
+        }
+
+
+        // 通知
+        Parallel.ForEach(dailyValues, x =>
+        {
+            WeakReferenceMessenger.Default.Send(new FundDailyUpdateMessage(x.FundId, x));
+        });
+
+
+        // 检验
+
+
+
+    }
+
+
 
     /// <summary>
     ///  关联订单
@@ -461,7 +549,8 @@ public static partial class DataTracker
         using var db = DbHelper.Base();
 
         // 对齐id 
-        var olds = db.GetCollection<TransferRecord>().Find(x => x.ConfirmedDate >= records.Min(x => x.ConfirmedDate));
+        var rmin = records.Min(x => x.ConfirmedDate);
+        var olds = db.GetCollection<TransferRecord>().Find(x => x.ConfirmedDate >= rmin);
         foreach (var r in records)
         {
             // 同日同名
@@ -501,18 +590,18 @@ public static partial class DataTracker
         }
         catch { }
 
-        var dc = db.GetCollection<TransferRecord>();
-        // 分类
-        var da = records.GroupBy(x => (x.CustomerId, x.FundId)).Select(x => x.Key);
-        foreach (var (c, f) in da)
-        {
-            var tf = dc.Find(x => x.CustomerId == c && x.FundId == f);
-            var share = tf.Sum(x => x.ShareChange());
-            var deposit = tf.Where(x => x.Type switch { TransferRecordType.Subscription or TransferRecordType.Purchase or TransferRecordType.MoveIn or TransferRecordType.SwitchIn or TransferRecordType.TransferIn => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
-            var withdraw = tf.Where(x => x.Type switch { TransferRecordType.Redemption or TransferRecordType.Redemption or TransferRecordType.MoveOut or TransferRecordType.SwitchOut or TransferRecordType.TransferOut or TransferRecordType.Distribution => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
+        var tableRecord = db.GetCollection<TransferRecord>();
+        var tableBalance = db.GetCollection<InvestorBalance>();
 
-            db.GetCollection<InvestorBalance>().Upsert(new InvestorBalance { FundId = f, InvestorId = c, Share = share, Deposit = deposit, Withdraw = withdraw, Date = tf.Max(x => x.ConfirmedDate) });
-        }
+        // 更新投资人平衡表 
+        foreach (var g in records.GroupBy(x => (x.CustomerId, x.FundId)))
+            UpdateInvestorBalance(tableRecord, tableBalance, g.Key.CustomerId, g.Key.FundId, g.Min(x => x.ConfirmedDate));
+
+        // 更新基金份额平衡表
+        var t2 = db.GetCollection<FundShareRecord>();
+        foreach (var g in records.GroupBy(x => x.FundId))
+            UpdateFundShareRecordByTA(tableRecord, t2, g.Key, g.Min(x => x.ConfirmedDate));
+
 
         var ids = records.Select(x => x.FundId).Distinct().ToList();
         var funds = db.GetCollection<Fund>().Find(x => ids.Contains(x.Id)).ToList();
@@ -632,6 +721,59 @@ public static partial class DataTracker
         }
         catch { }
     }
+
+
+    /// <summary>
+    /// 更新基金份额平衡表
+    /// </summary>
+    /// <param name="db"></param>
+    /// <param name="fundId"></param>
+    public static void UpdateFundShareRecordByTA(ILiteCollection<TransferRecord> table, ILiteCollection<FundShareRecord> tableSR, int fundId, DateOnly from = default)
+    {
+        var old = tableSR.Query().OrderByDescending(x => x.Date).Where(x => x.FundId == fundId && x.Date < from).FirstOrDefault();
+
+        var data = table.Find(x => x.FundId == fundId && x.ConfirmedDate >= from).GroupBy(x => x.ConfirmedDate).OrderBy(x => x.Key);
+        var list = new List<FundShareRecord>();
+        if (old is not null) list.Add(old);
+        foreach (var item in data)
+            list.Add(new FundShareRecord(fundId, item.Key, item.Sum(x => x.ShareChange()) + (list.Count > 0 ? list[^1].Share : 0)));
+
+        tableSR.DeleteMany(x => x.FundId == fundId && x.Date >= from);
+        tableSR.Upsert(list);
+    }
+
+    /// <summary>
+    ///  更新投资人平衡表
+    /// </summary>
+    /// <param name="table"></param>
+    /// <param name="tableIB"></param>
+    /// <param name="investorId"></param>
+    /// <param name="fundId"></param>
+    /// <param name="from"></param>
+    public static void UpdateInvestorBalance(ILiteCollection<TransferRecord> table, ILiteCollection<InvestorBalance> tableIB, int investorId, int fundId, DateOnly from = default)
+    {
+        var old = tableIB.Query().OrderByDescending(x => x.Date).Where(x => x.Date < from).FirstOrDefault();
+        var data = table.Find(x => x.FundId == fundId && x.CustomerId == investorId && x.ConfirmedDate >= from).GroupBy(x => x.ConfirmedDate).OrderBy(x => x.Key);
+        var list = new List<InvestorBalance>();
+        if (old is not null) list.Add(old);
+        foreach (var tf in data)
+        {
+            var share = tf.Sum(x => x.ShareChange());
+            var deposit = tf.Where(x => x.Type switch { TransferRecordType.Subscription or TransferRecordType.Purchase or TransferRecordType.MoveIn or TransferRecordType.SwitchIn or TransferRecordType.TransferIn => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
+            var withdraw = tf.Where(x => x.Type switch { TransferRecordType.Redemption or TransferRecordType.ForceRedemption or TransferRecordType.MoveOut or TransferRecordType.SwitchOut or TransferRecordType.TransferOut or TransferRecordType.Distribution => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
+
+            var last = list.LastOrDefault() ?? new();
+            var cur = new InvestorBalance { FundId = fundId, InvestorId = investorId, Share = share + last.Share, Deposit = deposit + last.Deposit, Withdraw = withdraw + last.Withdraw, Date = tf.Key };
+            list.Add(cur);
+        }
+
+        tableIB.DeleteMany(x => x.FundId == fundId && x.InvestorId == investorId && x.Date >= from);
+        tableIB.Upsert(list);
+
+    }
+
+
+
 }
 
 

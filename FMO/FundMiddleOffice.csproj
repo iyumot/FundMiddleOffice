@@ -94,6 +94,7 @@
   <ItemGroup>
     <ProjectReference Include="..\DatabaseViewer\DatabaseViewer.csproj" />
     <ProjectReference Include="..\FMO.Automation\FMO.Schedule.csproj" />
+    <ProjectReference Include="..\FMO.Data\FMO.Data.csproj" />
     <ProjectReference Include="..\FMO.Interop\FMO.IO.AMAC\FMO.IO.AMAC.csproj" />
     <ProjectReference Include="..\FMO.InterOp\FMO.IO.DS\FMO.IO.DS.csproj" />
     <ProjectReference Include="..\FMO.PDF\FMO.PDF.csproj" TargetFramework="net9.0-windows" />

@@ -13,4 +13,10 @@ namespace FMO.Models;
 /// <param name="FundId"></param>
 /// <param name="Date"></param>
 /// <param name="Share"></param>
-public record class FundShareRecord(int Id, int FundId, DateOnly Date, decimal Share);
+public record class FundShareRecord(int FundId, DateOnly Date, decimal Share)
+{
+    public long Id => ((long)FundId << 32) | (long)Date.DayNumber;
+    public int FundId { get; } = FundId;
+    public DateOnly Date { get; } = Date;
+    public decimal Share { get; } = Share;
+}

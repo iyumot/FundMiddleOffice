@@ -752,13 +752,7 @@ public partial class TrusteeWorker : ObservableObject
             // 保存数据库 
             if (rc.Data is not null)
             {
-                using var db = DbHelper.Base();
-                foreach (var item in rc.Data.GroupBy(x => (x.FundId, x.Class)))
-                {
-                    var fid = item.Key.FundId;
-                    var c = item.Key.Class;
-                    db.GetDailyCollection(fid, c).Upsert(item);
-                }
+                DataTracker.OnDailyValue(rc.Data);
             }
         }
         else WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "未发现对应的API"));

@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FMO.Utilities\FMO.Utilities.csproj" />
+    <ProjectReference Include="..\FMO.SourceGenerator\FMO.SourceGenerator.csproj" OutputItemType="Analyzer" />
+  </ItemGroup>
+
+</Project>

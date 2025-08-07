@@ -552,7 +552,7 @@ public static class DbHelper
             var data = db.GetCollection<TransferRecord>().Find(x => x.FundId == fundid).GroupBy(x => x.ConfirmedDate).OrderBy(x => x.Key);
             var list = new List<FundShareRecord>();
             foreach (var item in data)
-                list.Add(new FundShareRecord(0, fundid, item.Key, item.Sum(x => x.ShareChange()) + (list.Count > 0 ? list[^1].Share : 0)));
+                list.Add(new FundShareRecord(fundid, item.Key, item.Sum(x => x.ShareChange()) + (list.Count > 0 ? list[^1].Share : 0)));
 
             db.GetCollection<FundShareRecord>().DeleteMany(x => x.FundId == fundid);
             db.GetCollection<FundShareRecord>().Insert(list);
