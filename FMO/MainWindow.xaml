@@ -183,6 +183,23 @@
                 DockPanel.Dock="Right"
                 Style="{StaticResource CloseButton}" />
 
+
+
+            <ToggleButton
+                BorderThickness="0"
+                Command="{Binding PinWindowCommand}"
+                DockPanel.Dock="Right"
+                Style="{StaticResource ToggleButtonFlip}">
+                <Viewbox Width="14">
+                    <Path Data="{StaticResource f.thumbtack}" Fill="Black" />
+                </Viewbox>
+                <hc:StatusSwitchElement.CheckedElement>
+                    <Viewbox Width="14">
+                        <Path Data="{StaticResource f.thumbtack}" Fill="Green" />
+                    </Viewbox>
+                </hc:StatusSwitchElement.CheckedElement>
+            </ToggleButton>
+
             <TextBlock
                 Margin="10,0"
                 VerticalAlignment="Center"

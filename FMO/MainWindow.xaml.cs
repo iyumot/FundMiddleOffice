@@ -365,6 +365,14 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
         App.Current.MainWindow.Close();
     }
 
+
+    [RelayCommand]
+    public void PinWindow()
+    {
+        App.Current.MainWindow.Topmost = !App.Current.MainWindow.Topmost;
+    }
+
+
     [RelayCommand]
     public void test()
     {
