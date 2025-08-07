@@ -16,8 +16,9 @@
     <Grid>
         <DataGrid
             AutoGenerateColumns="False"
-            IsReadOnly="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
+            IsReadOnly="True"
             ItemsSource="{Binding CommonLogs}"
+            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
             Style="{StaticResource DataGrid.Small}">
             <DataGrid.RowDetailsTemplate>
                 <DataTemplate>
