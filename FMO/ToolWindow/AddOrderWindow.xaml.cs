@@ -9,6 +9,7 @@ using Serilog;
 using System.ComponentModel;
 using System.IO;
 using System.IO.Compression;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Data;
 
@@ -267,6 +268,9 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
         // 如果是pdf，解析日期
         try
         {
+            //var texts = PdfHelper.GetTexts(fi.FullName);
+
+
             if (PdfHelper.GetSignDate(fi.FullName) is DateOnly d)
                 Date = new DateTime(d, default);
         }
@@ -294,6 +298,36 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
 
         var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
         return new() { Title = "", Path = path, Hash = hash, Time = DateTime.Now };
+    }
+
+
+    private TransferOrder? Parse(string text)
+    {
+        TransferOrder order = new();
+        var m = Regex.Match(text, @"姓名/名称：([-\(\)（）\w]+)");
+        if (!m.Success)
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "交易申请单中，未找到投资人名称"));
+        order.InvestorName = m.Groups[1].Value;
+
+        m = Regex.Match(text, @"证件号码：([\da-zA-Z]+)");
+        if (!m.Success)
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "交易申请单中，未找到证件号码"));
+        order.InvestorIdentity = m.Groups[1].Value;
+
+        m = Regex.Match(text, @"产品名称：([\da-zA-Z]+)");
+        if (!m.Success)
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "交易申请单中，未找到产品名称"));
+        order.FundName = m.Groups[1].Value;
+
+        m = Regex.Match(text, @"赎回方式：([\da-zA-Z]+)");
+        if (!m.Success)
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "交易申请单中，未找到产品名称"));
+        order.FundName = m.Groups[1].Value;
+
+
+
+
+        return order;
     }
 
 }
