@@ -1,9 +1,12 @@
-﻿using FMO.Models;
+﻿
+#define TEST_PFID
+
+using FMO.Models;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json;
+
 
 namespace FMO.PFID;
 
@@ -43,30 +46,35 @@ public enum PFIDFileType
     ///[Description("不动产私募投资基金监测报表")] RS0051,  
 }
 
+
+
 public class PFIDReporter
 {
-    //public const string OperationUploadUrl = "http://amrs-test.amac.org.cn:8280/pmg/v1/report/direct-file.do";
-    //public const string DisclosureUploadUrl = "http://amrs-test.amac.org.cn:8480/pof/v1/report/direct-file.do";
+
+#if TEST_PFID
+    public const string OperationUploadUrl = "http://amrs-test.amac.org.cn:8280/pmg/v1/report/direct-file.do";
+    public const string DisclosureUploadUrl = "http://pfid-test.amac.org.cn:8480/pof/v1/report/direct-file.do";
 
 
-    //public const string OperationResultUrl = "http://amrs-test.amac.org.cn:8280/pmg/v1/report/direct-query.do";
-    //public const string DisclosureResultUrl = "http://pfid-test.amac.org.cn:8480/pof/v1/report/direct-query.do";
+    public const string OperationResultUrl = "http://amrs-test.amac.org.cn:8280/pmg/v1/report/direct-query.do";
+    public const string DisclosureResultUrl = "http://pfid-test.amac.org.cn:8480/pof/v1/report/direct-query.do";
 
-    //public const string OperationSubmitUrl = "http://amrs-test.amac.org.cn:8280/pmg/v1/report/direct-submit.do";
-    //public const string DisclosureSubmitUrl = "http://pfid-test.amac.org.cn:8480/pof/v1/report/direct-submit.do";
+    public const string OperationSubmitUrl = "http://amrs-test.amac.org.cn:8280/pmg/v1/report/direct-submit.do";
+    public const string DisclosureSubmitUrl = "http://pfid-test.amac.org.cn:8480/pof/v1/report/direct-submit.do";
 
+#elif TEST_PFID2
 
-    //public const string OperationUploadUrl = "http://amrs-stage.amac.org.cn:8180/pmg/v1/report/direct-file.do";
-    //public const string DisclosureUploadUrl = "http://amrs-stage.amac.org.cn:8380/pof/v1/report/direct-file.do";
-
-
-    //public const string OperationResultUrl = "http://amrs-stage.amac.org.cn:8180/pmg/v1/report/direct-query.do";
-    //public const string DisclosureResultUrl = "http://pfid-stage.amac.org.cn:8380/pof/v1/report/direct-query.do";
-
-    //public const string OperationSubmitUrl = "http://amrs-stage.amac.org.cn:8180/pmg/v1/report/direct-submit.do";
-    //public const string DisclosureSubmitUrl = "http://pfid-stage.amac.org.cn:8380/pof/v1/report/direct-submit.do";
+    public const string OperationUploadUrl = "http://amrs-stage.amac.org.cn:8180/pmg/v1/report/direct-file.do";
+    public const string DisclosureUploadUrl = "http://pfid-stage.amac.org.cn:8380/pof/v1/report/direct-file.do";
 
 
+    public const string OperationResultUrl = "http://amrs-stage.amac.org.cn:8180/pmg/v1/report/direct-query.do";
+    public const string DisclosureResultUrl = "http://pfid-stage.amac.org.cn:8380/pof/v1/report/direct-query.do";
+
+    public const string OperationSubmitUrl = "http://amrs-stage.amac.org.cn:8180/pmg/v1/report/direct-submit.do";
+    public const string DisclosureSubmitUrl = "http://pfid-stage.amac.org.cn:8380/pof/v1/report/direct-submit.do";
+
+#else
     public const string OperationUploadUrl = "https://amrs.amac.org.cn/pmg/v1/report/direct-file.do";
     public const string DisclosureUploadUrl = "https://pfid.amac.org.cn/pof/v1/report/direct-file.do";
 
@@ -76,6 +84,9 @@ public class PFIDReporter
 
     public const string OperationSubmitUrl = "https://amrs.amac.org.cn/pmg/v1/report/direct-submit.do";
     public const string DisclosureSubmitUrl = "https://pfid.amac.org.cn/pof/v1/report/direct-submit.do";
+
+#endif
+
     /// <summary>
     /// 参数验证在调用前完成
     /// </summary>
@@ -90,8 +101,10 @@ public class PFIDReporter
     {
         string UserName = acc.Name;
         string DirectPwd = acc.Password;
-        string PublicKey = "02b794148d8f48b1d174a7df482e7fe31794c36427ec922c54015785e25aeeb436"; //pmg
-            //"02ca905207424c8a03a733458cf079230c55f25cc1ef14750a2b24a36ffe1f1744";// acc.Key;
+        string PublicKey = acc.Key;
+
+        //"02b794148d8f48b1d174a7df482e7fe31794c36427ec922c54015785e25aeeb436"; //pmg
+        //"02ca905207424c8a03a733458cf079230c55f25cc1ef14750a2b24a36ffe1f1744";// acc.Key;
 
 
         using var httpClient = new HttpClient();
@@ -103,7 +116,7 @@ public class PFIDReporter
         var sign = Sm3Utils.Encrypt(UserName + salt + pwd);
 
 
-        HttpRequestMessage request = new HttpRequestMessage();
+        HttpRequestMessage request = new HttpRequestMessage { Method = HttpMethod.Post };
         request.Headers.Add("userName", UserName);
         request.Headers.Add("salt", salt);
         request.Headers.Add("sign", sign);
@@ -124,19 +137,19 @@ public class PFIDReporter
         {
             entityCode = managerCode,
             reportType = $"{fileType}",
-            reportEndDate = reportEndDate,
+            reportEndDate = $"{reportEndDate:yyyy-MM-dd}",
             xbrlFileName = $"CN_{managerCode}_{fileType}_{reportEndDate:yyyy-MM-dd}.zip",
             subCompany = managerName,
             body = base64File,
-            checksum = checksum
+            checksum = checksum,
         };
 
-        //var jsonOptions = new JsonSerializerOptions
-        //{
-        //    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // 关键：不转义中文
-        //    WriteIndented = false // 是否格式化（可选）
-        //}; 
-        var json = JsonSerializer.Serialize(requestContent); 
+        var jsonOptions = new JsonSerializerOptions
+        {
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.Default, 
+            WriteIndented = false,
+        };
+        var json = JsonSerializer.Serialize(requestContent, jsonOptions);
 
         // 发送请求
         request.RequestUri = new Uri(fileType < PFIDFileType.RS0001 ? DisclosureUploadUrl : OperationUploadUrl);
@@ -146,6 +159,8 @@ public class PFIDReporter
 
         var response = await httpClient.SendAsync(request);
         var responseContent = await response.Content.ReadAsStringAsync();
+
+        Debug.WriteLine(responseContent);
 
         // 解析响应
         var result = JsonSerializer.Deserialize<DirectFileResponse>(responseContent);
@@ -168,7 +183,7 @@ public class PFIDReporter
         var sign = Sm3Utils.Encrypt(UserName + salt + pwd);
 
 
-        HttpRequestMessage request = new HttpRequestMessage();
+        HttpRequestMessage request = new HttpRequestMessage { Method = HttpMethod.Post };
         request.Headers.Add("userName", UserName);
         request.Headers.Add("salt", salt);
         request.Headers.Add("sign", sign);
@@ -227,7 +242,7 @@ public class PFIDReporter
         {
             // 读取 body（注意：读取后需要重新设置，否则发送时可能为空）
             var body = await request.Content.ReadAsStringAsync();
-            Debug.WriteLine(body); 
+            Debug.WriteLine(body);
         }
         else
         {
