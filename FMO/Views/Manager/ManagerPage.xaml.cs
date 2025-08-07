@@ -509,12 +509,18 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     [RelayCommand]
     public void EditMember(ParticipantViewModel participant)
     {
+        if (participant.Id == 0) return;
         using var db = DbHelper.Base();
         var obj = db.GetCollection<Participant>().FindById(participant.Id);
         MemberContext = new ManagerMemberViewModel(obj);
         ShowMemberPopup = true;
     }
 
+    partial void OnShowMemberPopupChanged(bool value)
+    {
+        if (!value && Members.LastOrDefault() is ParticipantViewModel p && p.Id == 0)
+            Members.Remove(p);
+    }
     partial void OnSelectedMemberChanged(Participant? value)
     {
         MemberContext = value is null ? null : new ManagerMemberViewModel(value);

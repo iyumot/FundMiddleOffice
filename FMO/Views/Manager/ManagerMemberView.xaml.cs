@@ -55,7 +55,7 @@ public partial class ManagerMemberViewModel : EditableControlViewModelBase<Parti
 
     public ManagerMemberViewModel(Participant person)
     {
-        Id = person.Id;
+        Id = person?.Id ?? 0;
 
         Name = new()
         {
@@ -71,7 +71,7 @@ public partial class ManagerMemberViewModel : EditableControlViewModelBase<Parti
             Label = "证件类型",
             InitFunc = x => x.Identity?.Type,
             UpdateFunc = (x, y) => x.Identity = x.Identity is null ? new Identity { Id = "", Type = y ?? default } : x.Identity with { Type = y ?? default },
-            ClearFunc = x => x.Identity = x.Identity is null ? null : x.Identity  with { Type = default }
+            ClearFunc = x => x.Identity = x.Identity is null ? null : x.Identity with { Type = default }
         };
         IdType.Init(person);
 
