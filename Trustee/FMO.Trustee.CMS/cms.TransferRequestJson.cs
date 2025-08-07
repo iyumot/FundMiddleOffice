@@ -158,6 +158,7 @@ internal class TransferRequestJson : JsonBase
             "143" => TransferRequestType.Distribution,     //"分红确认",
             "144" => TransferRequestType.Increase,     //"强行调增", 份额类型调整
             "145" => TransferRequestType.Decrease,     //"强行调减",
+            "152" => TransferRequestType.Abort,
             _ => TransferRequestType.UNK
         };
     }

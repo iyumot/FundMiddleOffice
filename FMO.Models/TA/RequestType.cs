@@ -80,6 +80,7 @@ public enum TransferRequestType
     [Description("清算")] Clear,
 
 
+    [Description("取消")] Abort,
 
 }
 
