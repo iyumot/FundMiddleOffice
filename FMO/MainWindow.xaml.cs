@@ -32,9 +32,24 @@ public partial class MainWindow : HandyControl.Controls.Window
         Width = SystemParameters.FullPrimaryScreenWidth * 0.9;
         Height = SystemParameters.FullPrimaryScreenHeight * 0.9;
 
-
+        PreviewKeyDown += MainWindow_PreviewKeyDown;
 
         HelpService.Initialize(this);
+    }
+
+    private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if(e.Key == Key.F7)
+        {
+            Window window = new Window
+            {
+                Title = "Log",
+                Content = new LogView(),
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                Owner = this
+            };
+            window.ShowDialog();
+        }
     }
 
     private void DockPanel_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)

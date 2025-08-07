@@ -19,22 +19,7 @@ public partial class App : Application
 #endif
 
     public App()
-    {
-        // 处理所有 AppDomain 的未处理异常（包括非 UI 线程）
-        AppDomain.CurrentDomain.UnhandledException += (s, args) =>
-        {
-            var exception = (Exception)args.ExceptionObject;
-            Log.Error($"{exception}");
-        };
-
-        // 处理 Task 内部未处理的异常
-        TaskScheduler.UnobservedTaskException += (s, args) =>
-        {
-            Log.Error($"{s}");
-            args.SetObserved(); // 避免后续崩溃
-        };
-
-
+    { 
 #if RELEASE
         // 单例模式
         string mutexName = "FundMiddleOfficeSingleton";
@@ -78,6 +63,25 @@ public partial class App : Application
         }
 
 
+       
+
+        Log.Logger = new LoggerConfiguration().WriteTo.LiteDB(@"logs.db").CreateLogger();
+        Log.Information($"System Start {DateTime.Now}");
+        // 处理所有 AppDomain 的未处理异常（包括非 UI 线程）
+        AppDomain.CurrentDomain.UnhandledException += (s, args) =>
+        {
+            var exception = (Exception)args.ExceptionObject;
+            Log.Error($"{exception}");
+        };
+
+        // 处理 Task 内部未处理的异常
+        TaskScheduler.UnobservedTaskException += (s, args) =>
+        {
+            Log.Error($"{s}");
+            args.SetObserved(); // 避免后续崩溃
+        };
+
+
 
         //DbHelper.initpassword();
 
@@ -97,7 +101,7 @@ public partial class App : Application
 
 
         //Log.Logger = new LoggerConfiguration().WriteTo.File("log.txt", outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level}] ({SourceContext}.{Method}) {Message}{NewLine}{Exception}").CreateLogger();
-        Log.Logger = new LoggerConfiguration().WriteTo.LiteDB(@"logs.db").CreateLogger();
+        
 
         if (CheckIsFirstRun())
             StartupUri = new Uri("InitWindow.xaml", UriKind.Relative);
@@ -129,4 +133,5 @@ public partial class App : Application
         Log.Error(e.Exception.Message);
         //MessageBox.Show("出错了，请查看Log");
     }
+
 }
