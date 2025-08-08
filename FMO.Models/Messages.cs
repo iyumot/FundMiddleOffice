@@ -48,6 +48,9 @@ public record EntityDeleted(Type Type, object Id);
 
 public record EntityChangedMessage<TEntity,TProperty>(TEntity Entity, string PropertyName, TProperty Value);
 
+
+public record EntityChanged<TEntity, TProperty>(TEntity Entity, string PropertyName, TProperty Old, TProperty New);
+
 /// <summary>
 /// 交易确认关联订单
 /// </summary>

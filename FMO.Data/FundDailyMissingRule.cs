@@ -7,12 +7,13 @@ namespace FMO.Utilities;
 
 public record FundDailyMissingContext(string FundName, string MissingInfo);
 
-public class FundDailyMissingRule : VerifyRule<DailyValue>
+public class FundDailyMissingRule : VerifyRule<DailyValue, EntityChanged<Fund, DateOnly>>
 {
     public List<int> BadFundIds { get; } = [];
 
     public ConcurrentBag<DailyValue> Dailies { get; } = [];
 
+    public ConcurrentBag<EntityChanged<Fund, DateOnly>> FundClear { get; } = [];
 
     public ConcurrentDictionary<int, List<DateOnly>> MissDays { get; } = [];
 
@@ -55,6 +56,12 @@ public class FundDailyMissingRule : VerifyRule<DailyValue>
     {
         foreach (var v in obj)
             Dailies.Add(v);
+    }
+
+    protected override void OnEntityOverride(IEnumerable<EntityChanged<Fund, DateOnly>> obj)
+    {
+        foreach(var v in obj)
+            FundClear.Add(v);
     }
 
     protected override void VerifyOverride()

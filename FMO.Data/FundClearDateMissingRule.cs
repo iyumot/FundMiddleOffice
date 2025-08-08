@@ -7,7 +7,7 @@ namespace FMO.Utilities;
 
 public record FundClearDateMissingContext(string Name, string? Code);
 
-public class FundClearDateMissingRule : VerifyRule<Fund>
+public class FundClearDateMissingRule : VerifyRule<EntityChanged<Fund, DateOnly>>
 {
 
 
@@ -31,11 +31,10 @@ public class FundClearDateMissingRule : VerifyRule<Fund>
         }
     }
 
-    protected override void OnEntityOverride(IEnumerable<Fund> obj)
+    protected override void OnEntityOverride(IEnumerable<EntityChanged<Fund, DateOnly>> obj)
     {
-        foreach (var item in obj)
-            if (item is Fund f)
-                Params.Add(f.Id);
+        foreach (var f in obj)
+            Params.Add(f.Entity.Id);
     }
 
 

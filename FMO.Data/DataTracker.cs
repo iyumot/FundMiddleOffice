@@ -535,19 +535,12 @@ public static partial class DataTracker
     }
 
 
-    public static void OnFundChange(Fund fund, string propertyName)
+  
+
+    public static void OnEntityChanged(EntityChanged<Fund, DateOnly> changed)
     {
-        switch (propertyName)
-        {
-            case nameof(Fund.ClearDate):
-                VerifyRules.FundClearDateMissingRule.OnEntityArrival([fund]);
-
-                break;
-
-
-            default:
-                break;
-        }
+        if (changed.PropertyName == nameof(Fund.ClearDate) && changed.New != default)
+            VerifyRules.FundClearDateMissingRule.OnEntityArrival([changed]);
     }
 
 

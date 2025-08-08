@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FMO.Log\FMO.LogEx.csproj" />
+    <ProjectReference Include="..\FMO.Logging\FMO.Logging.csproj" />
     <ProjectReference Include="..\FMO.Utilities\FMO.Utilities.csproj" />
     <ProjectReference Include="..\FMO.SourceGenerator\FMO.SourceGenerator.csproj" OutputItemType="Analyzer" />
   </ItemGroup>

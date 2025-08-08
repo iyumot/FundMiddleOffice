@@ -125,9 +125,13 @@ public partial class LiquidationFlowViewModel : FlowViewModel
             {
                 if (f.Status < FundStatus.StartLiquidation)
                     f.Status = FundStatus.StartLiquidation;
+
+                var old = f.ClearDate;
+
                 f.ClearDate = DateOnly.FromDateTime(Date.Value);
                 db.GetCollection<Fund>().Update(f);
-                DataTracker.OnFundChange(f, nameof(Fund.ClearDate));
+
+                DataTracker.OnEntityChanged(new EntityChanged<Fund, DateOnly>(f, nameof(Fund.ClearDate), old, f.ClearDate));
                 WeakReferenceMessenger.Default.Send(new EntityChangedMessage<Fund, FundStatus>(f, nameof(Fund.Status), f.Status));
                 WeakReferenceMessenger.Default.Send(new EntityChangedMessage<Fund, DateOnly>(f, nameof(Fund.ClearDate), f.ClearDate));
             }

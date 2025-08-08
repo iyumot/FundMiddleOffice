@@ -13,22 +13,23 @@ public static partial class VerifyRules
  
 }
 
-//
-public static partial class VerifyRules
-{
-    public static void InitAll()
-    {
-        VerifyRules.FundClearDateMissingRule.Init();
-        VerifyRules.FundDailyMissingRule.Init();
-    }
+////生成结果如下 
+//public static partial class VerifyRules
+//{
+//    public static void InitAll()
+//    {
+//        VerifyRules.FundClearDateMissingRule.Init();
+//        VerifyRules.FundDailyMissingRule.Init();
+//    }
 
-    public static void OnEntityArrival(IEnumerable<xxx> obj)
-    {
-        aaa.OnEntityArrival(obj);
-    }
+//    public static void OnEntityArrival(IEnumerable<DailyValue> obj)
+//    {
+//        FundDailyMissingRule.OnEntityArrival(obj);
+//    }
 
-    public static void OnEntityArrival(IEnumerable<yyy> obj)
-    {
-        bbb.OnEntityArrival(obj);
-    }
-}
+//    public static void OnEntityArrival(IEnumerable<EntityChanged<Fund,DateOnly>> obj)
+//    {
+//        FundDailyMissingRule.OnEntityArrival(obj);
+//        FundClearDateMissingRule.OnEntityArrival(obj);
+//    }
+//}
