@@ -454,6 +454,7 @@ public static partial class DataTracker
 
     public static void OnDailyValue(IEnumerable<DailyValue> dailyValues)
     {
+        dailyValues = dailyValues.Where(x => x.NetValue != 0);
         using var db = DbHelper.Base();
         foreach (var g in dailyValues.GroupBy(x => (x.FundId, x.Class)))
         {

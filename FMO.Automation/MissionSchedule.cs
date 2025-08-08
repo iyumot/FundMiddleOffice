@@ -45,13 +45,16 @@ public static class MissionSchedule
 
 
         /// 如果没有，新建一个
-        if (!missions.Any(x => x is FillFundDailyMission))
-        {
-            var fm = new FillFundDailyMission();
-            db.GetCollection<Mission>().Insert(fm);
-            fm.Init();
-            missions.Add(fm);
-        }
+        //if (!missions.Any(x => x is FillFundDailyMission))
+        //{
+        //    var fm = new FillFundDailyMission();
+        //    db.GetCollection<Mission>().Insert(fm);
+        //    fm.Init();
+        //    missions.Add(fm);
+        //}
+        
+        // 不再使用
+        missions.RemoveWhere(x=>x is FillFundDailyMission);
 
         _taskTimer.Elapsed += _taskTimer_Elapsed;
         _taskTimer.Start();

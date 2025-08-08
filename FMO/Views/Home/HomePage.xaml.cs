@@ -94,7 +94,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
         Task.Run(() =>
         {
 
-            DatabaseAssist.Miggrate();
+            //DatabaseAssist.Miggrate();
 
             ///数据库自检等操作
             DatabaseAssist.SystemValidation();
