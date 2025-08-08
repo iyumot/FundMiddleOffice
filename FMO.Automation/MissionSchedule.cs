@@ -40,7 +40,7 @@ public static class MissionSchedule
             {
                 // 记录日志或跳过无法转换的文档
                 Log.Error($"无法转换文档: {ex.Message}");
-            } 
+            }
         }
 
 
@@ -52,12 +52,18 @@ public static class MissionSchedule
         //    fm.Init();
         //    missions.Add(fm);
         //}
-        
+
         // 不再使用
-        missions.RemoveWhere(x=>x is FillFundDailyMission);
+        missions.RemoveWhere(x => x is FillFundDailyMission);
+
+#if DEBUG
+        foreach (var m in missions)
+            m.IsEnabled = false;
+#endif
 
         _taskTimer.Elapsed += _taskTimer_Elapsed;
         _taskTimer.Start();
+
 
         //延时执行一次
         Task.Run(async () => { await Task.Delay(8000); DoWork(DateTime.Now); });
