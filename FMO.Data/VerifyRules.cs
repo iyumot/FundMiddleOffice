@@ -12,3 +12,23 @@ public static partial class VerifyRules
      
  
 }
+
+//
+public static partial class VerifyRules
+{
+    public static void InitAll()
+    {
+        VerifyRules.FundClearDateMissingRule.Init();
+        VerifyRules.FundDailyMissingRule.Init();
+    }
+
+    public static void OnEntityArrival(IEnumerable<xxx> obj)
+    {
+        aaa.OnEntityArrival(obj);
+    }
+
+    public static void OnEntityArrival(IEnumerable<yyy> obj)
+    {
+        bbb.OnEntityArrival(obj);
+    }
+}
