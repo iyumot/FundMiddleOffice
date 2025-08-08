@@ -7,7 +7,7 @@ namespace FMO.Utilities;
 
 public record FundClearDateMissingContext(string Name, string? Code);
 
-public class FundClearDateMissingRule : VerifyRule
+public class FundClearDateMissingRule : VerifyRule<Fund>
 {
 
 
@@ -15,7 +15,7 @@ public class FundClearDateMissingRule : VerifyRule
 
     public ConcurrentBag<int> Params { get; } = [];
 
-    public override Type[] Related { get; } = [typeof(Fund)];
+    //public override Type[] Related { get; } = [typeof(Fund)];
 
     public override void Init()
     {
@@ -31,7 +31,7 @@ public class FundClearDateMissingRule : VerifyRule
         }
     }
 
-    protected override void OnEntityOverride(IEnumerable<object> obj)
+    protected override void OnEntityOverride(IEnumerable<Fund> obj)
     {
         foreach (var item in obj)
             if (item is Fund f)

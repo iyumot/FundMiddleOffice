@@ -7,7 +7,7 @@ namespace FMO.Utilities;
 
 public record FundDailyMissingContext(string FundName, string MissingInfo);
 
-public class FundDailyMissingRule : VerifyRule
+public class FundDailyMissingRule : VerifyRule<DailyValue>
 {
     public List<int> BadFundIds { get; } = [];
 
@@ -22,7 +22,7 @@ public class FundDailyMissingRule : VerifyRule
     public ConcurrentDictionary<int, IDataTip> Tips { get; } = [];
 
 
-    public override Type[] Related { get; } = [typeof(DailyValue)];
+    //public override Type[] Related { get; } = [typeof(DailyValue)];
 
     public override void Init()
     {
@@ -51,11 +51,10 @@ public class FundDailyMissingRule : VerifyRule
 
     protected override void ClearParamsOverride() => BadFundIds.Clear();
 
-    protected override void OnEntityOverride(IEnumerable<object> obj)
+    protected override void OnEntityOverride(IEnumerable<DailyValue> obj)
     {
-        foreach (var item in obj)
-            if (item is DailyValue v)
-                Dailies.Add(v);
+        foreach (var v in obj)
+            Dailies.Add(v);
     }
 
     protected override void VerifyOverride()
