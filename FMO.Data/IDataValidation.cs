@@ -1,5 +1,6 @@
-﻿using FMO.Models;
-using System.Collections.Concurrent;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using FMO.Logging;
+
 
 namespace FMO.Utilities;
 
@@ -7,86 +8,155 @@ public interface IDataValidation
 {
     public Type[] Related { get; }
 
-    public void OnEntityIn(object[] obj);
+    void Init();
+    void OnEntityArrival(IEnumerable<object> obj);
+    void Verify();
 }
 
 
-public abstract class FundDataValidation : IDataValidation
+
+public abstract class VerifyRule : IDataValidation
 {
-    public FundDataValidation(int fundId)
+    protected VerifyRule()
     {
-        FundId = fundId;
+        debouncer = new(Verify, 1000);
     }
 
-    public int FundId { get; }
-
-    public virtual Type[] Related { get; } = [];
-
-    public abstract void OnEntityIn(object[] obj);
-}
-
-
-
-public class FundSharePairValidation : FundDataValidation
-{
     private SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1);
 
-    public override Type[] Related { get; } = [typeof(DailyValue), typeof(TransferRecord)];
+    public abstract Type[] Related { get; }
 
 
-    private ConcurrentBag<DailyValue> Dailies { get; } = new();
+    protected Debouncer debouncer { get; set; }
 
-    private ConcurrentBag<TransferRecord> Records { get; } = new();
+    public abstract void Init();
 
 
-    private Debouncer debouncer;
-
-    public FundSharePairValidation() : base(0)
+    public void OnEntityArrival(IEnumerable<object> obj)
     {
-        debouncer = new(Check, 1000);
-    }
-
-    public override void OnEntityIn(object[] obj)
-    {
-        if (obj is null || obj.Length == 0) return;
+        if (obj is null || !obj.Any()) return;
 
         try
         {
             semaphoreSlim.Wait();
 
-            foreach (var item in obj)
-            {
-                if (item is DailyValue d)
-                    Dailies.Add(d);
-                else if (item is TransferRecord t)
-                    Records.Add(t);
-            }
+            OnEntityOverride(obj);
 
-
+            debouncer.Invoke();
         }
-        catch { }
+        catch (Exception e) { LogEx.Error($"{e}"); }
         finally { semaphoreSlim.Release(); }
     }
 
+    protected abstract void OnEntityOverride(IEnumerable<object> obj);
 
 
-    public void Check()
+    public void Verify()
     {
         try
         {
             semaphoreSlim.Wait();
 
-            var gd = Dailies.GroupBy(x => x.FundId);
-            var gr = Records.GroupBy(x => x.FundId);
+            VerifyOverride();
 
-            // 需要检验的
-            var fundids = gd.Select(x => x.Key).Union(gr.Select(x => x.Key)).Distinct().ToList();
-
-
+            ClearParamsOverride();
         }
-        catch { }
+        catch (Exception e) { LogEx.Error($"{e}"); }
         finally { semaphoreSlim.Release(); }
     }
+
+    protected abstract void VerifyOverride();
+
+    protected abstract void ClearParamsOverride();
+
+    protected void Send(IDataTip tip) => WeakReferenceMessenger.Default.Send(tip);
 }
 
+//public abstract class FundDataValidation : IDataValidation
+//{
+//    public FundDataValidation(int fundId)
+//    {
+//        FundId = fundId;
+//    }
 
+//    private SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1);
+
+//    public int FundId { get; }
+
+//    public virtual Type[] Related { get; } = [];
+
+//    public abstract void OnEntityOverride(IEnumerable<object> obj);
+
+
+//    public void Verify()
+//    {
+
+//    }
+
+//    public abstract void VerifyOverride();
+//}
+
+
+
+
+//public class FundSharePairValidation : FundDataValidation
+//{
+//    private SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1);
+
+//    public override Type[] Related { get; } = [typeof(DailyValue), typeof(TransferRecord)];
+
+
+//    private ConcurrentBag<DailyValue> Dailies { get; } = new();
+
+//    private ConcurrentBag<TransferRecord> Records { get; } = new();
+
+
+//    private Debouncer debouncer;
+
+//    public FundSharePairValidation() : base(0)
+//    {
+//        debouncer = new(Check, 1000);
+//    }
+
+//    public override void OnEntityOverride(IEnumerable<object> obj)
+//    {
+//        if (obj is null || obj.Length == 0) return;
+
+//        try
+//        {
+//            semaphoreSlim.Wait();
+
+//            foreach (var item in obj)
+//            {
+//                if (item is DailyValue d)
+//                    Dailies.Add(d);
+//                else if (item is TransferRecord t)
+//                    Records.Add(t);
+//            }
+
+
+//        }
+//        catch { }
+//        finally { semaphoreSlim.Release(); }
+//    }
+
+
+
+//    public void Check()
+//    {
+//        try
+//        {
+//            semaphoreSlim.Wait();
+
+//            var gd = Dailies.GroupBy(x => x.FundId);
+//            var gr = Records.GroupBy(x => x.FundId);
+
+//            // 需要检验的
+//            var fundids = gd.Select(x => x.Key).Union(gr.Select(x => x.Key)).Distinct().ToList();
+
+
+//        }
+//        catch { }
+//        finally { semaphoreSlim.Release(); }
+//    }
+//}

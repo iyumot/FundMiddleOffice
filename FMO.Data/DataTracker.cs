@@ -478,7 +478,7 @@ public static partial class DataTracker
             var last = col.Find(x => x.Date < sd).LastOrDefault();
             var lastd = last?.Date ?? default;
             var middle = db.GetDailyCollection(g.Key).Find(x => x.Date >= lastd && x.Date <= sd).OrderBy(x => x.Date).ToList();
-            if (middle.Count > 0  && middle[0].Date  is DateOnly datem && col.FindOne(x => x.FundId == fid && x.Date == datem) == null)
+            if (middle.Count > 0 && middle[0].Date is DateOnly datem && col.FindOne(x => x.FundId == fid && x.Date == datem) == null)
                 add.Add(new FundShareRecord(g.Key, middle[0].Date, middle[0].Share));
 
             for (int i = 1; i < middle.Count; i++)
@@ -494,8 +494,9 @@ public static partial class DataTracker
             {
                 // 使用二分查找找到前一日记录
                 int index = ds.BinarySearch(dy, comparer);
+                index = index < 0 ? ~index - 1 : index - 1;
 
-                DailyValue previous = index < 0 ? ds[~index - 1] : ds[index - 1];
+                DailyValue? previous = index < 0 || index >= ds.Count ? null : ds[index];
 
                 // 检查份额变化
                 if (previous != null && previous.Share != dy.Share && dy.Share != 0)
@@ -528,11 +529,26 @@ public static partial class DataTracker
 
 
         // 检验
-
+        VerifyRules.OnEntityArrival(dailyValues);
 
 
     }
 
+
+    public static void OnFundChange(Fund fund, string propertyName)
+    {
+        switch (propertyName)
+        {
+            case nameof(Fund.ClearDate):
+                VerifyRules.FundClearDateMissingRule.OnEntityArrival([fund]);
+
+                break;
+
+
+            default:
+                break;
+        }
+    }
 
 
     /// <summary>

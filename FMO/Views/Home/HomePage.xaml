@@ -178,6 +178,81 @@
                 Foreground="#FF0033"
                 ItemsSource="{Binding FundTips}"
                 Style="{StaticResource ListBoxCustom}" />
+
+
+            <ContentControl Content="{Binding ClearDateMissing.View}" Visibility="{Binding ClearDateMissing.View.IsEmpty, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                <ContentControl.ContentTemplate>
+                    <DataTemplate>
+                        <DockPanel LastChildFill="False">
+                            <TextBlock VerticalAlignment="Center" Text="基金已清盘，但是未设置清盘日期" />
+                            <ToggleButton
+                                x:Name="show"
+                                hc:IconElement.Geometry="{StaticResource f.lightbulb}"
+                                BorderThickness="0"
+                                Style="{StaticResource ToggleButtonIcon.Small}" />
+                            <Popup
+                                AllowsTransparency="True"
+                                IsOpen="{Binding ElementName=show, Path=IsChecked}"
+                                StaysOpen="False">
+                                <DataGrid
+                                    AutoGenerateColumns="False"
+                                    IsReadOnly="False"
+                                    ItemsSource="{Binding .}"
+                                    Style="{StaticResource DataGrid.NoSelect}">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Binding="{Binding Context.Name}" Header="基金" />
+                                        <DataGridTextColumn Binding="{Binding Context.Code}" Header="代码" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Popup>
+                        </DockPanel>
+                    </DataTemplate>
+                </ContentControl.ContentTemplate>
+            </ContentControl>
+
+
+            <ContentControl Content="{Binding DailyMissing.View}" Visibility="{Binding DailyMissing.View.IsEmpty, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                <ContentControl.ContentTemplate>
+                    <DataTemplate>
+                        <DockPanel LastChildFill="False">
+                            <TextBlock VerticalAlignment="Center" Text="基金净值缺失" />
+                            <ToggleButton
+                                x:Name="show"
+                                hc:IconElement.Geometry="{StaticResource f.lightbulb}"
+                                BorderThickness="0"
+                                Style="{StaticResource ToggleButtonIcon.Small}" />
+                            <Popup
+                                AllowsTransparency="True"
+                                IsOpen="{Binding ElementName=show, Path=IsChecked}"
+                                StaysOpen="False">
+                                <DataGrid
+                                    AutoGenerateColumns="False"
+                                    IsReadOnly="False"
+                                    ItemsSource="{Binding .}"
+                                    Style="{StaticResource DataGrid.NoSelect}">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Binding="{Binding Context.FundName}" Header="基金" />
+                                        <DataGridTextColumn Binding="{Binding Context.MissingInfo}" Header=" " />
+                                        <!--<DataGridTemplateColumn Header="日期">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <ListBox MaxWidth="500" ItemsSource="{Binding Context.MissingDates}">
+                                                        <ListBox.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <hc:UniformSpacingPanel IsItemsHost="True" Spacing="5" />
+                                                            </ItemsPanelTemplate>
+                                                        </ListBox.ItemsPanel>
+                                                    </ListBox>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>-->
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Popup>
+                        </DockPanel>
+                    </DataTemplate>
+                </ContentControl.ContentTemplate>
+            </ContentControl>
         </StackPanel>
 
 

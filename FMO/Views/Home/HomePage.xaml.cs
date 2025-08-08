@@ -15,6 +15,7 @@ using System.IO.Compression;
 using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Media;
 
 namespace FMO;
@@ -71,6 +72,11 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
     public partial PlotModel? BuySellIn7DaysContext { get; set; }
 
 
+
+    public CollectionViewSource ClearDateMissing { get; } = new() { Source = DataObserver.Instance.Tips };
+    public CollectionViewSource DailyMissing { get; } = new() { Source = DataObserver.Instance.Tips };
+
+
     public Tool[] Tools { get; set; }
 
 
@@ -91,6 +97,8 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
         //启动api
         TrusteeGallay.Initialize();
 
+        InitValidationContext();
+
         Task.Run(() =>
         {
 
@@ -102,6 +110,9 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
             MissionSchedule.Init();
 
             DataSelfTest();
+
+            // 数据验证
+            VerifyRules.InitAll();
 
             // 加载托管消息
             LoadTrusteeMessages();
@@ -117,6 +128,15 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
                  new Tool { ExeName = "FMO.LearnAssist", Icon = GetGeometry("f.youtube"), Foreground = Brushes.Red },
                  new Tool { ExeName = "FMO.TemplateManager", Icon = GetGeometry("f.table-columns"), Foreground = new SolidColorBrush(Color.FromRgb(42,145,223)) },
                 ];
+
+    }
+
+    private void InitValidationContext()
+    {
+        ClearDateMissing.View.Filter += (o) => o switch { IDataTip d => d.Tags.Contains(nameof(FundClearDateMissingRule)), _ => false };
+        DailyMissing.View.Filter += (o) => o switch { IDataTip d => d.Tags.Contains(nameof(FundDailyMissingRule)), _ => false };
+
+
 
     }
 

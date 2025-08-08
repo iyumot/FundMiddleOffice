@@ -118,8 +118,7 @@ public partial class LiquidationFlowViewModel : FlowViewModel
         base.OnPropertyChanged(e);
 
         //
-        if (((e.PropertyName == nameof(LiquidationFlowViewModel.IsReadOnly) && IsReadOnly) ||
-            e.PropertyName == nameof(LiquidationFlowViewModel.Date)) && Date is not null)
+        if (e.PropertyName == nameof(LiquidationFlowViewModel.IsReadOnly) && IsReadOnly && Date is DateTime d && d != default)
         {
             using var db = DbHelper.Base();
             if (db.GetCollection<Fund>().FindById(FundId) is Fund f)
@@ -128,6 +127,7 @@ public partial class LiquidationFlowViewModel : FlowViewModel
                     f.Status = FundStatus.StartLiquidation;
                 f.ClearDate = DateOnly.FromDateTime(Date.Value);
                 db.GetCollection<Fund>().Update(f);
+                DataTracker.OnFundChange(f, nameof(Fund.ClearDate));
                 WeakReferenceMessenger.Default.Send(new EntityChangedMessage<Fund, FundStatus>(f, nameof(Fund.Status), f.Status));
                 WeakReferenceMessenger.Default.Send(new EntityChangedMessage<Fund, DateOnly>(f, nameof(Fund.ClearDate), f.ClearDate));
             }

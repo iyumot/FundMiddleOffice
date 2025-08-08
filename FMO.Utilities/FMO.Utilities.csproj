@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FMO.Log\FMO.LogEx.csproj" />
     <ProjectReference Include="..\FMO.Models\FMO.Models.csproj" />
   </ItemGroup>
 

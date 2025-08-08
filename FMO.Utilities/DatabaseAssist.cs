@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
+using FMO.Logging;
 using FMO.Models;
 using LiteDB;
 using Serilog;
@@ -268,7 +269,7 @@ public static class DatabaseAssist
                 var collection = db.GetCollection<DailyValue>(collectionName);
                 var deletedCount = collection.DeleteMany(x => x.NetValue == 0);
             }
-            catch (Exception ex) { Log.Error($"{ex.Message}"); }
+            catch (Exception ex) { LogEx.Error($"{ex.Message}"); }
         }
     }
 

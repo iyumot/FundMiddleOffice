@@ -113,7 +113,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
         var ll = DailyValues;
 
-        debouncerDaily = new(() => DailySource.View.Refresh());
+        debouncerDaily = new(() => App.Current.Dispatcher.BeginInvoke(() => DailySource.View.Refresh()));
 
         CurveViewDataContext = new DailyValueCurveViewModel
         {
@@ -598,21 +598,34 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
                 });
 
 
-                var data = bag.OrderBy(x => x.daily?.Date).ToArray();
+                List<(string? name, string? code, DailyValue? daily)> err = new();
+                List<(string? name, string? code, DailyValue? daily)> ava = new(bag.Count);
 
-                // 从属验证
-                var err = data.Where(x => x.code != Fund.Code && x.name != Fund.Name).ToArray();
-                if (err.Length != 0)
+                foreach (var x in bag)
                 {
-                    Log.Error($"{FundName} 解析全部估值表出错 发现{err.Length}个文件不属于本基金\n{string.Join('\n', err.Select(x => x.name))}))");
-                    HandyControl.Controls.Growl.Info($"发现{err.Length}个文件不属于本基金\n{string.Join('\n', err.Select(x => x.name))}))");
+                    if (x.code != Fund.Code && x.name != Fund.Name)
+                    {
+                        err.Add(x);
+                    }
+                    else
+                    {
+                        x.daily?.FundId = Fund.Id;
+                        ava.Add(x);
+                    }
                 }
 
-                var avaliable = data.Where(x => x.code == Fund.Code || x.name == Fund.Name);
-                if (!avaliable.Any()) return;
+                var data = bag.OrderBy(x => x.daily?.Date).ToArray();
 
+                // 从属验证 
+                if (err.Count != 0)
+                {
+                    Log.Error($"{FundName} 解析全部估值表出错 发现{err.Count}个文件不属于本基金\n{string.Join('\n', err.Select(x => x.name))}))");
+                    HandyControl.Controls.Growl.Info($"发现{err.Count}个文件不属于本基金\n{string.Join('\n', err.Select(x => x.name))}))");
+                }
 
-                DataTracker.OnDailyValue(avaliable.Select(x => x.daily!));
+                if (ava.Count == 0) return;
+
+                DataTracker.OnDailyValue(ava.Select(x => x.daily!));
             }
             catch (Exception e)
             {
@@ -781,11 +794,15 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
             if (old is not null)
                 DailyValues.Remove(old);
 
-            DailyValues.Add(message.Daily);
+            App.Current.Dispatcher.BeginInvoke(() =>
+            {
+                DailyValues.Add(message.Daily);
+                CurveViewDataContext.Data = DailyValues.OrderBy(x => x.Date).ToList();
 
-            CurveViewDataContext.Data = DailyValues.OrderBy(x => x.Date).ToList();
+                debouncerDaily.Invoke();
+            });
 
-            debouncerDaily.Invoke();
+
         }
     }
 
