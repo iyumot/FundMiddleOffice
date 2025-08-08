@@ -222,7 +222,7 @@ public static class LogEx
         Here(filePath, memberName, lineNumber).Error(message, propertyValues);
     }
 
-    public static void Error(Exception exception, string message,
+    public static void Error(Exception exception, string message="",
         [CallerFilePath] string filePath = "",
         [CallerMemberName] string memberName = "",
         [CallerLineNumber] int lineNumber = 0)

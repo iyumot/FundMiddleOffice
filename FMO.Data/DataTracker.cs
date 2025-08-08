@@ -540,7 +540,7 @@ public static partial class DataTracker
     public static void OnEntityChanged(EntityChanged<Fund, DateOnly> changed)
     {
         if (changed.PropertyName == nameof(Fund.ClearDate) && changed.New != default)
-            VerifyRules.FundClearDateMissingRule.OnEntityArrival([changed]);
+            VerifyRules.OnEntityArrival([changed]);
     }
 
 
