@@ -4,8 +4,10 @@ using FMO.Plugin;
 using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
+using Serilog.Formatting.Display;
 using System.IO;
 using System.Windows;
+using FMO.Logging;
 
 namespace FMO;
 
@@ -63,10 +65,11 @@ public partial class App : Application
         }
 
 
-       
 
-        Log.Logger = new LoggerConfiguration().WriteTo.LiteDB(@"logs.db").CreateLogger();
-        Log.Information($"System Start {DateTime.Now}");
+
+        Log.Logger = new LoggerConfiguration().WriteTo.LiteDB(@"logs.db", "logex").CreateLogger();
+        //Log.Logger = new LoggerConfiguration().WriteTo.LiteDB(@"logs.db", formatter:new MessageTemplateTextFormatter("{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {ClassName}.{MethodName}({LineNumber}) - {Message:lj}{NewLine}{Exception}")).CreateLogger();
+        LogEx.Information($"System Start {DateTime.Now}");
         // 处理所有 AppDomain 的未处理异常（包括非 UI 线程）
         AppDomain.CurrentDomain.UnhandledException += (s, args) =>
         {

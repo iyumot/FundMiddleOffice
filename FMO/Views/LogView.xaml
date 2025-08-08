@@ -30,6 +30,9 @@
             </DataGrid.RowDetailsTemplate>
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Time, StringFormat=yyyy-MM-dd HH:mm:ss}" Header="时间" />
+                <DataGridTextColumn Binding="{Binding File}" Header="File" />
+                <DataGridTextColumn Binding="{Binding Method}" Header="Method" />
+                <DataGridTextColumn Binding="{Binding Line}" Header="Line" />
                 <DataGridTextColumn Binding="{Binding Message}" Header="Log" />
             </DataGrid.Columns>
         </DataGrid>

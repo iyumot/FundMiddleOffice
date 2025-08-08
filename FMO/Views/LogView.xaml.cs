@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using LiteDB;
+using System.Linq;
 using System.Windows.Controls;
 
 namespace FMO;
@@ -26,11 +27,11 @@ public partial class LogViewModel : ObservableObject
     {
         using var db = new LiteDatabase($@"FileName=logs.db;Connection=Shared");
 
-        CommonLogs = db.GetCollection("log").Query().OrderByDescending(x => x["_t"].AsDateTime)
-                    .Limit(1000).ToList().Select(x => new LogMessage(x["_t"].AsDateTime, x["_m"].AsString));
+        CommonLogs = db.GetCollection("logex").Query().OrderByDescending(x => x["_t"].AsDateTime)
+                    .Limit(1000).ToList().Select(x => new LogMessage(x["_t"].AsDateTime, x[nameof(LogMessage.File)].AsString, x[nameof(LogMessage.Method)].AsString, x[nameof(LogMessage.Line)].AsInt32, x["_m"].AsString));
 
     }
 
-    public record LogMessage(DateTime Time, string Message);
+    public record LogMessage(DateTime Time, string File, string Method, int Line, string Message);
 }
 

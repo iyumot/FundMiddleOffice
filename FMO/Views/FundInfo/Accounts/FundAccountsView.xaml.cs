@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FMO.Logging;
 using FMO.Models;
 using FMO.PDF;
 using FMO.Shared;
@@ -97,11 +98,11 @@ public partial class FundAccountsViewModel : ObservableObject
 
             SecurityCompanies.Filter += (s, e) => e.Accepted = string.IsNullOrWhiteSpace(SecurityCompanyKeyword) ? true : e.Item switch { string ss => ss.Contains(SecurityCompanyKeyword), _ => true };
 
-
+            LogEx.Error($"加载证券公司列表失败");
         }
         catch (Exception e)
         {
-            Log.Error($"加载证券公司列表失败{e.Message}");
+            LogEx.Error($"加载证券公司列表失败{e.Message}");
         }
 
 
