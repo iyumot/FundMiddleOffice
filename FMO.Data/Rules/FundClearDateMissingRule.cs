@@ -5,7 +5,7 @@ using System.Collections.Concurrent;
 
 namespace FMO.Utilities;
 
-public record FundClearDateMissingContext(string Name, string? Code);
+public record FundClearDateMissingContext(string Name, string? Code, DateOnly? Clear, DateTime Last);
 
 public class FundClearDateMissingRule : VerifyRule<EntityChanged<Fund, DateOnly>>
 {
@@ -21,11 +21,12 @@ public class FundClearDateMissingRule : VerifyRule<EntityChanged<Fund, DateOnly>
     {
 
         using var db = DbHelper.Base();
-        var finfo = db.GetCollection<Fund>().Query().Where(x => x.ClearDate == default).Select(x => new { x.Id, x.Name, x.Code, x.Status, x.ClearDate }).ToList();
+        var finfo = db.GetCollection<Fund>().Query().Select(x => new { x.Id, x.Name, x.Code, x.Status, x.ClearDate, x.LastUpdate }).
+            ToList().Where(x => x.Status >= FundStatus.StartLiquidation).Where(x => x.ClearDate == default || (x.LastUpdate != default && x.ClearDate > DateOnly.FromDateTime(x.LastUpdate)));
 
         foreach (var f in finfo.Where(x => x.Status >= FundStatus.StartLiquidation))
         {
-            DataTip tip = new() { Tags = ["Fund", $"Fund{f.Id}", nameof(FundClearDateMissingRule)], Context = new FundClearDateMissingContext(f.Name, f.Code) };
+            DataTip tip = new() { Tags = ["Fund", $"Fund{f.Id}", nameof(FundClearDateMissingRule)], Context = new FundClearDateMissingContext(f.Name, f.Code, f.ClearDate == default ? null : f.ClearDate, f.LastUpdate) };
             Tips.TryAdd(f.Id, tip);
             Send(tip);
         }
@@ -43,7 +44,7 @@ public class FundClearDateMissingRule : VerifyRule<EntityChanged<Fund, DateOnly>
         var arr = Params.ToList();
 
         using var db = DbHelper.Base();
-        var error = db.GetCollection<Fund>().Query().Where(x => arr.Contains(x.Id)).Select(x => new { x.Id, x.Name, x.Code, x.Status, x.ClearDate }).ToList().Where(x => x.Status >= FundStatus.StartLiquidation && x.ClearDate == default);
+        var error = db.GetCollection<Fund>().Query().Where(x => arr.Contains(x.Id)).Select(x => new { x.Id, x.Name, x.Code, x.Status, x.ClearDate, x.LastUpdate }).ToList().Where(x => x.Status >= FundStatus.StartLiquidation && x.ClearDate == default);
 
         var filterd = Tips.Where(x => arr.Contains(x.Key));
 
@@ -61,7 +62,7 @@ public class FundClearDateMissingRule : VerifyRule<EntityChanged<Fund, DateOnly>
         var add = Tips.Count > 0 ? error.ExceptBy(filterd.Select(x => x.Key), x => x.Id) : error;
         foreach (var f in add)
         {
-            DataTip tip = new() { Tags = ["Fund", $"Fund{f.Id}"], Context = new FundClearDateMissingContext(f.Name, f.Code) };
+            DataTip tip = new() { Tags = ["Fund", $"Fund{f.Id}"], Context = new FundClearDateMissingContext(f.Name, f.Code, f.ClearDate == default ? null : f.ClearDate, f.LastUpdate) };
             Tips.TryAdd(f.Id, tip);
             Send(tip);
         }

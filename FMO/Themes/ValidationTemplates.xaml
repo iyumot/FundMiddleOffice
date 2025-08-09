@@ -8,11 +8,27 @@
     <Style x:Key="LeftText" TargetType="TextBlock">
         <Setter Property="shared:MaskService.IsMask" Value="True" />
     </Style>
+    <Style x:Key="CenterText" TargetType="TextBlock">
+        <Setter Property="TextAlignment" Value="Center" />
+        <Setter Property="shared:MaskService.IsMask" Value="True" />
+    </Style>
 
+    <Style x:Key="DateText" TargetType="TextBlock">
+        <Setter Property="TextAlignment" Value="Center" />
+    </Style>
+
+
+    <Style
+        x:Key="CenterColumnHeader"
+        BasedOn="{StaticResource DataGridColumnHeaderStyle}"
+        TargetType="DataGridColumnHeader">
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
 
     <DataTemplate x:Key="ClearDateMissing">
         <DataGrid
             AutoGenerateColumns="False"
+            ColumnHeaderStyle="{StaticResource CenterColumnHeader}"
             IsReadOnly="False"
             ItemsSource="{Binding .}"
             Style="{StaticResource DataGrid.NoSelect}">
@@ -22,9 +38,19 @@
                     ElementStyle="{StaticResource LeftText}"
                     Header="基金" />
                 <DataGridTextColumn
+                    Width="100"
                     Binding="{Binding Context.Code}"
-                    ElementStyle="{StaticResource LeftText}"
+                    ElementStyle="{StaticResource CenterText}"
                     Header="代码" />
+                <DataGridTextColumn
+                    Width="100"
+                    Binding="{Binding Context.Clear, StringFormat=yyyy/MM/dd}"
+                    ElementStyle="{StaticResource DateText}"
+                    Header="清盘日期" />
+                <DataGridTextColumn
+                    Binding="{Binding Context.Last, StringFormat=yyyy/MM/dd}"
+                    ElementStyle="{StaticResource DateText}"
+                    Header="最后更新日期" />
             </DataGrid.Columns>
         </DataGrid>
     </DataTemplate>
@@ -71,34 +97,72 @@
         </DataGrid>
     </DataTemplate>
 
+    <DataTemplate x:Key="ShareNotPairRuleListItem">
+        <DockPanel>
+            <TextBlock Text="{Binding Date, StringFormat=yyyy-MM-dd}" />
+            <TextBlock
+                Width="100"
+                Text="{Binding Share}"
+                TextAlignment="Right" />
+        </DockPanel>
+    </DataTemplate>
+
     <DataTemplate x:Key="ShareNotPairRule">
-        <ListBox ItemsSource="{Binding .}">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel DataContext="{Binding Context}">
-                        <DockPanel>
-                            <TextBlock Text="{Binding FundName}" />
-                            <TextBlock
-                                x:Name="info"
-                                Margin="10,0"
-                                shared:MaskService.IsMask="True"
-                                Foreground="Red"
-                                Text="请先更新净值"
-                                Visibility="Collapsed" />
-                        </DockPanel>
-                        <UniformGrid x:Name="list" Rows="1">
-                            <ListBox ItemsSource="{Binding ByDaily}" />
-                            <ListBox ItemsSource="{Binding ByTransfer}" />
-                        </UniformGrid>
-                    </StackPanel>
-                    <DataTemplate.Triggers>
-                        <DataTrigger Binding="{Binding Context.ByDaily.Count}" Value="0">
-                            <Setter TargetName="list" Property="Visibility" Value="Collapsed" />
-                            <Setter TargetName="info" Property="Visibility" Value="Visible" />
-                        </DataTrigger>
-                    </DataTemplate.Triggers>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+        <Border Background="WhiteSmoke">
+            <DockPanel>
+                <ListBox
+                    x:Name="list"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    ItemsSource="{Binding .}"
+                    SelectedIndex="0">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+
+                            <DockPanel>
+                                <TextBlock shared:MaskService.IsMask="True" Text="{Binding Context.FundName}" />
+                                <TextBlock
+                                    x:Name="info"
+                                    Margin="10,0"
+                                    shared:MaskService.IsMask="True"
+                                    Foreground="Red"
+                                    Text="请先更新净值"
+                                    Visibility="Collapsed" />
+                            </DockPanel>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding Context.ByDailyCount}" Value="0">
+                                    <Setter TargetName="info" Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <DataGrid
+                    MaxHeight="500"
+                    AutoGenerateColumns="False"
+                    DataContext="{Binding ElementName=list, Path=SelectedItem.Context}"
+                    IsReadOnly="True"
+                    ItemsSource="{Binding Diff}"
+                    Style="{StaticResource DataGrid.Small}">
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="Foreground" Value="Black" />
+
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsDiff}" Value="True">
+                                    <Setter Property="Foreground" Value="Red" />
+                                </DataTrigger>
+
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Binding="{Binding Date, StringFormat=yyyy/MM/dd}" Header="日期" />
+                        <DataGridTextColumn Binding="{Binding ShareByDaily}" Header="净值中的份额" />
+                        <DataGridTextColumn Binding="{Binding ShareByTransfer}" Header="TA中的份额" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Border>
     </DataTemplate>
 </ResourceDictionary>

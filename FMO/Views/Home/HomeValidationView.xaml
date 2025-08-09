@@ -20,7 +20,7 @@
 
         <local:ValidationItemView
             DataContext="{Binding ClearDateMissing.View}"
-            Header="基金已清盘，但是未设置清盘日期"
+            Header="基金已清盘，清盘日期异常"
             TipTemplate="{StaticResource ClearDateMissing}" />
 
         <local:ValidationItemView

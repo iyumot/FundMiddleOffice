@@ -1,13 +1,12 @@
 ﻿using FMO.IO;
+using FMO.Logging;
 using FMO.Models;
 using FMO.Plugin;
 using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
-using Serilog.Formatting.Display;
 using System.IO;
 using System.Windows;
-using FMO.Logging;
 
 namespace FMO;
 
@@ -21,7 +20,7 @@ public partial class App : Application
 #endif
 
     public App()
-    { 
+    {
 #if RELEASE
         // 单例模式
         string mutexName = "FundMiddleOfficeSingleton";
@@ -64,7 +63,12 @@ public partial class App : Application
             }
         }
 
+        //Task.Run(async () =>
+        //{
+        //    await Task.Delay(1000 * 10);
 
+        //    DataTracker.OnDailyValue([new DailyValue { FundId = 5 }]);
+        //});
 
 
         Log.Logger = new LoggerConfiguration().WriteTo.LiteDB(@"logs.db", "logex").CreateLogger();
@@ -104,7 +108,7 @@ public partial class App : Application
 
 
         //Log.Logger = new LoggerConfiguration().WriteTo.File("log.txt", outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level}] ({SourceContext}.{Method}) {Message}{NewLine}{Exception}").CreateLogger();
-        
+
 
         if (CheckIsFirstRun())
             StartupUri = new Uri("InitWindow.xaml", UriKind.Relative);

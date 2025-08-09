@@ -717,7 +717,7 @@
                             <Popup
                                 AllowsTransparency="True"
                                 IsOpen="{Binding ElementName=show, Path=IsChecked}"
-                                Placement="Center"
+                                PlacementRectangle="0,30,0,0"
                                 PlacementTarget="{Binding RelativeSource={RelativeSource AncestorType=local:HomeValidationView}}"
                                 StaysOpen="False">
                                 <ContentPresenter Content="{Binding .}" ContentTemplate="{TemplateBinding TipTemplate}" />

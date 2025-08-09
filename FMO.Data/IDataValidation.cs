@@ -107,6 +107,8 @@ public abstract class VerifyRuleBase : IDataValidation
 
     protected void Send(IDataTip tip) => WeakReferenceMessenger.Default.Send(tip);
 
+    protected void Revoke(long tipId) => WeakReferenceMessenger.Default.Send(new DataTipRemove(tipId));
+
     public abstract void Init();
 }
 

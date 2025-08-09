@@ -510,8 +510,6 @@ public static partial class DataTracker
 
 
             col.Upsert(add);
-            OnFundShareRecord(add);
-
             var ee = col.Find(x => x.FundId == fid).OrderBy(x => x.Date).ToList();
 
             // 删除连续相同的值
@@ -520,6 +518,9 @@ public static partial class DataTracker
                 if (ee[i].Share == ee[i - 1].Share)
                     col.Delete(ee[i].Id);
             }
+
+            OnFundShareRecord(add);
+
         }
 
 
@@ -750,8 +751,10 @@ public static partial class DataTracker
         var list = new List<FundShareRecord>();
         if (old is not null) list.Add(old);
         foreach (var item in data)
-            list.Add(new FundShareRecord(fundId, item.Key, item.Sum(x => x.ShareChange()) + (list.Count > 0 ? list[^1].Share : 0)));
-
+        {
+            if (item.Sum(x => x.ShareChange()) is decimal change && change != 0)
+                list.Add(new FundShareRecord(fundId, item.Key, change + (list.Count > 0 ? list[^1].Share : 0)));
+        }
         tableSR.DeleteMany(x => x.FundId == fundId && x.Date >= from);
         tableSR.Upsert(list);
     }
