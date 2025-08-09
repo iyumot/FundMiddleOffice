@@ -510,6 +510,8 @@ public static partial class DataTracker
 
 
             col.Upsert(add);
+            OnFundShareRecord(add);
+
             var ee = col.Find(x => x.FundId == fid).OrderBy(x => x.Date).ToList();
 
             // 删除连续相同的值
@@ -534,8 +536,10 @@ public static partial class DataTracker
 
     }
 
-
-  
+    private static void OnFundShareRecord(IEnumerable<FundShareRecord> add)
+    {
+        VerifyRules.OnEntityArrival(add);
+    }
 
     public static void OnEntityChanged(EntityChanged<Fund, DateOnly> changed)
     {
@@ -617,7 +621,7 @@ public static partial class DataTracker
         var funds = db.GetCollection<Fund>().Find(x => ids.Contains(x.Id)).ToList();
         DataTracker.CheckShareIsPair(funds);
 
-        OnUpdateValidation(records);
+        VerifyRules.OnEntityArrival(records);
 
 
         // 检查基金是否份额是否为0，如果是这样，最后的ta设为清盘
@@ -779,7 +783,6 @@ public static partial class DataTracker
 
         tableIB.DeleteMany(x => x.FundId == fundId && x.InvestorId == investorId && x.Date >= from);
         tableIB.Upsert(list);
-
     }
 
 

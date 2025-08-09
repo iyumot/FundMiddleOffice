@@ -8,7 +8,7 @@ namespace FMO.Utilities;
 public record FundSharePairContext(string FundName, IEnumerable<FundShareRecord> ByDaily, IEnumerable<FundShareRecord> ByTransfer);
 
 
-public class FundSharePairRule : VerifyRule<FundShareRecord>
+public class FundSharePairRule : VerifyRule<FundShareRecord, TransferRecord>
 {
 
     public ConcurrentDictionary<int, IDataTip> Tips { get; } = [];
@@ -16,6 +16,7 @@ public class FundSharePairRule : VerifyRule<FundShareRecord>
 
     private List<FundShareRecord> Records { get; } = new();
 
+    private List<TransferRecord> Records2 { get; } = new();
 
 
     protected override void OnEntityOverride(IEnumerable<FundShareRecord> obj)
@@ -24,6 +25,11 @@ public class FundSharePairRule : VerifyRule<FundShareRecord>
             Records.Add(item);
     }
 
+    protected override void OnEntityOverride(IEnumerable<TransferRecord> obj)
+    {
+        foreach (var item in obj)
+            Records2.Add(item);
+    }
 
 
 
@@ -41,8 +47,9 @@ public class FundSharePairRule : VerifyRule<FundShareRecord>
     public override void Init()
     {
         using var db = DbHelper.Base();
-        var finfo = db.GetCollection<Fund>().Query().Where(x => x.ClearDate == default).Select(x => new { x.Id, x.Name }).ToList();
+        var fids = Records.Select(x => x.FundId).Union(Records2.Select(x => x.FundId)).Distinct().ToList();
 
+        var finfo = db.GetCollection<Fund>().Query().Where(x => fids.Contains(x.Id) && x.ClearDate == default).Select(x => new { x.Id, x.Name }).ToList();
 
         var byta = db.GetCollection<FundShareRecord>().FindAll().OrderBy(x => x.Date).GroupBy(x => x.FundId).ToDictionary(x => x.Key, x => x.AsEnumerable());
         var bydy = db.GetCollection<FundShareRecord>("fsr_daily").FindAll().OrderBy(x => x.Date).GroupBy(x => x.FundId).ToDictionary(x => x.Key, x => x.AsEnumerable());
