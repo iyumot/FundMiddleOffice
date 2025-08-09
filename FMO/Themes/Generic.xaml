@@ -693,24 +693,27 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:ValidationItemView}">
                     <Border BorderBrush="Black" BorderThickness="0,0,0,1">
-                        <DockPanel Margin="5,0,0,0" LastChildFill="False">
-                            <ContentPresenter VerticalAlignment="Center" Content="{TemplateBinding Header}" />
-                            <Border
-                                Margin="4,0,0,0"
+                        <DockPanel Margin="5,0,0,2" LastChildFill="False">
+                            <ContentPresenter
                                 VerticalAlignment="Center"
-                                Background="Red"
-                                CornerRadius="6">
-                                <TextBlock
-                                    Margin="5,0"
-                                    Foreground="White"
-                                    Text="{Binding Count}" />
-                            </Border>
+                                Content="{TemplateBinding Header}"
+                                TextElement.FontSize="13" />
+
                             <ToggleButton
                                 x:Name="show"
-                                Width="20"
-                                hc:IconElement.Geometry="{StaticResource f.lightbulb}"
                                 BorderThickness="0"
-                                Style="{StaticResource ToggleButtonIcon.Small}" />
+                                Style="{StaticResource ToggleButtonCustom}">
+                                <Border
+                                    Margin="4,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Background="Red"
+                                    CornerRadius="6">
+                                    <TextBlock
+                                        Margin="5,0"
+                                        Foreground="White"
+                                        Text="{Binding Count}" />
+                                </Border>
+                            </ToggleButton>
                             <Popup
                                 AllowsTransparency="True"
                                 IsOpen="{Binding ElementName=show, Path=IsChecked}"
