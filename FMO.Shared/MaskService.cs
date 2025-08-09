@@ -1,8 +1,12 @@
-﻿using System.Windows;
+﻿using System;
+using System.ComponentModel;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
+using System.Windows.Threading;
 
 namespace FMO.Shared;
 
@@ -60,6 +64,50 @@ public static class MaskService
             Window.KeyDownEvent,
             new KeyEventHandler(HandleKeyDown)
         );
+
+        // 监听所有窗口的Loaded事件，以便处理后续创建的Popup
+        EventManager.RegisterClassHandler(
+            typeof(Window),
+            Window.LoadedEvent,
+            new RoutedEventHandler(OnWindowLoaded)
+        );
+    }
+
+    // 窗口加载时注册Popup监测
+    private static void OnWindowLoaded(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Window window)
+        {
+            // 监测窗口中所有元素的加载事件，以捕获动态创建的Popup
+            window.AddHandler(FrameworkElement.LoadedEvent, new RoutedEventHandler(OnElementLoaded));
+        }
+    }
+
+    // 元素加载时检查是否为Popup并注册事件
+    private static void OnElementLoaded(object? sender, RoutedEventArgs e)
+    {
+        if (e.OriginalSource is Popup popup)
+        {
+            // 为每个Popup实例单独注册IsOpen属性变化事件
+            DependencyPropertyDescriptor.FromProperty(Popup.IsOpenProperty, typeof(Popup))
+                .AddValueChanged(popup, Popup_IsOpenChanged);
+        }
+    }
+
+    // 处理单个Popup的IsOpen属性变化
+    private static void Popup_IsOpenChanged(object? sender, EventArgs e)
+    {
+        if (sender is Popup popup && popup.IsOpen && _isGlobalMaskEnabled)
+        {
+            // 延迟处理以确保Popup内容已加载
+            Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+            {
+                if (popup.Child != null && popup.IsOpen)
+                {
+                    ProcessVisualTree(popup.Child, true);
+                }
+            }));
+        }
     }
 
     // 属性变更回调
@@ -67,6 +115,7 @@ public static class MaskService
     {
         if (d is not UIElement element) return;
 
+        // 当元素的IsMask属性变化时，如果全局启用则立即应用效果
         if (_isGlobalMaskEnabled && (bool)e.NewValue)
         {
             ApplyBlurEffect(element);
@@ -74,6 +123,37 @@ public static class MaskService
         else if (!(bool)e.NewValue && GetOriginalEffect(element) != null)
         {
             RestoreOriginalEffect(element);
+        }
+
+        // 如果是容器元素，监听其布局变化以捕获新添加的子元素
+        if (d is Panel panel)
+        {
+            panel.LayoutUpdated += Panel_LayoutUpdated;
+        }
+        else if (d is ContentControl contentControl)
+        {
+            contentControl.LayoutUpdated += ContentControl_LayoutUpdated;
+        }
+    }
+
+    // 监听ContentControl的布局更新
+    private static void ContentControl_LayoutUpdated(object? sender, EventArgs e)
+    {
+        if (sender is ContentControl contentControl && _isGlobalMaskEnabled)
+        {
+            if (contentControl.Content is DependencyObject content)
+            {
+                ProcessVisualTree(content, true);
+            }
+        }
+    }
+
+    // 监听Panel的布局更新
+    private static void Panel_LayoutUpdated(object? sender, EventArgs e)
+    {
+        if (sender is Panel panel && _isGlobalMaskEnabled)
+        {
+            ProcessVisualTree(panel, true);
         }
     }
 
@@ -103,23 +183,47 @@ public static class MaskService
         foreach (Window window in Application.Current.Windows)
         {
             ProcessVisualTree(window, _isGlobalMaskEnabled);
+
+            // 处理所有打开的Popup
+            ProcessAllPopups(window, _isGlobalMaskEnabled);
+        }
+    }
+
+    // 处理所有Popup
+    private static void ProcessAllPopups(DependencyObject parent, bool applyBlur)
+    {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+
+            if (child is Popup popup && popup.IsOpen)
+            {
+                if (popup.Child != null)
+                {
+                    ProcessVisualTree(popup.Child, applyBlur);
+                }
+            }
+
+            // 递归查找子元素中的Popup
+            ProcessAllPopups(child, applyBlur);
         }
     }
 
     // 递归处理视觉树
     private static void ProcessVisualTree(DependencyObject parent, bool applyBlur)
     {
+        if (parent is UIElement element && GetIsMask(element))
+        {
+            if (applyBlur)
+                ApplyBlurEffect(element);
+            else
+                RestoreOriginalEffect(element);
+        }
+
+        // 处理子元素
         for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
         {
             var child = VisualTreeHelper.GetChild(parent, i);
-            if (child is UIElement element)
-            {
-                if (GetIsMask(element))
-                {
-                    if (applyBlur) ApplyBlurEffect(element);
-                    else RestoreOriginalEffect(element);
-                }
-            }
             ProcessVisualTree(child, applyBlur);
         }
     }
