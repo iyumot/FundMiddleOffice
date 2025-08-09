@@ -687,4 +687,47 @@
 
 
 
+
+    <Style TargetType="{x:Type local:ValidationItemView}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:ValidationItemView}">
+                    <Border BorderBrush="Black" BorderThickness="0,0,0,1">
+                        <DockPanel Margin="5,0,0,0" LastChildFill="False">
+                            <ContentPresenter VerticalAlignment="Center" Content="{TemplateBinding Header}" />
+                            <Border
+                                Margin="4,0,0,0"
+                                VerticalAlignment="Center"
+                                Background="Red"
+                                CornerRadius="6">
+                                <TextBlock
+                                    Margin="5,0"
+                                    Foreground="White"
+                                    Text="{Binding Count}" />
+                            </Border>
+                            <ToggleButton
+                                x:Name="show"
+                                Width="20"
+                                hc:IconElement.Geometry="{StaticResource f.lightbulb}"
+                                BorderThickness="0"
+                                Style="{StaticResource ToggleButtonIcon.Small}" />
+                            <Popup
+                                AllowsTransparency="True"
+                                IsOpen="{Binding ElementName=show, Path=IsChecked}"
+                                Placement="Center"
+                                PlacementTarget="{Binding RelativeSource={RelativeSource AncestorType=local:HomeValidationView}}"
+                                StaysOpen="False">
+                                <ContentPresenter Content="{Binding .}" ContentTemplate="{TemplateBinding TipTemplate}" />
+                            </Popup>
+                        </DockPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding IsEmpty}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

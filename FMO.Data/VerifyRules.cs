@@ -9,7 +9,8 @@ public static partial class VerifyRules
      
 
     public static FundDailyMissingRule FundDailyMissingRule { get; } = new();
-     
+
+    public static FundSharePairRule FundSharePairRule { get; } = new();
  
 }
 

@@ -73,8 +73,6 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
 
 
-    public CollectionViewSource ClearDateMissing { get; } = new() { Source = DataObserver.Instance.Tips };
-    public CollectionViewSource DailyMissing { get; } = new() { Source = DataObserver.Instance.Tips };
 
 
     public Tool[] Tools { get; set; }
@@ -97,7 +95,6 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
         //启动api
         TrusteeGallay.Initialize();
 
-        InitValidationContext();
 
         Task.Run(() =>
         {
@@ -131,14 +128,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
     }
 
-    private void InitValidationContext()
-    {
-        ClearDateMissing.View.Filter += (o) => o switch { IDataTip d => d.Tags.Contains(nameof(FundClearDateMissingRule)), _ => false };
-        DailyMissing.View.Filter += (o) => o switch { IDataTip d => d.Tags.Contains(nameof(FundDailyMissingRule)), _ => false };
-
-
-
-    }
+ 
 
     private void LoadTrusteeMessages()
     {
