@@ -72,7 +72,8 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
     public partial PlotModel? BuySellIn7DaysContext { get; set; }
 
 
-
+    [ObservableProperty]
+    public partial bool IsInitializing { get; set; }
 
 
     public Tool[] Tools { get; set; }
@@ -98,6 +99,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
         Task.Run(() =>
         {
+            IsInitializing = true;
 
             //DatabaseAssist.Miggrate();
 
@@ -106,7 +108,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
             MissionSchedule.Init();
 
-            DataSelfTest();
+           // DataSelfTest();
 
             // 数据验证
             VerifyRules.InitAll();
@@ -115,6 +117,8 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
             LoadTrusteeMessages();
 
             OnNewDate();
+
+            IsInitializing = false;
         });
 
         // 每小时运行一次，判断是不是新的一天
@@ -156,8 +160,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
                     Task.Run(() => DataTracker.CheckFundFolder(c)),
                     Task.Run(()=> DataTracker.CheckShareIsPair(c)),
                     Task.Run(()=> DataTracker.CheckIsExpired(c)),
-                    Task.Run(()=> DataTracker.CheckInvestorBalance()),
-                    Task.Run(()=> DataTracker.CheckPairOrder(db)),
+                    Task.Run(()=> DataTracker.CheckInvestorBalance()), 
                     Task.Run(()=> DataTracker.CheckTAMissOwner()),
         ];
 

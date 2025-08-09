@@ -142,24 +142,25 @@
         </Style>
 
     </UserControl.Resources>
-    <DockPanel>
+    <hc:SimplePanel>
+        <DockPanel>
 
-        <StackPanel Width="888" Panel.ZIndex="111">
-
-
-
-            <oxy:PlotView
-                Height="300"
-                shared:MaskService.BlurRadius="40"
-                shared:MaskService.IsMask="True"
-                Model="{Binding ManageScaleContext}">
-                <oxy:PlotView.TrackerDefinitions>
-                    <oxy:TrackerDefinition TrackerKey="CustomTracker" TrackerTemplate="{StaticResource CustomTrackerTemplate}" />
-                </oxy:PlotView.TrackerDefinitions>
-            </oxy:PlotView>
+            <StackPanel Width="888" Panel.ZIndex="111">
 
 
-            <!--<hc:UniformSpacingPanel Spacing="8">
+
+                <oxy:PlotView
+                    Height="300"
+                    shared:MaskService.BlurRadius="40"
+                    shared:MaskService.IsMask="True"
+                    Model="{Binding ManageScaleContext}">
+                    <oxy:PlotView.TrackerDefinitions>
+                        <oxy:TrackerDefinition TrackerKey="CustomTracker" TrackerTemplate="{StaticResource CustomTrackerTemplate}" />
+                    </oxy:PlotView.TrackerDefinitions>
+                </oxy:PlotView>
+
+
+                <!--<hc:UniformSpacingPanel Spacing="8">
                 <oxy:PlotView
                     Width="200"
                     Height="200"
@@ -169,38 +170,38 @@
             </hc:UniformSpacingPanel>-->
 
 
-        </StackPanel>
+            </StackPanel>
 
 
 
-        <GroupBox
-            DockPanel.Dock="Top"
-            Header="常用工具"
-            Style="{StaticResource GroupBoxTab}">
-            <DockPanel LastChildFill="False">
+            <GroupBox
+                DockPanel.Dock="Top"
+                Header="常用工具"
+                Style="{StaticResource GroupBoxTab}">
+                <DockPanel LastChildFill="False">
 
-                <!--<Button
+                    <!--<Button
                     hc:IconElement.Geometry="{StaticResource f.arrows-split-up-and-left}"
                     Command="{Binding RefreshPlotCommand}"
                     Content="数据文件夹"
                     Style="{StaticResource ButtonIcon}" />-->
 
-                <Button
-                    hc:IconElement.Geometry="{StaticResource f.folder}"
-                    Command="{Binding OpenDataFolderCommand}"
-                    Content="数据文件夹"
-                    Style="{StaticResource ButtonIcon}" />
-
-
-                <hc:SimplePanel>
                     <Button
-                        hc:IconElement.Geometry="{StaticResource f.hard-drive}"
-                        Command="{Binding BackupCommand}"
-                        Content="备份"
-                        Style="{StaticResource ButtonIcon}"
-                        Visibility="{Binding BackupCommand.IsRunning, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                        hc:IconElement.Geometry="{StaticResource f.folder}"
+                        Command="{Binding OpenDataFolderCommand}"
+                        Content="数据文件夹"
+                        Style="{StaticResource ButtonIcon}" />
 
-                    <!--<DockPanel HorizontalAlignment="Center">
+
+                    <hc:SimplePanel>
+                        <Button
+                            hc:IconElement.Geometry="{StaticResource f.hard-drive}"
+                            Command="{Binding BackupCommand}"
+                            Content="备份"
+                            Style="{StaticResource ButtonIcon}"
+                            Visibility="{Binding BackupCommand.IsRunning, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                        <!--<DockPanel HorizontalAlignment="Center">
                         <TextBlock
                             VerticalAlignment="Center"
                             DockPanel.Dock="Right"
@@ -213,199 +214,209 @@
                         <TextBlock Text="{Binding BackupProcess, StringFormat={}{0:N0}.}" />
                     </DockPanel>-->
 
-                    <hc:CircleProgressBar
-                        Width="36"
-                        Height="36"
-                        Margin="-8"
-                        Text="{Binding Value, RelativeSource={RelativeSource Self}, StringFormat=N0}"
-                        Visibility="{Binding BackupCommand.IsRunning, Converter={StaticResource Boolean2VisibilityConverter}}"
-                        Value="{Binding BackupProcess}" />
-                </hc:SimplePanel>
+                        <hc:CircleProgressBar
+                            Width="36"
+                            Height="36"
+                            Margin="-8"
+                            Text="{Binding Value, RelativeSource={RelativeSource Self}, StringFormat=N0}"
+                            Visibility="{Binding BackupCommand.IsRunning, Converter={StaticResource Boolean2VisibilityConverter}}"
+                            Value="{Binding BackupProcess}" />
+                    </hc:SimplePanel>
 
 
-                <Button
-                    hc:IconElement.Geometry="{StaticResource f.database}"
-                    Command="{Binding OpenDbViewerCommand}"
-                    Style="{StaticResource ButtonIcon}" />
+                    <Button
+                        hc:IconElement.Geometry="{StaticResource f.database}"
+                        Command="{Binding OpenDbViewerCommand}"
+                        Style="{StaticResource ButtonIcon}" />
 
 
-                <ListBox
-                    Background="Transparent"
-                    BorderThickness="0"
-                    ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
-                    ItemsSource="{Binding Tools}"
-                    Style="{StaticResource ListBoxCustom}">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Button
-                                hc:IconElement.Geometry="{Binding Icon}"
-                                Command="{Binding DataContext.OpenExeCommand, RelativeSource={RelativeSource AncestorType=local:HomePage}}"
-                                CommandParameter="{Binding ExeName}"
-                                Foreground="{Binding Foreground}"
-                                Style="{StaticResource ButtonIcon}"
-                                ToolTip="{Binding ToolTip}" />
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </DockPanel>
-        </GroupBox>
+                    <ListBox
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
+                        ItemsSource="{Binding Tools}"
+                        Style="{StaticResource ListBoxCustom}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Button
+                                    hc:IconElement.Geometry="{Binding Icon}"
+                                    Command="{Binding DataContext.OpenExeCommand, RelativeSource={RelativeSource AncestorType=local:HomePage}}"
+                                    CommandParameter="{Binding ExeName}"
+                                    Foreground="{Binding Foreground}"
+                                    Style="{StaticResource ButtonIcon}"
+                                    ToolTip="{Binding ToolTip}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </GroupBox>
 
 
-        <hc:UniformSpacingPanel
-            Margin="0,10"
-            DockPanel.Dock="Top"
-            Orientation="Vertical">
+            <hc:UniformSpacingPanel
+                Margin="0,10"
+                DockPanel.Dock="Top"
+                Orientation="Vertical">
 
-            <!--  近期申赎情况  -->
-            <ContentControl Content="{Binding BuySellNearDaysViewModel}" Visibility="{Binding BuySellIn7DaysContext, Converter={StaticResource Object2VisibilityConverter}}">
-                <ContentControl.ContentTemplate>
-                    <DataTemplate>
-                        <hc:SimplePanel>
-                            <hc:UniformSpacingPanel>
-                                <TextBlock FontWeight="Bold" Text="近7日认申购" />
-                                <ToggleButton
-                                    Content="{Binding BuyCount}"
-                                    IsChecked="{Binding ShowBuyList}"
-                                    Style="{StaticResource ToggleButton.HyperlinkLike}" />
-                                <TextBlock Text="笔" />
-
-
-                                <TextBlock
-                                    Margin="10,0,0,0"
-                                    FontWeight="Bold"
-                                    Text="赎回" />
-                                <ToggleButton
-                                    Content="{Binding SellCount}"
-                                    IsChecked="{Binding ShowSellList}"
-                                    Style="{StaticResource ToggleButton.HyperlinkLike}" />
-                                <TextBlock Text="笔" />
-                            </hc:UniformSpacingPanel>
-
-                            <Popup
-                                AllowsTransparency="True"
-                                IsOpen="{Binding ShowBuyList}"
-                                StaysOpen="False">
-                                <Border>
-                                    <DataGrid
-                                        AutoGenerateColumns="False"
-                                        ItemsSource="{Binding BuyRequests}"
-                                        Style="{StaticResource DataGrid.Small}">
-                                        <DataGrid.Columns>
-                                            <DataGridTextColumn Binding="{Binding Id}" Header="Id" />
-                                            <DataGridTextColumn Binding="{Binding RequestDate, StringFormat=yyyy-MM-dd}" Header="日期" />
-                                            <DataGridTextColumn Binding="{Binding FundName}" Header="基金" />
-                                            <DataGridTextColumn Binding="{Binding CustomerName}" Header="投资人" />
-                                            <DataGridTextColumn Binding="{Binding RequestType}" Header="类型" />
-                                            <DataGridTextColumn Binding="{Binding RequestAmount}" Header="金额" />
-                                            <DataGridTextColumn Binding="{Binding RequestShare}" Header="份额" />
-                                        </DataGrid.Columns>
-                                    </DataGrid>
-                                </Border>
-                            </Popup>
-                            <Popup
-                                AllowsTransparency="True"
-                                IsOpen="{Binding ShowSellList}"
-                                StaysOpen="False">
-                                <Border>
-                                    <DataGrid
-                                        AutoGenerateColumns="False"
-                                        ItemsSource="{Binding SellRequests}"
-                                        Style="{StaticResource DataGrid.Small}">
-                                        <DataGrid.Columns>
-                                            <DataGridTextColumn Binding="{Binding Id}" Header="Id" />
-                                            <DataGridTextColumn Binding="{Binding RequestDate, StringFormat=yyyy-MM-dd}" Header="日期" />
-                                            <DataGridTextColumn Binding="{Binding FundName}" Header="基金" />
-                                            <DataGridTextColumn Binding="{Binding CustomerName}" Header="投资人" />
-                                            <DataGridTextColumn Binding="{Binding RequestType}" Header="类型" />
-                                            <DataGridTextColumn Binding="{Binding RequestAmount}" Header="金额" />
-                                            <DataGridTextColumn Binding="{Binding RequestShare}" Header="份额" />
-                                        </DataGrid.Columns>
-                                    </DataGrid>
-                                </Border>
-                            </Popup>
-                        </hc:SimplePanel>
-                    </DataTemplate>
-                </ContentControl.ContentTemplate>
-            </ContentControl>
-        </hc:UniformSpacingPanel>
-
-        <local:HomeValidationView DockPanel.Dock="Top" />
-
-        <WrapPanel Margin="0,10,0,0">
-
-
-
-            <Border BorderBrush="AliceBlue" BorderThickness="1">
-                <ContentControl Content="{Binding RaisingAccountTip}">
+                <!--  近期申赎情况  -->
+                <ContentControl Content="{Binding BuySellNearDaysViewModel}" Visibility="{Binding BuySellIn7DaysContext, Converter={StaticResource Object2VisibilityConverter}}">
                     <ContentControl.ContentTemplate>
                         <DataTemplate>
-                            <DockPanel>
-                                <DockPanel.Resources>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="VerticalAlignment" Value="Center" />
-                                    </Style>
-                                </DockPanel.Resources>
-                                <DockPanel Name="info" DockPanel.Dock="Top">
-                                    <TextBlock Text="募集户余额：" />
-                                    <TextBlock Name="b" Text="{Binding TotalBalance, TargetNullValue=未获取}" />
-                                    <Button
-                                        hc:IconElement.Geometry="{StaticResource f.rotate}"
-                                        Command="{Binding UpdateCommand}"
-                                        Style="{StaticResource ButtonIcon.Small}" />
-                                </DockPanel>
+                            <hc:SimplePanel>
+                                <hc:UniformSpacingPanel>
+                                    <TextBlock FontWeight="Bold" Text="近7日认申购" />
+                                    <ToggleButton
+                                        Content="{Binding BuyCount}"
+                                        IsChecked="{Binding ShowBuyList}"
+                                        Style="{StaticResource ToggleButton.HyperlinkLike}" />
+                                    <TextBlock Text="笔" />
+
+
+                                    <TextBlock
+                                        Margin="10,0,0,0"
+                                        FontWeight="Bold"
+                                        Text="赎回" />
+                                    <ToggleButton
+                                        Content="{Binding SellCount}"
+                                        IsChecked="{Binding ShowSellList}"
+                                        Style="{StaticResource ToggleButton.HyperlinkLike}" />
+                                    <TextBlock Text="笔" />
+                                </hc:UniformSpacingPanel>
 
                                 <Popup
-                                    Name="pop"
                                     AllowsTransparency="True"
-                                    Placement="Bottom"
-                                    PlacementTarget="{Binding ElementName=info}">
-                                    <Border Background="White">
-                                        <StackPanel>
-                                            <ListBox ItemsSource="{Binding BalanceDetail}" Style="{StaticResource ListBoxCustom}">
-                                                <ListBox.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <DockPanel>
-                                                            <TextBlock
-                                                                Width="80"
-                                                                Text="{Binding Value}"
-                                                                TextAlignment="Center" />
-                                                            <TextBlock Text="{Binding Key}" />
-                                                        </DockPanel>
-                                                    </DataTemplate>
-                                                </ListBox.ItemTemplate>
-                                            </ListBox>
-
-                                            <TextBlock Text="失败列表" Visibility="{Binding HasFailed, Converter={StaticResource Boolean2VisibilityConverter}}" />
-
-                                            <ListBox
-                                                ItemsSource="{Binding FailedFunds}"
-                                                Style="{StaticResource ListBoxCustom}"
-                                                Visibility="{Binding HasFailed, Converter={StaticResource Boolean2VisibilityConverter}}">
-                                                <ListBox.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <TextBlock Margin="3" Text="{Binding .}" />
-                                                    </DataTemplate>
-                                                </ListBox.ItemTemplate>
-                                            </ListBox>
-                                        </StackPanel>
+                                    IsOpen="{Binding ShowBuyList}"
+                                    StaysOpen="False">
+                                    <Border>
+                                        <DataGrid
+                                            AutoGenerateColumns="False"
+                                            ItemsSource="{Binding BuyRequests}"
+                                            Style="{StaticResource DataGrid.Small}">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Binding="{Binding Id}" Header="Id" />
+                                                <DataGridTextColumn Binding="{Binding RequestDate, StringFormat=yyyy-MM-dd}" Header="日期" />
+                                                <DataGridTextColumn Binding="{Binding FundName}" Header="基金" />
+                                                <DataGridTextColumn Binding="{Binding CustomerName}" Header="投资人" />
+                                                <DataGridTextColumn Binding="{Binding RequestType}" Header="类型" />
+                                                <DataGridTextColumn Binding="{Binding RequestAmount}" Header="金额" />
+                                                <DataGridTextColumn Binding="{Binding RequestShare}" Header="份额" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
                                     </Border>
                                 </Popup>
-                            </DockPanel>
-                            <DataTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="pop" Property="IsOpen" Value="True" />
-                                </Trigger>
-                                <DataTrigger Binding="{Binding HasFailed}" Value="True">
-                                    <Setter TargetName="b" Property="Foreground" Value="Red" />
-                                </DataTrigger>
-                            </DataTemplate.Triggers>
+                                <Popup
+                                    AllowsTransparency="True"
+                                    IsOpen="{Binding ShowSellList}"
+                                    StaysOpen="False">
+                                    <Border>
+                                        <DataGrid
+                                            AutoGenerateColumns="False"
+                                            ItemsSource="{Binding SellRequests}"
+                                            Style="{StaticResource DataGrid.Small}">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Binding="{Binding Id}" Header="Id" />
+                                                <DataGridTextColumn Binding="{Binding RequestDate, StringFormat=yyyy-MM-dd}" Header="日期" />
+                                                <DataGridTextColumn Binding="{Binding FundName}" Header="基金" />
+                                                <DataGridTextColumn Binding="{Binding CustomerName}" Header="投资人" />
+                                                <DataGridTextColumn Binding="{Binding RequestType}" Header="类型" />
+                                                <DataGridTextColumn Binding="{Binding RequestAmount}" Header="金额" />
+                                                <DataGridTextColumn Binding="{Binding RequestShare}" Header="份额" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Border>
+                                </Popup>
+                            </hc:SimplePanel>
                         </DataTemplate>
                     </ContentControl.ContentTemplate>
                 </ContentControl>
-            </Border>
+            </hc:UniformSpacingPanel>
+
+            <local:HomeValidationView DockPanel.Dock="Top" />
+
+            <WrapPanel Margin="0,10,0,0">
 
 
-        </WrapPanel>
 
-    </DockPanel>
+                <Border BorderBrush="AliceBlue" BorderThickness="1">
+                    <ContentControl Content="{Binding RaisingAccountTip}">
+                        <ContentControl.ContentTemplate>
+                            <DataTemplate>
+                                <DockPanel>
+                                    <DockPanel.Resources>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="VerticalAlignment" Value="Center" />
+                                        </Style>
+                                    </DockPanel.Resources>
+                                    <DockPanel Name="info" DockPanel.Dock="Top">
+                                        <TextBlock Text="募集户余额：" />
+                                        <TextBlock Name="b" Text="{Binding TotalBalance, TargetNullValue=未获取}" />
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.rotate}"
+                                            Command="{Binding UpdateCommand}"
+                                            Style="{StaticResource ButtonIcon.Small}" />
+                                    </DockPanel>
+
+                                    <Popup
+                                        Name="pop"
+                                        AllowsTransparency="True"
+                                        Placement="Bottom"
+                                        PlacementTarget="{Binding ElementName=info}">
+                                        <Border Background="White">
+                                            <StackPanel>
+                                                <ListBox ItemsSource="{Binding BalanceDetail}" Style="{StaticResource ListBoxCustom}">
+                                                    <ListBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <DockPanel>
+                                                                <TextBlock
+                                                                    Width="80"
+                                                                    Text="{Binding Value}"
+                                                                    TextAlignment="Center" />
+                                                                <TextBlock Text="{Binding Key}" />
+                                                            </DockPanel>
+                                                        </DataTemplate>
+                                                    </ListBox.ItemTemplate>
+                                                </ListBox>
+
+                                                <TextBlock Text="失败列表" Visibility="{Binding HasFailed, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                                                <ListBox
+                                                    ItemsSource="{Binding FailedFunds}"
+                                                    Style="{StaticResource ListBoxCustom}"
+                                                    Visibility="{Binding HasFailed, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                                    <ListBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Margin="3" Text="{Binding .}" />
+                                                        </DataTemplate>
+                                                    </ListBox.ItemTemplate>
+                                                </ListBox>
+                                            </StackPanel>
+                                        </Border>
+                                    </Popup>
+                                </DockPanel>
+                                <DataTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="pop" Property="IsOpen" Value="True" />
+                                    </Trigger>
+                                    <DataTrigger Binding="{Binding HasFailed}" Value="True">
+                                        <Setter TargetName="b" Property="Foreground" Value="Red" />
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ContentControl.ContentTemplate>
+                    </ContentControl>
+                </Border>
+
+
+            </WrapPanel>
+
+        </DockPanel>
+
+        <TextBlock
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            FontSize="150"
+            Foreground="Gray"
+            Opacity="0.5"
+            Text="加载中"
+            Visibility="{Binding IsInitializing, Converter={StaticResource Boolean2VisibilityConverter}}" />
+    </hc:SimplePanel>
 </UserControl>
