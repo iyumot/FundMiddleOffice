@@ -179,7 +179,79 @@ public static class DatabaseAssist
         [54] = ChangeAmacAccount2,
 
         [55] = FixLogInfo,
+        [62] = RebuildFundShareRecord
     };
+
+    private static void RebuildFundShareRecord(BaseDatabase db)
+    {
+        void UpdateFundShareRecordByTA(ILiteCollection<TransferRecord> table, ILiteCollection<FundShareRecord> tableSR, int fundId, DateOnly from = default)
+        {
+            var old = tableSR.Query().OrderByDescending(x => x.Date).Where(x => x.FundId == fundId && x.Date < from).FirstOrDefault();
+
+            var data = table.Find(x => x.FundId == fundId).OrderBy(x => x.ConfirmedDate).GroupBy(x => x.ConfirmedDate);
+            var list = new List<FundShareRecord>();
+            if (old is not null) list.Add(old);
+            foreach (var item in data)
+            {
+                if (item.Sum(x => x.ShareChange()) is decimal change && change != 0)
+                    list.Add(new FundShareRecord(fundId, item.Key, change + (list.Count > 0 ? list[^1].Share : 0)));
+            }
+            tableSR.DeleteMany(x => x.FundId == fundId && x.Date >= from);
+            tableSR.Upsert(list);
+        }
+        void UpdateInvestorBalance(ILiteCollection<TransferRecord> table, ILiteCollection<InvestorBalance> tableIB, int investorId, int fundId, DateOnly from = default)
+        {
+            var old = tableIB.Query().OrderByDescending(x => x.Date).Where(x => x.Date < from).FirstOrDefault();
+            var data = table.Find(x => x.FundId == fundId && x.CustomerId == investorId && x.ConfirmedDate >= from).GroupBy(x => x.ConfirmedDate).OrderBy(x => x.Key);
+            var list = new List<InvestorBalance>();
+            if (old is not null) list.Add(old);
+            foreach (var tf in data)
+            {
+                var share = tf.Sum(x => x.ShareChange());
+                var deposit = tf.Where(x => x.Type switch { TransferRecordType.Subscription or TransferRecordType.Purchase or TransferRecordType.MoveIn or TransferRecordType.SwitchIn or TransferRecordType.TransferIn => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
+                var withdraw = tf.Where(x => x.Type switch { TransferRecordType.Redemption or TransferRecordType.ForceRedemption or TransferRecordType.MoveOut or TransferRecordType.SwitchOut or TransferRecordType.TransferOut or TransferRecordType.Distribution => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
+
+                var last = list.LastOrDefault() ?? new();
+                var cur = new InvestorBalance { FundId = fundId, InvestorId = investorId, Share = share + last.Share, Deposit = deposit + last.Deposit, Withdraw = withdraw + last.Withdraw, Date = tf.Key };
+                list.Add(cur);
+            }
+
+            tableIB.DeleteMany(x => x.FundId == fundId && x.InvestorId == investorId && x.Date >= from);
+            tableIB.Upsert(list);
+        }
+
+        var funds = db.GetCollection<Fund>().Query().Select(f => f.Id).ToList();
+
+        var t1 = db.GetCollection<TransferRecord>();
+        var t2 = db.GetCollection<FundShareRecord>();
+        var t3 = db.GetCollection<FundShareRecord>("fsr_daily");
+        var t4 = db.GetCollection<InvestorBalance>();
+
+        t2.DeleteAll();
+        t3.DeleteAll();
+        t4.DeleteAll();
+
+        foreach (var fid in funds)
+        {
+            UpdateFundShareRecordByTA(t1, t2, fid);
+
+            var dailyValues = db.GetDailyCollection(fid).Query().Where(x => x.Share > 0).OrderBy(x => x.Date).ToList();
+            if (dailyValues.Count > 0) t3.Insert(new FundShareRecord(fid, dailyValues[0].Date, dailyValues[0].Share));
+            for (var i = 1; i < dailyValues.Count; i++)
+            {
+                if (dailyValues[i].Share != dailyValues[i - 1].Share)
+                    t3.Insert(new FundShareRecord(fid, dailyValues[i].Date, dailyValues[i].Share));
+            }
+
+            foreach (var cid in t1.Query().Select(x => x.CustomerId).ToList().Distinct())
+                UpdateInvestorBalance(t1, t4, cid, fid);
+
+        }
+
+
+
+
+    }
 
     private static void FixLogInfo(BaseDatabase database)
     {
