@@ -790,12 +790,14 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     {
         if (message.FundId == Fund.Id)
         {
-            var old = DailyValues.FirstOrDefault(x => x.Id == message.Daily.Id);
-            if (old is not null)
-                DailyValues.Remove(old);
+
 
             App.Current.Dispatcher.BeginInvoke(() =>
             {
+                var old = DailyValues.FirstOrDefault(x => x.Id == message.Daily.Id);
+                if (old is not null)
+                    DailyValues.Remove(old);
+
                 DailyValues.Add(message.Daily);
                 CurveViewDataContext.Data = DailyValues.OrderBy(x => x.Date).ToList();
 
