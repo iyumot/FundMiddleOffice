@@ -46,7 +46,7 @@ public static class MaskService
     private static Effect GetOriginalEffect(DependencyObject obj) =>
         (Effect)obj.GetValue(OriginalEffectProperty);
 
-    private static void SetOriginalEffect(DependencyObject obj, Effect value) =>
+    private static void SetOriginalEffect(DependencyObject obj, Effect? value) =>
         obj.SetValue(OriginalEffectProperty, value);
 
     // 全局模糊状态
@@ -150,15 +150,13 @@ public static class MaskService
     private static void RestoreOriginalEffect(UIElement element)
     {
         var originalEffect = GetOriginalEffect(element);
-        if (originalEffect != null)
-        {
-            element.Effect = originalEffect;
-            SetOriginalEffect(element, null);
-        }
+
+        element.Effect = originalEffect;
+        SetOriginalEffect(element, null);
     }
 
     // 更新状态指示器
-    private static void UpdateStatusIndicator(Window window)
+    private static void UpdateStatusIndicator(Window? window)
     {
         if (window == null) return;
 
