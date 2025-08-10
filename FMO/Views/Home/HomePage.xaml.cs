@@ -15,7 +15,6 @@ using System.IO.Compression;
 using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Media;
 
 namespace FMO;
@@ -108,7 +107,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
             MissionSchedule.Init();
 
-           // DataSelfTest();
+            // DataSelfTest(); 
 
             // 数据验证
             VerifyRules.InitAll();
@@ -132,7 +131,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
     }
 
- 
+
 
     private void LoadTrusteeMessages()
     {
@@ -160,7 +159,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
                     Task.Run(() => DataTracker.CheckFundFolder(c)),
                     Task.Run(()=> DataTracker.CheckShareIsPair(c)),
                     Task.Run(()=> DataTracker.CheckIsExpired(c)),
-                    Task.Run(()=> DataTracker.CheckInvestorBalance()), 
+                    Task.Run(()=> DataTracker.CheckInvestorBalance()),
                     Task.Run(()=> DataTracker.CheckTAMissOwner()),
         ];
 
@@ -225,7 +224,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
         PlotBuySellIn7Days(db);
     }
 
-    private void PlotManageScale(BaseDatabase db)
+    private void PlotManageScale2(BaseDatabase db)
     {
         // 计算管理规模
         var fids = db.GetCollection<Fund>().FindAll().Select(x => x.Id).ToList();
@@ -335,6 +334,60 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
     }
 
+    private void PlotManageScale(BaseDatabase db)
+    { 
+        var startdate = db.GetCollection<Fund>().Query().Where(x => x.SetupDate.Year > 1970).Select(x => x.SetupDate).ToList().Min();
+        var scaledates = db.GetCollection<DailyManageSacle>().Query().Select(x => x.Date).ToList();
+        var tdays = Days.TradingDaysFrom(startdate);
+
+        // 生成缺失的日期
+        var mis = tdays.Except(scaledates).ToList();
+        DataTracker.UpdateManageSacle(mis);
+        var scales = db.GetCollection<DailyManageSacle>().FindAll().ToList();
+        var sc = scales.OrderBy(x=>x.Date).GroupBy(x => new { x.Date.Year, x.Date.Month }).Select(x => new { Date = new DateTime(x.Key.Year, x.Key.Month, 1), Value = x.Max(y => y.Scale) / 10000 }).ToList();
+
+        App.Current.Dispatcher.BeginInvoke(() =>
+        {
+
+            ManageScaleContext = new PlotModel
+            {
+                Title = "管理规模",
+                PlotType = PlotType.XY,
+                PlotAreaBorderThickness = new OxyThickness(1, 0, 0, 0)
+            };
+            // 添加坐标轴（关键步骤！）
+            ManageScaleContext.Axes.Add(new DateTimeAxis  // X轴用日期轴
+            {
+                Position = OxyPlot.Axes.AxisPosition.Bottom,
+                StringFormat = "yyyy-MM" // 日期格式
+            });
+            ManageScaleContext.Axes.Add(new LinearAxis  // Y轴
+            {
+                Position = OxyPlot.Axes.AxisPosition.Left,
+                MaximumPadding = 0.1
+            });
+
+            ManageScaleContext.Series.Add(new OxyPlot.Series.AreaSeries
+            {
+                ItemsSource = sc,//sc.Index().Select(x => new { Date = new DateTime(mons[x.Index], default), Value = x.Item / 10000 }).ToList(),
+                DataFieldX = "Date",          // 绑定到匿名类型的Date属性
+                DataFieldY = "Value",         // 绑定到Value属性
+                MarkerType = MarkerType.None,
+                LineStyle = LineStyle.Solid,
+                Color = OxyColors.RoyalBlue,
+                MarkerFill = OxyColors.RoyalBlue,
+                InterpolationAlgorithm = InterpolationAlgorithms.CanonicalSpline,
+                TrackerFormatString = "{2:yyyy-MM}         {4:N0} 万元",
+                StrokeThickness = 2,
+                TrackerKey = "CustomTracker"
+
+            });
+
+            // 自动调整坐标轴范围（关键步骤！）
+            ManageScaleContext.InvalidatePlot(true);
+        });
+
+    }
 
     private void PlotFundType(BaseDatabase db)
     {

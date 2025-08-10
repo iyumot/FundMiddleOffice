@@ -5,6 +5,7 @@ using LiteDB;
 using Serilog;
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Text.RegularExpressions;
 
 namespace FMO.Utilities;
 
@@ -461,6 +462,10 @@ public static partial class DataTracker
             db.GetDailyCollection(g.Key.FundId, g.Key.Class).Upsert(g);
         }
 
+        // 更新管理规模
+        var dates = dailyValues.Select(x => x.Date).Distinct().ToList();
+        UpdateManageSacle(dates);
+
         // 修改 FundShareRecord
         // 一个版本是用dv算，当份额与前一日不同时，录入
         // 一个版本是用ta算， 
@@ -535,6 +540,40 @@ public static partial class DataTracker
         VerifyRules.OnEntityArrival(dailyValues);
 
 
+    }
+
+    public static void UpdateManageSacle(IEnumerable<DateOnly> dates)
+    {
+        using var db = DbHelper.Base();
+        // 获取所有名称包含"fv_开关"的集合（表）名称
+        var fvCollections = db.GetCollectionNames().Where(c => Regex.IsMatch(c, @"fv_\d+$")).ToList();
+   
+        //IEnumerable<BsonValue> array = dates.Select(x => BsonMapper.Global.ToDocument(x));
+        var array = dates.Select(x => new BsonValue(x.DayNumber));
+
+        Dictionary<DateOnly, decimal> assets = new();
+
+        // 遍历每个符合条件的集合，执行查询并转换结果
+        foreach (var collectionName in fvCollections)
+        {
+            var collection = db.GetCollection(collectionName);
+
+            // 1. 构建查询条件：Date在指定日期列表中
+            var query = Query.In("Date.DayNumber", dates.Select(d => new BsonValue(d.DayNumber)).ToArray());
+
+            // 2. 执行查询获取文档（仅包含需要的字段以提高效率）
+            var results = collection.Find(query).Select(x => new { Date = BsonMapper.Global.ToObject<DateOnly>(x["Date"].AsDocument), NetAsset = x["NetAsset"].AsDecimal }).ToList();
+
+            foreach (var item in results)
+            {
+                if (!assets.ContainsKey(item.Date))
+                    assets[item.Date] = 0;
+
+                assets[item.Date] += item.NetAsset;
+            }
+        }
+
+        db.GetCollection<DailyManageSacle>().InsertBulk(assets.Select(x=>new DailyManageSacle(x.Key, x.Value)));
     }
 
     private static void OnFundShareRecord(IEnumerable<FundShareRecord> add)
