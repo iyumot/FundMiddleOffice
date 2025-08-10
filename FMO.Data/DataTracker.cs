@@ -6,7 +6,6 @@ using Serilog;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
-using System.Threading.Channels;
 
 namespace FMO.Utilities;
 
@@ -548,7 +547,7 @@ public static partial class DataTracker
         using var db = DbHelper.Base();
         // 获取所有名称包含"fv_开关"的集合（表）名称
         var fvCollections = db.GetCollectionNames().Where(c => Regex.IsMatch(c, @"fv_\d+$")).ToList();
-   
+
         //IEnumerable<BsonValue> array = dates.Select(x => BsonMapper.Global.ToDocument(x));
         var array = dates.Select(x => new BsonValue(x.DayNumber));
 
@@ -574,7 +573,7 @@ public static partial class DataTracker
             }
         }
 
-        db.GetCollection<DailyManageSacle>().InsertBulk(assets.Select(x=>new DailyManageSacle(x.Key, x.Value)));
+        db.GetCollection<DailyManageSacle>().InsertBulk(assets.Select(x => new DailyManageSacle(x.Key, x.Value)));
     }
 
     private static void OnFundShareRecord(IEnumerable<FundShareRecord> add)
@@ -831,7 +830,138 @@ public static partial class DataTracker
         tableIB.Upsert(list);
     }
 
+    public static void RebuildTARelation()
+    {
+        using var db = DbHelper.Base();
+        var orders = db.GetCollection<TransferOrder>().FindAll().OrderBy(x => x.Date).ToList();
+        var requests = db.GetCollection<TransferRequest>().FindAll().OrderBy(x => x.RequestDate).Where(x => x.RequiredOrder()).ToList();
+        var records = db.GetCollection<TransferRecord>().FindAll().OrderBy(x => x.RequestDate).Where(x => x.RequiredOrder()).ToList();
 
+        // 对应request 和 record
+        List<TransferMapping> map = new();
+        var rq = requests.Join(records, x => x.ExternalId, x => x.ExternalRequestId, (q, r) => new TransferMapping { RequestId = q.Id, RecordId = r.Id });
+        map.AddRange(rq);
+
+        // 有request 无record
+        rq = requests.ExceptBy(records.Select(x => x.ExternalRequestId), x => x.ExternalId).Join(records, x => x.ExternalId, x => x.ExternalId, (q, r) => new TransferMapping { RequestId = q.Id, RecordId = r.Id });
+        map.AddRange(rq);
+
+        foreach (var item in requests.ExceptBy(map.Select(x => x.RequestId), x => x.Id))
+            map.Add(new TransferMapping { RequestId = item.Id });
+
+        // 有  record 无 request
+        foreach (var item in records.ExceptBy(map.Select(x => x.RecordId), x => x.Id))
+            map.Add(new TransferMapping { RecordId = item.Id });
+
+        // 对应order
+        var reqDates = requests.GroupBy(x => ((long)x.FundId << 32) | (long)x.CustomerId).ToDictionary(x => x.Key);
+        var recDates = records.GroupBy(x => ((long)x.FundId << 32) | (long)x.CustomerId).ToDictionary(x => x.Key);
+        foreach (var o in orders)
+        {
+            var gid = ((long)o.FundId << 32) | (long)o.InvestorId;
+
+            bool needtestrec = false;
+
+            if (reqDates.ContainsKey(gid))
+            {
+                List<TransferRequest> req = [.. reqDates[gid]];
+
+                // 找 o.Date 后一个日期的所有同fundId InvestorId的 request
+                // 使用二分查找找到第一个符合条件的请求
+                int index = req.Select(x => x.RequestDate).ToList().BinarySearch(o.Date);
+                if (index < 0) index = ~index;
+
+                var take = 1;
+                for (int i = index + 1; i < req.Count; i++, take++)
+                {
+                    if (req[i].RequestDate != req[index].RequestDate)
+                        break;
+                }
+
+                var may = req.Skip(index).Take(take);
+
+                bool pair = false;
+                switch (o.Type)
+                {
+                    case TransferOrderType.FirstTrade:
+                    case TransferOrderType.Buy:
+                    case TransferOrderType.Amount:
+                    case TransferOrderType.RemainAmout:
+                        pair = o.Number == may.Sum(x => x.RequestAmount);
+                        break;
+                    case TransferOrderType.Share:
+                        pair = o.Number == may.Sum(x => x.RequestShare);
+                        break;
+                }
+
+                if (pair)
+                {
+                    var rids = may.Select(x => x.Id);
+                    foreach (var item in map.Where(x => rids.Contains(x.RequestId)).ToArray())
+                    {
+                        // 有冲突
+                        if (item.OrderId != 0 && item.OrderId != o.Id)
+                            map.Add(new TransferMapping { OrderId = o.Id, RequestId = item.RequestId, RecordId = item.RecordId });
+                        else
+                            item.OrderId = o.Id;
+                    }
+                }
+                else needtestrec = true;
+            }
+
+            if (needtestrec && recDates.ContainsKey(gid))
+            {
+                List<TransferRecord> rec = recDates[gid].ToList();
+
+                // 找 o.Date 后一个日期的所有同fundId InvestorId的 request
+                // 使用二分查找找到第一个符合条件的请求
+                int index = rec.Select(x => x.RequestDate).ToList().BinarySearch(o.Date);
+                if (index < 0) index = ~index;
+
+                var take = 1;
+                for (int i = index + 1; i < rec.Count; i++, take++)
+                {
+                    if (rec[i].RequestDate != rec[index].RequestDate)
+                        break;
+                }
+
+                var may = rec.Skip(index).Take(take);
+
+                bool pair = false;
+                switch (o.Type)
+                {
+                    case TransferOrderType.FirstTrade:
+                    case TransferOrderType.Buy:
+                    case TransferOrderType.Amount:
+                    case TransferOrderType.RemainAmout:
+                        pair = o.Number == may.Sum(x => x.RequestAmount);
+                        break;
+                    case TransferOrderType.Share:
+                        pair = o.Number == may.Sum(x => x.RequestShare);
+                        break;
+                }
+
+                if (pair)
+                {
+                    var rids = may.Select(x => x.Id);
+                    foreach (var item in map.Where(x => rids.Contains(x.RecordId)).ToArray())
+                    {
+                        // 有冲突
+                        if (item.OrderId != 0 && item.OrderId != o.Id)
+                            map.Add(new TransferMapping { OrderId = o.Id, RequestId = item.RequestId, RecordId = item.RecordId });
+                        else
+                            item.OrderId = o.Id;
+                    }
+                }
+            }
+
+        }
+
+        //if (db.GetCollection<TransferMapping>().Query().FirstOrDefault() is not null)
+        var col = db.GetCollection<TransferMapping>();
+        col.DeleteAll();
+        col.InsertBulk(map);
+    }
 }
 
 

@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
-using FMO.Shared;
 using FMO.Utilities;
 using Serilog;
 using System.Collections.ObjectModel;
@@ -84,10 +83,10 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         {
             using var db = DbHelper.Base();
 
-            var tr = db.GetCollection<TransferRecord>().FindAll();
-            var tr2 = db.GetCollection<TransferRequest>().FindAll().OrderByDescending(x => x.RequestDate).ToArray();
-            var t3 = db.GetCollection<TransferOrder>().FindAll();
-            var map = db.GetCollection<TransferMapping>().FindAll().ToArray();
+            var tr = db.GetCollection<TransferRecord>().FindAll().ToList();
+            var tr2 = db.GetCollection<TransferRequest>().FindAll().OrderByDescending(x => x.RequestDate).ToList();
+            var t3 = db.GetCollection<TransferOrder>().FindAll().ToList();
+            var map = db.GetCollection<TransferMapping>().FindAll().ToList();
             //var mapd = map.ToDictionary(x => x.OrderId, x => x);
 
             List<string?> list = [DataTracker.GetUniformTip(TipType.TANoOwner), DataTracker.GetUniformTip(TipType.TransferRequestMissing)];
@@ -103,7 +102,13 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
             foreach (var item in records.IntersectBy<TransferRecordViewModel, int>(map.Where(x => x.RequestId == 0).Select(x => x.RecordId), x => x.Id))
                 item.LackRequest = true;
 
-
+            foreach (var item in orders.Join(map, x => x.Id, x => x.OrderId, (o, m) => new { o, m }))
+            {
+                if (item.m.RequestId != 0)
+                    item.o.IsApplyed = true;
+                if (item.m.RecordId != 0)
+                    item.o.IsConfirmed = true;
+            }
 
             //foreach (var o in orders)
             //{
@@ -208,26 +213,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
         ErrorMessage = [.. list.Where(x => x is not null)];
     }
-
-    // 通用调试日志写入方法（无文件操作）
-    void LogDebug(string message)
-    {
-        var fullMessage = $"[{DateTime.Now:HH:mm:ss.fff}] {message}";
-
-        // 1. 调试输出窗口
-        Debug.WriteLine(fullMessage);
-
-        // 2. 控制台输出
-        //Console.WriteLine(fullMessage);
-
-        // 3. 调试器即时窗口（如果附加了调试器）
-        //if (Debugger.IsAttached)
-        //{
-        //    Debugger.Log(0, "DataLoad", fullMessage + Environment.NewLine);
-        //}
-    }
-
-
+     
 
     private bool FilterRecord(object obj)
     {
@@ -491,8 +477,8 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     }
 
 
-
-
+    [RelayCommand]
+    public void RebuildTransferRelation() => DataTracker.RebuildTARelation();
 
 
 
@@ -530,86 +516,4 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     {
         CheckDataError();
     }
-}
-
-
-
-[AutoChangeableViewModel(typeof(TransferRecord))]
-partial class TransferRecordViewModel
-{
-    public FileInfo File => new FileInfo(@$"files\tac\{Id}.pdf");
-
-
-    public bool FileExists => System.IO.File.Exists(File.FullName);
-
-    public bool HasOrder => OrderId != 0;
-
-    /// <summary>
-    /// 是否有同日同向订单
-    /// </summary>
-    public bool HasBrotherRecord { get; set; }
-
-    public bool FirstTrade { get; set; }
-
-
-    public bool LackRequest { get; set; }
-
-
-    [RelayCommand]
-    public void ModifyOrder()
-    {
-        var wnd = new SupplementaryOrderWindow();
-        var context = new SupplementaryOrderWindowViewModel(this, FirstTrade);
-        wnd.DataContext = context;
-        wnd.Owner = App.Current.MainWindow;
-        if (wnd.ShowDialog() ?? false)
-        {
-            OrderId = context.Id;
-            OnPropertyChanged(nameof(HasOrder));
-        }
-    }
-
-    public decimal ShareChange()
-    {
-        switch (Type)
-        {
-            case TransferRecordType.Subscription:
-            case TransferRecordType.Purchase:
-            case TransferRecordType.Increase:
-            case TransferRecordType.Distribution:
-                return ConfirmedShare ?? 0;
-            case TransferRecordType.Redemption:
-            case TransferRecordType.ForceRedemption:
-            case TransferRecordType.Decrease:
-                return -ConfirmedShare ?? 0;
-            default:
-                return 0;
-        }
-    }
-}
-
-
-[AutoChangeableViewModel(typeof(TransferOrder))]
-partial class TransferOrderViewModel
-{
-    public bool IsComfirmed { get => field; set { field = value; OnPropertyChanged(nameof(IsComfirmed)); } }
-
-}
-
-[AutoChangeableViewModel(typeof(RaisingBankTransaction))]
-partial class RaisingBankTranscationViewModel
-{
-    public RaisingBankTranscationViewModel(RaisingBankTransaction? instance, (int Id, string Name, string Code, DateOnly ClearDate)[] funds) : this(instance)
-    {
-        if (instance is null) return;
-        var fund = funds.FirstOrDefault(x => x.Id == instance.FundId);
-        FundName = fund.Name;
-
-        This = string.IsNullOrWhiteSpace(FundName) ? instance.AccountName : FundName;
-    }
-
-    public string FundName { get; }
-
-
-    public string This { get; }
 }

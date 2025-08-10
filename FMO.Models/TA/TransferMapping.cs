@@ -33,6 +33,11 @@ public class TransferMapping
 
     public int RecordId { get; set; }
 
+    public bool IsMaunal { get; set; }
+
+    public bool Conflict { get; set; }
+
+
 
     public void Merge(TransferMapping other)
     {

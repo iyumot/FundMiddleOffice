@@ -57,6 +57,8 @@
                 Command="{Binding CalcFeeCommand}"
                 Content="费用计算器" />
 
+            <Button Command="{Binding RebuildTransferRelationCommand}" Content="重新关联交易" />
+
             <!--  tip  -->
             <DockPanel DockPanel.Dock="Right" Visibility="{Binding DataHasError, Converter={StaticResource Boolean2VisibilityConverter}}">
                 <ContentControl Content="{Binding .}">
@@ -241,7 +243,18 @@
                 </DataGrid>
             </TabItem>
 
-            <TabItem Header="订单">
+            <TabItem>
+                <TabItem.Header>
+                    <DockPanel LastChildFill="False">
+                        <Viewbox
+                            Width="15"
+                            Height="15"
+                            Margin="4,0">
+                            <Path Data="{StaticResource f.feather-pointed}" Fill="Black" />
+                        </Viewbox>
+                        <TextBlock Text="订单" />
+                    </DockPanel>
+                </TabItem.Header>
                 <DataGrid
                     AutoGenerateColumns="False"
                     EnableRowVirtualization="True"
@@ -255,9 +268,22 @@
                         <DataGridTemplateColumn>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Viewbox Height="15" Visibility="{Binding IsComfirmed, Converter={StaticResource Boolean2VisibilityReConverter}}">
-                                        <Path Data="{StaticResource f.sheet-plastic}" Fill="Red" />
-                                    </Viewbox>
+                                    <hc:UniformSpacingPanel Spacing="5">
+                                        <Viewbox Width="15" Height="15">
+                                            <Path x:Name="req" Data="{StaticResource f.file-circle-minus}" />
+                                        </Viewbox>
+                                        <Viewbox Width="15" Height="15">
+                                            <Path x:Name="rec" Data="{StaticResource f.clipboard-check}" />
+                                        </Viewbox>
+                                    </hc:UniformSpacingPanel>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding IsApplyed}" Value="False">
+                                            <Setter TargetName="req" Property="Fill" Value="Red" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsConfirmed}" Value="False">
+                                            <Setter TargetName="rec" Property="Fill" Value="Red" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -415,7 +441,18 @@
                 </DataGrid>
             </TabItem>
 
-            <TabItem Header="交易申请">
+            <TabItem>
+                <TabItem.Header>
+                    <DockPanel LastChildFill="False">
+                        <Viewbox
+                            Width="15"
+                            Height="15"
+                            Margin="4,0">
+                            <Path Data="{StaticResource f.file-circle-plus}" Fill="Black" />
+                        </Viewbox>
+                        <TextBlock Text="交易申请" />
+                    </DockPanel>
+                </TabItem.Header>
                 <DataGrid
                     hc:DataGridAttach.ShowRowNumber="True"
                     AutoGenerateColumns="False"
@@ -479,7 +516,18 @@
                 </DataGrid>
             </TabItem>
 
-            <TabItem Header="交易确认">
+            <TabItem>
+                <TabItem.Header>
+                    <DockPanel LastChildFill="False">
+                        <Viewbox
+                            Width="15"
+                            Height="15"
+                            Margin="4,0">
+                            <Path Data="{StaticResource f.clipboard-check}" Fill="Black" />
+                        </Viewbox>
+                        <TextBlock Text="交易确认" />
+                    </DockPanel>
+                </TabItem.Header>
                 <DataGrid
                     d:DataContext="{d:DesignInstance CreateList=True,
                                                      Type=local:TransferRecordViewModel}"
@@ -505,12 +553,7 @@
                                             Style="{StaticResource ButtonIcon.Small}"
                                             Visibility="{Binding FileExists, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
-                                        <Viewbox
-                                            Width="14"
-                                            Height="14"
-                                            Visibility="{Binding LackRequest, Converter={StaticResource Boolean2VisibilityConverter}}">
-                                            <Path Data="{StaticResource f.file-pen}" Fill="Red" />
-                                        </Viewbox>
+
 
                                         <Button
                                             x:Name="del"
@@ -535,9 +578,22 @@
                                 <DataTemplate>
                                     <Viewbox Height="15" Visibility="{Binding HasOrder, Converter={StaticResource Boolean2VisibilityReConverter}}">
                                         <Path
-                                            Data="{StaticResource f.sheet-plastic}"
+                                            Data="{StaticResource f.feather-pointed}"
                                             Fill="Red"
                                             Visibility="{Binding IsLiquidating, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                                    </Viewbox>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Viewbox
+                                        Width="14"
+                                        Height="14"
+                                        Visibility="{Binding LackRequest, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                        <Path Data="{StaticResource f.file}" Fill="Red" />
                                     </Viewbox>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
