@@ -11,7 +11,9 @@ public static partial class VerifyRules
     public static FundDailyMissingRule FundDailyMissingRule { get; } = new();
 
     public static FundSharePairRule FundSharePairRule { get; } = new();
- 
+
+    public static FundOverdueRule FundOverdueRule { get; } = new();
+
 }
 
 ////生成结果如下 

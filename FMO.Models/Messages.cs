@@ -51,6 +51,10 @@ public record EntityChangedMessage<TEntity,TProperty>(TEntity Entity, string Pro
 
 public record EntityChanged<TEntity, TProperty>(TEntity Entity, string PropertyName, TProperty Old, TProperty New);
 
+
+public record EntityChanged<TProperty>(Type Type, object Id, string PropertyName, TProperty Old, TProperty New);
+
+
 /// <summary>
 /// 交易确认关联订单
 /// </summary>

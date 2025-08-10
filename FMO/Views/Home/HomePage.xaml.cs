@@ -157,7 +157,6 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
         Task[] t = [Task.Run(async() => await SyncFundsFromAmac(c) ),
                     Task.Run(() => DataTracker.CheckFundFolder(c)),
-                    Task.Run(()=> DataTracker.CheckShareIsPair(c)),
                     Task.Run(()=> DataTracker.CheckIsExpired(c)),
                     Task.Run(()=> DataTracker.CheckInvestorBalance()),
                     Task.Run(()=> DataTracker.CheckTAMissOwner()),
@@ -638,6 +637,10 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
         try
         {
+            var today = DateOnly.FromDateTime(DateTime.Now);
+
+            VerifyRules.OnEntityArrival([today]);
+
             // 更新规模图
             InitPlot();
 

@@ -6,6 +6,7 @@ using Serilog;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
+using System.Threading.Channels;
 
 namespace FMO.Utilities;
 
@@ -586,7 +587,10 @@ public static partial class DataTracker
         if (changed.PropertyName == nameof(Fund.ClearDate) && changed.New != default)
             VerifyRules.OnEntityArrival([changed]);
     }
-
+    public static void OnEntityChanged(EntityChanged<DateOnly> changed)
+    {
+        VerifyRules.OnEntityArrival([changed]);
+    }
 
     /// <summary>
     ///  关联订单
@@ -826,7 +830,6 @@ public static partial class DataTracker
         tableIB.DeleteMany(x => x.FundId == fundId && x.InvestorId == investorId && x.Date >= from);
         tableIB.Upsert(list);
     }
-
 
 
 }

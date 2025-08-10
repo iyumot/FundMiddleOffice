@@ -805,6 +805,16 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
             WeakReferenceMessenger.Default.Send(new FundAccountChangedMessage(FundId, FundAccountType.Collection));
         else if (unit == CustodyAccount)
             WeakReferenceMessenger.Default.Send(new FundAccountChangedMessage(FundId, FundAccountType.Custody));
+        else if (unit == ExpirationDate)
+            DataTracker.OnEntityChanged(new EntityChanged<DateOnly>(typeof(FundElements), Id, nameof(FundElements.ExpirationDate), ExpirationDate.OldValue ?? default, ExpirationDate.NewValue ?? default));
+    }
+
+
+    protected override void DeleteOverride(IPropertyModifier unit)
+    {
+        base.DeleteOverride(unit);
+        if (unit == ExpirationDate)
+            DataTracker.OnEntityChanged(new EntityChanged<DateOnly>(typeof(FundElements), Id, nameof(FundElements.ExpirationDate), ExpirationDate.OldValue ?? default, ExpirationDate.NewValue ?? default));
     }
 
     protected override void SaveOverride()

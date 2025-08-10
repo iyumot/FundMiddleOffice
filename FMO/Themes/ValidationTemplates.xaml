@@ -165,4 +165,40 @@
             </DockPanel>
         </Border>
     </DataTemplate>
+
+
+    <DataTemplate x:Key="FundOverdue">
+        <DataGrid
+            AutoGenerateColumns="False"
+            ColumnHeaderStyle="{StaticResource CenterColumnHeader}"
+            IsReadOnly="False"
+            ItemsSource="{Binding .}"
+            Style="{StaticResource DataGrid.NoSelect}">
+            <DataGrid.Columns>
+                <DataGridTextColumn
+                    Binding="{Binding Context.FundName}"
+                    ElementStyle="{StaticResource LeftText}"
+                    Header="基金" />
+                <!--<DataGridTextColumn
+                    Width="100"
+                    Binding="{Binding Context.Code}"
+                    ElementStyle="{StaticResource CenterText}"
+                    Header="代码" />-->
+                <DataGridTextColumn
+                    Width="100"
+                    Binding="{Binding Context.SetupDate, StringFormat=yyyy/MM/dd}"
+                    ElementStyle="{StaticResource DateText}"
+                    Header="成立日期" />
+                <DataGridTextColumn
+                    Binding="{Binding Context.Expire, StringFormat=yyyy/MM/dd}"
+                    ElementStyle="{StaticResource DateText}"
+                    Header="到期日" />
+                <DataGridTextColumn
+                    Width="100"
+                    Binding="{Binding Context.ExpiredDays, StringFormat={}{0}天}"
+                    ElementStyle="{StaticResource DateText}"
+                    Header="超期" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DataTemplate>
 </ResourceDictionary>

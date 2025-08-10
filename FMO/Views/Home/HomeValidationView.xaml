@@ -33,5 +33,10 @@
             DataContext="{Binding ShareNotPair.View}"
             Header="基金份额不匹配"
             TipTemplate="{StaticResource ShareNotPairRule}" />
+
+        <local:ValidationItemView
+            DataContext="{Binding FundOverdue.View}"
+            Header="基金超期运作"
+            TipTemplate="{StaticResource FundOverdue}" />
     </hc:UniformSpacingPanel>
 </UserControl>
