@@ -107,7 +107,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
             MissionSchedule.Init();
 
-            // DataSelfTest(); 
+            DataSelfTest();
 
             // 数据验证
             VerifyRules.InitAll();
@@ -157,8 +157,6 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
         Task[] t = [Task.Run(async() => await SyncFundsFromAmac(c) ),
                     Task.Run(() => DataTracker.CheckFundFolder(c)),
-                    Task.Run(()=> DataTracker.CheckIsExpired(c)),
-                    Task.Run(()=> DataTracker.CheckInvestorBalance()),
                     Task.Run(()=> DataTracker.CheckTAMissOwner()),
         ];
 
@@ -334,7 +332,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
     }
 
     private void PlotManageScale(BaseDatabase db)
-    { 
+    {
         var startdate = db.GetCollection<Fund>().Query().Where(x => x.SetupDate.Year > 1970).Select(x => x.SetupDate).ToList().Min();
         var scaledates = db.GetCollection<DailyManageSacle>().Query().Select(x => x.Date).ToList();
         var tdays = Days.TradingDaysFrom(startdate);
@@ -343,7 +341,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
         var mis = tdays.Except(scaledates).ToList();
         DataTracker.UpdateManageSacle(mis);
         var scales = db.GetCollection<DailyManageSacle>().FindAll().ToList();
-        var sc = scales.OrderBy(x=>x.Date).GroupBy(x => new { x.Date.Year, x.Date.Month }).Select(x => new { Date = new DateTime(x.Key.Year, x.Key.Month, 1), Value = x.Max(y => y.Scale) / 10000 }).ToList();
+        var sc = scales.OrderBy(x => x.Date).GroupBy(x => new { x.Date.Year, x.Date.Month }).Select(x => new { Date = new DateTime(x.Key.Year, x.Key.Month, 1), Value = x.Max(y => y.Scale) / 10000 }).ToList();
 
         App.Current.Dispatcher.BeginInvoke(() =>
         {
