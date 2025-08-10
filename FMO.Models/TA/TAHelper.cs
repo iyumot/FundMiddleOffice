@@ -22,7 +22,7 @@ public static class TAHelper
     
     public static bool IsSell(this TransferRequest r) => r.RequestType.IsSell();
 
-    public static bool RequiredOrder(this TransferRequest r) => r.RequiredOrder();
+    public static bool RequiredOrder(this TransferRequest r) => r.RequestType.RequiredOrder();
 
 
     public static bool IsBuy(this TransferRecordType type)
@@ -44,5 +44,5 @@ public static class TAHelper
 
     public static bool IsSell(this TransferRecord r) => r.Type.IsSell();
 
-    public static bool RequiredOrder(this TransferRecord r) => r.RequiredOrder();
+    public static bool RequiredOrder(this TransferRecord r) => r.Type.RequiredOrder();
 }
