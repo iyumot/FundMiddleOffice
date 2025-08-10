@@ -3,6 +3,7 @@ using FMO.Logging;
 using FMO.Models;
 using LiteDB;
 using Serilog;
+using System.Text.RegularExpressions;
 namespace FMO.Utilities;
 
 internal record PatchRecord(int Id, DateTime Time);
@@ -179,8 +180,29 @@ public static class DatabaseAssist
         [54] = ChangeAmacAccount2,
 
         [55] = FixLogInfo,
-        [62] = RebuildFundShareRecord
+        [62] = RebuildFundShareRecord,
+        [64] = ChangeOrderFilePathToRelative
     };
+
+    private static void ChangeOrderFilePathToRelative(BaseDatabase db)
+    {
+        void Modify(FileStorageInfo? fileStorageInfo)
+        {
+            if (fileStorageInfo?.Path is not null && !fileStorageInfo.Exists && Regex.Match(fileStorageInfo.Path, @"\w:(?:\\\w+\\)+files") is Match m && m.Success && fileStorageInfo.Path.Replace(m.Value, "files") is string newp && File.Exists(newp))
+                fileStorageInfo.Path = newp;
+        }
+
+        var orders = db.GetCollection<TransferOrder>().FindAll().ToList();
+        orders.ForEach(o => {
+            Modify(o.OrderSheet);
+            Modify(o.Contract);
+            Modify(o.RiskDiscloure);
+            Modify(o.RiskPair);
+            Modify(o.Videotape);
+            Modify(o.Review);
+        });
+        db.GetCollection<TransferOrder>().Update(orders);
+    }
 
     private static void RebuildFundShareRecord(BaseDatabase db)
     {
