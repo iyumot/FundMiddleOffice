@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net.NetworkInformation;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -34,7 +36,8 @@ public class DailyValue
 
     public string? Class { get; set; }
 
-    public int Id => Date.DayNumber;
+    public long Id => GenerateId(FundId, Class, Date);
+
 
     public DateOnly Date { get; set; }
 
@@ -61,4 +64,34 @@ public class DailyValue
     public string?  SheetPath { get; set; }
 
     public bool IsAvailiable() => NetValue > 0;
+
+    public long GenerateId(int fundId, string? @class, DateOnly date) => ((long)fundId << 48) | ((long)date.DayNumber << 16) | ComputeStableHash16(@class);
+
+    private const uint FnvPrime = 16777619;
+    private const uint FnvOffsetBasis = 2166136261;
+    private static ushort ComputeStableHash16(string? input)
+    {
+        if (string.IsNullOrEmpty(input)) return 0;
+
+        // 使用 UTF-8 编码确保跨平台一致性
+        byte[] bytes = Encoding.UTF8.GetBytes(input);
+        uint hash = FnvOffsetBasis;
+
+        foreach (byte b in bytes)
+        {
+            hash ^= b;
+            hash *= FnvPrime;
+        }
+
+        // 折叠 32 位哈希到 16 位 (XOR folding)
+        return (ushort)((hash >> 16) ^ (hash & 0xFFFF));
+    }
 }
+
+
+/// <summary>
+/// 每日管理规模
+/// </summary>
+/// <param name="Date"></param>
+/// <param name="Scale"></param>
+public record DailyManageSacle(DateOnly Date, decimal Scale);
