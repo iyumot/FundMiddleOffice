@@ -181,8 +181,35 @@ public static class DatabaseAssist
 
         [55] = FixLogInfo,
         [62] = RebuildFundShareRecord,
-        [64] = ChangeOrderFilePathToRelative
+        [64] = ChangeOrderFilePathToRelative,
+        [65] = UpdateLiqudatingTA
     };
+
+    /// <summary>
+    ///  检查基金是否份额是否为0，如果是这样，最后的ta设为清盘
+    /// </summary>
+    /// <param name="db"></param>
+    private static void UpdateLiqudatingTA(BaseDatabase db)
+    {
+        // 检查基金是否份额是否为0，如果是这样，最后的ta设为清盘
+        var fsr = db.GetCollection<FundShareRecord>().FindAll().ToList().OrderByDescending(x => x.Date).GroupBy(x => x.FundId).Select(x => new { FundId = x.Key, Item = x.First() }).Where(x => x.Item.Share == 0);
+        foreach (var f in fsr)
+        {
+            var last = f.Item.Date;
+            db.BeginTrans();
+            foreach (var item in db.GetCollection<TransferRecord>().Find(x => x.FundId == f.FundId && x.ConfirmedDate == last).ToList())
+            {
+                if (item.Type != TransferRecordType.Redemption && item.Type != TransferRecordType.ForceRedemption)
+                {
+                    db.Rollback(); // 异常
+                    break;
+                }
+                item.IsLiquidating = true;
+                db.GetCollection<TransferRecord>().Update(item);
+            }
+            db.Commit();
+        }
+    }
 
     private static void ChangeOrderFilePathToRelative(BaseDatabase db)
     {
@@ -193,7 +220,8 @@ public static class DatabaseAssist
         }
 
         var orders = db.GetCollection<TransferOrder>().FindAll().ToList();
-        orders.ForEach(o => {
+        orders.ForEach(o =>
+        {
             Modify(o.OrderSheet);
             Modify(o.Contract);
             Modify(o.RiskDiscloure);

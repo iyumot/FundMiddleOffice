@@ -671,23 +671,23 @@ public static partial class DataTracker
         var fsr = db.GetCollection<FundShareRecord>();
         foreach (var id in ids)
         {
-            var r = fsr.Find(x => x.FundId == id).OrderByDescending(x => x.Date).First();
-            if (r.Share == 0) //清盘
+            var r = fsr.Find(x => x.FundId == id).OrderByDescending(x => x.Date).ToList();
+            if (r.Count > 1 && r[0].Share == 0) //清盘
             {
-                var last = r.Date;
-                foreach (var item in db.GetCollection<TransferRecord>().Find(x => x.FundId == id && x.ConfirmedDate == r.Date))
+                var last = r[0].Date;
+                db.BeginTrans();
+                foreach (var item in db.GetCollection<TransferRecord>().Find(x => x.FundId == id && x.ConfirmedDate == last).ToList())
                 {
                     if (item.Type != TransferRecordType.Redemption && item.Type != TransferRecordType.ForceRedemption)
-                        continue;
-
-                    if (last == default)
-                        last = item.ConfirmedDate;
-                    else if (item.ConfirmedDate != last)
+                    {
+                        db.Rollback();
                         break;
+                    }
 
                     item.IsLiquidating = true;
                     db.GetCollection<TransferRecord>().Update(item);
                 }
+                db.Commit();
             }
         }
 

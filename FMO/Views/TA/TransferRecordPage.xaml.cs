@@ -127,7 +127,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
             //    if (funds.FirstOrDefault(x => x.Id == ft.Key) is var ff && ff.ClearDate != default && last > ff.ClearDate)
             //        foreach (var item in may)
-            //            item.RedemptionOnClear = true;
+            //            item.IsLiquidating = true;
             //}
 
 
