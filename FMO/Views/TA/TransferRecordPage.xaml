@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
@@ -288,18 +289,56 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         <DataGridTextColumn Binding="{Binding Date, StringFormat=yyyy-MM-dd}" Header="日期" />
-                        <DataGridTextColumn
-                            Binding="{Binding InvestorName}"
-                            ElementStyle="{StaticResource LeftText}"
-                            Header="投资人" />
+
+
+                        <DataGridTemplateColumn Header="投资人">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <DockPanel Background="Transparent" LastChildFill="False">
+                                        <shared:CopyableTextBlock MinWidth="70" Text="{Binding InvestorName}" />
+                                        <Button
+                                            x:Name="goto"
+                                            hc:IconElement.Geometry="{StaticResource f.paper-plane}"
+                                            Command="{Binding OpenInvestorViewCommand}"
+                                            Style="{StaticResource ButtonIcon.Small}"
+                                            Visibility="Collapsed" />
+                                    </DockPanel>
+                                    <DataTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="goto" Property="Visibility" Value="Visible" />
+                                        </Trigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
                         <DataGridTextColumn
                             Binding="{Binding Type, Converter={StaticResource EnumDescriptionConverter}}"
                             ElementStyle="{StaticResource CenterText}"
                             Header="类型" />
-                        <DataGridTextColumn
-                            Binding="{Binding FundName}"
-                            ElementStyle="{StaticResource LeftText}"
-                            Header="基金名称" />
+
+
+                        <DataGridTemplateColumn Header="产品">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <DockPanel Background="Transparent" LastChildFill="False">
+                                        <shared:CopyableTextBlock Text="{Binding FundName}" />
+                                        <Button
+                                            x:Name="goto"
+                                            hc:IconElement.Geometry="{StaticResource f.paper-plane}"
+                                            Command="{Binding OpenFundCommand}"
+                                            Style="{StaticResource ButtonIcon.Small}"
+                                            Visibility="Collapsed" />
+                                    </DockPanel>
+                                    <DataTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="goto" Property="Visibility" Value="Visible" />
+                                        </Trigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
                         <DataGridTextColumn
                             Binding="{Binding ShareClass}"
                             ElementStyle="{StaticResource CenterText}"
@@ -489,14 +528,49 @@
                             Binding="{Binding FundCode}"
                             ElementStyle="{StaticResource LeftText}"
                             Header="代码" />
-                        <DataGridTextColumn
-                            Binding="{Binding FundName}"
-                            ElementStyle="{StaticResource LeftText}"
-                            Header="产品" />
-                        <DataGridTextColumn
-                            Binding="{Binding CustomerName}"
-                            ElementStyle="{StaticResource LeftText}"
-                            Header="投资人" />
+
+                        <DataGridTemplateColumn Header="产品">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <DockPanel Background="Transparent" LastChildFill="False">
+                                        <shared:CopyableTextBlock Text="{Binding FundName}" />
+                                        <Button
+                                            x:Name="goto"
+                                            hc:IconElement.Geometry="{StaticResource f.paper-plane}"
+                                            Command="{Binding OpenFundCommand}"
+                                            Style="{StaticResource ButtonIcon.Small}"
+                                            Visibility="Collapsed" />
+                                    </DockPanel>
+                                    <DataTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="goto" Property="Visibility" Value="Visible" />
+                                        </Trigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Header="投资人">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <DockPanel Background="Transparent" LastChildFill="False">
+                                        <shared:CopyableTextBlock MinWidth="70" Text="{Binding CustomerName}" />
+                                        <Button
+                                            x:Name="goto"
+                                            hc:IconElement.Geometry="{StaticResource f.paper-plane}"
+                                            Command="{Binding OpenInvestorViewCommand}"
+                                            Style="{StaticResource ButtonIcon.Small}"
+                                            Visibility="Collapsed" />
+                                    </DockPanel>
+                                    <DataTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="goto" Property="Visibility" Value="Visible" />
+                                        </Trigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
                         <DataGridTemplateColumn Header="证件">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -505,8 +579,14 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         <DataGridTextColumn Binding="{Binding RequestType}" Header="类型" />
-                        <DataGridTextColumn Binding="{Binding RequestShare, Converter={StaticResource ZeroToBlankConverter}}" Header="份额" />
-                        <DataGridTextColumn Binding="{Binding RequestAmount, Converter={StaticResource ZeroToBlankConverter}}" Header="金额" />
+                        <DataGridTextColumn
+                            Binding="{Binding RequestShare, Converter={StaticResource ZeroToBlankConverter}}"
+                            ElementStyle="{StaticResource RightText}"
+                            Header="份额" />
+                        <DataGridTextColumn
+                            Binding="{Binding RequestAmount, Converter={StaticResource ZeroToBlankConverter}}"
+                            ElementStyle="{StaticResource RightText}"
+                            Header="金额" />
                         <DataGridTextColumn
                             Binding="{Binding Agency}"
                             ElementStyle="{StaticResource LeftText}"
@@ -604,27 +684,70 @@
                             Binding="{Binding FundCode}"
                             ElementStyle="{StaticResource CenterText}"
                             Header="代码" />
-                        <DataGridTextColumn
-                            Binding="{Binding FundName}"
-                            ElementStyle="{StaticResource LeftText}"
-                            Header="产品" />
+                        <DataGridTemplateColumn Header="产品">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <DockPanel Background="Transparent" LastChildFill="False">
+                                        <shared:CopyableTextBlock Text="{Binding FundName}" />
+                                        <Button
+                                            x:Name="goto"
+                                            hc:IconElement.Geometry="{StaticResource f.paper-plane}"
+                                            Command="{Binding OpenFundCommand}"
+                                            Style="{StaticResource ButtonIcon.Small}"
+                                            Visibility="Collapsed" />
+                                    </DockPanel>
+                                    <DataTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="goto" Property="Visibility" Value="Visible" />
+                                        </Trigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
                         <!--<DataGridTextColumn Binding="{Binding CustomerName}" Header="投资人" />-->
                         <DataGridTemplateColumn Header="投资人">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <DockPanel>
+                                    <DockPanel Background="Transparent" LastChildFill="False">
                                         <shared:CopyableTextBlock MinWidth="70" Text="{Binding CustomerName}" />
                                         <shared:CopyableTextBlock IsMasked="True" Text="{Binding CustomerIdentity}" />
+                                        <Button
+                                            x:Name="goto"
+                                            hc:IconElement.Geometry="{StaticResource f.paper-plane}"
+                                            Command="{Binding OpenInvestorViewCommand}"
+                                            Style="{StaticResource ButtonIcon.Small}"
+                                            Visibility="Collapsed" />
                                     </DockPanel>
+                                    <DataTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="goto" Property="Visibility" Value="Visible" />
+                                        </Trigger>
+                                    </DataTemplate.Triggers>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         <DataGridTextColumn Binding="{Binding Type}" Header="类型" />
-                        <DataGridTextColumn Binding="{Binding RequestShare, Converter={StaticResource ZeroToBlankConverter}}" Header="申请份额" />
-                        <DataGridTextColumn Binding="{Binding RequestAmount, Converter={StaticResource ZeroToBlankConverter}}" Header="申请金额" />
-                        <DataGridTextColumn Binding="{Binding ConfirmedShare, Converter={StaticResource ZeroToBlankConverter}}" Header="确认份额" />
-                        <DataGridTextColumn Binding="{Binding ConfirmedAmount, Converter={StaticResource ZeroToBlankConverter}}" Header="确认金额" />
-                        <DataGridTextColumn Binding="{Binding ConfirmedNetAmount, Converter={StaticResource ZeroToBlankConverter}}" Header="净确认金额" />
+                        <DataGridTextColumn
+                            Binding="{Binding RequestShare, StringFormat=N2, Converter={StaticResource ZeroToBlankConverter}}"
+                            ElementStyle="{StaticResource RightText}"
+                            Header="申请份额" />
+                        <DataGridTextColumn
+                            Binding="{Binding RequestAmount, StringFormat=N2, Converter={StaticResource ZeroToBlankConverter}}"
+                            ElementStyle="{StaticResource RightText}"
+                            Header="申请金额" />
+                        <DataGridTextColumn
+                            Binding="{Binding ConfirmedShare, StringFormat=N2, Converter={StaticResource ZeroToBlankConverter}}"
+                            ElementStyle="{StaticResource RightText}"
+                            Header="确认份额" />
+                        <DataGridTextColumn
+                            Binding="{Binding ConfirmedAmount, StringFormat=N2, Converter={StaticResource ZeroToBlankConverter}}"
+                            ElementStyle="{StaticResource RightText}"
+                            Header="确认金额" />
+                        <DataGridTextColumn
+                            Binding="{Binding ConfirmedNetAmount, StringFormat=N2, Converter={StaticResource ZeroToBlankConverter}}"
+                            ElementStyle="{StaticResource RightText}"
+                            Header="净确认金额" />
 
                         <DataGridTextColumn Binding="{Binding Fee, Converter={StaticResource ZeroToBlankConverter}}" Header="费用" />
                         <DataGridTextColumn Binding="{Binding PerformanceFee, Converter={StaticResource ZeroToBlankConverter}}" Header="业绩报酬" />

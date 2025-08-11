@@ -6,7 +6,6 @@ using FMO.Utilities;
 using Serilog;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Controls;
@@ -49,7 +48,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     public bool IsRecordTabSelected => TabIndex == 3;
 
     [ObservableProperty]
-    public partial ObservableCollection<TransferRequest>? Requests { get; set; }
+    public partial ObservableCollection<TransferRequestViewModel>? Requests { get; set; }
 
 
     [ObservableProperty]
@@ -95,6 +94,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
             var records = tr.Select(x => new TransferRecordViewModel(x)).ToArray();
             var orders = t3.Select(x => new TransferOrderViewModel(x)).ToArray();
+            var requests = tr2.Select(x => new TransferRequestViewModel(x)).ToArray();
 
             var funds = db.GetCollection<Fund>().FindAll().Select(x => (x.Id, x.Name, x.Code, x.ClearDate)).ToArray();
             var transaction = db.GetCollection<RaisingBankTransaction>().FindAll().Select(x => new RaisingBankTranscationViewModel(x, funds!)).ToArray();
@@ -144,7 +144,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
             App.Current.Dispatcher.BeginInvoke(() =>
             {
-                Requests = [.. tr2];
+                Requests = [.. requests];
                 Orders = [.. orders];
                 BankTransactions = [.. transaction];
 
@@ -213,7 +213,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
         ErrorMessage = [.. list.Where(x => x is not null)];
     }
-     
+
 
     private bool FilterRecord(object obj)
     {
@@ -307,7 +307,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
 
     [RelayCommand]
-    public void DeleteRequest(TransferRequest r)
+    public void DeleteRequest(TransferRequestViewModel r)
     {
         using var db = DbHelper.Base();
         db.GetCollection<TransferRequest>().Delete(r.Id);
@@ -331,6 +331,11 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
             default:
                 break;
         }
+    }
+
+    partial void OnTabIndexChanged(int value)
+    {
+         
     }
 
     private void AddRecord()
@@ -406,7 +411,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
             if (db.FindFund(item.FundCode) is Fund fund)
             {
                 item.FundId = fund.Id;
-                if (Requests?.FirstOrDefault(x => x.Id == item.Id) is TransferRequest v)
+                if (Requests?.FirstOrDefault(x => x.Id == item.Id) is TransferRequestViewModel v)
                     v.FundId = item.Id;
             }
         }
@@ -495,7 +500,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         var old = Requests!.FirstOrDefault(x => x.Id == message.Id);
         if (old is not null)
             Requests!.Remove(old);
-        Requests!.Add(message);
+        Requests!.Add(new(message));
     }
 
     public void Receive(PageTAMessage message)
