@@ -265,6 +265,16 @@
                     Style="{StaticResource DataGrid.NoSelect}"
                     VirtualizingStackPanel.IsVirtualizing="True"
                     VirtualizingStackPanel.VirtualizationMode="Recycling">
+                    <DataGrid.RowStyle>
+                        <Style BasedOn="{StaticResource NoSelectDataGridRowStyle}" TargetType="DataGridRow">
+
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsAborted}" Value="True">
+                                    <Setter Property="Background" Value="DarkGray" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding Id}" />
                         <DataGridTemplateColumn>

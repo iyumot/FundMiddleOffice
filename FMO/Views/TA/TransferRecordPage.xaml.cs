@@ -391,9 +391,9 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         if (obj is not null)
         {
             obj.IsAborted = !obj.IsAborted;
+            r.IsAborted = obj.IsAborted;
             db.GetCollection<TransferOrder>().Update(obj);
         }
-
     }
 
 
@@ -503,18 +503,24 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
     public void Receive(TransferRecord message)
     {
-        var old = Records!.FirstOrDefault(x => x.Id == message.Id);
-        if (old is not null)
-            old.UpdateFrom(message);
-        else Records!.Add(new TransferRecordViewModel(message));
+        App.Current.Dispatcher.BeginInvoke(() =>
+        {
+            var old = Records!.FirstOrDefault(x => x.Id == message.Id);
+            if (old is not null)
+                old.UpdateFrom(message);
+            else Records!.Add(new TransferRecordViewModel(message));
+        });
     }
 
     public void Receive(TransferRequest message)
     {
-        var old = Requests!.FirstOrDefault(x => x.Id == message.Id);
-        if (old is not null)
-            Requests!.Remove(old);
-        Requests!.Add(new(message));
+        App.Current.Dispatcher.BeginInvoke(() =>
+        {
+            var old = Requests!.FirstOrDefault(x => x.Id == message.Id);
+            if (old is not null)
+                Requests!.Remove(old);
+            Requests!.Add(new(message));
+        });
     }
 
     public void Receive(PageTAMessage message)
@@ -525,10 +531,13 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
     public void Receive(TransferOrder message)
     {
-        var old = Orders!.FirstOrDefault(x => x.Id == message.Id);
-        if (old is not null)
-            old.UpdateFrom(message);
-        else Orders!.Add(new TransferOrderViewModel(message));
+        App.Current.Dispatcher.BeginInvoke(() =>
+        {
+            var old = Orders!.FirstOrDefault(x => x.Id == message.Id);
+            if (old is not null)
+                old.UpdateFrom(message);
+            else Orders!.Add(new TransferOrderViewModel(message));
+        });
     }
 
     public void Receive(TipChangeMessage message)
