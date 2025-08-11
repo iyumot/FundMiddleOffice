@@ -332,12 +332,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
                 break;
         }
     }
-
-    partial void OnTabIndexChanged(int value)
-    {
-         
-    }
-
+     
     private void AddRecord()
     {
         var wnd = new AddTAWindow();
