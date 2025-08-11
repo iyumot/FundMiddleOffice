@@ -75,6 +75,9 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
     public partial bool IsInitializing { get; set; }
 
 
+    [ObservableProperty]
+    public partial string? InitializeMesage { get; set; }
+
     public Tool[] Tools { get; set; }
 
 
@@ -102,21 +105,28 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
             //DatabaseAssist.Miggrate();
 
+            InitializeMesage = "数据库自检中";
             ///数据库自检等操作
             DatabaseAssist.SystemValidation();
 
-            MissionSchedule.Init();
-
             DataSelfTest();
 
+            InitializeMesage = "初始化任务";
+            MissionSchedule.Init();
+
+
+
             // 数据验证
+            InitializeMesage = "数据检验中，请耐心等待";
             VerifyRules.InitAll();
 
             // 加载托管消息
             LoadTrusteeMessages();
 
+            InitializeMesage = "每日数据更新中";
             OnNewDate();
 
+            InitializeMesage = null;
             IsInitializing = false;
         });
 

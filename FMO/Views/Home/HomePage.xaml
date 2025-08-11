@@ -413,10 +413,12 @@
         <TextBlock
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            FontSize="150"
             Foreground="Gray"
             Opacity="0.5"
-            Text="加载中"
-            Visibility="{Binding IsInitializing, Converter={StaticResource Boolean2VisibilityConverter}}" />
+            Visibility="{Binding IsInitializing, Converter={StaticResource Boolean2VisibilityConverter}}">
+            <Run FontSize="150" Text="加载中" />
+            <LineBreak />
+            <Run BaselineAlignment="Center" FontSize="22" />
+        </TextBlock>
     </hc:SimplePanel>
 </UserControl>
