@@ -310,10 +310,9 @@
 
                 <Popup
                     AllowsTransparency="True"
-                    HorizontalOffset="500"
+                    HorizontalOffset="-10"
                     IsOpen="{Binding InvestorDetailIsOpen}"
-                    Placement="Left"
-                    PlacementTarget="{Binding RelativeSource={RelativeSource AncestorType=hc:SimplePanel}}"
+                    Placement="MousePoint"
                     StaysOpen="False">
                     <Border MaxHeight="500">
                         <DataGrid
@@ -364,8 +363,9 @@
                     HorizontalOffset="-10"
                     IsOpen="{Binding InvestorViewIsOpen}"
                     Placement="Left"
-                    PlacementTarget="{Binding RelativeSource={RelativeSource AncestorType=hc:SimplePanel}}"
-                    StaysOpen="False">
+                    PlacementTarget="{Binding RelativeSource={RelativeSource AncestorType=local:FundTAView}}"
+                    StaysOpen="False"
+                    VerticalOffset="-30">
                     <Border
                         Width="535"
                         Height="{Binding RelativeSource={RelativeSource AncestorType=TabControl}, Path=ActualHeight}"
