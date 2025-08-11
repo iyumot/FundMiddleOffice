@@ -53,10 +53,10 @@
                 Content="录入"
                 Style="{StaticResource ButtonDefault.Small}" />
 
-            <Button
+            <!--<Button
                 Background="PaleGoldenrod"
                 Command="{Binding CalcFeeCommand}"
-                Content="费用计算器" />
+                Content="费用计算器" />-->
 
             <Button Command="{Binding RebuildTransferRelationCommand}" Content="重新关联交易" />
 
@@ -243,7 +243,9 @@
                 </DataGrid>
             </TabItem>
 
-            <TabItem Margin="5,0,0,0">
+            <TabItem Visibility="Hidden" />
+
+            <TabItem>
                 <TabItem.Header>
                     <DockPanel Margin="0,0,5,0" LastChildFill="False">
                         <Viewbox

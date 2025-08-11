@@ -332,7 +332,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
                 break;
         }
     }
-     
+
     private void AddRecord()
     {
         var wnd = new AddTAWindow();
@@ -478,9 +478,27 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
 
     [RelayCommand]
-    public void RebuildTransferRelation() => DataTracker.RebuildTARelation();
+    public async Task RebuildTransferRelation()
+    {
+        await Task.Run(DataTracker.RebuildTARelation);
 
+        using var db = DbHelper.Base();
+        var map = db.GetCollection<TransferMapping>().FindAll().ToList();
 
+        if (Records is not null)
+            foreach (var item in Records.IntersectBy<TransferRecordViewModel, int>(map.Where(x => x.RequestId == 0).Select(x => x.RecordId), x => x.Id))
+                item.LackRequest = true;
+
+        if (Orders is not null)
+            foreach (var item in Orders.Join(map, x => x.Id, x => x.OrderId, (o, m) => new { o, m }))
+            {
+                if (item.m.RequestId != 0)
+                    item.o.IsApplyed = true;
+                if (item.m.RecordId != 0)
+                    item.o.IsConfirmed = true;
+            }
+
+    }
 
     public void Receive(TransferRecord message)
     {
