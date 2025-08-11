@@ -182,7 +182,7 @@ public class TransferRequestJson : JsonBase
     private TransferRequestType ParseType(string requestTypeStr)
     {
         // 注释不关心的项
-        return requestTypeStr switch
+        var t = requestTypeStr switch
         {
             "20" => TransferRequestType.Subscription,
             "22" => TransferRequestType.Purchase,
@@ -214,6 +214,11 @@ public class TransferRequestJson : JsonBase
             //"98" => TransferRequestType.QuickTransfer,
             _ => TransferRequestType.UNK
         };
+
+        if (t == TransferRequestType.UNK)
+            JsonBase.ReportSpecialType(new(0, CSC._Identifier, nameof(TransferRequest), OriginalNo, requestTypeStr));
+
+        return t;
     }
 }
 

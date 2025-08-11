@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Utilities;
 using LiteDB;
-using Serilog;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Reflection;
 
@@ -308,10 +308,18 @@ public abstract class TrusteeApiBase : ITrustee
 }
 
 
+public record UnusualType(int Id, string Identifier, string EntityType, string JsonId, string TypeCode);
+
+
+
 public class JsonBase
 {
     private static ILiteDatabase _db { get; } = new LiteDatabase(@$"FileName=data\platformlog.db;Connection=Shared");
 
+    private static ConcurrentBag<UnusualType> _unusualTypes = new();
+
+    private static Debouncer debouncer = new(SaveUnusual);
+     
 
     public int Id { get; set; }
 
@@ -330,6 +338,20 @@ public class JsonBase
     public static void ReportJsonUnexpected(string identifier, string method, string info)
     {
         _db.GetCollection<TrusteeJsonUnexpected>().Insert(new TrusteeJsonUnexpected(identifier, method, info));
+    }
+
+    public static void ReportSpecialType(UnusualType types)
+    {
+        using var db = DbHelper.Base();
+        db.GetCollection<UnusualType>().Insert(types);
+        //_unusualTypes.Add(types);
+       // debouncer.Invoke();
+    }
+    private static void SaveUnusual()
+    {
+        
+        using var db = DbHelper.Base();
+        db.GetCollection<UnusualType>().Insert(_unusualTypes);
     }
 
 
