@@ -97,120 +97,120 @@ public static partial class DataTracker
     }
 
 
-    public static void CheckShareIsPair(IEnumerable<Fund> funds)
-    {
-        // 验证最新净值中的份额（Share）与 FundShareRecord 中的份额是否一致
-        using var db = DbHelper.Base();
+    //public static void CheckShareIsPair(IEnumerable<Fund> funds)
+    //{
+    //    // 验证最新净值中的份额（Share）与 FundShareRecord 中的份额是否一致
+    //    using var db = DbHelper.Base();
 
-        // 遍历所有的基金（funds）
-        foreach (var fund in funds)
-        {
-            // 获取该基金的每日净值数据中，净值大于0的记录，并找到最新日期的记录
-            var last = db.GetDailyCollection(fund.Id).Find(x => x.NetValue > 0).MaxBy(x => x.Date);
+    //    // 遍历所有的基金（funds）
+    //    foreach (var fund in funds)
+    //    {
+    //        // 获取该基金的每日净值数据中，净值大于0的记录，并找到最新日期的记录
+    //        var last = db.GetDailyCollection(fund.Id).Find(x => x.NetValue > 0).MaxBy(x => x.Date);
 
-            // 如果没有找到有效的净值记录，则跳过当前基金
-            if (last is null) continue;
+    //        // 如果没有找到有效的净值记录，则跳过当前基金
+    //        if (last is null) continue;
 
-            // 获取基金的 FundShareRecord 记录和 TransferRecord 记录
-            var c = db.GetCollection<FundShareRecord>().Find(x => x.FundId == fund.Id);
-            var ta = db.GetCollection<TransferRecord>().Find(x => x.FundId == fund.Id);
+    //        // 获取基金的 FundShareRecord 记录和 TransferRecord 记录
+    //        var c = db.GetCollection<FundShareRecord>().Find(x => x.FundId == fund.Id);
+    //        var ta = db.GetCollection<TransferRecord>().Find(x => x.FundId == fund.Id);
 
-            // 如果没有 TA 记录或 FundShareRecord 数据为空，则添加提示：没有TA数据
-            if (!ta.Any())
-            {
-                FundTips.Add(new FundTip(fund.Id, fund.Name, TipType.FundNoTARecord, "没有TA数据"));
-                continue;
-            }
-            else if (FundTips.FirstOrDefault(x => x.FundId == fund.Id && x.Type == TipType.FundNoTARecord) is FundTip tip) // 清除错误信息
-            {
-                FundTips.Remove(tip);
-                WeakReferenceMessenger.Default.Send(new FundTipMessage(fund.Id));
-            }
+    //        // 如果没有 TA 记录或 FundShareRecord 数据为空，则添加提示：没有TA数据
+    //        if (!ta.Any())
+    //        {
+    //            FundTips.Add(new FundTip(fund.Id, fund.Name, TipType.FundNoTARecord, "没有TA数据"));
+    //            continue;
+    //        }
+    //        else if (FundTips.FirstOrDefault(x => x.FundId == fund.Id && x.Type == TipType.FundNoTARecord) is FundTip tip) // 清除错误信息
+    //        {
+    //            FundTips.Remove(tip);
+    //            WeakReferenceMessenger.Default.Send(new FundTipMessage(fund.Id));
+    //        }
 
-            // 获取 TA 记录中确认日期（ConfirmedDate）最大的日期
-            var lta = ta.Max(x => x.ConfirmedDate);
+    //        // 获取 TA 记录中确认日期（ConfirmedDate）最大的日期
+    //        var lta = ta.Max(x => x.ConfirmedDate);
 
-            // 如果 FundShareRecord 为空，或者最新记录的日期早于 TA 的最新确认日期，则重建 FundShareRecord
-            if (c is null || !c.Any() || c.Max(x => x.Date) < lta)
-            {
-                db.RebuildFundShareRecord(fund.Id); // 重建该基金的份额记录
-                c = db.GetCollection<FundShareRecord>().Find(x => x.FundId == fund.Id); // 重新获取份额记录
-            }
+    //        // 如果 FundShareRecord 为空，或者最新记录的日期早于 TA 的最新确认日期，则重建 FundShareRecord
+    //        if (c is null || !c.Any() || c.Max(x => x.Date) < lta)
+    //        {
+    //            db.RebuildFundShareRecord(fund.Id); // 重建该基金的份额记录
+    //            c = db.GetCollection<FundShareRecord>().Find(x => x.FundId == fund.Id); // 重新获取份额记录
+    //        }
 
-            // 找到在 FundShareRecord 中，日期不晚于最新净值日期的最后一条记录
-            var sh = c.OrderBy(x => x.Date).LastOrDefault(x => x.Date <= last.Date);
+    //        // 找到在 FundShareRecord 中，日期不晚于最新净值日期的最后一条记录
+    //        var sh = c.OrderBy(x => x.Date).LastOrDefault(x => x.Date <= last.Date);
 
-            // 检查份额是否一致，如果不一致则添加提示：基金份额与估值表不一致
-            if (sh!.Share != last.Share)
-            {
-                FundTips.Add(new FundTip(fund.Id, fund.Name, TipType.FundShareNotPair, "基金份额与估值表不一致"));
+    //        // 检查份额是否一致，如果不一致则添加提示：基金份额与估值表不一致
+    //        if (sh!.Share != last.Share)
+    //        {
+    //            FundTips.Add(new FundTip(fund.Id, fund.Name, TipType.FundShareNotPair, "基金份额与估值表不一致"));
 
-                // 修改 trustee中的work日期
-                using var pd = DbHelper.Platform();
-                var rs = pd.GetCollection<TrusteeMethodShotRange>().Find(x => x.Id.EndsWith(nameof(ITrustee.QueryTransferRecords))).ToArray();
-                foreach (var item in rs)
-                {
-                    if (item.End > sh.Date)
-                        pd.GetCollection<TrusteeMethodShotRange>().Update(new TrusteeMethodShotRange(item.Id, item.Begin, sh.Date));
-                }
+    //            // 修改 trustee中的work日期
+    //            using var pd = DbHelper.Platform();
+    //            var rs = pd.GetCollection<TrusteeMethodShotRange>().Find(x => x.Id.EndsWith(nameof(ITrustee.QueryTransferRecords))).ToArray();
+    //            foreach (var item in rs)
+    //            {
+    //                if (item.End > sh.Date)
+    //                    pd.GetCollection<TrusteeMethodShotRange>().Update(new TrusteeMethodShotRange(item.Id, item.Begin, sh.Date));
+    //            }
 
-                // 发送基金提示消息（例如用于界面通知）
-                WeakReferenceMessenger.Default.Send(new FundTipMessage(fund.Id));
-                continue;
-            }
-            else if (FundTips.FirstOrDefault(x => x.FundId == fund.Id && x.Type == TipType.FundShareNotPair) is FundTip tip) // 清除错误信息
-            {
-                FundTips.Remove(tip);
-                WeakReferenceMessenger.Default.Send(new FundTipMessage(fund.Id));
-            }
+    //            // 发送基金提示消息（例如用于界面通知）
+    //            WeakReferenceMessenger.Default.Send(new FundTipMessage(fund.Id));
+    //            continue;
+    //        }
+    //        else if (FundTips.FirstOrDefault(x => x.FundId == fund.Id && x.Type == TipType.FundShareNotPair) is FundTip tip) // 清除错误信息
+    //        {
+    //            FundTips.Remove(tip);
+    //            WeakReferenceMessenger.Default.Send(new FundTipMessage(fund.Id));
+    //        }
 
-        }
+    //    }
 
-    }
-    public static void CheckShareIsPair(int fid)
-    {
-        // 验证最新的净值中份额与share是否一致
-        using var db = DbHelper.Base();
-        var fund = db.GetCollection<Fund>().FindById(fid);
+    //}
+    //public static void CheckShareIsPair(int fid)
+    //{
+    //    // 验证最新的净值中份额与share是否一致
+    //    using var db = DbHelper.Base();
+    //    var fund = db.GetCollection<Fund>().FindById(fid);
 
-        var last = db.GetDailyCollection(fund.Id).Find(x => x.NetValue > 0).MaxBy(x => x.Date);
-        if (last is null)
-        {
-            WeakReferenceMessenger.Default.Send(new FundTipMessage(fid));
-            return;
-        }
-        var c = db.GetCollection<FundShareRecord>().Find(x => x.FundId == fund.Id);
-        var lta = db.GetCollection<TransferRecord>().Find(x => x.FundId == fund.Id).Max(x => x.ConfirmedDate);
-        if (c is null || !c.Any() || c.Max(x => x.Date < lta))
-        {
-            db.RebuildFundShareRecord(fund.Id);
-            c = db.GetCollection<FundShareRecord>().Find(x => x.FundId == fund.Id);
-        }
+    //    var last = db.GetDailyCollection(fund.Id).Find(x => x.NetValue > 0).MaxBy(x => x.Date);
+    //    if (last is null)
+    //    {
+    //        WeakReferenceMessenger.Default.Send(new FundTipMessage(fid));
+    //        return;
+    //    }
+    //    var c = db.GetCollection<FundShareRecord>().Find(x => x.FundId == fund.Id);
+    //    var lta = db.GetCollection<TransferRecord>().Find(x => x.FundId == fund.Id).Max(x => x.ConfirmedDate);
+    //    if (c is null || !c.Any() || c.Max(x => x.Date < lta))
+    //    {
+    //        db.RebuildFundShareRecord(fund.Id);
+    //        c = db.GetCollection<FundShareRecord>().Find(x => x.FundId == fund.Id);
+    //    }
 
-        if (c is null || !c.Any())
-        {
-            FundTips.Add(new FundTip(fund.Id, fund.Name, TipType.FundNoTARecord, "没有TA数据"));
-            WeakReferenceMessenger.Default.Send(new FundTipMessage(fid));
-            return;
-        }
+    //    if (c is null || !c.Any())
+    //    {
+    //        FundTips.Add(new FundTip(fund.Id, fund.Name, TipType.FundNoTARecord, "没有TA数据"));
+    //        WeakReferenceMessenger.Default.Send(new FundTipMessage(fid));
+    //        return;
+    //    }
 
-        var sh = c.LastOrDefault(x => x.Date < last.Date);
+    //    var sh = c.LastOrDefault(x => x.Date < last.Date);
 
-        if (sh?.Share != last.Share)
-        {
-            FundTips.Add(new FundTip(fund.Id, fund.Name, TipType.FundShareNotPair, "基金份额与估值表不一致"));
-            WeakReferenceMessenger.Default.Send(new FundTipMessage(fid));
-            return;
-        }
+    //    if (sh?.Share != last.Share)
+    //    {
+    //        FundTips.Add(new FundTip(fund.Id, fund.Name, TipType.FundShareNotPair, "基金份额与估值表不一致"));
+    //        WeakReferenceMessenger.Default.Send(new FundTipMessage(fid));
+    //        return;
+    //    }
 
-        FundTips.Remove(x => x.Type == TipType.FundShareNotPair);
-        WeakReferenceMessenger.Default.Send(new FundTipMessage(fid));
+    //    FundTips.Remove(x => x.Type == TipType.FundShareNotPair);
+    //    WeakReferenceMessenger.Default.Send(new FundTipMessage(fid));
 
-        DataValidationInfo validationInfo = new DataValidationInfo
-        {
-            Related = [new(typeof(DailyValue), 0, fid), new(typeof(TransferRecord), 0, fid)]
-        };
-    }
+    //    DataValidationInfo validationInfo = new DataValidationInfo
+    //    {
+    //        Related = [new(typeof(DailyValue), 0, fid), new(typeof(TransferRecord), 0, fid)]
+    //    };
+    //}
 
 
     public static void CheckIsExpired(IEnumerable<Fund> funds)
@@ -473,8 +473,8 @@ public static partial class DataTracker
         foreach (var g in dailyValues.GroupBy(x => x.FundId))
         {
             var fid = g.Key;
-            List<FundShareRecord> add = new();
-            var col = db.GetCollection<FundShareRecord>("fsr_daily");
+            List<FundShareRecordByDaily> add = new();
+            var col = db.GetCollection<FundShareRecordByDaily>();
 
             // 检查是否与前一天share不一样
             var sd = g.Min(x => x.Date);
@@ -484,12 +484,12 @@ public static partial class DataTracker
             var lastd = last?.Date ?? default;
             var middle = db.GetDailyCollection(g.Key).Find(x => x.Date >= lastd && x.Date <= sd).OrderBy(x => x.Date).ToList();
             if (middle.Count > 0 && middle[0].Date is DateOnly datem && col.FindOne(x => x.FundId == fid && x.Date == datem) == null)
-                add.Add(new FundShareRecord(g.Key, middle[0].Date, middle[0].Share));
+                add.Add(new FundShareRecordByDaily(g.Key, middle[0].Date, middle[0].Share));
 
             for (int i = 1; i < middle.Count; i++)
             {
                 if (middle[i - 1].Share != middle[i].Share)
-                    add.Add(new FundShareRecord(g.Key, middle[i].Date, middle[i].Share));
+                    add.Add(new FundShareRecordByDaily(g.Key, middle[i].Date, middle[i].Share));
             }
 
             if (sd.DayNumber > 20) sd = sd.AddDays(-20);
@@ -505,7 +505,7 @@ public static partial class DataTracker
 
                 // 检查份额变化
                 if (previous != null && previous.Share != dy.Share && dy.Share != 0)
-                    add.Add(new FundShareRecord(fid, dy.Date, dy.Share));
+                    add.Add(new FundShareRecordByDaily(fid, dy.Date, dy.Share));
 
                 //var pre = ds.FirstOrDefault(x => x.Date < dy.Date);
                 //if (pre != null && pre.Share != dy.Share)
@@ -576,11 +576,16 @@ public static partial class DataTracker
         db.GetCollection<DailyManageSacle>().InsertBulk(assets.Select(x => new DailyManageSacle(x.Key, x.Value)));
     }
 
-    private static void OnFundShareRecord(IEnumerable<FundShareRecord> add)
+ 
+    private static void OnFundShareRecord(List<FundShareRecordByDaily> add)
     {
         VerifyRules.OnEntityArrival(add);
     }
 
+    private static void OnFundShareRecord(List<FundShareRecordByTransfer> add)
+    {
+        VerifyRules.OnEntityArrival(add);
+    }
     public static void OnEntityChanged(EntityChanged<Fund, DateOnly> changed)
     {
         if (changed.PropertyName == nameof(Fund.ClearDate) && changed.New != default)
@@ -601,8 +606,10 @@ public static partial class DataTracker
             WeakReferenceMessenger.Default.Send(new TransferRecordLinkOrderMessage(item.Id, item.OrderId));
     }
 
-    public static void OnBatchTransferRecord(IEnumerable<TransferRecord> records)
+    public static void OnBatchTransferRecord(IList<TransferRecord> records)
     {
+        if (records.Count == 0) return;
+
         using var db = DbHelper.Base();
 
         // 对齐id 
@@ -655,20 +662,20 @@ public static partial class DataTracker
             UpdateInvestorBalance(tableRecord, tableBalance, g.Key.CustomerId, g.Key.FundId, g.Min(x => x.ConfirmedDate));
 
         // 更新基金份额平衡表
-        var t2 = db.GetCollection<FundShareRecord>();
+        var t2 = db.GetCollection<FundShareRecordByTransfer>();
         foreach (var g in records.GroupBy(x => x.FundId))
             UpdateFundShareRecordByTA(tableRecord, t2, g.Key, g.Min(x => x.ConfirmedDate));
 
 
         var ids = records.Select(x => x.FundId).Distinct().ToList();
         var funds = db.GetCollection<Fund>().Find(x => ids.Contains(x.Id)).ToList();
-        DataTracker.CheckShareIsPair(funds);
+        //DataTracker.CheckShareIsPair(funds);
 
-        VerifyRules.OnEntityArrival(records);
+        //VerifyRules.OnEntityArrival(records);
 
 
         // 检查基金是否份额是否为0，如果是这样，最后的ta设为清盘
-        var fsr = db.GetCollection<FundShareRecord>();
+        var fsr = db.GetCollection<FundShareRecordByTransfer>();
         foreach (var id in ids)
         {
             var r = fsr.Find(x => x.FundId == id).OrderByDescending(x => x.Date).ToList();
@@ -785,21 +792,24 @@ public static partial class DataTracker
     /// </summary>
     /// <param name="db"></param>
     /// <param name="fundId"></param>
-    public static void UpdateFundShareRecordByTA(ILiteCollection<TransferRecord> table, ILiteCollection<FundShareRecord> tableSR, int fundId, DateOnly from = default)
+    public static void UpdateFundShareRecordByTA(ILiteCollection<TransferRecord> table, ILiteCollection<FundShareRecordByTransfer> tableSR, int fundId, DateOnly from = default)
     {
         var old = tableSR.Query().OrderByDescending(x => x.Date).Where(x => x.FundId == fundId && x.Date < from).FirstOrDefault();
 
         var data = table.Find(x => x.FundId == fundId && x.ConfirmedDate >= from).GroupBy(x => x.ConfirmedDate).OrderBy(x => x.Key);
-        var list = new List<FundShareRecord>();
+        var list = new List<FundShareRecordByTransfer>();
         if (old is not null) list.Add(old);
         foreach (var item in data)
         {
             if (item.Sum(x => x.ShareChange()) is decimal change && change != 0)
-                list.Add(new FundShareRecord(fundId, item.Key, change + (list.Count > 0 ? list[^1].Share : 0)));
+                list.Add(new FundShareRecordByTransfer(fundId, item.First().RequestDate, item.Key, change + (list.Count > 0 ? list[^1].Share : 0)));
         }
         tableSR.DeleteMany(x => x.FundId == fundId && x.Date >= from);
         tableSR.Upsert(list);
+
+        OnFundShareRecord(list);
     }
+
 
     /// <summary>
     ///  更新投资人平衡表
@@ -961,6 +971,11 @@ public static partial class DataTracker
         var col = db.GetCollection<TransferMapping>();
         col.DeleteAll();
         col.InsertBulk(map);
+    }
+
+    public static void OnDeleteTransferRecord(int id)
+    {
+        throw new NotImplementedException();
     }
 }
 

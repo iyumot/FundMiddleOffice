@@ -174,6 +174,7 @@ public partial class AddTAWindowViewModel : ObservableObject
         };
         db.GetCollection<TransferRequest>().DropIndex("SourceSourceExternalIdExternalId");
         db.GetCollection<TransferRequest>().Insert(tq);
+        DataTracker.OnBatchTransferRequest([tq]);
 
 
         var ta = new TransferRecord
@@ -199,6 +200,8 @@ public partial class AddTAWindowViewModel : ObservableObject
             RequestId = tq.Id
         };
         db.GetCollection<TransferRecord>().Insert(ta);
+
+        DataTracker.OnBatchTransferRecord([ta]);
 
         // 发送消息
         WeakReferenceMessenger.Default.Send(new FundTipMessage(SelectedFund.Id));

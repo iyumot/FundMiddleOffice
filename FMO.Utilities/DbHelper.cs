@@ -117,35 +117,35 @@ public static class DbHelper
 
 
 
-    public static bool RebuildFundShareRecord(this ILiteDatabase db, int fundid)
-    {
-        try
-        {
-            if (fundid == 0) return false;
+    //public static bool RebuildFundShareRecord(this ILiteDatabase db, int fundid)
+    //{
+    //    try
+    //    {
+    //        if (fundid == 0) return false;
 
 
-            var data = db.GetCollection<TransferRecord>().Find(x => x.FundId == fundid).GroupBy(x => x.ConfirmedDate).OrderBy(x => x.Key);
-            var list = new List<FundShareRecord>();
-            foreach (var item in data)
-                list.Add(new FundShareRecord(fundid, item.Key, item.Sum(x => x.ShareChange()) + (list.Count > 0 ? list[^1].Share : 0)));
+    //        var data = db.GetCollection<TransferRecord>().Find(x => x.FundId == fundid).GroupBy(x => x.ConfirmedDate).OrderBy(x => x.Key);
+    //        var list = new List<FundShareRecord>();
+    //        foreach (var item in data)
+    //            list.Add(new FundShareRecord(fundid, item.Key, item.Sum(x => x.ShareChange()) + (list.Count > 0 ? list[^1].Share : 0)));
 
-            db.GetCollection<FundShareRecord>().DeleteMany(x => x.FundId == fundid);
-            db.GetCollection<FundShareRecord>().Insert(list);
+    //        db.GetCollection<FundShareRecord>().DeleteMany(x => x.FundId == fundid);
+    //        db.GetCollection<FundShareRecord>().Insert(list);
 
-            return true;
-        }
-        catch (Exception e)
-        {
-            Log.Error($"BuildFundShareRecord {e.Message}");
-            return false;
-        }
-    }
+    //        return true;
+    //    }
+    //    catch (Exception e)
+    //    {
+    //        Log.Error($"BuildFundShareRecord {e.Message}");
+    //        return false;
+    //    }
+    //}
 
-    public static void RebuildFundShareRecord(this ILiteDatabase db, params int[] fundids)
-    {
-        foreach (var fundid in fundids)
-            RebuildFundShareRecord(db, fundid);
-    }
+    //public static void RebuildFundShareRecord(this ILiteDatabase db, params int[] fundids)
+    //{
+    //    foreach (var fundid in fundids)
+    //        RebuildFundShareRecord(db, fundid);
+    //}
 
 
 

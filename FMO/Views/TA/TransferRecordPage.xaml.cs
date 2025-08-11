@@ -298,8 +298,9 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
         Records?.Remove(r);
 
-        if (r?.FundId is not null)
-            DataTracker.CheckShareIsPair(r.FundId.Value);
+        DataTracker.OnDeleteTransferRecord(r.Id);
+        //if (r?.FundId is not null)
+        //    DataTracker.CheckShareIsPair(r.FundId.Value);
     }
 
 
@@ -343,8 +344,8 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
         RecordsSource.View.Refresh();
 
-        if (wnd.DataContext is AddTAWindowViewModel vm && vm.SelectedFund is not null)
-            DataTracker.CheckShareIsPair(vm.SelectedFund.Id);
+        //if (wnd.DataContext is AddTAWindowViewModel vm && vm.SelectedFund is not null)
+        //    DataTracker.CheckShareIsPair(vm.SelectedFund.Id);
     }
 
     private void AddRequest()

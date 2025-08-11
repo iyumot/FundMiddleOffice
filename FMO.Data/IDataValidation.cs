@@ -135,7 +135,7 @@ public abstract class VerifyRule<T> : VerifyRuleBase
 }
 
 public abstract class VerifyRule<T1, T2> : VerifyRuleBase
-{  
+{
     public void OnEntityArrival(IEnumerable<T1> obj)
     {
         if (obj is null || !obj.Any()) return;
@@ -168,4 +168,56 @@ public abstract class VerifyRule<T1, T2> : VerifyRuleBase
     }
     protected abstract void OnEntityOverride(IEnumerable<T1> obj);
     protected abstract void OnEntityOverride(IEnumerable<T2> obj);
+}
+
+public abstract class VerifyRule<T1, T2, T3> : VerifyRuleBase
+{
+    public void OnEntityArrival(IEnumerable<T1> obj)
+    {
+        if (obj is null || !obj.Any()) return;
+
+        try
+        {
+            semaphoreSlim.Wait();
+
+            OnEntityOverride(obj);
+
+            debouncer.Invoke();
+        }
+        catch (Exception e) { LogEx.Error($"{e}"); }
+        finally { semaphoreSlim.Release(); }
+    }
+    public void OnEntityArrival(IEnumerable<T2> obj)
+    {
+        if (obj is null || !obj.Any()) return;
+
+        try
+        {
+            semaphoreSlim.Wait();
+
+            OnEntityOverride(obj);
+
+            debouncer.Invoke();
+        }
+        catch (Exception e) { LogEx.Error($"{e}"); }
+        finally { semaphoreSlim.Release(); }
+    }
+    public void OnEntityArrival(IEnumerable<T3> obj)
+    {
+        if (obj is null || !obj.Any()) return;
+
+        try
+        {
+            semaphoreSlim.Wait();
+
+            OnEntityOverride(obj);
+
+            debouncer.Invoke();
+        }
+        catch (Exception e) { LogEx.Error($"{e}"); }
+        finally { semaphoreSlim.Release(); }
+    }
+    protected abstract void OnEntityOverride(IEnumerable<T1> obj);
+    protected abstract void OnEntityOverride(IEnumerable<T2> obj);
+    protected abstract void OnEntityOverride(IEnumerable<T3> obj);
 }

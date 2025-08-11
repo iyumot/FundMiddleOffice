@@ -192,7 +192,7 @@ public static class DatabaseAssist
     private static void UpdateLiqudatingTA(BaseDatabase db)
     {
         // 检查基金是否份额是否为0，如果是这样，最后的ta设为清盘
-        var fsr = db.GetCollection<FundShareRecord>().FindAll().ToList().OrderByDescending(x => x.Date).GroupBy(x => x.FundId).Select(x => new { FundId = x.Key, Item = x.First() }).Where(x => x.Item.Share == 0);
+        var fsr = db.GetCollection<FundShareRecordByTransfer>().FindAll().ToList().OrderByDescending(x => x.Date).GroupBy(x => x.FundId).Select(x => new { FundId = x.Key, Item = x.First() }).Where(x => x.Item.Share == 0);
         foreach (var f in fsr)
         {
             var last = f.Item.Date;
@@ -234,17 +234,17 @@ public static class DatabaseAssist
 
     private static void RebuildFundShareRecord(BaseDatabase db)
     {
-        void UpdateFundShareRecordByTA(ILiteCollection<TransferRecord> table, ILiteCollection<FundShareRecord> tableSR, int fundId, DateOnly from = default)
+        void UpdateFundShareRecordByTA(ILiteCollection<TransferRecord> table, ILiteCollection<FundShareRecordByTransfer> tableSR, int fundId, DateOnly from = default)
         {
             var old = tableSR.Query().OrderByDescending(x => x.Date).Where(x => x.FundId == fundId && x.Date < from).FirstOrDefault();
 
             var data = table.Find(x => x.FundId == fundId).OrderBy(x => x.ConfirmedDate).GroupBy(x => x.ConfirmedDate);
-            var list = new List<FundShareRecord>();
+            var list = new List<FundShareRecordByTransfer>();
             if (old is not null) list.Add(old);
             foreach (var item in data)
             {
                 if (item.Sum(x => x.ShareChange()) is decimal change && change != 0)
-                    list.Add(new FundShareRecord(fundId, item.Key, change + (list.Count > 0 ? list[^1].Share : 0)));
+                    list.Add(new FundShareRecordByTransfer(fundId, item.First().RequestDate, item.Key, change + (list.Count > 0 ? list[^1].Share : 0)));
             }
             tableSR.DeleteMany(x => x.FundId == fundId && x.Date >= from);
             tableSR.Upsert(list);
@@ -273,8 +273,8 @@ public static class DatabaseAssist
         var funds = db.GetCollection<Fund>().Query().Select(f => f.Id).ToList();
 
         var t1 = db.GetCollection<TransferRecord>();
-        var t2 = db.GetCollection<FundShareRecord>();
-        var t3 = db.GetCollection<FundShareRecord>("fsr_daily");
+        var t2 = db.GetCollection<FundShareRecordByTransfer>();
+        var t3 = db.GetCollection<FundShareRecordByDaily>();
         var t4 = db.GetCollection<InvestorBalance>();
 
         db.BeginTrans();
@@ -289,11 +289,11 @@ public static class DatabaseAssist
                 UpdateFundShareRecordByTA(t1, t2, fid);
 
                 var dailyValues = db.GetDailyCollection(fid).Query().Where(x => x.Share > 0).OrderBy(x => x.Date).ToList();
-                if (dailyValues.Count > 0) t3.Insert(new FundShareRecord(fid, dailyValues[0].Date, dailyValues[0].Share));
+                if (dailyValues.Count > 0) t3.Insert(new FundShareRecordByDaily(fid, dailyValues[0].Date, dailyValues[0].Share));
                 for (var i = 1; i < dailyValues.Count; i++)
                 {
                     if (dailyValues[i].Share != dailyValues[i - 1].Share)
-                        t3.Insert(new FundShareRecord(fid, dailyValues[i].Date, dailyValues[i].Share));
+                        t3.Insert(new FundShareRecordByDaily(fid, dailyValues[i].Date, dailyValues[i].Share));
                 }
 
                 foreach (var cid in t1.Query().Select(x => x.CustomerId).ToList().Distinct())

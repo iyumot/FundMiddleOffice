@@ -35,7 +35,7 @@ public partial class FundTAViewModel : ObservableObject
 
         IsCleared = fund.Status > FundStatus.StartLiquidation;
         var ta = db.GetCollection<TransferRecord>().Find(x => x.FundId == fundId).ToList();
-        var ts = db.GetCollection<FundShareRecord>().Find(x => x.FundId == fundId).OrderBy(x => x.Date).ToList();
+        //var ts = db.GetCollection<FundShareRecord>().Find(x => x.FundId == fundId).OrderBy(x => x.Date).ToList();
         Records = ta;
 
         // customeid = 0
