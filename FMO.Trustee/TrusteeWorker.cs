@@ -480,6 +480,7 @@ public partial class TrusteeWorker : ObservableObject
                                 }
                             }
 
+                            db.GetCollection<TransferRecord>().Upsert(rc.Data);
 
                             DataTracker.OnBatchTransferRecord(rc.Data);
                         }
