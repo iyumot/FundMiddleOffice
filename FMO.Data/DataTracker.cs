@@ -720,18 +720,18 @@ public static partial class DataTracker
         }
     }
 
-    public static void OnBatchTransferRequest(TransferRequest[] data)
+    public static void OnBatchTransferRequest(IList<TransferRequest> data)
     {
         // 匹配订单
         using var db = DbHelper.Base();
         // 找已知的map
         var rids = data.Select(x => x.Id).ToList();
         var mapTable = db.GetCollection<TransferMapping>();
-        var exists = mapTable.Find(x => rids.Contains(x.Id)).ToList();
+        var exists = mapTable.Find(x => rids.Contains(x.RequestId)).ToList();
 
         foreach (var req in data)
         {
-            var old = exists.FirstOrDefault(x => x.RecordId == req.Id) ?? new() { RequestId = req.Id };
+            var old = exists.FirstOrDefault(x => x.RequestId == req.Id) ?? new() { RequestId = req.Id };
 
             // 未匹配order
             if (old.OrderId == 0)
