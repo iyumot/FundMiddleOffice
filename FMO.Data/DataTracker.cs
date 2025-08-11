@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
-using FMO.Trustee;
 using LiteDB;
 using Serilog;
 using System.Collections;
@@ -459,7 +458,17 @@ public static partial class DataTracker
         using var db = DbHelper.Base();
         foreach (var g in dailyValues.GroupBy(x => (x.FundId, x.Class)))
         {
-            db.GetDailyCollection(g.Key.FundId, g.Key.Class).Upsert(g);
+            var table = db.GetDailyCollection(g.Key.FundId, g.Key.Class);
+
+            // 如果是api，只更新非sheet
+            var dic = table.Query().Select(x => new { x.Id, x.SheetPath }).ToEnumerable().ToDictionary(x => x.Id);
+
+            foreach (var item in g)
+            {
+                if (dic.TryGetValue(item.Id, out var value))
+                    item.SheetPath = value.SheetPath;
+            }
+            table.Upsert(g);
         }
 
         // 更新管理规模
@@ -576,7 +585,7 @@ public static partial class DataTracker
         db.GetCollection<DailyManageSacle>().InsertBulk(assets.Select(x => new DailyManageSacle(x.Key, x.Value)));
     }
 
- 
+
     private static void OnFundShareRecord(List<FundShareRecordByDaily> add)
     {
         VerifyRules.OnEntityArrival(add);
