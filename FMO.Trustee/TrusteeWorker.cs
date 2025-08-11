@@ -394,7 +394,7 @@ public partial class TrusteeWorker : ObservableObject
         }
         catch (Exception e)
         {
-            Log.Error($"{nameof(QueryRaisingAccountTransctionOnce)} {e.Message}");
+            Log.Error($"{nameof(QueryTransferRequestOnce)} {e.Message}");
         }
     }
 
