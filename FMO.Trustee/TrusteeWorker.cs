@@ -234,7 +234,7 @@ public partial class TrusteeWorker : ObservableObject
         }
         catch (Exception e)
         {
-            Log.Error($"{nameof(QueryRaisingAccountTransctionOnce)} {e.Message}");
+            Log.Error($"{nameof(QueryRaisingBalanceOnce)} {e.Message}");
         }
     }
 
@@ -281,7 +281,7 @@ public partial class TrusteeWorker : ObservableObject
 
                         ///
                         // 保存数据库 
-                        if (rc.Data is not null)
+                        if (rc.Data?.Length > 0)
                         {
                             // 对齐数据   
                             foreach (var r in rc.Data)
@@ -441,7 +441,7 @@ public partial class TrusteeWorker : ObservableObject
 
                         ///
                         // 保存数据库 
-                        if (rc.Data is not null)
+                        if (rc.Data?.Length > 0)
                         {
                             // 对齐数据   
                             foreach (var r in rc.Data)
@@ -466,7 +466,7 @@ public partial class TrusteeWorker : ObservableObject
                             var customers = db.GetCollection<Investor>().FindAll().ToList();
                             foreach (var r in rc.Data)
                             {
-                                var c = customers.FirstOrDefault(x => x.Name == r.CustomerName && x.Identity?.Id == r.CustomerIdentity);
+                                var c = customers.FirstOrDefault(x => /*x.Name == r.CustomerName &&*/ x.Identity?.Id == r.CustomerIdentity);
                                 if (c is not null)
                                 {
                                     r.CustomerId = c.Id;
@@ -522,7 +522,7 @@ public partial class TrusteeWorker : ObservableObject
         }
         catch (Exception e)
         {
-            Log.Error($"{nameof(QueryRaisingAccountTransctionOnce)} {e.Message}");
+            Log.Error($"{nameof(QueryTransferRecordOnce)} {e.Message}");
         }
     }
 
@@ -606,7 +606,7 @@ public partial class TrusteeWorker : ObservableObject
         }
         catch (Exception e)
         {
-            Log.Error($"{nameof(QueryRaisingAccountTransctionOnce)} {e.Message}");
+            Log.Error($"{nameof(QueryDailyFeeOnce)} {e.Message}");
         }
     }
 

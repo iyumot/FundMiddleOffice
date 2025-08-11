@@ -782,8 +782,8 @@ public static partial class DataTracker
         }
 
 
-        CheckTAMissOwnerInvoker.Invoke();
-        CheckTransferRequestMissingInvoker.Invoke();
+        //CheckTAMissOwnerInvoker.Invoke();
+        //CheckTransferRequestMissingInvoker.Invoke();
 
 
         // 通知
