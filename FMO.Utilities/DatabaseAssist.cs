@@ -249,30 +249,32 @@ public static class DatabaseAssist
         var t3 = db.GetCollection<FundShareRecord>("fsr_daily");
         var t4 = db.GetCollection<InvestorBalance>();
 
-        t2.DeleteAll();
-        t3.DeleteAll();
-        t4.DeleteAll();
-
-        foreach (var fid in funds)
+        db.BeginTrans();
+        try
         {
-            UpdateFundShareRecordByTA(t1, t2, fid);
+            t2.DeleteAll();
+            t3.DeleteAll();
+            t4.DeleteAll();
 
-            var dailyValues = db.GetDailyCollection(fid).Query().Where(x => x.Share > 0).OrderBy(x => x.Date).ToList();
-            if (dailyValues.Count > 0) t3.Insert(new FundShareRecord(fid, dailyValues[0].Date, dailyValues[0].Share));
-            for (var i = 1; i < dailyValues.Count; i++)
+            foreach (var fid in funds)
             {
-                if (dailyValues[i].Share != dailyValues[i - 1].Share)
-                    t3.Insert(new FundShareRecord(fid, dailyValues[i].Date, dailyValues[i].Share));
+                UpdateFundShareRecordByTA(t1, t2, fid);
+
+                var dailyValues = db.GetDailyCollection(fid).Query().Where(x => x.Share > 0).OrderBy(x => x.Date).ToList();
+                if (dailyValues.Count > 0) t3.Insert(new FundShareRecord(fid, dailyValues[0].Date, dailyValues[0].Share));
+                for (var i = 1; i < dailyValues.Count; i++)
+                {
+                    if (dailyValues[i].Share != dailyValues[i - 1].Share)
+                        t3.Insert(new FundShareRecord(fid, dailyValues[i].Date, dailyValues[i].Share));
+                }
+
+                foreach (var cid in t1.Query().Select(x => x.CustomerId).ToList().Distinct())
+                    UpdateInvestorBalance(t1, t4, cid, fid);
+
             }
-
-            foreach (var cid in t1.Query().Select(x => x.CustomerId).ToList().Distinct())
-                UpdateInvestorBalance(t1, t4, cid, fid);
-
+            db.Commit();
         }
-
-
-
-
+        catch { db.Rollback(); }
     }
 
     private static void FixLogInfo(BaseDatabase database)
