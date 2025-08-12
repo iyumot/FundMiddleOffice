@@ -9,6 +9,11 @@ namespace FMO;
 [AutoChangeableViewModel(typeof(TransferRequest))]
 partial class TransferRequestViewModel
 {
+
+    public bool LackOrder { get => field; set { field = value; OnPropertyChanged(nameof(LackOrder)); } }
+
+    public bool IsSameManager { get; set; }
+
     [RelayCommand]
     public void OpenInvestorView()
     {

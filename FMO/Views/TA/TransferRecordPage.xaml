@@ -535,6 +535,28 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
+
+
+                        <DataGridTemplateColumn>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Viewbox Height="15" Visibility="{Binding LackOrder, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                        <Path
+                                            x:Name="co"
+                                            Data="{StaticResource f.feather-pointed}"
+                                            Fill="Red" />
+                                    </Viewbox>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding IsSameManager}" Value="True">
+                                            <Setter TargetName="co" Property="Fill" Value="Gray" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+
+
                         <DataGridTextColumn Binding="{Binding RequestDate, StringFormat=yyyy-MM-dd}" Header="日期" />
                         <DataGridTextColumn
                             Binding="{Binding FundCode}"

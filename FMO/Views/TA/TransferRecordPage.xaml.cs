@@ -114,6 +114,20 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
                     item.o.IsConfirmed = true;
             }
 
+
+            var codes = funds.Select(x => x.Code).Order().ToList();
+            foreach (var item in requests.ExceptBy(map.Where(x => x.OrderId != 0 && x.RequestId != 0).Select(x => x.RequestId), x => x.Id))
+            {
+                if (item.IsOrderRequired)
+                {
+                    item.LackOrder = true;
+
+                    // 投资人是管理人自己的产品
+                    item.IsSameManager = codes.BinarySearch(item.CustomerIdentity) >= 0;
+                }
+            }
+
+
             //foreach (var o in orders)
             //{
             //    if (mapd.TryGetValue(o.Id!.Value, out var m))
