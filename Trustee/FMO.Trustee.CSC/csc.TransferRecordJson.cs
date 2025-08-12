@@ -231,10 +231,10 @@ internal class TransferRecordJson : JsonBase
             ConfirmedAmount = ParseDecimal(ConfBalance),
             ConfirmedShare = ParseDecimal(ConfShares),
             CreateDate = DateOnly.FromDateTime(DateTime.Today),
-            ExternalId = CserialNo,
+            ExternalId = $"{CSC._Identifier}.{CserialNo}", 
             PerformanceFee = ParseDecimal(AchievementPay),
             Fee = ParseDecimal(Charge),
-            ExternalRequestId = OriginalNo,
+            ExternalRequestId = $"{CSC._Identifier}.{OriginalNo}",
             Type = ParseType(BusiFlag),
             Source = "api",
         };

@@ -168,7 +168,7 @@ public class TransferRequestJson : JsonBase
             FundCode = FundCode,
             Agency = AgencyName,
             CreateDate = DateOnly.FromDateTime(DateTime.Now),
-            ExternalId = OriginalNo,
+            ExternalId = $"{CSC._Identifier}.{OriginalNo}", 
             RequestDate = DateOnly.ParseExact(ApplyDate, "yyyyMMdd"),
             RequestAmount = ParseDecimal(Balance),
             RequestShare = ParseDecimal(Shares),

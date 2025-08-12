@@ -94,7 +94,7 @@ public partial class CITICS : TrusteeApiBase
 
         // 后处理 不处理，统一在DataTracker中
         // 如果 api 更新基金份额映射，再添加
-         
+
 
         return new(result.Code, null);
     }
@@ -121,15 +121,14 @@ public partial class CITICS : TrusteeApiBase
 
             // 获取账户映射
             using var db = DbHelper.Platform();
-            var map = db.GetCollection<InvestorAccountMapping>(Identifier).FindAll().ToArray();
+            var map = db.GetCollection<InvestorAccountMapping>("citics_cus_accout_map").FindAll().ToDictionary(x => x.Id);
 
-            // 检查是否匹配
-            var kn = map.Select(x => x.Id).ToArray();
-            if (kn.Intersect(unk).Count() != unk.Count)
+            // 检查是否匹配，如果有缺失
+            if (map.Keys.Intersect(unk).Count() != unk.Count)
             {
                 // 重新获取
                 await QueryInvestors();
-                map = db.GetCollection<InvestorAccountMapping>(Identifier).FindAll().ToArray();
+                map = db.GetCollection<InvestorAccountMapping>("citics_cus_accout_map").FindAll().ToDictionary(x => x.Id);
             }
 
             List<TransferRecord> list = new();
@@ -139,25 +138,13 @@ public partial class CITICS : TrusteeApiBase
                 foreach (var item in result.Data)
                 {
                     var r = item.ToObject();
-                    if (b.FindFund(r.FundCode) is Fund f)
-                    {
-                        // 检查子份额 SABCDE  ABCDEA/B/C..
-                        if (f.Code != r.FundCode)
-                        {
-                            r.FundName = f.Name + r.FundCode![5..];
-                            r.FundCode = f.Code;
-                        }
-                        else
-                            r.FundName = f.Name;
-                    }
 
-                    list.Add(r);
-
-                    if (map.FirstOrDefault(x => x.Id == item.FundAcco) is InvestorAccountMapping m)
+                    if (map.TryGetValue(item.FundAcco, out var m))
                     {
                         r.CustomerName = m.Name;
                         r.CustomerIdentity = m.Indentity;
                     }
+                    list.Add(r);
                 }
             }
 

@@ -161,7 +161,7 @@ internal class TransferRequestJson : JsonBase
             FundName = "unset",
             RequestDate = DateOnly.ParseExact(RequestDate, "yyyyMMdd"),
             RequestType = ParseRequestType(BusinFlag),
-            ExternalId = RequestNo,
+            ExternalId = $"{CITICS._Identifier}.{RequestNo}",
             Agency = AgencyName,
             FeeDiscount = ParseDecimal(DiscountRate),
             LargeRedemptionFlag = ExceedFlag switch { "0" or null => LargeRedemptionFlag.CancelRemaining, _ => LargeRedemptionFlag.RollOver },

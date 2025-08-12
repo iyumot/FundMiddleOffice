@@ -142,7 +142,7 @@ internal class TransferRequestJson : JsonBase
             RequestShare = ParseDecimal(ApplicationVol),
             Agency = DistributorName,
             FeeDiscount = ParseDecimal(DiscountRateOfCommission),
-            ExternalId = Remark1,
+            ExternalId = $"{CMS._Identifier}.{Remark1}",
             Source = "api"
         };
     }

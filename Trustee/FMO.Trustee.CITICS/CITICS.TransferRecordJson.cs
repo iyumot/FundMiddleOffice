@@ -186,8 +186,8 @@ internal class TransferRecordJson : JsonBase
     {
         var r = new TransferRecord
         {
-            ExternalId = AckNo,
-            ExternalRequestId = ExRequestNo,
+            ExternalId = $"{CITICS._Identifier}.{AckNo}", 
+            ExternalRequestId = $"{CITICS._Identifier}.{ExRequestNo}",
             Type = ParseRecordType(Apkind),
             FundCode = FundCode,
             FundName = "unset",
