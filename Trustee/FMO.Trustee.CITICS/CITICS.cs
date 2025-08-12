@@ -551,7 +551,7 @@ public partial class CITICS : TrusteeApiBase
                             ret.Msg = ret.Data["reason"]?.ToString();
 
                         Log(caller, json, ret.Msg);
-                        return new(TransferReturnCode(code, ret.Msg), null);
+                        return new(TransferReturnCode(code, ret.Msg), list.Select(x => transfer(x)).ToArray());
                     }
 
                     if (ret.Data is JsonValue jv && jv.TryGetValue<string>(out var s) && s.Contains("No Data", StringComparison.OrdinalIgnoreCase))

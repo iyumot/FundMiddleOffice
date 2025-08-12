@@ -336,7 +336,7 @@ public partial class CSC : TrusteeApiBase
                     if (code != 0)
                     {
                         Log(caller, json, ret.Msg);
-                        return new(TransferReturnCode(code, ret.Msg), null);
+                        return new(TransferReturnCode(code, ret.Msg), list.Select(x => transfer(x)).ToArray());
                     }
 
                     // 解析实际数据

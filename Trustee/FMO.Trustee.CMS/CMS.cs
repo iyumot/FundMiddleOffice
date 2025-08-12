@@ -312,7 +312,7 @@ public partial class CMS : TrusteeApiBase
                     if (code != 10000)
                     {
                         Log(caller, json, ret.Msg);
-                        return new(TransferReturnCode(code, ret.Msg), null);
+                        return new(TransferReturnCode(code, ret.Msg), list.Select(x => transfer(x)).ToArray());
                     }
 
                     // 调用成功，实际无数据
