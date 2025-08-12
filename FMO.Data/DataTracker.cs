@@ -1013,7 +1013,7 @@ public static partial class DataTracker
                 }
 
                 if (pair)
-                    foreach (var item in req)
+                    foreach (var item in may)
                         newMap.Add(new TransferMapping { OrderId = o.Id, RequestId = item.Id });
 
             }
