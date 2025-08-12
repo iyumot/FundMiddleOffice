@@ -143,6 +143,7 @@ internal class TransferRequestJson : JsonBase
             Agency = DistributorName,
             FeeDiscount = ParseDecimal(DiscountRateOfCommission),
             ExternalId = Remark1,
+            Source = "api"
         };
     }
 
