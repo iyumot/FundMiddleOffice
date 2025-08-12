@@ -606,7 +606,27 @@ public static partial class DataTracker
         // 匹配订单
         using var db = DbHelper.Base();
 
+        SaveTransferRequests(db, data);
+
+        try { PostHandleTransferRequests(db, data); }
+        catch (Exception ex) { Log.Error($"{ex}"); }
+
+
+        // 通知
+        try
+        {
+            foreach (var item in data)
+                WeakReferenceMessenger.Default.Send(item);
+        }
+        catch { }
+    }
+
+    private static void SaveTransferRequests(BaseDatabase db, IList<TransferRequest> data)
+    {
+        if (data is null || data.Count == 0) return;
+
         var manager = db.GetCollection<Manager>().Query().First();
+
         // 对齐数据   
         foreach (var r in data)
         {
@@ -641,92 +661,39 @@ public static partial class DataTracker
         }
 
         // 对齐id 
-        var olds = db.GetCollection<TransferRecord>().Query().Select(x => new { x.Id, x.ExternalId, x.FundId }).ToList();
-        foreach (var r in data)
-        {
-            // 不再处理手动录的
-            if (olds.FirstOrDefault(x => x.FundId == r.FundId && x.ExternalId == r.ExternalId) is var old && old is not null)
-                r.Id = old.Id;
-        }
+        if (db.GetCollection<TransferRequest>().Query().Select(x => new { x.Id, x.ExternalId, x.FundId }).ToList() is var olds && olds.Count > 0)
+            foreach (var r in data)
+            {
+                // 不再处理手动录的
+                if (olds.FirstOrDefault(x => x.FundId == r.FundId && x.ExternalId == r.ExternalId) is var old && old is not null)
+                    r.Id = old.Id;
+            }
 
+        // 如果是api来的，清除其它来源
+        var dlf = data.Where(x => x.Source == "api").Select(x => x.FundId).Distinct().ToList();
+        db.GetCollection<TransferRequest>().DeleteMany(x => x.Source != "api" && dlf.Contains(x.FundId));
+
+        //
         db.GetCollection<TransferRequest>().Upsert(data);
 
-
+        db.GetCollection<PostHandleIds>("ph_request").Upsert(data.Select(x => new PostHandleIds(x.Id)));
+    }
+    private static void PostHandleTransferRequests(BaseDatabase db, IList<TransferRequest>? data = null)
+    {
+        if (data is null)
+        {
+            var ids = db.GetCollection<PostHandleIds>("ph_request").FindAll().Select(x => x.Id).ToList();
+            data = db.GetCollection<TransferRequest>().Find(x => ids.Contains(x.Id)).ToList();
+        }
 
         MapRequestRecord(data);
 
         MapRequestToOrder(data);
 
-        // 找已知的map
-        var rids = data.Select(x => x.Id).ToList();
-        var mapTable = db.GetCollection<TransferMapping>();
-        var exists = mapTable.Find(x => rids.Contains(x.RequestId)).ToList();
-
-        foreach (var req in data)
-        {
-            var old = exists.FirstOrDefault(x => x.RequestId == req.Id) ?? new() { RequestId = req.Id };
-
-            // 未匹配order
-            if (old.OrderId == 0)
-            {
-                // 找RequestDate前最后一个order
-                if (db.GetCollection<TransferOrder>().Find(x => x.FundId == req.FundId && x.InvestorId == req.CustomerId && x.Date <= req.RequestDate).MaxBy(x => x.Date) is TransferOrder order)
-                {
-                    // 验证order 没有匹配
-                    if (mapTable.FindOne(x => x.OrderId == order.Id) is TransferMapping conflict)
-                    {
-                        if (conflict.RequestId != req.Id)
-                            Log.Error($"Order {conflict.Id} 匹配冲突，已匹配 {conflict.RequestId}，待匹配 {req.Id}");
-                        else old.Merge(conflict);
-                    }
-                }
-            }
-
-            // 未匹配record
-            if (old.RecordId == 0)
-            {
-                if (db.GetCollection<TransferRecord>().Find(x => x.ExternalRequestId == req.ExternalId) is TransferRecord record)
-                {
-                    old.RecordId = record.Id;
-                }
-            }
-
-            // 未匹配流水
-            if (string.IsNullOrWhiteSpace(old.TransactionId))
-            {
-                bool isbuy = req.IsBuy();
-                var banks = db.GetCollection<InvestorBankAccount>().Find(x => x.OwnerId == req.CustomerId).Select(x => x.Number);
-                if (isbuy)
-                {
-                    var limit = new DateTime(req.RequestDate, TimeOnly.MaxValue);
-                    foreach (var t in db.GetCollection<RaisingBankTransaction>().Find(x => x.FundId == req.FundId && x.Direction == TransctionDirection.Receive
-                            && x.Time <= limit && (banks.Contains(x.CounterNo) || x.CounterName == req.CustomerName)).OrderByDescending(x => x.Time))
-                    {
-                        if (t.Amount == req.RequestAmount)
-                            old.TransactionId = t.Id;
-
-                    }
-                }
-
-
-            }
-
-            mapTable.Update(old);
-        }
-
-
-        //CheckTAMissOwnerInvoker.Invoke();
-        //CheckTransferRequestMissingInvoker.Invoke();
-
-
-        // 通知
-        try
-        {
-            foreach (var item in data)
-                WeakReferenceMessenger.Default.Send(item);
-        }
-        catch { }
+        var handled = data.Select(x => x.Id).ToList();
+        db.GetCollection<PostHandleIds>("ph_request").DeleteMany(x => handled.Contains(x.Id));
     }
+
 
     public static void OnBatchTransferRecord(IList<TransferRecord> records)
     {
@@ -952,15 +919,13 @@ public static partial class DataTracker
         // 排除已经匹配的
         var maped = mapTable.Find(x => rids.Contains(x.RequestId) && x.OrderId != 0).Select(x => x.RecordId).ToList();
 
-        var unmap = data.ExceptBy(maped, x => x.Id);
+        var unmapRequest = data.ExceptBy(maped, x => x.Id);
         var oTable = db.GetCollection<TransferOrder>();
 
-        // 未匹配的order
-        var ordermaps = mapTable.Query().Where(x => x.RequestId == 0).Select(x => new { map = x, order = oTable.FindById(x.OrderId) }).ToList();
+        // 有 orderid 没有 requestid
+        var ordermaps = mapTable.Query().Where(x => x.RequestId == 0 && x.OrderId != 0).ToList().Select(x => new { map = x, order = oTable.FindById(x.OrderId) }).ToList();
 
-        var exists = mapTable.Find(x => rids.Contains(x.RequestId)).ToList();
-
-        var reqDates = unmap.GroupBy(x => ((long)x.FundId << 32) | (long)x.CustomerId).ToDictionary(x => x.Key);
+        var reqDates = unmapRequest.OrderBy(x=>x.RequestDate).GroupBy(x => ((long)x.FundId << 32) | (long)x.CustomerId).ToDictionary(x => x.Key);
         foreach (var om in ordermaps)
         {
             var o = om.order;
@@ -1004,7 +969,60 @@ public static partial class DataTracker
             }
         }
 
+        // 没有在map中的order
+        List<TransferMapping> newMap = new();
+        var unmapedOrder = oTable.FindAll().ExceptBy(mapTable.Query().Select(x => x.OrderId).ToList(), x => x.Id).ToList();
+        foreach (var o in unmapedOrder)
+        {
+            // 筛选同Fund 同investor
+            var gid = ((long)o.FundId << 32) | (long)o.InvestorId;
+
+            if (reqDates.ContainsKey(gid))
+            {
+                List<TransferRequest> req = [.. reqDates[gid]];
+
+                // 找 o.Date 后一个日期的所有同fundId InvestorId的 request
+                // 使用二分查找找到第一个符合条件的请求
+                int index = req.Select(x => x.RequestDate).ToList().BinarySearch(o.Date);
+                if (index < 0) index = ~index;
+
+                var take = 1;
+                for (int i = index + 1; i < req.Count; i++, take++)
+                {
+                    if (req[i].RequestDate != req[index].RequestDate)
+                        break;
+                }
+
+                // 日期和类型匹配
+                var may = req.Skip(index).Take(take).Where(x => x.IsCompatible(o));
+
+                bool pair = false;
+
+                // 检验 金额 一致，默认同一天只有一个订单，可能多个申请，因为多卡打款，申请有多个
+                switch (o.Type)
+                {
+                    case TransferOrderType.FirstTrade:
+                    case TransferOrderType.Buy:
+                    case TransferOrderType.Amount:
+                    case TransferOrderType.RemainAmout:
+                        pair = o.Number == may.Sum(x => x.RequestAmount);
+                        break;
+                    case TransferOrderType.Share:
+                        pair = o.Number == may.Sum(x => x.RequestShare);
+                        break;
+                }
+
+                if (pair)
+                    foreach (var item in req)
+                        newMap.Add(new TransferMapping { OrderId = o.Id, RequestId = item.Id });
+
+            }
+        }
+
+
+
         db.GetCollection<TransferMapping>().Upsert(ordermaps.Select(x => x.map));
+        db.GetCollection<TransferMapping>().Upsert(newMap);
     }
 
 

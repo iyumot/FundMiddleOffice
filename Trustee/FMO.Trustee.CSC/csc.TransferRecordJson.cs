@@ -280,7 +280,7 @@ internal class TransferRecordJson : JsonBase
             case "127": // 转销售机构入 
                 return TransferRecordType.MoveIn;
             case "129": // 设置分红方式 
-                return TransferRecordType.BonusType;
+                return TransferRecordType.BonusType; 
             case "131": // 份额冻结 
                 return TransferRecordType.Frozen;
             case "132": // 份额解冻 

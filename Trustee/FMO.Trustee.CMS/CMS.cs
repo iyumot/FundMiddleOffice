@@ -1,5 +1,6 @@
 using FMO.Models;
 using FMO.Utilities;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
@@ -280,7 +281,7 @@ public partial class CMS : TrusteeApiBase
         return content;
     }
 
-    protected async Task<ReturnWrap<TEntity>> SyncWork<TEntity, TJSON>(int interfaceId, object? param, Func<TJSON, TEntity> transfer, [CallerMemberName] string? caller = null) where TJSON : JsonBase
+    protected async Task<ReturnWrap<TEntity>> SyncWork<TEntity, TJSON>(int interfaceId, object? param, Func<TJSON, TEntity> transfer, [CallerMemberName] string caller = "") where TJSON : JsonBase
     {
         // 校验
         if (CheckBreforeSync() is ReturnCode rc && rc != ReturnCode.Success) return new(rc, null);
@@ -298,66 +299,71 @@ public partial class CMS : TrusteeApiBase
         {
             for (int i = 0; i < 19; i++) // 防止无限循环，最多99次 
             {
-
+#if DEBUG
+                string? json = TrusteeApiBase.GetCache(Identifier, caller, formatedParams);
+                if (json is null) { json = await Query(interfaceId, formatedParams); SetCache(Identifier, caller, formatedParams, json!); }
+                else Debug.WriteLine($"{Identifier},{caller} Load From Cache");
+#else
                 var json = await Query(interfaceId, formatedParams);
+#endif
 
-                try
-                {
-                    if (json is null) return new(ReturnCode.EmptyResponse, null);
-                    var ret = JsonSerializer.Deserialize<JsonRoot>(json);
-
-                    var code = int.Parse(ret!.Code);
-
-                    // 有错误
-                    if (code != 10000)
+                    try
                     {
-                        Log(caller, json, ret.Msg);
-                        return new(TransferReturnCode(code, ret.Msg), list.Select(x => transfer(x)).ToArray());
-                    }
+                        if (json is null) return new(ReturnCode.EmptyResponse, null);
+                        var ret = JsonSerializer.Deserialize<JsonRoot>(json);
 
-                    // 调用成功，实际无数据
-                    if (string.IsNullOrWhiteSpace(ret.Data))
-                        break;// return new(ReturnCode.Success, []);
+                        var code = int.Parse(ret!.Code);
 
-                    // 解析实际数据
-                    var data = JsonSerializer.Deserialize<List<JsonElement>>(ret.Data);
-
-                    // 记录返回的类型，用于debug
-                    if (data?.Count > 0)
-                        CacheJson(caller, data!);
-
-
-                    var options = new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true,
-                    };
-                    if (data is not null && data.Count > 0)
-                        list.AddRange(data.Select(x =>
+                        // 有错误
+                        if (code != 10000)
                         {
-                            try { return x.Deserialize<TJSON>(options)!; }
-                            catch (Exception ex)
+                            Log(caller, json, ret.Msg);
+                            return new(TransferReturnCode(code, ret.Msg), list.Select(x => transfer(x)).ToArray());
+                        }
+
+                        // 调用成功，实际无数据
+                        if (string.IsNullOrWhiteSpace(ret.Data))
+                            break;// return new(ReturnCode.Success, []);
+
+                        // 解析实际数据
+                        var data = JsonSerializer.Deserialize<List<JsonElement>>(ret.Data);
+
+                        // 记录返回的类型，用于debug
+                        if (data?.Count > 0)
+                            CacheJson(caller, data!);
+
+
+                        var options = new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true,
+                        };
+                        if (data is not null && data.Count > 0)
+                            list.AddRange(data.Select(x =>
                             {
-                                // 记录具体哪个元素反序列化失败
-                                JsonBase.ReportJsonUnexpected(Identifier, caller!, $"Failed to deserialize item Error: {ex.Message}: {x}.");
-                                throw;
-                            }
-                        }));
+                                try { return x.Deserialize<TJSON>(options)!; }
+                                catch (Exception ex)
+                                {
+                                    // 记录具体哪个元素反序列化失败
+                                    JsonBase.ReportJsonUnexpected(Identifier, caller!, $"Failed to deserialize item Error: {ex.Message}: {x}.");
+                                    throw;
+                                }
+                            }));
 
 
-                    // 数据获取是否齐全
-                    var pi = JsonSerializer.Deserialize<PaginationInfo>(ret.Page!)!;
-                    if (pi.PageNumber >= pi.PageCount)
-                        break;
+                        // 数据获取是否齐全
+                        var pi = JsonSerializer.Deserialize<PaginationInfo>(ret.Page!)!;
+                        if (pi.PageNumber >= pi.PageCount)
+                            break;
 
-                    // 下一页
-                    var page = (int)formatedParams["pageNumber"];
-                    formatedParams["pageNumber"] = page + 1;
-                }
-                catch
-                {
-                    Log(caller, json, "Json Serialize Error");
-                    return new(ReturnCode.JsonNotPairToEntity, null);
-                }
+                        // 下一页
+                        var page = (int)formatedParams["pageNumber"];
+                        formatedParams["pageNumber"] = page + 1;
+                    }
+                    catch
+                    {
+                        Log(caller, json, "Json Serialize Error");
+                        return new(ReturnCode.JsonNotPairToEntity, null);
+                    }
             }
         }
         catch (Exception e)
@@ -366,7 +372,7 @@ public partial class CMS : TrusteeApiBase
             return new(ReturnCode.Unknown, null);
         }
 
-        Log(caller, null, list.Count == 0 ? "OK [Empty]" : $"OK [{list[0].Id}-{list[^1].Id}]");
+        Log(caller, null, list.Count == 0 ? "OK [Empty]" : $"OK [{list.Count}]");
 
         try { var dd = list.Select(x => transfer(x)).ToArray(); return new(ReturnCode.Success, dd); }
         catch (Exception e) { Log(e.Message); return new(ReturnCode.ObjectTransformError, []); }

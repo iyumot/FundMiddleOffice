@@ -220,7 +220,7 @@ internal class TransferRecordJson : JsonBase
     {
         return businessTypeCode switch
         {
-            //"01" => TransferRecordType.Subscription,         // 认购 此项 确认份额是0
+            "01" => TransferRecordType.InitialOffer,         // 认购 此项 确认份额是0
             "02" => TransferRecordType.Purchase,             // 申购
             "03" => TransferRecordType.Redemption,           // 赎回
             "04" => TransferRecordType.MoveOut,              // 转托管（转出）

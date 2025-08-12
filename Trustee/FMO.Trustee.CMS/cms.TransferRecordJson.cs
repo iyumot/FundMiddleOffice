@@ -141,7 +141,7 @@ internal class TransferRecordJson : JsonBase
     {
         return c switch
         {
-            //"120" => TARecordType.Subscription, //"认购确认" 此项没有份额数据, 用认购结果
+            "120" => TransferRecordType.InitialOffer, //"认购确认" 此项没有份额数据, 用认购结果
             "122" => TransferRecordType.Purchase,     //"申购确认",
             "124" => TransferRecordType.Redemption,// "赎回确认",
             "126" => TransferRecordType.MoveIn,   //"转托确认",

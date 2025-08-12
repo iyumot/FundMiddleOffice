@@ -192,6 +192,7 @@ public class TransferRequestJson : JsonBase
             "27" => TransferRequestType.TransferIn,
             "28" => TransferRequestType.TransferOut,
             "29" => TransferRequestType.BonusType,
+            //"30" => TransferRequestType.Subscription, 认购结果，实际没有返回，反而20是对应record
             //"31" => TransferRequestType.Freeze,
             //"32" => TransferRequestType.Unfreeze,
             "33" => TransferRequestType.TransferOut,

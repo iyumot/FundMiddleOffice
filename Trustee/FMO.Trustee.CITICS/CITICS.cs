@@ -1,6 +1,7 @@
 using FMO.Models;
 using FMO.Utilities;
 using LiteDB;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
@@ -89,14 +90,14 @@ public partial class CITICS : TrusteeApiBase
     public override async Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end)
     {
         var part = "/v2/ta/queryTradeApplyForApi";
-        var result = await SyncWork<TransferRequestJson, TransferRequestJson>(part, new { ackBeginDate = $"{begin:yyyyMMdd}", ackEndDate = $"{end:yyyyMMdd}" }, x => x);
-
+        var result = await SyncWork<TransferRequest, TransferRequestJson>(part, new { ackBeginDate = $"{begin:yyyyMMdd}", ackEndDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
+        return result;
 
         // 后处理 不处理，统一在DataTracker中
         // 如果 api 更新基金份额映射，再添加
 
 
-        return new(result.Code, null);
+        //return   new(result.Code, result.Data?.Select(x=>x.ToObject()));
     }
 
 
@@ -521,13 +522,18 @@ public partial class CITICS : TrusteeApiBase
 
         List<TJSON> list = new();
 
-        // 获取所有结果
-        string json = "";
+        // 获取所有结果 
         try
         {
             for (int i = 0; i < 19; i++) // 防止无限循环，最多99次 
             {
-                json = await Query(part, formatedParams);
+#if DEBUG
+                string? json = TrusteeApiBase.GetCache(Identifier, caller, formatedParams);
+                if (json is null) { json = await Query(part, formatedParams); SetCache(Identifier, caller, formatedParams, json!); }
+                else Debug.WriteLine($"{Identifier},{caller} Load From Cache");
+#else
+                var json = await Query(part, formatedParams);
+#endif 
                 LogRun(caller, formatedParams, json);
 
                 try
@@ -595,11 +601,11 @@ public partial class CITICS : TrusteeApiBase
         }
         catch (Exception e)
         {
-            Log(caller, json, e.Message);
+            Log(caller, null, e.Message);
             return new(ReturnCode.Unknown, null);
         }
 
-        Log(caller, null, list.Count == 0 ? "OK [Empty]" : $"OK [{list[0].Id}-{list[^1].Id}]");
+        Log(caller, null, list.Count == 0 ? "OK [Empty]" : $"OK [{list.Count}]");
         return new(ReturnCode.Success, list.Select(x => transfer(x)).ToArray());
     }
 

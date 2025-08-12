@@ -2,6 +2,7 @@ using FMO.Models;
 using FMO.Trustee.JsonCSC;
 using FMO.Utilities;
 using LiteDB;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -49,6 +50,12 @@ public partial class CSC : TrusteeApiBase
 
     public override bool IsSuit(string? company) => string.IsNullOrWhiteSpace(company) ? false : Regex.IsMatch(company, $"中信建投证券|中信建投证券股份有限公司|{_Identifier}");
 
+    /// <summary>
+    /// csc 认购和认购结果合并了，只返回一条
+    /// </summary>
+    /// <param name="begin"></param>
+    /// <param name="end"></param>
+    /// <returns></returns>
     public override async Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end)
     {
         var part = "/institution/tgpt/erp/product/query/findAppTransList";
@@ -88,7 +95,12 @@ public partial class CSC : TrusteeApiBase
         return result;
     }
 
-
+    /// <summary>
+    /// csc 认购和认购结果合并了，对应的是认购的id
+    /// </summary>
+    /// <param name="begin"></param>
+    /// <param name="end"></param>
+    /// <returns></returns>
     public override async Task<ReturnWrap<TransferRecord>> QueryTransferRecords(DateOnly begin, DateOnly end)
     {
         var part = "/institution/tgpt/erp/product/query/findAckTransList";
@@ -322,7 +334,13 @@ public partial class CSC : TrusteeApiBase
         {
             for (int i = 0; i < 19; i++) // 防止无限循环，最多99次 
             {
+#if DEBUG
+                string? json = TrusteeApiBase.GetCache(Identifier, caller, formatedParams);
+                if (json is null) { json = await Query(part, formatedParams); SetCache(Identifier, caller, formatedParams, json!); }
+                else Debug.WriteLine($"{Identifier},{caller} Load From Cache");
+#else
                 var json = await Query(part, formatedParams);
+#endif
                 LogRun(caller, formatedParams, json);
 
                 try
@@ -383,7 +401,7 @@ public partial class CSC : TrusteeApiBase
         }
 
 
-        Log(caller, null, list.Count == 0 ? "OK [Empty]" : $"OK [{list[0].Id}-{list[^1].Id}]");
+        Log(caller, null, list.Count == 0 ? "OK [Empty]" : $"OK [{list.Count}]");
         return new(ReturnCode.Success, list.Select(x => transfer(x)).ToArray());
     }
 

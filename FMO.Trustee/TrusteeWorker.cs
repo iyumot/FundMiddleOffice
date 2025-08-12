@@ -73,6 +73,9 @@ public partial class TrusteeWorker : ObservableObject
 
     internal List<FundTrusteePair> Maps { get; } = new();
 
+    private Dictionary<string, TrusteeMethodShotRange> _workRange = new();
+
+    private DateOnly StartOfAny { get; }
 
     //private PeriodicTimer periodicTimer;
 
@@ -105,6 +108,7 @@ public partial class TrusteeWorker : ObservableObject
         {
             cfg = db.GetCollection<WorkConfig>().FindAll().ToArray();
             maps = db.GetCollection<TrusteeApiMap>().FindAll().ToArray();
+            _workRange = db.GetCollection<TrusteeMethodShotRange>().FindAll().ToDictionary(x => x.Id);
         }
         RaisingBalanceConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryRaisingBalance)) ?? new(nameof(ITrustee.QueryRaisingBalance));
         TransferRecordConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryTransferRecords)) ?? new(nameof(ITrustee.QueryTransferRecords)) { Interval = 60 }; // 每6个小时
@@ -122,11 +126,10 @@ public partial class TrusteeWorker : ObservableObject
         NetValueConfig.Interval = 60;
 
 
-
         // 基金映射
         using (var db = DbHelper.Base())
         {
-            var funds = db.GetCollection<Fund>().Query().Select(x => new { x.Id, x.Trustee }).ToList();
+            var funds = db.GetCollection<Fund>().Query().Select(x => new { x.Id, x.SetupDate, x.Trustee }).ToList();
             var unk = funds.ExceptBy(maps.Select(x => x.FundId), x => x.Id);
             foreach (var item in unk)
             {
@@ -138,6 +141,12 @@ public partial class TrusteeWorker : ObservableObject
                 if (trustees.FirstOrDefault(x => x.IsSuit(item.Identifier)) is ITrustee trustee)
                     Maps.Add(new(item.FundId, trustee));
             }
+
+            // 所有任务的最小日期
+            StartOfAny = db.GetCollection<Manager>().Query().First().SetupDate;
+            // 防止空集合
+            try { StartOfAny = funds.Where(x => x.SetupDate.Year > 1970).Min(x => x.SetupDate); } catch { }
+
         }
 
         Trustees = trustees;
@@ -145,15 +154,6 @@ public partial class TrusteeWorker : ObservableObject
             t.Prepare();
 
 
-        // 解析基金和api的映射
-        //Fund[] funds;
-        //using (var db = DbHelper.Base())
-        //    funds = db.GetCollection<Fund>().FindAll().ToArray();
-
-        //foreach (var f in funds)
-        //{
-        //    f.Trustee
-        //}
         tasks = [
                 // 募集余额查询任务：
                 // 使用 RaisingBalanceConfig 配置（如执行间隔、上次运行时间等）
@@ -253,12 +253,6 @@ public partial class TrusteeWorker : ObservableObject
         {
             List<WorkReturn> ret = new();
             // 保存数据库
-            using var db = DbHelper.Base();
-            var funds = db.GetCollection<Fund>().FindAll().ToArray();
-            var manager = db.GetCollection<Manager>().FindById(1);
-            var StartDateOfAny = StartOfAnyWork();
-            using var pdb = DbHelper.Platform();
-            var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
             var method = nameof(ITrustee.QueryTransferRequests);
 
             foreach (var tr in Trustees)
@@ -272,24 +266,25 @@ public partial class TrusteeWorker : ObservableObject
                 try
                 {
                     // 获取历史区间
-                    var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + method);
+                    var range = GetWorkedRange(tr.Identifier, method);
 
-                    DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
-                    do
+                    DateOnly begin = range.End, end =  DateOnly.FromDateTime(DateTime.Now);
+
+                    var rc = await tr.QueryTransferRequests(begin, end);
+                    if (rc.Code != ReturnCode.Success && rc.Code != ReturnCode.TrafficLimit)
                     {
-                        var rc = await tr.QueryTransferRequests(begin, end);
+                        WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Error, $"{tr.Title} 获取的交易申请记录数据异常"));
+                    }
+                    ///
+                    // 保存数据库，部分成功的也保存
+                    if (rc.Data?.Length > 0)
+                    { 
+                        // 如果返回有失败的，更新end
+                        if (rc.Code != ReturnCode.Success) 
+                            end = rc.Data.Max(x => x.RequestDate);
 
-                        ///
-                        // 保存数据库 
-                        if (rc.Data?.Length > 0)
-                        {
-                            
-
-
-                            // 统一更新处理
-                            DataTracker.OnBatchTransferRequest(rc.Data);
-                        }
-
+                        // 统一更新处理
+                        DataTracker.OnBatchTransferRequest(rc.Data);
 
                         // 如果有unset，表示数据异常，不保存进度
                         if (rc.Data?.Any(x => x.CustomerName == "unset" || x.FundName == "unset" || x.CustomerIdentity == "unset") ?? false)
@@ -298,20 +293,13 @@ public partial class TrusteeWorker : ObservableObject
                             WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Error, $"{tr.Title} 获取的交易申请记录数据异常"));
                             break;
                         }
-                        // 更新进度
-                        if (range is null) range = new(tr.Identifier + nameof(tr.QueryTransferRequests), begin, end);
-                        else range.Merge(begin, end);
-                        pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
+                    }
 
-                        // 合并记录
-                        ret.Add(new(tr.Title, rc.Code, rc.Data));
-
-                        // 向前一年
-                        end = range.Begin.AddDays(-1);
-                        if (end.Year < 1970) break;
-                        begin = end.AddYears(-1);
-                    } while (begin > StartDateOfAny);
-
+                    // 更新进度
+                    range.Merge(begin, end);
+                    using var pdb = DbHelper.Platform();
+                    pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
+                    
                 }
                 catch (Exception e)
                 {
@@ -674,6 +662,11 @@ public partial class TrusteeWorker : ObservableObject
     }
 
 
+    private TrusteeMethodShotRange GetWorkedRange(string idf, string method)
+    {
+        string key = $"{idf}.{method}";
+        return _workRange.TryGetValue(key, out var range) ? range : new(key, StartOfAny, StartOfAny);
+    }
 
 
     //private async void OnTimer2(object? state)

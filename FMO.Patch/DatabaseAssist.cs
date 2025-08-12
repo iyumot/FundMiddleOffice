@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using FMO.Logging;
 using FMO.Models;
+using FMO.Trustee;
 using LiteDB;
 using Serilog;
 using System.Text.RegularExpressions;
@@ -23,8 +24,35 @@ public  static partial class DatabaseAssist
         [55] = FixLogInfo,
         [62] = RebuildFundShareRecord,
         [64] = ChangeOrderFilePathToRelative,
-        [65] = UpdateLiqudatingTA
+        [65] = UpdateLiqudatingTA,
+        [66] = ChangeAPIAndClearData
     };
+
+
+    /// <summary>
+    /// 修改API的结构，需要重新获取数据
+    /// </summary>
+    /// <param name="database"></param>
+    /// <exception cref="NotImplementedException"></exception>
+    private static void ChangeAPIAndClearData(BaseDatabase database)
+    {
+        // 备份
+        ILiteCollection<BsonDocument> creq = database.GetCollection("ta_request_bak");
+        creq.DeleteAll();
+        creq.InsertBulk(database.GetCollection(nameof(TransferRequest)).FindAll().ToList());
+
+        ILiteCollection<BsonDocument> crec = database.GetCollection("ta_record_bak");
+        crec.DeleteAll();
+        crec.InsertBulk(database.GetCollection(nameof(TransferRecord)).FindAll().ToList());
+
+        database.DropCollection(nameof(TransferRecord));
+        database.DropCollection(nameof(TransferRequest));
+
+        using var db = DbHelper.Platform();
+        db.GetCollection<TrusteeMethodShotRange>().DeleteMany(x => x.Id.EndsWith(nameof(ITrustee.QueryTransferRecords)));
+        db.GetCollection<TrusteeMethodShotRange>().DeleteMany(x => x.Id.EndsWith(nameof(ITrustee.QueryTransferRequests)));
+
+    }
 
 
 
@@ -185,7 +213,7 @@ public  static partial class DatabaseAssist
     {
         var btr = db.GetCollection<RaisingBankTransaction>().FindAll().OrderBy(x => x.Time).ToList();
         var orders = db.GetCollection<TransferOrder>().FindAll().OrderBy(x => x.Date).ToList();
-        var requests = db.GetCollection<TransferRequest>().Find(x => x.OrderRequired).OrderBy(x => x.RequestDate).ToList();
+        var requests = db.GetCollection<TransferRequest>().Find(x => x.IsOrderRequired).OrderBy(x => x.RequestDate).ToList();
         var records = db.GetCollection<TransferRecord>().Find(x => x.OrderRequired).OrderBy(x => x.ConfirmedDate).ToList();
 
         // var jo = requests.Join(records, x => x.ExternalId, x => x.ExternalId, (x, y) => new { x, y });

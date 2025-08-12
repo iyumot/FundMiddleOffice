@@ -104,6 +104,6 @@ public class TransferRequest
     /// <summary>
     /// 需要order
     /// </summary>
-    public bool OrderRequired => TAHelper.RequiredOrder(RequestType);
+    public bool IsOrderRequired => TAHelper.RequiredOrder(RequestType);
 }
 

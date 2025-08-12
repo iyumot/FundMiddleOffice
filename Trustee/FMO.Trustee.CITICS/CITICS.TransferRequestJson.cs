@@ -215,10 +215,12 @@ internal class TransferRequestJson : JsonBase
     {
         switch (str)
         {
-            case "01": return TransferRequestType.Subscription;
+            case "01": return TransferRequestType.InitialOffer;
+            case "50": return TransferRequestType.Subscription;
             case "02": return TransferRequestType.Purchase;
             case "03": return TransferRequestType.Redemption;
-            case "04": return TransferRequestType.Subscription;
+            //case "04": return TransferRequestType.Subscription;
+            case "07": return TransferRequestType.BonusType;
             case "05":
             case "70":
             case "15":

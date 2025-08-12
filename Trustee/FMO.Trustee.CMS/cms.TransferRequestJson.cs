@@ -126,8 +126,8 @@ internal class TransferRequestJson : JsonBase
     public TransferRequest ToObject()
     {
         TransferRequestType transferRequestType = TranslateRequest(BusinessCode);
-        if (transferRequestType == TransferRequestType.UNK && BusinessCode switch { "120" => false, _ => true })
-            ReportJsonUnexpected(CMS._Identifier, nameof(CMS.QueryTransferRequests), $"TA[{Remark1}] {TransactionDate} 份额：{ApplicationVol} 金额：{ApplicationAmount} 的业务类型[{BusinessCode}]无法识别");
+        //if (transferRequestType == TransferRequestType.UNK && BusinessCode switch { "120" => false, _ => true })
+         //   ReportJsonUnexpected(CMS._Identifier, nameof(CMS.QueryTransferRequests), $"TA[{Remark1}] {TransactionDate} 份额：{ApplicationVol} 金额：{ApplicationAmount} 的业务类型[{BusinessCode}]无法识别");
 
 
         var r = new TransferRequest
@@ -157,6 +157,7 @@ internal class TransferRequestJson : JsonBase
     {
         return c switch
         {
+            "120" => TransferRequestType.InitialOffer,
             "122" => TransferRequestType.Purchase,
             "124" => TransferRequestType.Redemption,
             "129" => TransferRequestType.BonusType,//"分红方式",
