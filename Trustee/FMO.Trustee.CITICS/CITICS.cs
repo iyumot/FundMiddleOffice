@@ -600,8 +600,8 @@ public partial class CITICS : TrusteeApiBase
                     var data = ret.Data.Deserialize<QueryRoot<JsonElement>>()!;
 
                     // 记录返回的类型，用于debug
-                    //if (data.List is not null)
-                    //    CacheJson(caller, data!.List);
+                    if (data.List is not null)
+                        CacheJson(caller, data!.List);
 
                     if (data.List is not null)
                         list.AddRange(data.List.Select(x =>

@@ -345,7 +345,8 @@ public partial class CSC : TrusteeApiBase
                     //    return new(ReturnCode., null);
 
                     // 记录返回的类型，用于debug
-                    //CacheJson(caller, data!.Data.Data);
+                    if (data!.Data.Data.Count > 0)
+                        CacheJson(caller, data!.Data.Data);
 
                     total += data!.Data.Data.Count;
                     list.AddRange(data.Data.Data.Select(x =>

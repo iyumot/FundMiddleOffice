@@ -323,7 +323,10 @@ public partial class CMS : TrusteeApiBase
                     var data = JsonSerializer.Deserialize<List<JsonElement>>(ret.Data);
 
                     // 记录返回的类型，用于debug
-                    //CacheJson(caller, data!);
+                    if (data?.Count > 0)
+                        CacheJson(caller, data!);
+
+
                     var options = new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true,
