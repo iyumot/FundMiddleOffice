@@ -92,36 +92,9 @@ public partial class CITICS : TrusteeApiBase
         var result = await SyncWork<TransferRequestJson, TransferRequestJson>(part, new { ackBeginDate = $"{begin:yyyyMMdd}", ackEndDate = $"{end:yyyyMMdd}" }, x => x);
 
 
-        // 后处理
-        if (result.Data?.Length > 0)
-        {
-            List<TransferRequest> list = new();
-            // 映射基金名、投资人
-            using (var b = DbHelper.Base())
-            {
-                foreach (var item in result.Data)
-                {
-                    var r = item.ToObject();
-                    if (b.FindFund(r.FundCode) is Fund f)
-                    {
-                        // 检查子份额 SABCDE  ABCDEA/B/C..
-                        if (f.Code != r.FundCode)
-                        {
-                            r.FundName = f.Name + r.FundCode![5..];
-                            r.FundCode = f.Code;
-                        }
-                        else
-                            r.FundName = f.Name;
-                    }
-                    else Log($"CITICS QueryTransferRequests 未知的基金{item.FundCode}");
-
-                    list.Add(r);
-                }
-            }
-
-
-            return new(result.Code, list.ToArray());
-        }
+        // 后处理 不处理，统一在DataTracker中
+        // 如果 api 更新基金份额映射，再添加
+         
 
         return new(result.Code, null);
     }

@@ -4,6 +4,7 @@ using LiteDB;
 using Serilog;
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace FMO.Utilities;
@@ -600,6 +601,133 @@ public static partial class DataTracker
             WeakReferenceMessenger.Default.Send(new TransferRecordLinkOrderMessage(item.Id, item.OrderId));
     }
 
+    public static void OnBatchTransferRequest(IList<TransferRequest> data)
+    {
+        // 匹配订单
+        using var db = DbHelper.Base();
+
+        var manager = db.GetCollection<Manager>().Query().First();
+        // 对齐数据   
+        foreach (var r in data)
+        {
+            if (r.Agency == manager.Name)
+                r.Agency = "直销";
+
+            // code 匹配
+            var (f, c) = db.FindFundByCode(r.FundCode);
+            if (f is not null)
+            {
+                r.FundId = f.Id;
+                r.FundName = f.Name;
+                if (!string.IsNullOrWhiteSpace(c))
+                    r.ShareClass = c;
+                continue;
+            }
+            else Log.Error($"QueryTransferRequests 发现未知的产品{r.FundName} {r.FundCode}");
+        }
+
+        // 不在库中的投资人
+        var customers = db.GetCollection<Investor>().Query().Where(x => x.Identity != null).Select(x => new { IdNo = x.Identity!.Id, Id = x.Id }).ToList().ToDictionary(x => x.IdNo);
+        foreach (var r in data)
+        {
+            if (customers.TryGetValue(r.CustomerIdentity, out var cus))
+                r.CustomerId = cus.Id;
+            else // 添加数据
+            {
+                var c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
+                db.GetCollection<Investor>().Insert(c);
+                r.CustomerId = c.Id;
+            }
+        }
+
+        // 对齐id 
+        var olds = db.GetCollection<TransferRecord>().Query().Select(x => new { x.Id, x.ExternalId, x.FundId }).ToList();
+        foreach (var r in data)
+        {
+            // 不再处理手动录的
+            if (olds.FirstOrDefault(x => x.FundId == r.FundId && x.ExternalId == r.ExternalId) is var old && old is not null)
+                r.Id = old.Id;
+        }
+
+        db.GetCollection<TransferRequest>().Upsert(data);
+
+
+
+        MapRequestRecord(data);
+
+        MapRequestToOrder(data);
+
+        // 找已知的map
+        var rids = data.Select(x => x.Id).ToList();
+        var mapTable = db.GetCollection<TransferMapping>();
+        var exists = mapTable.Find(x => rids.Contains(x.RequestId)).ToList();
+
+        foreach (var req in data)
+        {
+            var old = exists.FirstOrDefault(x => x.RequestId == req.Id) ?? new() { RequestId = req.Id };
+
+            // 未匹配order
+            if (old.OrderId == 0)
+            {
+                // 找RequestDate前最后一个order
+                if (db.GetCollection<TransferOrder>().Find(x => x.FundId == req.FundId && x.InvestorId == req.CustomerId && x.Date <= req.RequestDate).MaxBy(x => x.Date) is TransferOrder order)
+                {
+                    // 验证order 没有匹配
+                    if (mapTable.FindOne(x => x.OrderId == order.Id) is TransferMapping conflict)
+                    {
+                        if (conflict.RequestId != req.Id)
+                            Log.Error($"Order {conflict.Id} 匹配冲突，已匹配 {conflict.RequestId}，待匹配 {req.Id}");
+                        else old.Merge(conflict);
+                    }
+                }
+            }
+
+            // 未匹配record
+            if (old.RecordId == 0)
+            {
+                if (db.GetCollection<TransferRecord>().Find(x => x.ExternalRequestId == req.ExternalId) is TransferRecord record)
+                {
+                    old.RecordId = record.Id;
+                }
+            }
+
+            // 未匹配流水
+            if (string.IsNullOrWhiteSpace(old.TransactionId))
+            {
+                bool isbuy = req.IsBuy();
+                var banks = db.GetCollection<InvestorBankAccount>().Find(x => x.OwnerId == req.CustomerId).Select(x => x.Number);
+                if (isbuy)
+                {
+                    var limit = new DateTime(req.RequestDate, TimeOnly.MaxValue);
+                    foreach (var t in db.GetCollection<RaisingBankTransaction>().Find(x => x.FundId == req.FundId && x.Direction == TransctionDirection.Receive
+                            && x.Time <= limit && (banks.Contains(x.CounterNo) || x.CounterName == req.CustomerName)).OrderByDescending(x => x.Time))
+                    {
+                        if (t.Amount == req.RequestAmount)
+                            old.TransactionId = t.Id;
+
+                    }
+                }
+
+
+            }
+
+            mapTable.Update(old);
+        }
+
+
+        //CheckTAMissOwnerInvoker.Invoke();
+        //CheckTransferRequestMissingInvoker.Invoke();
+
+
+        // 通知
+        try
+        {
+            foreach (var item in data)
+                WeakReferenceMessenger.Default.Send(item);
+        }
+        catch { }
+    }
+
     public static void OnBatchTransferRecord(IList<TransferRecord> records)
     {
         if (records.Count == 0) return;
@@ -738,131 +866,6 @@ public static partial class DataTracker
 
     }
 
-    public static void OnBatchTransferRequest(IList<TransferRequest> data)
-    {
-        // 匹配订单
-        using var db = DbHelper.Base();
-
-        var manager = db.GetCollection<Manager>().Query().First();
-        // 对齐数据   
-        foreach (var r in data)
-        {
-            if (r.Agency == manager.Name)
-                r.Agency = "直销";
-
-            // code 匹配
-            var (f, c) = db.FindFundByCode(r.FundCode);
-            if (f is not null)
-            {
-                r.FundId = f.Id;
-                r.FundName = f.Name;
-                r.ShareClass = c;
-                continue;
-            }
-            else Log.Error($"QueryTransferRequests 发现未知的产品{r.FundName} {r.FundCode}");
-        }
-
-        // 不在库中的投资人
-        var customers = db.GetCollection<Investor>().Query().Where(x => x.Identity != null).Select(x => new { IdNo = x.Identity!.Id, Id = x.Id }).ToList().ToDictionary(x => x.IdNo);
-        foreach (var r in data)
-        {
-            if (customers.TryGetValue(r.CustomerIdentity, out var cus))
-                r.CustomerId = cus.Id;
-            else // 添加数据
-            {
-                var c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
-                db.GetCollection<Investor>().Insert(c);
-                r.CustomerId = c.Id;
-            }
-        }
-
-        // 对齐id 
-        var olds = db.GetCollection<TransferRecord>().Query().Select(x => new { x.Id, x.ExternalId, x.FundId }).ToList();
-        foreach (var r in data)
-        {
-            // 不再处理手动录的
-            if (olds.FirstOrDefault(x => x.FundId == r.FundId && x.ExternalId == r.ExternalId) is var old && old is not null)
-                r.Id = old.Id;
-        }
-
-        db.GetCollection<TransferRequest>().Upsert(data);
-
-
-
-        MapRequestRecord(data);
-
-        MapRequestToOrder(data);
-
-        // 找已知的map
-        var rids = data.Select(x => x.Id).ToList();
-        var mapTable = db.GetCollection<TransferMapping>();
-        var exists = mapTable.Find(x => rids.Contains(x.RequestId)).ToList();
-
-        foreach (var req in data)
-        {
-            var old = exists.FirstOrDefault(x => x.RequestId == req.Id) ?? new() { RequestId = req.Id };
-
-            // 未匹配order
-            if (old.OrderId == 0)
-            {
-                // 找RequestDate前最后一个order
-                if (db.GetCollection<TransferOrder>().Find(x => x.FundId == req.FundId && x.InvestorId == req.CustomerId && x.Date <= req.RequestDate).MaxBy(x => x.Date) is TransferOrder order)
-                {
-                    // 验证order 没有匹配
-                    if (mapTable.FindOne(x => x.OrderId == order.Id) is TransferMapping conflict)
-                    {
-                        if (conflict.RequestId != req.Id)
-                            Log.Error($"Order {conflict.Id} 匹配冲突，已匹配 {conflict.RequestId}，待匹配 {req.Id}");
-                        else old.Merge(conflict);
-                    }
-                }
-            }
-
-            // 未匹配record
-            if (old.RecordId == 0)
-            {
-                if (db.GetCollection<TransferRecord>().Find(x => x.ExternalRequestId == req.ExternalId) is TransferRecord record)
-                {
-                    old.RecordId = record.Id;
-                }
-            }
-
-            // 未匹配流水
-            if (string.IsNullOrWhiteSpace(old.TransactionId))
-            {
-                bool isbuy = req.IsBuy();
-                var banks = db.GetCollection<InvestorBankAccount>().Find(x => x.OwnerId == req.CustomerId).Select(x => x.Number);
-                if (isbuy)
-                {
-                    var limit = new DateTime(req.RequestDate, TimeOnly.MaxValue);
-                    foreach (var t in db.GetCollection<RaisingBankTransaction>().Find(x => x.FundId == req.FundId && x.Direction == TransctionDirection.Receive
-                            && x.Time <= limit && (banks.Contains(x.CounterNo) || x.CounterName == req.CustomerName)).OrderByDescending(x => x.Time))
-                    {
-                        if (t.Amount == req.RequestAmount)
-                            old.TransactionId = t.Id;
-
-                    }
-                }
-
-
-            }
-
-            mapTable.Update(old);
-        }
-
-
-        //CheckTAMissOwnerInvoker.Invoke();
-        //CheckTransferRequestMissingInvoker.Invoke();
-
-
-        // 通知
-        try
-        {
-            foreach (var item in data)
-                WeakReferenceMessenger.Default.Send(item);
-        }
-        catch { }
-    }
 
     private static void MapRequestRecord(IList<TransferRequest> data)
     {
@@ -875,8 +878,8 @@ public static partial class DataTracker
         var records = db.GetCollection<TransferRecord>().FindAll().OrderBy(x => x.RequestDate).Where(x => x.RequiredOrder()).Select(x => new { x.Id, x.ExternalId, x.ExternalRequestId }).ToList();
 
         // sb 招商 ExternalRequestId 不对应
-        var rq = requests.Join(records, x => x.ExternalId, x => x.ExternalRequestId, (q, r) => new { RequestId = q.Id, RecordId = r.Id }).
-            Union(requests.Join(records, x => x.ExternalId, x => x.ExternalId, (q, r) => new { RequestId = q.Id, RecordId = r.Id })).DistinctBy(x => x.RequestId);
+        var rq = requests.Join(records, x => x.ExternalId, x => x.ExternalRequestId, (r, q) => new { RequestId = q.Id, RecordId = r.Id }).
+            Union(requests.Join(records, x => x.ExternalId, x => x.ExternalId, (r, q) => new { RequestId = q.Id, RecordId = r.Id })).DistinctBy(x => x.RequestId);
 
         // 提取关联中的请求ID和记录ID用于查询现有映射
         var relatedRequestIds = rq.Select(x => x.RequestId).ToList();
@@ -897,6 +900,21 @@ public static partial class DataTracker
 
             if (existing is not null)
             {
+                // 打印
+                if (db.GetCollection<TransferRequest>().FindById(existing.RequestId) is TransferRequest oldq)
+                    Debug.WriteLine("a" + oldq.PrintProperties());
+
+                if (db.GetCollection<TransferRecord>().FindById(existing.RecordId) is TransferRecord oldr)
+                    Debug.WriteLine("b" + oldr.PrintProperties());
+
+                // 打印
+                if (db.GetCollection<TransferRequest>().FindById(relation.RequestId) is TransferRequest newq)
+                    Debug.WriteLine("c" + newq.PrintProperties());
+
+                if (db.GetCollection<TransferRecord>().FindById(relation.RecordId) is TransferRecord newr)
+                    Debug.WriteLine("d" + newr.PrintProperties());
+
+
                 // 合并现有映射和当前关联信息
                 var merged = new TransferMapping
                 {
