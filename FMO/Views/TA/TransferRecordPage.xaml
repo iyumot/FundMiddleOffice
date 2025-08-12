@@ -603,7 +603,14 @@
                             Binding="{Binding Agency}"
                             ElementStyle="{StaticResource LeftText}"
                             Header="销售" />
-                        <DataGridTextColumn Binding="{Binding ExternalId}" ElementStyle="{StaticResource LeftText}" />
+                        <DataGridTextColumn
+                            Binding="{Binding Source}"
+                            ElementStyle="{StaticResource LeftText}"
+                            Header="数据源" />
+                        <DataGridTextColumn
+                            Binding="{Binding ExternalId}"
+                            ElementStyle="{StaticResource LeftText}"
+                            Header="外部ID" />
                     </DataGrid.Columns>
                 </DataGrid>
             </TabItem>
