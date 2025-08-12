@@ -35,11 +35,11 @@
     <Grid>
 
         <!--  首部  -->
-        <DockPanel
+        <hc:UniformSpacingPanel
             Margin="450,8,0,0"
             VerticalAlignment="Top"
             Panel.ZIndex="99"
-            LastChildFill="False">
+            Spacing="5">
 
             <CheckBox
                 Content="显示全部类型"
@@ -51,7 +51,8 @@
                 hc:IconElement.Geometry="{StaticResource f.plus}"
                 Command="{Binding AddTARecordCommand}"
                 Content="录入"
-                Style="{StaticResource ButtonDefault.Small}" />
+                Style="{StaticResource ButtonDefault}"
+                Visibility="{Binding IsOrderTablSelected, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
             <!--<Button
                 Background="PaleGoldenrod"
@@ -119,7 +120,7 @@
                     <Path Data="{StaticResource f.magnifying-glass}" Fill="Black" />
                 </Viewbox>
             </hc:SimplePanel>
-        </DockPanel>
+        </hc:UniformSpacingPanel>
 
         <TabControl
             Margin="0,8"

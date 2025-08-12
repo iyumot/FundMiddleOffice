@@ -43,9 +43,13 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsRecordTabSelected))]
-    public partial int TabIndex { get; set; } = 3;
+    [NotifyPropertyChangedFor(nameof(IsOrderTablSelected))]
+    public partial int TabIndex { get; set; } = 4;
 
-    public bool IsRecordTabSelected => TabIndex == 3;
+    public bool IsRecordTabSelected => TabIndex == 4;
+
+    public bool IsOrderTablSelected => TabIndex == 2;
+
 
     [ObservableProperty]
     public partial ObservableCollection<TransferRequestViewModel>? Requests { get; set; }
@@ -321,13 +325,13 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     {
         switch (TabIndex)
         {
-            case 1:
+            case 2:
                 AddOrder(); break;
 
             //case 1:
             //    AddRequest(); break;
 
-            case 3:
+            case 4:
                 AddRecord(); break;
             default:
                 break;
