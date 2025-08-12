@@ -283,70 +283,7 @@ public partial class TrusteeWorker : ObservableObject
                         // 保存数据库 
                         if (rc.Data?.Length > 0)
                         {
-                            // 对齐数据   
-                            foreach (var r in rc.Data)
-                            {
-                                if (r.Agency == manager.Name)
-                                    r.Agency = "直销";
-
-
-                                // code 匹配
-                                var f = funds.FirstOrDefault(x => x.Code == r.FundCode);
-                                if (f is not null)
-                                {
-                                    r.FundId = f.Id;
-                                    r.FundName = f.Name;
-                                    continue;
-                                }
-                                else Log.Error($"QueryTransferRequests 发现未知的产品{r.FundName} {r.FundCode}");
-
-                                // 子份额 在各api中完成
-
-                            }
-
-                            var customers = db.GetCollection<Investor>().FindAll().ToList();
-                            foreach (var r in rc.Data)
-                            {
-                                // 此项可能存在重复Id的bug，不用name是因为名字中有（）-等，在不同情景下，全角半角不一样
-                                var c = customers.FirstOrDefault(x => /*x.Name == r.CustomerName &&*/ x.Identity?.Id == r.CustomerIdentity);
-                                if (c is null)
-                                {
-                                    c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
-                                    db.GetCollection<Investor>().Insert(c);
-                                }
-
-
-                                // 添加数据 
-                                r.CustomerId = c.Id;
-                            }
-
-                            // 对齐id 
-                            var olds = db.GetCollection<TransferRequest>().Find(x => x.RequestDate >= rc.Data.Min(x => x.RequestDate));
-                            foreach (var r in rc.Data)
-                            {
-                                // 同日同名
-                                var exi = olds.Where(x => x.ExternalId == r.ExternalId || (x.CustomerName == r.CustomerName && x.CustomerIdentity == r.CustomerIdentity && x.RequestDate == r.RequestDate)).ToList();
-
-                                // 只有一个，替换
-                                if (exi.Count == 1 && (exi[0].Source != "api" || exi[0].ExternalId == r.ExternalId))
-                                {
-                                    r.Id = exi[0].Id;
-                                    continue;
-                                }
-
-                                // > 1个
-                                // 存在同ex id，替换
-                                var old = exi.Where(x => x.ExternalId == r.ExternalId);
-                                if (old.Any())
-                                    r.Id = old.First().Id;
-
-                                // 如果存在手动录入的，也删除
-                                foreach (var item in exi)
-                                    db.GetCollection<TransferRequest>().DeleteMany(item => item.Source == "manual" || item.ExternalId == r.ExternalId);
-
-                            }
-
-                            db.GetCollection<TransferRequest>().Upsert(rc.Data);
+                            
 
 
                             // 统一更新处理
@@ -443,49 +380,8 @@ public partial class TrusteeWorker : ObservableObject
                         // 保存数据库 
                         if (rc.Data?.Length > 0)
                         {
-                            // 对齐数据   
-                            foreach (var r in rc.Data)
-                            {
-                                if (r.Agency == manager.Name)
-                                    r.Agency = "直销";
-
-
-                                // code 匹配
-                                var f = funds.FirstOrDefault(x => x.Code == r.FundCode);
-                                if (f is not null)
-                                {
-                                    r.FundId = f.Id;
-                                    r.FundName = f.Name;
-                                    continue;
-                                }
-                                else Log.Error($"QueryTransferRequests 发现未知的产品{r.FundName} {r.FundCode}");
-
-                                // 子份额 在各api中完成
-                            }
-
-                            var customers = db.GetCollection<Investor>().FindAll().ToList();
-                            foreach (var r in rc.Data)
-                            {
-                                var c = customers.FirstOrDefault(x => /*x.Name == r.CustomerName &&*/ x.Identity?.Id == r.CustomerIdentity);
-                                if (c is not null)
-                                {
-                                    r.CustomerId = c.Id;
-                                    continue;
-                                }
-                                else // 添加数据
-                                {
-                                    c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
-                                    db.GetCollection<Investor>().Insert(c);
-                                    r.CustomerId = c.Id;
-                                }
-                            }
-
-                            db.GetCollection<TransferRecord>().Upsert(rc.Data);
-
                             DataTracker.OnBatchTransferRecord(rc.Data);
                         }
-
-
 
                         // 如果有unset，表示数据异常，不保存进度
                         if (rc.Data?.Any(x => x.CustomerName == "unset" || x.FundName == "unset" || x.CustomerIdentity == "unset") ?? false)
