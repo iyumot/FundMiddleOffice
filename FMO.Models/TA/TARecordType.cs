@@ -7,10 +7,14 @@ namespace FMO.Models;
 public enum TransferRecordType
 {
     [Description("未知")] UNK,
+
+
+    [Description("认购")] InitialOffer,
+
     /// <summary>
     /// 认购
     /// </summary>
-    [Description("认购")] Subscription,
+    [Description("认购结果")] Subscription,
 
     /// <summary>
     /// 申购
