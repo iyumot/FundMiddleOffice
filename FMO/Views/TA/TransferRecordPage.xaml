@@ -41,6 +41,54 @@
             Panel.ZIndex="99"
             Spacing="5">
 
+            <!--  数据缺失提示  -->
+            <DockPanel>
+                <DockPanel local:HelpService.Help="外部客户缺失订单：认申购/赎回" local:HelpService.Offset="-45,10">
+                    <Viewbox Width="15" Height="15">
+                        <Path Data="{StaticResource f.feather-pointed}" Fill="Red" />
+                    </Viewbox>
+                    <TextBlock
+                        VerticalAlignment="Bottom"
+                        FontSize="10"
+                        Foreground="Red">
+                        <Run Text="{Binding LackOrderBuyCount}" />
+                        <Run Text="/" />
+                        <Run Text="{Binding LackOrderSellCount}" />
+                    </TextBlock>
+                </DockPanel>
+
+
+                <DockPanel local:HelpService.Help="管理人自己产品互投缺失订单数" local:HelpService.Offset="40,10">
+                    <Viewbox
+                        Width="15"
+                        Height="15"
+                        Margin="10,0,0,0">
+                        <Path Data="{StaticResource f.feather-pointed}" Fill="Gray" />
+                    </Viewbox>
+                    <TextBlock
+                        VerticalAlignment="Bottom"
+                        FontSize="10"
+                        Text="{Binding LackOrderCount2}" />
+                </DockPanel>
+
+                <!--<Viewbox
+                    Width="15"
+                    Height="15"
+                    Margin="4,0">
+                    <Path Data="{StaticResource f.file-circle-plus}" Fill="Black" />
+                </Viewbox>
+
+
+                <Viewbox
+                    Width="15"
+                    Height="15"
+                    Margin="4,0">
+                    <Path Data="{StaticResource f.clipboard-check}" Fill="Black" />
+                </Viewbox>-->
+
+            </DockPanel>
+
+
             <CheckBox
                 Content="显示全部类型"
                 IsChecked="{Binding ShowOnlySignable, Converter={StaticResource Boolean2BooleanReConverter}}"
@@ -612,7 +660,10 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTextColumn Binding="{Binding RequestType}" Header="类型" />
+                        <DataGridTextColumn
+                            Binding="{Binding RequestType}"
+                            ElementStyle="{StaticResource CenterText}"
+                            Header="类型" />
                         <DataGridTextColumn
                             Binding="{Binding RequestShare, Converter={StaticResource ZeroToBlankConverter}}"
                             ElementStyle="{StaticResource RightText}"
@@ -623,11 +674,11 @@
                             Header="金额" />
                         <DataGridTextColumn
                             Binding="{Binding Agency}"
-                            ElementStyle="{StaticResource LeftText}"
+                            ElementStyle="{StaticResource CenterText}"
                             Header="销售" />
                         <DataGridTextColumn
                             Binding="{Binding Source}"
-                            ElementStyle="{StaticResource LeftText}"
+                            ElementStyle="{StaticResource CenterText}"
                             Header="数据源" />
                         <DataGridTextColumn
                             Binding="{Binding ExternalId}"

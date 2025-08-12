@@ -72,6 +72,15 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
     public CollectionViewSource TranscationSource { get; set; } = new();
 
+    [ObservableProperty]
+    public partial int LackOrderBuyCount { get; set; }
+    [ObservableProperty]
+    public partial int LackOrderSellCount { get; set; }
+
+    [ObservableProperty]
+    public partial int LackOrderCount2 { get; set; }
+
+
     public ObservableCollection<RaisingBankTranscationViewModel>? BankTransactions { get; set; }
 
     FileSystemWatcher? watcher;
@@ -114,7 +123,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
                     item.o.IsConfirmed = true;
             }
 
-
+            int lo1 = 0, lo2 = 0, lo3 = 0;
             var codes = funds.Select(x => x.Code).Order().ToList();
             foreach (var item in requests.ExceptBy(map.Where(x => x.OrderId != 0 && x.RequestId != 0).Select(x => x.RequestId), x => x.Id))
             {
@@ -124,8 +133,16 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
                     // 投资人是管理人自己的产品
                     item.IsSameManager = codes.BinarySearch(item.CustomerIdentity) >= 0;
+
+                    if (item.IsSameManager) ++lo3;
+                    else if (item.RequestType!.Value.IsBuy()) ++lo1;
+                    else ++lo2;
                 }
             }
+            LackOrderBuyCount = lo1;
+            LackOrderSellCount = lo2;
+            LackOrderCount2 = lo3;
+
 
 
             //foreach (var o in orders)
