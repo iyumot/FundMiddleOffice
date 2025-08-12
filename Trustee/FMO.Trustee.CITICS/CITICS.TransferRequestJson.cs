@@ -153,7 +153,7 @@ internal class TransferRequestJson : JsonBase
 
     public TransferRequest ToObject()
     {
-        return new TransferRequest
+        var r = new TransferRequest
         {
             CustomerIdentity = CertificateNumber,
             CustomerName = CustomerName,
@@ -171,6 +171,12 @@ internal class TransferRequestJson : JsonBase
             Fee = DefinedFee ?? 0,
             CreateDate = DateOnly.FromDateTime(DateTime.Now),
         };
+
+
+        if (r.RequestType == TransferRequestType.UNK)
+            JsonBase.ReportSpecialType(new(0, CITICS._Identifier, nameof(TransferRequest), RequestNo, BusinFlag));
+
+        return r;
     }
 
 

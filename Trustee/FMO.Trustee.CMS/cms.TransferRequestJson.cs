@@ -130,7 +130,7 @@ internal class TransferRequestJson : JsonBase
             ReportJsonUnexpected(CMS._Identifier, nameof(CMS.QueryTransferRequests), $"TA[{Remark1}] {TransactionDate} 份额：{ApplicationVol} 金额：{ApplicationAmount} 的业务类型[{BusinessCode}]无法识别");
 
 
-        return new TransferRequest
+        var r = new TransferRequest
         {
             CustomerIdentity = CertificateNumber,
             CustomerName = CustomerName,
@@ -145,6 +145,12 @@ internal class TransferRequestJson : JsonBase
             ExternalId = $"{CMS._Identifier}.{Remark1}",
             Source = "api"
         };
+
+
+        if (r.RequestType == TransferRequestType.UNK)
+            JsonBase.ReportSpecialType(new(0, CMS._Identifier, nameof(TransferRequest), Remark1, BusinessCode));
+
+        return r;
     }
 
     public static TransferRequestType TranslateRequest(string c)

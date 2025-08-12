@@ -231,7 +231,7 @@ internal class TransferRecordJson : JsonBase
             ConfirmedAmount = ParseDecimal(ConfBalance),
             ConfirmedShare = ParseDecimal(ConfShares),
             CreateDate = DateOnly.FromDateTime(DateTime.Today),
-            ExternalId = $"{CSC._Identifier}.{CserialNo}", 
+            ExternalId = $"{CSC._Identifier}.{CserialNo}",
             PerformanceFee = ParseDecimal(AchievementPay),
             Fee = ParseDecimal(Charge),
             ExternalRequestId = $"{CSC._Identifier}.{OriginalNo}",
@@ -241,6 +241,8 @@ internal class TransferRecordJson : JsonBase
         // ¾»¶î
         r.ConfirmedNetAmount = r.ConfirmedAmount - r.Fee;
 
+        if (r.Type == TransferRecordType.UNK)
+            JsonBase.ReportSpecialType(new(0, CSC._Identifier, nameof(TransferRecord), CserialNo, BusiFlag));
         return r;
     }
 
@@ -305,7 +307,7 @@ internal class TransferRecordJson : JsonBase
             case "150": // »ù½ðÇåÅÌ 
                 return TransferRecordType.Clear;
 
-            default:
+            default: 
                 return TransferRecordType.UNK;
         }
     }

@@ -208,6 +208,9 @@ internal class TransferRecordJson : JsonBase
         };
         r.Fee -= r.PerformanceFee;
         r.ConfirmedNetAmount = r.ConfirmedAmount - r.Fee;
+
+        if (r.Type == TransferRecordType.UNK)
+            JsonBase.ReportSpecialType(new(0, CITICS._Identifier, nameof(TransferRecord), AckNo, Apkind));
         return r;
     }
 
@@ -271,6 +274,7 @@ internal class TransferRecordJson : JsonBase
 
             _ => TransferRecordType.UNK
         };
+
     }
 
 

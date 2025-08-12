@@ -106,7 +106,7 @@ internal class TransferRecordJson : JsonBase
         if (transferRecordType == TransferRecordType.UNK && BusinessCode switch { "120" => false, _ => true })
             ReportJsonUnexpected(CMS._Identifier, nameof(CMS.QueryTransferRecords), $"TA[{ApplyNo}] {TransactionCfmDate} 份额：{ConfirmedNavVol} 金额：{ConfirmedAmount} 的业务类型[{BusinessCode}]无法识别");
 
-        return new TransferRecord
+        var r = new TransferRecord
         {
             CustomerIdentity = CertificateNo,
             CustomerName = CustName,
@@ -127,7 +127,12 @@ internal class TransferRecordJson : JsonBase
             FundCode = FundCode,
             FundName = FundName,
             Source = "api",
-        };
+        }; 
+
+        if (r.Type == TransferRecordType.UNK)
+            JsonBase.ReportSpecialType(new(0, CMS._Identifier, nameof(TransferRecord), Remark1, BusinessCode));
+
+        return r;
     }
 
 
