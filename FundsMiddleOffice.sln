@@ -108,6 +108,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.Logging", "FMO.Logging\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModelTest", "Tests\ModelTest\ModelTest.csproj", "{D44B62AD-9F7C-4C4D-9052-C9192C8EB3A1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.Patch", "FMO.Patch\FMO.Patch.csproj", "{D4ABE0B0-9001-430F-BB7E-236AAB85FB29}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -282,6 +284,10 @@ Global
 		{D44B62AD-9F7C-4C4D-9052-C9192C8EB3A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D44B62AD-9F7C-4C4D-9052-C9192C8EB3A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D44B62AD-9F7C-4C4D-9052-C9192C8EB3A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4ABE0B0-9001-430F-BB7E-236AAB85FB29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4ABE0B0-9001-430F-BB7E-236AAB85FB29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4ABE0B0-9001-430F-BB7E-236AAB85FB29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4ABE0B0-9001-430F-BB7E-236AAB85FB29}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
