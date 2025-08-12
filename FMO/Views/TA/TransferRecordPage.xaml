@@ -326,6 +326,33 @@
                     </DataGrid.RowStyle>
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding Id}" />
+
+
+
+                        <DataGridTemplateColumn>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+
+                                    <Button
+                                        x:Name="actionPanel"
+                                        hc:IconElement.Geometry="{StaticResource f.pen}"
+                                        BorderThickness="0"
+                                        Command="{Binding ModifyOrderCommand}"
+                                        CommandParameter="{Binding .}"
+                                        Foreground="Black"
+                                        Style="{StaticResource ButtonIcon.Small}"
+                                        Visibility="Collapsed" />
+
+                                    <DataTemplate.Triggers>
+                                        <!--  监听行的鼠标悬停状态  -->
+                                        <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                            <Setter TargetName="actionPanel" Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
                         <DataGridTemplateColumn>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -552,6 +579,7 @@
                         <TextBlock Text="交易申请" />
                     </DockPanel>
                 </TabItem.Header>
+
                 <DataGrid
                     hc:DataGridAttach.ShowRowNumber="True"
                     AutoGenerateColumns="False"
@@ -562,6 +590,17 @@
                     Style="{StaticResource DataGrid.NoSelect}"
                     VirtualizingStackPanel.IsVirtualizing="True"
                     VirtualizingStackPanel.VirtualizationMode="Recycling">
+
+                    <DataGrid.RowStyle>
+                        <Style BasedOn="{StaticResource NoSelectDataGridRowStyle}" TargetType="DataGridRow">
+
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsOrderRequired}" Value="False">
+                                    <Setter Property="Background" Value="#e1e1e1" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
                     <DataGrid.Columns>
                         <DataGridTemplateColumn>
                             <DataGridTemplateColumn.CellTemplate>
@@ -588,12 +627,22 @@
                         <DataGridTemplateColumn>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Viewbox Height="15" Visibility="{Binding LackOrder, Converter={StaticResource Boolean2VisibilityConverter}}">
-                                        <Path
-                                            x:Name="co"
-                                            Data="{StaticResource f.feather-pointed}"
-                                            Fill="Red" />
-                                    </Viewbox>
+                                    <hc:SimplePanel>
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.feather-pointed}"
+                                            hc:IconElement.Height="15"
+                                            hc:IconElement.Width="15"
+                                            Command="{Binding ViewOrderCommand}"
+                                            Foreground="Green"
+                                            Style="{StaticResource ButtonIcon.Small}"
+                                            Visibility="{Binding HasOrder, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                                        <Viewbox Height="15" Visibility="{Binding LackOrder, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                            <Path
+                                                x:Name="co"
+                                                Data="{StaticResource f.feather-pointed}"
+                                                Fill="Red" />
+                                        </Viewbox>
+                                    </hc:SimplePanel>
                                     <DataTemplate.Triggers>
                                         <DataTrigger Binding="{Binding IsSameManager}" Value="True">
                                             <Setter TargetName="co" Property="Fill" Value="Gray" />

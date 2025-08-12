@@ -123,25 +123,41 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
                     item.o.IsConfirmed = true;
             }
 
-            int lo1 = 0, lo2 = 0, lo3 = 0;
-            var codes = funds.Select(x => x.Code).Order().ToList();
-            foreach (var item in requests.ExceptBy(map.Where(x => x.OrderId != 0 && x.RequestId != 0).Select(x => x.RequestId), x => x.Id))
+
+
+            foreach (var item in requests.Join(map, x => x.Id, x => x.RequestId, (o, m) => new { o, m }))
             {
-                if (item.IsOrderRequired)
-                {
-                    item.LackOrder = true;
-
-                    // 投资人是管理人自己的产品
-                    item.IsSameManager = codes.BinarySearch(item.CustomerIdentity) >= 0;
-
-                    if (item.IsSameManager) ++lo3;
-                    else if (item.RequestType!.Value.IsBuy()) ++lo1;
-                    else ++lo2;
-                }
+                if (item.m.OrderId != 0)
+                    item.o.OrderId = item.m.OrderId;
             }
-            LackOrderBuyCount = lo1;
-            LackOrderSellCount = lo2;
-            LackOrderCount2 = lo3;
+
+            var codes = funds.Select(x => x.Code).Order().ToList();
+            foreach (var item in requests.Where(x=> codes.Contains(x.CustomerIdentity)))
+            {
+                item.IsSameManager = true;
+            }
+
+            LackOrderBuyCount = requests.Count(x => x.IsOrderRequired && !x.IsSameManager && x.LackOrder && x.RequestType!.Value.IsBuy());
+            LackOrderSellCount = requests.Count(x => x.IsOrderRequired && !x.IsSameManager && x.LackOrder && x.RequestType!.Value.IsSell());
+            LackOrderCount2 = requests.Count(x => x.IsOrderRequired && x.LackOrder && x.IsSameManager);
+            //int lo1 = 0, lo2 = 0, lo3 = 0;
+            //foreach (var item in requests.ExceptBy(map.Where(x => x.OrderId != 0 && x.RequestId != 0).Select(x => x.RequestId), x => x.Id))
+            //{
+            //    if (item.IsOrderRequired)
+            //    {
+            //        item.LackOrder = true;
+
+            //        // 投资人是管理人自己的产品
+            //        item.IsSameManager = codes.BinarySearch(item.CustomerIdentity) >= 0;
+
+            //        if (item.IsSameManager) ++lo3;
+            //        else if (item.RequestType!.Value.IsBuy()) ++lo1;
+            //        else ++lo2;
+            //    }
+            //}
+            //LackOrderBuyCount = lo1;
+            //LackOrderSellCount = lo2;
+            //LackOrderCount2 = lo3;
 
 
 

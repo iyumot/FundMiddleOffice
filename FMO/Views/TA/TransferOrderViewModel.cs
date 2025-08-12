@@ -34,5 +34,14 @@ partial class TransferOrderViewModel
 
 
     [RelayCommand]
+    public void ModifyOrder()
+    {
+        var wnd = new ModifyOrderWindow();
+        wnd.DataContext = new ModifyOrderWindowViewModel(Id, false);
+        wnd.Owner = App.Current.MainWindow;
+        wnd.ShowDialog();
+    }
+
+    [RelayCommand]
     public void OpenFund() => WeakReferenceMessenger.Default.Send(new OpenFundMessage(FundId!.Value));
 }

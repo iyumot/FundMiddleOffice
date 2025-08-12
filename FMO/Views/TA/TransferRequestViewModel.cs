@@ -10,7 +10,20 @@ namespace FMO;
 partial class TransferRequestViewModel
 {
 
-    public bool LackOrder { get => field; set { field = value; OnPropertyChanged(nameof(LackOrder)); } }
+    public int OrderId
+    {
+        get => field; set
+        {
+            field = value; 
+            OnPropertyChanged(nameof(OrderId));
+            OnPropertyChanged(nameof(LackOrder));
+            OnPropertyChanged(nameof(HasOrder));
+        }
+    }
+
+    public bool HasOrder => OrderId != 0;
+
+    public bool LackOrder => IsOrderRequired && OrderId == 0;
 
     public bool IsSameManager { get; set; }
 
@@ -30,6 +43,14 @@ partial class TransferRequestViewModel
         wnd.ShowDialog();
     }
 
+    [RelayCommand]
+    public void ViewOrder()
+    {
+        var wnd = new ModifyOrderWindow();
+        wnd.DataContext = new ModifyOrderWindowViewModel(OrderId);
+        wnd.Owner = App.Current.MainWindow;
+        wnd.ShowDialog();
+    }
 
     [RelayCommand]
     public void OpenFund() => WeakReferenceMessenger.Default.Send(new OpenFundMessage(FundId!.Value));
