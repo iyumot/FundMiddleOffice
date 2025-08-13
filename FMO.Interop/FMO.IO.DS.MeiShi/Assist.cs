@@ -461,10 +461,10 @@ public class Assist : AssistBase
             var id = item.identifyFlowId;
 
             // 找对应投资人
-            var investor = co.FindOne(x => x.Name == item.customerName && x.Identity.Id == item.cardNumber);
+            var investor = co.FindOne(x => x.Name == item.InvestorName && x.Identity.Id == item.cardNumber);
             if (investor is null)
             {
-                Log.Error($"合投资料没有找到对应的投资人数据，{item.customerName}-{item.cardNumber} {item.identifyTime}");
+                Log.Error($"合投资料没有找到对应的投资人数据，{item.InvestorName}-{item.cardNumber} {item.identifyTime}");
                 continue;
             }
 
@@ -604,7 +604,7 @@ public class Assist : AssistBase
         {
             var id = item.signFlowId;
             var fundname = item.productName;
-            var cname = item.customerName;
+            var cname = item.InvestorName;
             var cid = item.cardNumber;
             //var type = item.signType;
             //var openday = item.openDay;
@@ -753,7 +753,7 @@ public class Assist : AssistBase
 
                 // 找ta
                 DateTimeHelper.TryParse(item.openDay, out var openday);
-                var sameday = db.GetCollection<TransferRecord>().Find(x => x.FundId == order.FundId && x.CustomerId == order.InvestorId && openday == x.RequestDate).ToArray();
+                var sameday = db.GetCollection<TransferRecord>().Find(x => x.FundId == order.FundId && x.InvestorId == order.InvestorId && openday == x.RequestDate).ToArray();
                 foreach (var ta in sameday)
                 {
                     if (ta.OrderId == 0) ta.OrderId = order.Id;

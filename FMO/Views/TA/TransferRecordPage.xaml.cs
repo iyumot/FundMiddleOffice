@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
+using FMO.Shared;
 using FMO.Utilities;
 using Serilog;
 using System.Collections.ObjectModel;
@@ -37,6 +38,10 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     public CollectionViewSource OrderSource { get; } = new();
 
 
+    public CollectionViewSource RequestsSource { get; } = new();
+
+    public CollectionViewSource TranscationSource { get; } = new();
+
 
     [ObservableProperty]
     public partial string? SearchKeyword { get; set; }
@@ -68,10 +73,6 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     [NotifyPropertyChangedFor(nameof(DataHasError))]
     public partial List<string>? ErrorMessage { get; set; }
 
-    public CollectionViewSource RequestsSource { get; set; } = new();
-
-    public CollectionViewSource TranscationSource { get; set; } = new();
-
     [ObservableProperty]
     public partial int LackOrderBuyCount { get; set; }
     [ObservableProperty]
@@ -85,20 +86,64 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
     FileSystemWatcher? watcher;
 
+
+
+    public GridFilter FundNameFilter { get; }
+
+
+    public GridFilter InvestorNameFilter { get; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public TransferRecordPageViewModel()
     {
         ShowOnlySignable = true;
         WeakReferenceMessenger.Default.RegisterAll(this);
 
 
+        FundNameFilter = new(RequestsSource);
+        InvestorNameFilter = new(RequestsSource);
+
         Task.Run(() =>
         {
             using var db = DbHelper.Base();
+            var funds = db.GetCollection<Fund>().FindAll().Select(x => (x.Id, x.Name, x.Code, x.ClearDate)).ToArray();
 
             var tr = db.GetCollection<TransferRecord>().FindAll().ToList();
             var tr2 = db.GetCollection<TransferRequest>().FindAll().OrderByDescending(x => x.RequestDate).ToList();
             var t3 = db.GetCollection<TransferOrder>().FindAll().ToList();
             var map = db.GetCollection<TransferMapping>().FindAll().ToList();
+
+            FundNameFilter.Filters = funds.Select(x => new GridFilterItem
+            {
+                Title = x.Name,
+                FilterFunc = y => y switch { ITransferViewModel v => v.FundName == x.Name, _ => true },
+                IsSelected = false
+            }).ToArray();
+
+            InvestorNameFilter.Filters = tr.Select(x => x.InvestorName).Union(t3.Select(x => x.InvestorName)).Distinct().Where(x=>x is not null).Select(x => new GridFilterItem
+            {
+                Title = x,
+                FilterFunc = y => y switch { ITransferViewModel v => v.InvestorName == x, _ => true },
+                IsSelected = false
+            }).ToArray();
+
+
+
+
             //var mapd = map.ToDictionary(x => x.OrderId, x => x);
 
             List<string?> list = [DataTracker.GetUniformTip(TipType.TANoOwner), DataTracker.GetUniformTip(TipType.TransferRequestMissing)];
@@ -109,7 +154,6 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
             var orders = t3.Select(x => new TransferOrderViewModel(x)).ToArray();
             var requests = tr2.Select(x => new TransferRequestViewModel(x)).ToArray();
 
-            var funds = db.GetCollection<Fund>().FindAll().Select(x => (x.Id, x.Name, x.Code, x.ClearDate)).ToArray();
             var transaction = db.GetCollection<RaisingBankTransaction>().FindAll().Select(x => new RaisingBankTranscationViewModel(x, funds!)).ToArray();
 
             foreach (var item in records.IntersectBy<TransferRecordViewModel, int>(map.Where(x => x.RequestId == 0).Select(x => x.RecordId), x => x.Id))
@@ -132,7 +176,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
             }
 
             var codes = funds.Select(x => x.Code).Order().ToList();
-            foreach (var item in requests.Where(x=> codes.Contains(x.CustomerIdentity)))
+            foreach (var item in requests.Where(x => codes.Contains(x.InvestorIdentity)))
             {
                 item.IsSameManager = true;
             }
@@ -148,7 +192,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
             //        item.LackOrder = true;
 
             //        // 投资人是管理人自己的产品
-            //        item.IsSameManager = codes.BinarySearch(item.CustomerIdentity) >= 0;
+            //        item.IsSameManager = codes.BinarySearch(item.InvestorIdentity) >= 0;
 
             //        if (item.IsSameManager) ++lo3;
             //        else if (item.RequestType!.Value.IsBuy()) ++lo1;
@@ -209,7 +253,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
                 TranscationSource.SortDescriptions.Add(new SortDescription(nameof(BankTransaction.Time), ListSortDirection.Descending));
 
 
-                RequestsSource.Filter += (s, e) => e.Accepted = string.IsNullOrWhiteSpace(SearchKeyword) ? true : SearchPair(e.Item, SearchKeyword);
+                RequestsSource.Filter += (s, e) => e.Accepted = e.Accepted && (string.IsNullOrWhiteSpace(SearchKeyword) ? true : SearchPair(e.Item, SearchKeyword));
             });
         });
 
@@ -278,10 +322,10 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     private bool SearchPair(object obj, string key)
     {
         if (obj is TransferRecordViewModel r)
-            return (r.CustomerName?.Contains(key) ?? false) || (r.FundName?.Contains(key) ?? false) || (key?.Length > 3 && (r.CustomerIdentity?.Contains(key) ?? false));
+            return (r.InvestorName?.Contains(key) ?? false) || (r.FundName?.Contains(key) ?? false) || (key?.Length > 3 && (r.InvestorIdentity?.Contains(key) ?? false));
 
         if (obj is TransferRequest rr)
-            return (rr.CustomerName?.Contains(key) ?? false) || (rr.FundName?.Contains(key) ?? false) || (key?.Length > 3 && (rr.CustomerIdentity?.Contains(key) ?? false));
+            return (rr.InvestorName?.Contains(key) ?? false) || (rr.FundName?.Contains(key) ?? false) || (key?.Length > 3 && (rr.InvestorIdentity?.Contains(key) ?? false));
 
         if (obj is TransferOrderViewModel o)
             return (o.InvestorName?.Contains(key) ?? false) || (o.FundName?.Contains(key) ?? false) || (key?.Length > 3 && (o.InvestorIdentity?.Contains(key) ?? false));
@@ -467,23 +511,23 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
 
         var customers = db.GetCollection<Investor>().FindAll().ToList();
-        err = db.GetCollection<TransferRequest>().Find(x => x.CustomerId == 0).ToList();
+        err = db.GetCollection<TransferRequest>().Find(x => x.InvestorId == 0).ToList();
         foreach (var r in err)
         {
             // 此项可能存在重复Id的bug，不用name是因为名字中有（）-等，在不同情景下，全角半角不一样
-            var c = customers.FirstOrDefault(x => /*x.Name == r.CustomerName &&*/ x.Identity?.Id == r.CustomerIdentity);
+            var c = customers.FirstOrDefault(x => /*x.Name == r.InvestorName &&*/ x.Identity?.Id == r.InvestorIdentity);
             if (c is null)
             {
-                c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
+                c = new Investor { Name = r.InvestorName, Identity = new Identity { Id = r.InvestorIdentity } };
                 db.GetCollection<Investor>().Insert(c);
             }
 
             // 添加数据 
-            r.CustomerId = c.Id;
+            r.InvestorId = c.Id;
 
 
             if (Records?.FirstOrDefault(x => x.Id == r.Id) is TransferRecordViewModel v)
-                v.CustomerId = r.Id;
+                v.InvestorId = r.Id;
         }
         db.GetCollection<TransferRequest>().Update(err);
 
@@ -503,24 +547,24 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         db.GetCollection<TransferRecord>().Update(err2);
 
 
-        err2 = db.GetCollection<TransferRecord>().Find(x => x.CustomerId == 0).ToList();
+        err2 = db.GetCollection<TransferRecord>().Find(x => x.InvestorId == 0).ToList();
         foreach (var r in err)
         {
             // 此项可能存在重复Id的bug，不用name是因为名字中有（）-等，在不同情景下，全角半角不一样
-            var c = customers.FirstOrDefault(x => /*x.Name == r.CustomerName &&*/ x.Identity?.Id == r.CustomerIdentity);
+            var c = customers.FirstOrDefault(x => /*x.Name == r.InvestorName &&*/ x.Identity?.Id == r.InvestorIdentity);
             if (c is null)
             {
-                c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
+                c = new Investor { Name = r.InvestorName, Identity = new Identity { Id = r.InvestorIdentity } };
                 db.GetCollection<Investor>().Insert(c);
             }
 
 
             // 添加数据 
-            r.CustomerId = c.Id;
+            r.InvestorId = c.Id;
 
 
             if (Records?.FirstOrDefault(x => x.Id == r.Id) is TransferRecordViewModel v)
-                v.CustomerId = r.Id;
+                v.InvestorId = r.Id;
         }
         db.GetCollection<TransferRecord>().Update(err2);
 

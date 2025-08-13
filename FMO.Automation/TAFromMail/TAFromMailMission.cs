@@ -209,7 +209,7 @@ public class TAFromMailMission : MailMission
         // 更新
         if (records.Count > 0)
         {
-            WorkLog += $"\n {string.Join('\n', records.Select(x => $"{x.CustomerName}-{x.ConfirmedDate}-{x.FundName}"))}\n";
+            WorkLog += $"\n {string.Join('\n', records.Select(x => $"{x.InvestorName}-{x.ConfirmedDate}-{x.FundName}"))}\n";
             using var db = DbHelper.Base();
             foreach (var rec in records)
             {
@@ -224,7 +224,7 @@ public class TAFromMailMission : MailMission
                 var old = db.GetCollection<TransferRecord>().FindOne(x => x.ExternalId == rec.ExternalId);
 
                 if (old is null)
-                    old = db.GetCollection<TransferRecord>().FindOne(x => x.CustomerIdentity == rec.CustomerIdentity && x.ConfirmedDate == rec.ConfirmedDate &&
+                    old = db.GetCollection<TransferRecord>().FindOne(x => x.InvestorIdentity == rec.InvestorIdentity && x.ConfirmedDate == rec.ConfirmedDate &&
                                 x.FundCode == rec.FundCode && x.ConfirmedShare == rec.ConfirmedShare && x.ConfirmedAmount == rec.ConfirmedAmount);
 
                 if (old is not null && (old.Source != "manual" && !string.IsNullOrWhiteSpace(old.Source)))
@@ -252,13 +252,13 @@ public class TAFromMailMission : MailMission
         // 没找到对应的fund
         if (fund is null)
         {
-            Log.Error($"{r.FundName}({r.FundCode}) {r.CustomerName} {r.ConfirmedDate} 未找到对应基金");
+            Log.Error($"{r.FundName}({r.FundCode}) {r.InvestorName} {r.ConfirmedDate} 未找到对应基金");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(r.FundName))
         {
-            Log.Error($"{r.FundName}({r.FundCode}) {r.CustomerName} {r.ConfirmedDate} 数据异常");
+            Log.Error($"{r.FundName}({r.FundCode}) {r.InvestorName} {r.ConfirmedDate} 数据异常");
             return;
         }
         r.FundId = fund.Id;

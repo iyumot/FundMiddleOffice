@@ -77,7 +77,7 @@ public static partial class DatabaseAssist
         void UpdateInvestorBalance(ILiteCollection<TransferRecord> table, ILiteCollection<InvestorBalance> tableIB, int investorId, int fundId, DateOnly from = default)
         {
             var old = tableIB.Query().OrderByDescending(x => x.Date).Where(x => x.Date < from).FirstOrDefault();
-            var data = table.Find(x => x.FundId == fundId && x.CustomerId == investorId && x.ConfirmedDate >= from).GroupBy(x => x.ConfirmedDate).OrderBy(x => x.Key);
+            var data = table.Find(x => x.FundId == fundId && x.InvestorId == investorId && x.ConfirmedDate >= from).GroupBy(x => x.ConfirmedDate).OrderBy(x => x.Key);
             var list = new List<InvestorBalance>();
             if (old is not null) list.Add(old);
             foreach (var tf in data)
@@ -121,7 +121,7 @@ public static partial class DatabaseAssist
                         t3.Insert(new FundShareRecordByDaily(fid, dailyValues[i].Date, dailyValues[i].Share));
                 }
 
-                foreach (var cid in t1.Query().Select(x => x.CustomerId).ToList().Distinct())
+                foreach (var cid in t1.Query().Select(x => x.InvestorId).ToList().Distinct())
                     UpdateInvestorBalance(t1, t4, cid, fid);
 
             }

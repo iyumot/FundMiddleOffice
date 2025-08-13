@@ -16,7 +16,7 @@ internal class VirtualNetValueJson : JsonBase
     /// 客户名称
     /// </summary>
     [JsonPropertyName("custName")]
-    public string CustomerName { get; set; }
+    public string InvestorName { get; set; }
 
     /// <summary>
     /// 基金账号

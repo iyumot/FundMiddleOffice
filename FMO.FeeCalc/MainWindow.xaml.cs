@@ -504,7 +504,7 @@ public partial class MainWindowViewModel : ObservableObject
                 {
                     for (int i = 0; i < per.Length; i++)
                     {
-                        sheet3.Cell(ar + i + 3, 2).Value = $"{per[i].CustomerName} {per[i].ConfirmedDate.ToString("yyyy-MM-dd")} {EnumDescriptionTypeConverter.GetEnumDescription(per[i].Type)}";
+                        sheet3.Cell(ar + i + 3, 2).Value = $"{per[i].InvestorName} {per[i].ConfirmedDate.ToString("yyyy-MM-dd")} {EnumDescriptionTypeConverter.GetEnumDescription(per[i].Type)}";
                         sheet3.Cell(ar + i + 3, 3).Value = per[i].PerformanceFee;
                     }
                     sheet3.Cell(ar + 3, 1).Value = "业绩报酬";

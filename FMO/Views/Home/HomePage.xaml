@@ -295,7 +295,7 @@
                                                 <DataGridTextColumn Binding="{Binding Id}" Header="Id" />
                                                 <DataGridTextColumn Binding="{Binding RequestDate, StringFormat=yyyy-MM-dd}" Header="日期" />
                                                 <DataGridTextColumn Binding="{Binding FundName}" Header="基金" />
-                                                <DataGridTextColumn Binding="{Binding CustomerName}" Header="投资人" />
+                                                <DataGridTextColumn Binding="{Binding InvestorName}" Header="投资人" />
                                                 <DataGridTextColumn Binding="{Binding RequestType}" Header="类型" />
                                                 <DataGridTextColumn Binding="{Binding RequestAmount}" Header="金额" />
                                                 <DataGridTextColumn Binding="{Binding RequestShare}" Header="份额" />
@@ -316,7 +316,7 @@
                                                 <DataGridTextColumn Binding="{Binding Id}" Header="Id" />
                                                 <DataGridTextColumn Binding="{Binding RequestDate, StringFormat=yyyy-MM-dd}" Header="日期" />
                                                 <DataGridTextColumn Binding="{Binding FundName}" Header="基金" />
-                                                <DataGridTextColumn Binding="{Binding CustomerName}" Header="投资人" />
+                                                <DataGridTextColumn Binding="{Binding InvestorName}" Header="投资人" />
                                                 <DataGridTextColumn Binding="{Binding RequestType}" Header="类型" />
                                                 <DataGridTextColumn Binding="{Binding RequestAmount}" Header="金额" />
                                                 <DataGridTextColumn Binding="{Binding RequestShare}" Header="份额" />

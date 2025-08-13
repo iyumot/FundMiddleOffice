@@ -25,17 +25,17 @@ public class TransferRequest
     /// <summary>
     /// 内部id
     /// </summary>
-    public int CustomerId { get; set; }
+    public int InvestorId { get; set; }
 
     /// <summary>
     /// 名称
     /// </summary>
-    public required string CustomerName { get; set; }
+    public required string InvestorName { get; set; }
 
     /// <summary>
     /// 客户证件
     /// </summary>
-    public required string CustomerIdentity { get; set; }
+    public required string InvestorIdentity { get; set; }
 
     /// <summary>
     /// 创建日期

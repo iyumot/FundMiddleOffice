@@ -39,8 +39,8 @@ public partial class FundTAViewModel : ObservableObject
         Records = ta;
 
         // customeid = 0
-        foreach (var item in ta.Where(x=>x.CustomerId == 0)) 
-            item.CustomerId = item.CustomerIdentity.GetHashCode();
+        foreach (var item in ta.Where(x=>x.InvestorId == 0)) 
+            item.InvestorId = item.InvestorIdentity.GetHashCode();
 
         // 对齐开放日净值
         var ds = db.GetDailyCollection(fundId).FindAll().OrderByDescending(x => x.Date);
@@ -57,7 +57,7 @@ public partial class FundTAViewModel : ObservableObject
         if (ta.Count > 0)
         {
             // 按投资人分
-            var cur = ta.GroupBy(x => x.CustomerId).Select(x => new { Id = x.Key, Name = x.First().CustomerName, Record = x, Share = x.Sum(y => y.ShareChange()) }).OrderByDescending(x => x.Share);
+            var cur = ta.GroupBy(x => x.InvestorId).Select(x => new { Id = x.Key, Name = x.First().InvestorName, Record = x, Share = x.Sum(y => y.ShareChange()) }).OrderByDescending(x => x.Share);
             InvestorCount = cur.Count(x => x.Share > 0);
             CurrentTotalShare = cur.Sum(x => x.Share);
             CurrentShareDate = ta.Max(x => x.ConfirmedDate);
@@ -80,7 +80,7 @@ public partial class FundTAViewModel : ObservableObject
 
         // 认购时份额
         var subscription = ta.Where(x => x.Type == TransferRecordType.Subscription);
-        InitialShares = new(subscription.Select(x => new InvestorShareViewModel { Id = x.Id, Name = x.CustomerName, Share = x.ConfirmedShare }));
+        InitialShares = new(subscription.Select(x => new InvestorShareViewModel { Id = x.Id, Name = x.InvestorName, Share = x.ConfirmedShare }));
         InitialTotalShare = subscription.Sum(x => x.ConfirmedShare);
     }
 
@@ -148,7 +148,7 @@ public partial class FundTAViewModel : ObservableObject
     public void ShowInvestorDetail(InvestorShareViewModel v)
     {
         InvestorDetailIsOpen = true;
-        InvestorDetail = Records.Where(x => x.CustomerId == v.Id);
+        InvestorDetail = Records.Where(x => x.InvestorId == v.Id);
     }
 
 

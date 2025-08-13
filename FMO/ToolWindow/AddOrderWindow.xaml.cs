@@ -512,7 +512,7 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
             using var db = DbHelper.Base();
             int fundid = SelectedFund?.Id ?? 0;
             var cid = SelectedInvestor?.Id ?? 0;
-            var early = db.GetCollection<TransferRecord>().Find(x => x.FundId == fundid && x.CustomerId == cid).Min(x => x.RequestDate);
+            var early = db.GetCollection<TransferRecord>().Find(x => x.FundId == fundid && x.InvestorId == cid).Min(x => x.RequestDate);
 
             if (Date is not null && early >= date) need = true;
 
@@ -546,7 +546,7 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
         if (SelectedFund is not null && SelectedInvestor is not null)
         {
             using var db = DbHelper.Base();
-            first = db.GetCollection<TransferRecord>().Find(x => x.FundId == SelectedFund.Id && x.CustomerId == SelectedInvestor.Id).Sum(x => x.ShareChange()) == 0;
+            first = db.GetCollection<TransferRecord>().Find(x => x.FundId == SelectedFund.Id && x.InvestorId == SelectedInvestor.Id).Sum(x => x.ShareChange()) == 0;
             professional = Qualifications?.Any(x => x.Result == QualifiedInvestorType.Professional) ?? false;
         }
 
@@ -673,9 +673,9 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
                 FundId = Record.FundId ?? 0,
                 FundName = Record.FundName,
                 ShareClass = Record.ShareClass,
-                InvestorId = Record.CustomerId ?? 0,
-                InvestorIdentity = Record.CustomerIdentity,
-                InvestorName = Record.CustomerName,
+                InvestorId = Record.InvestorId ?? 0,
+                InvestorIdentity = Record.InvestorIdentity,
+                InvestorName = Record.InvestorName,
                 Type = SelectedType!.Value,
                 Number = Number ?? 0,
                 Contract = Contract.File,
@@ -688,7 +688,7 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
             // 同日订单
             if (MergeOrderBySameDay)
             {
-                var same = db.GetCollection<TransferRecord>().Find(x => x.ConfirmedDate == Record.ConfirmedDate && x.FundId == Record.FundId && x.CustomerId == Record.CustomerId).ToArray();
+                var same = db.GetCollection<TransferRecord>().Find(x => x.ConfirmedDate == Record.ConfirmedDate && x.FundId == Record.FundId && x.InvestorId == Record.InvestorId).ToArray();
                 foreach (var item in same)
                     item.OrderId = Id;
 
@@ -722,7 +722,7 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
         if (value && SameDay is null)
         {
             using var db = DbHelper.Base();
-            SameDay = db.GetCollection<TransferRecord>().Find(x => x.ConfirmedDate == Record.ConfirmedDate && x.FundId == Record.FundId && x.CustomerId == Record.CustomerId).ToArray();
+            SameDay = db.GetCollection<TransferRecord>().Find(x => x.ConfirmedDate == Record.ConfirmedDate && x.FundId == Record.FundId && x.InvestorId == Record.InvestorId).ToArray();
         }
 
         if (!value)
@@ -772,10 +772,10 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
         if (SelectedType == TransferOrderType.Buy || SelectedType == TransferOrderType.FirstTrade)
         {
             using var db = DbHelper.Base();
-            var early = db.GetCollection<TransferRecord>().Find(x => x.FundId == Record.FundId && x.CustomerId == Record.CustomerId).Min(x => x.RequestDate);
+            var early = db.GetCollection<TransferRecord>().Find(x => x.FundId == Record.FundId && x.InvestorId == Record.InvestorId).Min(x => x.RequestDate);
             if (early == Record.RequestDate) need = true;
 
-            var q = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == Record.CustomerId).Where(x => x.Date <= Record.RequestDate).OrderBy(x => x.Date).LastOrDefault();
+            var q = db.GetCollection<InvestorQualification>().Find(x => x.InvestorId == Record.InvestorId).Where(x => x.Date <= Record.RequestDate).OrderBy(x => x.Date).LastOrDefault();
             if (q is null || q.Result == QualifiedInvestorType.Normal) needvideo = true;
         }
 

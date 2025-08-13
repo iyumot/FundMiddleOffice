@@ -88,21 +88,21 @@ public class SheetParser
         // 对应fund id
 
         // 对应customer
-        var customer = db.GetCollection<Investor>().FindOne(x => x.Name == r.CustomerName && x.Identity != null && x.Identity!.Id == r.CustomerIdentity);
-        r.CustomerId = customer?.Id ?? 0;
+        var customer = db.GetCollection<Investor>().FindOne(x => x.Name == r.InvestorName && x.Identity != null && x.Identity!.Id == r.InvestorIdentity);
+        r.InvestorId = customer?.Id ?? 0;
 
         var fund = db.FindFund(r.FundCode);
 
         // 没找到对应的fund
         if (fund is null)
         {
-            Log.Error($"{r.FundName}({r.FundCode}) {r.CustomerName} {r.ConfirmedDate} 未找到对应基金");
+            Log.Error($"{r.FundName}({r.FundCode}) {r.InvestorName} {r.ConfirmedDate} 未找到对应基金");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(r.FundName))
         {
-            Log.Error($"{r.FundName}({r.FundCode}) {r.CustomerName} {r.ConfirmedDate} 数据异常");
+            Log.Error($"{r.FundName}({r.FundCode}) {r.InvestorName} {r.ConfirmedDate} 数据异常");
             return;
         }
         r.FundId = fund.Id;
@@ -156,8 +156,8 @@ public class CMSParser : SheetParser
         FieldInfo<TransferRecord, decimal> Fee = new FieldInfo<TransferRecord, decimal>("手续费", o => DecimalValue(o), (x, y) => x.Fee = y);
         FieldInfo<TransferRecord, decimal> PerformanceFee = new FieldInfo<TransferRecord, decimal>("业绩报酬", o => DecimalValue(o), (x, y) => x.PerformanceFee = y);
 
-        FieldInfo<TransferRecord, string> CustomerIdentity = new FieldInfo<TransferRecord, string>("证件号码", o => o switch { string s => s, _ => o.ToString()! }, (x, y) => x.CustomerIdentity = y);
-        FieldInfo<TransferRecord, string> CustomerName = new FieldInfo<TransferRecord, string>("客户名称", o => StringValue(o), (x, y) => x.CustomerName = y);
+        FieldInfo<TransferRecord, string> InvestorIdentity = new FieldInfo<TransferRecord, string>("证件号码", o => o switch { string s => s, _ => o.ToString()! }, (x, y) => x.InvestorIdentity = y);
+        FieldInfo<TransferRecord, string> InvestorName = new FieldInfo<TransferRecord, string>("客户名称", o => StringValue(o), (x, y) => x.InvestorName = y);
 
 
         FieldInfo<TransferRecord, string> ExternalRequestId = new FieldInfo<TransferRecord, string>("申请单号", o => StringValue(o), (x, y) => x.ExternalRequestId = y, false);
@@ -183,8 +183,8 @@ public class CMSParser : SheetParser
         Check(ConfirmedNetAmount, fields);
         Check(Fee, fields);
         Check(PerformanceFee, fields);
-        Check(CustomerIdentity, fields);
-        Check(CustomerName, fields);
+        Check(InvestorIdentity, fields);
+        Check(InvestorName, fields);
         Check(ExternalRequestId, fields);
         Check(ExternalId, fields);
 
@@ -203,8 +203,8 @@ public class CMSParser : SheetParser
         if (ConfirmedNetAmount.Index == -1) errors.Add("ConfirmedNetAmount");
         if (Fee.Index == -1) errors.Add("Fee");
         if (PerformanceFee.Index == -1) errors.Add("PerformanceFee");
-        if (CustomerIdentity.Index == -1) errors.Add("CustomerIdentity");
-        if (CustomerName.Index == -1) errors.Add("CustomerName");
+        if (InvestorIdentity.Index == -1) errors.Add("InvestorIdentity");
+        if (InvestorName.Index == -1) errors.Add("InvestorName");
         if (ExternalId.Index == -1) errors.Add("ExternalId");
 
 
@@ -220,7 +220,7 @@ public class CMSParser : SheetParser
             var values = new object[reader.FieldCount];
             reader.GetValues(values);
 
-            var r = new TransferRecord { CustomerIdentity = "", CustomerName = "" };
+            var r = new TransferRecord { InvestorIdentity = "", InvestorName = "" };
 
             Fill(FundName, r, values);
             Fill(FundCode, r, values);
@@ -234,8 +234,8 @@ public class CMSParser : SheetParser
             Fill(ConfirmedNetAmount, r, values);
             Fill(Fee, r, values);
             Fill(PerformanceFee, r, values);
-            Fill(CustomerIdentity, r, values);
-            Fill(CustomerName, r, values);
+            Fill(InvestorIdentity, r, values);
+            Fill(InvestorName, r, values);
             Fill(ExternalId, r, values);
               
             records.Add(r);
@@ -273,8 +273,8 @@ public class CSTISCParser : SheetParser
         FieldInfo<TransferRecord, decimal> Fee = new FieldInfo<TransferRecord, decimal>("交易费", o => DecimalValue(o), (x, y) => x.Fee = y);
         FieldInfo<TransferRecord, decimal> PerformanceFee = new FieldInfo<TransferRecord, decimal>("业绩报酬", o => DecimalValue(o), (x, y) => x.PerformanceFee = y);
 
-        FieldInfo<TransferRecord, string> CustomerIdentity = new FieldInfo<TransferRecord, string>("证件号码", o => o switch { string s => s, _ => o.ToString()! }, (x, y) => x.CustomerIdentity = y);
-        FieldInfo<TransferRecord, string> CustomerName = new FieldInfo<TransferRecord, string>("客户名称", o => StringValue(o), (x, y) => x.CustomerName = y);
+        FieldInfo<TransferRecord, string> InvestorIdentity = new FieldInfo<TransferRecord, string>("证件号码", o => o switch { string s => s, _ => o.ToString()! }, (x, y) => x.InvestorIdentity = y);
+        FieldInfo<TransferRecord, string> InvestorName = new FieldInfo<TransferRecord, string>("客户名称", o => StringValue(o), (x, y) => x.InvestorName = y);
 
         FieldInfo<TransferRecord, string> ExternalId = new FieldInfo<TransferRecord, string>("TA确认号", o => StringValue(o), (x, y) => x.ExternalId = y);
 
@@ -298,8 +298,8 @@ public class CSTISCParser : SheetParser
         Check(ConfirmedNetAmount, fields);
         Check(Fee, fields);
         Check(PerformanceFee, fields);
-        Check(CustomerIdentity, fields);
-        Check(CustomerName, fields);
+        Check(InvestorIdentity, fields);
+        Check(InvestorName, fields);
         Check(ExternalId, fields);
 
         List<string> errors = new List<string>();
@@ -315,8 +315,8 @@ public class CSTISCParser : SheetParser
         if (ConfirmedNetAmount.Index == -1) errors.Add("ConfirmedNetAmount");
         if (Fee.Index == -1) errors.Add("Fee");
         if (PerformanceFee.Index == -1) errors.Add("PerformanceFee");
-        if (CustomerIdentity.Index == -1) errors.Add("CustomerIdentity");
-        if (CustomerName.Index == -1) errors.Add("CustomerName");
+        if (InvestorIdentity.Index == -1) errors.Add("InvestorIdentity");
+        if (InvestorName.Index == -1) errors.Add("InvestorName");
         if (ExternalId.Index == -1) errors.Add("ExternalId");
 
 
@@ -332,7 +332,7 @@ public class CSTISCParser : SheetParser
             var values = new object[reader.FieldCount];
             reader.GetValues(values);
 
-            var r = new TransferRecord { CustomerIdentity = "", CustomerName = "" };
+            var r = new TransferRecord { InvestorIdentity = "", InvestorName = "" };
 
             Fill(FundName, r, values);
             Fill(FundCode, r, values);
@@ -346,8 +346,8 @@ public class CSTISCParser : SheetParser
             Fill(ConfirmedNetAmount, r, values);
             Fill(Fee, r, values);
             Fill(PerformanceFee, r, values);
-            Fill(CustomerIdentity, r, values);
-            Fill(CustomerName, r, values);
+            Fill(InvestorIdentity, r, values);
+            Fill(InvestorName, r, values);
             Fill(ExternalId, r, values);
 
             // 特殊情况
@@ -388,8 +388,8 @@ public class CSCParser : SheetParser
         FieldInfo<TransferRecord, decimal> Fee = new FieldInfo<TransferRecord, decimal>("交易费", o => DecimalValue(o), (x, y) => x.Fee = y);
         FieldInfo<TransferRecord, decimal> PerformanceFee = new FieldInfo<TransferRecord, decimal>("业绩报酬", o => DecimalValue(o), (x, y) => x.PerformanceFee = y);
 
-        FieldInfo<TransferRecord, string> CustomerIdentity = new FieldInfo<TransferRecord, string>("证件号码", o => o switch { string s => s, _ => o.ToString()! }, (x, y) => x.CustomerIdentity = y);
-        FieldInfo<TransferRecord, string> CustomerName = new FieldInfo<TransferRecord, string>("客户名称", o => StringValue(o), (x, y) => x.CustomerName = y);
+        FieldInfo<TransferRecord, string> InvestorIdentity = new FieldInfo<TransferRecord, string>("证件号码", o => o switch { string s => s, _ => o.ToString()! }, (x, y) => x.InvestorIdentity = y);
+        FieldInfo<TransferRecord, string> InvestorName = new FieldInfo<TransferRecord, string>("客户名称", o => StringValue(o), (x, y) => x.InvestorName = y);
 
         FieldInfo<TransferRecord, string> ExternalId = new FieldInfo<TransferRecord, string>("TA确认号", o => StringValue(o), (x, y) => x.ExternalId = y);
 
@@ -412,8 +412,8 @@ public class CSCParser : SheetParser
         Check(ConfirmedNetAmount, fields);
         Check(Fee, fields);
         Check(PerformanceFee, fields);
-        Check(CustomerIdentity, fields);
-        Check(CustomerName, fields);
+        Check(InvestorIdentity, fields);
+        Check(InvestorName, fields);
         Check(ExternalId, fields);
 
         List<string> errors = new List<string>();
@@ -429,8 +429,8 @@ public class CSCParser : SheetParser
         if (ConfirmedNetAmount.Index == -1) errors.Add("ConfirmedNetAmount");
         if (Fee.Index == -1) errors.Add("Fee");
         if (PerformanceFee.Index == -1) errors.Add("PerformanceFee");
-        if (CustomerIdentity.Index == -1) errors.Add("CustomerIdentity");
-        if (CustomerName.Index == -1) errors.Add("CustomerName");
+        if (InvestorIdentity.Index == -1) errors.Add("InvestorIdentity");
+        if (InvestorName.Index == -1) errors.Add("InvestorName");
         if (ExternalId.Index == -1) errors.Add("ExternalId");
 
 
@@ -446,7 +446,7 @@ public class CSCParser : SheetParser
             var values = new object[reader.FieldCount];
             reader.GetValues(values);
 
-            var r = new TransferRecord { CustomerIdentity = "", CustomerName = "" };
+            var r = new TransferRecord { InvestorIdentity = "", InvestorName = "" };
 
             Fill(FundName, r, values);
             Fill(FundCode, r, values);
@@ -460,8 +460,8 @@ public class CSCParser : SheetParser
             Fill(ConfirmedNetAmount, r, values);
             Fill(Fee, r, values);
             Fill(PerformanceFee, r, values);
-            Fill(CustomerIdentity, r, values);
-            Fill(CustomerName, r, values);
+            Fill(InvestorIdentity, r, values);
+            Fill(InvestorName, r, values);
             Fill(ExternalId, r, values);
 
             // 特殊情况
@@ -498,9 +498,9 @@ public class CSCParser : SheetParser
         FieldInfo<TransferRecord, decimal> Fee = new FieldInfo<TransferRecord, decimal>("交易费用", o => DecimalValue(o), (x, y) => x.Fee = y);
         FieldInfo<TransferRecord, decimal> PerformanceFee = new FieldInfo<TransferRecord, decimal>("业绩报酬", o => DecimalValue(o), (x, y) => x.PerformanceFee = y);
 
-        FieldInfo<TransferRecord, string> CustomerIdentity = new FieldInfo<TransferRecord, string>("证件号码", o => o switch { string s => s, _ => o.ToString()! }, (x, y) => x.CustomerIdentity = y);
-        FieldInfo<TransferRecord, string> CustomerIdType = new FieldInfo<TransferRecord, string>("证件类型", o => o switch { string s => s, _ => o.ToString()! }, (x, y) => x.CustomerIdentity = y);
-        FieldInfo<TransferRecord, string> CustomerName = new FieldInfo<TransferRecord, string>("投资人名称", o => StringValue(o), (x, y) => x.CustomerName = y);
+        FieldInfo<TransferRecord, string> InvestorIdentity = new FieldInfo<TransferRecord, string>("证件号码", o => o switch { string s => s, _ => o.ToString()! }, (x, y) => x.InvestorIdentity = y);
+        FieldInfo<TransferRecord, string> InvestorIdType = new FieldInfo<TransferRecord, string>("证件类型", o => o switch { string s => s, _ => o.ToString()! }, (x, y) => x.InvestorIdentity = y);
+        FieldInfo<TransferRecord, string> InvestorName = new FieldInfo<TransferRecord, string>("投资人名称", o => StringValue(o), (x, y) => x.InvestorName = y);
 
         FieldInfo<TransferRecord, string> ExternalId = new FieldInfo<TransferRecord, string>("TA确认号", o => StringValue(o), (x, y) => x.ExternalId = y);
 
@@ -518,9 +518,9 @@ public class CSCParser : SheetParser
         Check(ConfirmedNetAmount, fields);
         Check(Fee, fields);
         Check(PerformanceFee, fields);
-        Check(CustomerIdentity, fields);
-        Check(CustomerIdType, fields);
-        Check(CustomerName, fields);
+        Check(InvestorIdentity, fields);
+        Check(InvestorIdType, fields);
+        Check(InvestorName, fields);
         Check(ExternalId, fields);
 
         List<string> errors = new List<string>();
@@ -536,8 +536,8 @@ public class CSCParser : SheetParser
         if (ConfirmedNetAmount.Index == -1) errors.Add("ConfirmedNetAmount");
         if (Fee.Index == -1) errors.Add("Fee");
         if (PerformanceFee.Index == -1) errors.Add("PerformanceFee");
-        if (CustomerIdentity.Index == -1) errors.Add("CustomerIdentity");
-        if (CustomerName.Index == -1) errors.Add("CustomerName");
+        if (InvestorIdentity.Index == -1) errors.Add("InvestorIdentity");
+        if (InvestorName.Index == -1) errors.Add("InvestorName");
         if (ExternalId.Index == -1) errors.Add("ExternalId");
 
 
@@ -549,7 +549,7 @@ public class CSCParser : SheetParser
 
         foreach (var values in data)
         {
-            var r = new TransferRecord { CustomerIdentity = "", CustomerName = "" };
+            var r = new TransferRecord { InvestorIdentity = "", InvestorName = "" };
 
             Fill(FundName, r, values);
             Fill(FundCode, r, values);
@@ -563,10 +563,10 @@ public class CSCParser : SheetParser
             Fill(ConfirmedNetAmount, r, values);
             Fill(Fee, r, values);
             Fill(PerformanceFee, r, values);
-            Fill(CustomerIdentity, r, values);
-            if (!Regex.IsMatch(r.CustomerIdentity, @"\d+"))
-                Fill(CustomerIdType, r, values);
-            Fill(CustomerName, r, values);
+            Fill(InvestorIdentity, r, values);
+            if (!Regex.IsMatch(r.InvestorIdentity, @"\d+"))
+                Fill(InvestorIdType, r, values);
+            Fill(InvestorName, r, values);
             Fill(ExternalId, r, values);
 
 

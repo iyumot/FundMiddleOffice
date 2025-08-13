@@ -36,16 +36,16 @@ public class TransferRecord : IEquatable<TransferRecord>
     /// <summary>
     /// 内部id
     /// </summary>
-    public int CustomerId { get; set; }
+    public int InvestorId { get; set; }
 
     /// <summary>
     /// 客户Id
     /// </summary>
     [Description("证件号码")]
-    public required string CustomerIdentity { get; set; }
+    public required string InvestorIdentity { get; set; }
 
     [Description("客户名称")]
-    public required string CustomerName { get; set; }
+    public required string InvestorName { get; set; }
 
 
     public DateOnly CreateDate { get; set; }
@@ -136,13 +136,13 @@ public class TransferRecord : IEquatable<TransferRecord>
 
     public override int GetHashCode()
     {
-        return FundId ^ CustomerName.GetHashCode() ^ RequestDate.GetHashCode() ^ Type.GetHashCode();
+        return FundId ^ InvestorName.GetHashCode() ^ RequestDate.GetHashCode() ^ Type.GetHashCode();
     }
     public bool Equals(TransferRecord? other)
     {
         if (other is null) return false;
 
-        return FundId == other.FundId && CustomerIdentity == other.CustomerIdentity && RequestDate == other.RequestDate && Type == other.Type;
+        return FundId == other.FundId && InvestorIdentity == other.InvestorIdentity && RequestDate == other.RequestDate && Type == other.Type;
     }
 
     public decimal ShareChange()

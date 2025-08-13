@@ -162,8 +162,8 @@ public class TransferRequestJson : JsonBase
     {
         return new TransferRequest
         {
-            CustomerIdentity = CertiNo,
-            CustomerName = CustName,
+            InvestorIdentity = CertiNo,
+            InvestorName = CustName,
             FundName = FundName,
             FundCode = FundCode,
             Agency = AgencyName,

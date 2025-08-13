@@ -262,7 +262,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
         RiskAssessments = [.. db.GetCollection<RiskAssessment>().Find(x => x.InvestorId == Id).Select(x => new RiskAssessmentViewModel(x))];
 
         // TA 记录汇总
-        var ta = db.GetCollection<TransferRecord>().Find(x => x.CustomerId == Id).GroupBy(x => x.FundName!);
+        var ta = db.GetCollection<TransferRecord>().Find(x => x.InvestorId == Id).GroupBy(x => x.FundName!);
         List<TransferRecordByFund> trbf = new();
         foreach (var tf in ta)
         {

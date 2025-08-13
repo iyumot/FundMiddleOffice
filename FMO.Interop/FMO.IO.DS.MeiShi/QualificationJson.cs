@@ -19,7 +19,7 @@ public class ListItem
     /// <summary>
     /// 许志聪
     /// </summary>
-    public string customerName { get; set; }
+    public string InvestorName { get; set; }
 
     /// <summary>
     /// 
@@ -124,7 +124,7 @@ public class ListItem
     /// <summary>
     /// 
     /// </summary>
-    public int customerId { get; set; }
+    public int InvestorId { get; set; }
 
     /// <summary>
     /// 

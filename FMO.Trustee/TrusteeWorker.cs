@@ -287,7 +287,7 @@ public partial class TrusteeWorker : ObservableObject
                         DataTracker.OnBatchTransferRequest(rc.Data);
 
                         // 如果有unset，表示数据异常，不保存进度
-                        if (rc.Data?.Any(x => x.CustomerName == "unset" || x.FundName == "unset" || x.CustomerIdentity == "unset") ?? false)
+                        if (rc.Data?.Any(x => x.InvestorName == "unset" || x.FundName == "unset" || x.InvestorIdentity == "unset") ?? false)
                         {
                             ret.Add(new(tr.Title, ReturnCode.DataIsNotWellFormed, rc.Data));
                             WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Error, $"{tr.Title} 获取的交易申请记录数据异常"));
@@ -372,7 +372,7 @@ public partial class TrusteeWorker : ObservableObject
                         }
 
                         // 如果有unset，表示数据异常，不保存进度
-                        if (rc.Data?.Any(x => x.CustomerName == "unset" || x.FundName == "unset" || x.CustomerIdentity == "unset") ?? false)
+                        if (rc.Data?.Any(x => x.InvestorName == "unset" || x.FundName == "unset" || x.InvestorIdentity == "unset") ?? false)
                             break;
 
                         // 更新进度

@@ -30,7 +30,7 @@
                 TextAlignment="Center" />
         </DataTemplate>
 
-        <DataTemplate x:Key="DT.CustomerName">
+        <DataTemplate x:Key="DT.InvestorName">
             <TextBox BorderThickness="0" Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
         </DataTemplate>
 
@@ -224,7 +224,7 @@
                     <shared:ChangeableControl
                         HorizontalContentAlignment="Center"
                         Binding="{Binding Name}"
-                        EditTemplate="{StaticResource DT.CustomerName}"
+                        EditTemplate="{StaticResource DT.InvestorName}"
                         IsReadOnly="{Binding IsReadOnly}"
                         TextElement.FontWeight="Bold" />
                 </Border>

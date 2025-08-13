@@ -7,7 +7,7 @@ using System.Windows;
 namespace FMO;
 
 [AutoChangeableViewModel(typeof(TransferOrder))]
-partial class TransferOrderViewModel
+partial class TransferOrderViewModel : ITransferViewModel
 {
     public bool IsConfirmed { get => field; set { field = value; OnPropertyChanged(nameof(IsConfirmed)); } }
 

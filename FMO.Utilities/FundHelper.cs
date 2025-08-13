@@ -69,7 +69,7 @@ public static class FundHelper
     /// <param name="fundId"></param>
     /// <param name="begin"></param>
     /// <param name="end"></param>
-    public static (IList<DateOnly> Dates, IList<int> CustomerIds, IList<string> Names, decimal[,] Data) GenerateShareSheet(int fundId, DateOnly begin, DateOnly end)
+    public static (IList<DateOnly> Dates, IList<int> InvestorIds, IList<string> Names, decimal[,] Data) GenerateShareSheet(int fundId, DateOnly begin, DateOnly end)
     {
         using var db = DbHelper.Base();
 
@@ -89,9 +89,9 @@ public static class FundHelper
 
         /// 生成行、列头
         List<DateOnly> dates = new List<DateOnly>();
-        var idname = data.Select(x => (x.CustomerId, x.CustomerName)).DistinctBy(x => x.CustomerId);
-        var ids = idname.Select(x => x.CustomerId).ToList();
-        var names = idname.Select(x => x.CustomerName).ToList();
+        var idname = data.Select(x => (x.InvestorId, x.InvestorName)).DistinctBy(x => x.InvestorId);
+        var ids = idname.Select(x => x.InvestorId).ToList();
+        var names = idname.Select(x => x.InvestorName).ToList();
 
         var date = begin;
         while (date <= end)
@@ -111,7 +111,7 @@ public static class FundHelper
             {
                 if (d.ConfirmedDate >= dates[i]) continue;
 
-                var cid = ids.IndexOf(d.CustomerId);
+                var cid = ids.IndexOf(d.InvestorId);
                 array[i, cid] += d.ShareChange();
             }
         }

@@ -91,8 +91,8 @@ public class TAFieldGather : FieldGather<TransferRecord>
     public FieldInfo<TransferRecord, decimal> Fee { get; init; } = new FieldInfo<TransferRecord, decimal>("手续费", o => DecimalValue(o), (x, y) => x.Fee = y);
     public FieldInfo<TransferRecord, decimal> PerformanceFee { get; init; } = new FieldInfo<TransferRecord, decimal>("业绩报酬", o => DecimalValue(o), (x, y) => x.PerformanceFee = y);
 
-    public FieldInfo<TransferRecord, string> CustomerIdentity { get; init; } = new FieldInfo<TransferRecord, string>("证件号码", o => o switch { string s => s, _ => o.ToString()! }, (x, y) => x.CustomerIdentity = y);
-    public FieldInfo<TransferRecord, string> CustomerName { get; init; } = new FieldInfo<TransferRecord, string>("客户名称", o => StringValue(o), (x, y) => x.CustomerName = y);
+    public FieldInfo<TransferRecord, string> InvestorIdentity { get; init; } = new FieldInfo<TransferRecord, string>("证件号码", o => o switch { string s => s, _ => o.ToString()! }, (x, y) => x.InvestorIdentity = y);
+    public FieldInfo<TransferRecord, string> InvestorName { get; init; } = new FieldInfo<TransferRecord, string>("客户名称", o => StringValue(o), (x, y) => x.InvestorName = y);
 
 
     public FieldInfo<TransferRecord, string> ExternalRequestId { get; init; } = new FieldInfo<TransferRecord, string>("申请单号", o => StringValue(o), (x, y) => x.ExternalRequestId = y, false);
@@ -113,14 +113,14 @@ public class TAFieldGather : FieldGather<TransferRecord>
         Check(ConfirmedNetAmount, fields);
         Check(Fee, fields);
         Check(PerformanceFee, fields);
-        Check(CustomerIdentity, fields);
-        Check(CustomerName, fields);
+        Check(InvestorIdentity, fields);
+        Check(InvestorName, fields);
         Check(ExternalRequestId, fields);
         Check(ExternalId, fields);
 
         return FundName.Index >= 0 && FundCode.Index >= 0 && Type.Index >= 0 && RequestDate.Index >= 0 && RequestAmount.Index >= 0 && RequestShare.Index >= 0 &&
             ConfirmedDate.Index >= 0 && ConfirmedShare.Index >= 0 && ConfirmedAmount.Index >= 0 && ConfirmedNetAmount.Index >= 0 && Fee.Index >= 0 &&
-            PerformanceFee.Index >= 0 && CustomerIdentity.Index >= 0 && CustomerName.Index >= 0 && ExternalRequestId.Index >= 0 && ExternalId.Index >= 0;
+            PerformanceFee.Index >= 0 && InvestorIdentity.Index >= 0 && InvestorName.Index >= 0 && ExternalRequestId.Index >= 0 && ExternalId.Index >= 0;
     }
 
 
@@ -138,8 +138,8 @@ public class TAFieldGather : FieldGather<TransferRecord>
         Fill(ConfirmedNetAmount, obj, values);
         Fill(Fee, obj, values);
         Fill(PerformanceFee, obj, values);
-        Fill(CustomerIdentity, obj, values);
-        Fill(CustomerName, obj, values);
+        Fill(InvestorIdentity, obj, values);
+        Fill(InvestorName, obj, values);
         Fill(ExternalRequestId, obj, values);
         Fill(ExternalId, obj, values);
 
@@ -161,8 +161,8 @@ public class TAFieldGather : FieldGather<TransferRecord>
         if (ConfirmedNetAmount.Index == -1) errors.Add("ConfirmedNetAmount");
         if (Fee.Index == -1) errors.Add("Fee");
         if (PerformanceFee.Index == -1) errors.Add("PerformanceFee");
-        if (CustomerIdentity.Index == -1) errors.Add("CustomerIdentity");
-        if (CustomerName.Index == -1) errors.Add("CustomerName");
+        if (InvestorIdentity.Index == -1) errors.Add("InvestorIdentity");
+        if (InvestorName.Index == -1) errors.Add("InvestorName");
         if (ExternalRequestId.Index == -1) errors.Add("ExternalRequestId");
         if (ExternalId.Index == -1) errors.Add("ExternalId");
         return errors.ToArray();

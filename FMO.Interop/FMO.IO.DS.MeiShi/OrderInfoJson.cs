@@ -206,7 +206,7 @@ public class SignRecord
     /// <summary>
     /// 客户名称
     /// </summary>
-    public string customerName { get; set; }
+    public string InvestorName { get; set; }
 
     /// <summary>
     /// 签约流程开始时间
@@ -293,7 +293,7 @@ public class SignRecord
     /// <summary>
     /// 客户ID（客户唯一标识）
     /// </summary>
-    public long customerId { get; set; }
+    public long InvestorId { get; set; }
 
     /// <summary>
     /// 产品全称

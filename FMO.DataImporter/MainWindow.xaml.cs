@@ -106,7 +106,7 @@ public partial class MainWindowViewModel : ObservableObject
                 if (cuss.Length > 1) //重名
                 {
                     // 从ta判断 
-                    var cusinfund = tas.Where(x => x.FundId == fund.Id).Select(x => x.CustomerId).Distinct().
+                    var cusinfund = tas.Where(x => x.FundId == fund.Id).Select(x => x.InvestorId).Distinct().
                         Join(customers, x => x, x => x.Id, (x, y) => y).Where(x => x.Name == cn).ToArray();
 
                     if (cusinfund.Length == 1)

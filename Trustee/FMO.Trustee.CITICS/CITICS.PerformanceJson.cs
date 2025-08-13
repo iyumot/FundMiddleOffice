@@ -10,7 +10,7 @@ internal class PerformanceJson : JsonBase
     public string FundAccount { get; set; } // 基金账号
 
     [JsonPropertyName("custName")]
-    public string CustomerName { get; set; } // 客户名称
+    public string InvestorName { get; set; } // 客户名称
 
     [JsonPropertyName("custType")]
     public string CustomerType { get; set; } // 客户类型

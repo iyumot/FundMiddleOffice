@@ -8,7 +8,7 @@ using System.Windows;
 namespace FMO;
 
 [AutoChangeableViewModel(typeof(TransferRecord))]
-partial class TransferRecordViewModel
+partial class TransferRecordViewModel : ITransferViewModel
 {
     public FileInfo File => new FileInfo(@$"files\tac\{Id}.pdf");
 
@@ -49,7 +49,7 @@ partial class TransferRecordViewModel
         {
             MaxHeight = App.Current.MainWindow.ActualHeight,
             Content = new CustomerView() { Margin = new Thickness(10)},
-            DataContext = new CustomerViewModel(CustomerId!.Value),
+            DataContext = new CustomerViewModel(InvestorId!.Value),
             SizeToContent =  SizeToContent.WidthAndHeight,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             Owner = App.Current.MainWindow,          

@@ -130,7 +130,7 @@ internal class TransferRequestJson : JsonBase
     /// 投资者名称
     /// </summary>
     [JsonPropertyName("custName")]
-    public string CustomerName { get; set; }
+    public string InvestorName { get; set; }
 
     /// <summary>
     /// 客户类型（参考附录4）
@@ -155,8 +155,8 @@ internal class TransferRequestJson : JsonBase
     {
         var r = new TransferRequest
         {
-            CustomerIdentity = CertificateNumber,
-            CustomerName = CustomerName,
+            InvestorIdentity = CertificateNumber,
+            InvestorName = InvestorName,
             FundCode = FundCode,
             FundName = "unset",
             RequestDate = DateOnly.ParseExact(RequestDate, "yyyyMMdd"),

@@ -12,7 +12,7 @@ internal class TransferRequestJson : JsonBase
     /// 客户名称（最大长度：200）
     /// </summary>
     [JsonPropertyName("custName")]
-    public string CustomerName { get; set; }
+    public string InvestorName { get; set; }
 
     /// <summary>
     /// 客户类型（最大长度：30）
@@ -132,8 +132,8 @@ internal class TransferRequestJson : JsonBase
 
         var r = new TransferRequest
         {
-            CustomerIdentity = CertificateNumber,
-            CustomerName = CustomerName,
+            InvestorIdentity = CertificateNumber,
+            InvestorName = InvestorName,
             FundName = FundName,
             FundCode = FundCode,
             RequestDate = DateOnly.ParseExact(TransactionDate, "yyyyMMdd"),

@@ -17,7 +17,7 @@ internal class DistrubutionJson : JsonBase
     /// 客户名称
     /// </summary>
     [JsonPropertyName("custName")]
-    public string CustomerName { get; set; }
+    public string InvestorName { get; set; }
 
     /// <summary>
     /// 销售商代码（ZX6 表示直销）
@@ -164,8 +164,8 @@ internal class DistrubutionJson : JsonBase
     {
         return new TransferRecord
         {
-            CustomerIdentity = CertificateNumber,
-            CustomerName = CustomerName,
+            InvestorIdentity = CertificateNumber,
+            InvestorName = InvestorName,
             ExternalId = TaConfirmNo,
             ConfirmedDate = DateOnly.ParseExact(ConfirmDate, "yyyyMMdd"),
             ConfirmedShare = ParseDecimal(ReinvestShares),

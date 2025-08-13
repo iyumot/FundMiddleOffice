@@ -6,15 +6,23 @@ using System.Windows;
 
 namespace FMO;
 
+
+public interface ITransferViewModel
+{
+    string FundName { get; }
+
+    string InvestorName { get; }    
+}
+
 [AutoChangeableViewModel(typeof(TransferRequest))]
-partial class TransferRequestViewModel
+partial class TransferRequestViewModel : ITransferViewModel
 {
 
     public int OrderId
     {
         get => field; set
         {
-            field = value; 
+            field = value;
             OnPropertyChanged(nameof(OrderId));
             OnPropertyChanged(nameof(LackOrder));
             OnPropertyChanged(nameof(HasOrder));
@@ -34,7 +42,7 @@ partial class TransferRequestViewModel
         {
             MaxHeight = App.Current.MainWindow.ActualHeight,
             Content = new CustomerView() { Margin = new Thickness(10) },
-            DataContext = new CustomerViewModel(CustomerId!.Value),
+            DataContext = new CustomerViewModel(InvestorId!.Value),
             SizeToContent = SizeToContent.WidthAndHeight,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             Owner = App.Current.MainWindow,

@@ -152,7 +152,7 @@ public class ListItem
     /// <summary>
     /// 
     /// </summary>
-    public int? customerId { get; set; }
+    public int? InvestorId { get; set; }
     /// <summary>
     /// 
     /// </summary>
@@ -160,7 +160,7 @@ public class ListItem
     /// <summary>
     /// 光大期货光耀专享12号F0F单一资产管理计划
     /// </summary>
-    public string? customerName { get; set; }
+    public string? InvestorName { get; set; }
     /// <summary>
     /// 
     /// </summary>
@@ -490,7 +490,7 @@ public class ListItem
     {
         var v = new Investor
         {
-            Name = customerName!,
+            Name = InvestorName!,
             EntityType = customerType switch { 1 => EntityType.Natural, 2 => EntityType.Institution, 3 => EntityType.Product, _ => EntityType.Unk },
             Identity = GetIdentity(),
             Phone = mobile,
@@ -499,17 +499,17 @@ public class ListItem
         };
 
 
-        if (customerName!.Contains("私募"))
+        if (InvestorName!.Contains("私募"))
             v.Type = AmacInvestorType.PrivateFundProduct;
-        else if (Regex.IsMatch(customerName, ".{2,}期货.*资产管理计划"))
+        else if (Regex.IsMatch(InvestorName, ".{2,}期货.*资产管理计划"))
             v.Type = AmacInvestorType.FuturesCompanyAssetManagementPlan;
-        else if (Regex.IsMatch(customerName, ".{2,}证券.*资产管理计划"))
+        else if (Regex.IsMatch(InvestorName, ".{2,}证券.*资产管理计划"))
             v.Type = AmacInvestorType.SecuritiesCompanyAssetManagementPlan;
-        else if (Regex.IsMatch(customerName, ".{2,}基金.*资产管理计划"))
+        else if (Regex.IsMatch(InvestorName, ".{2,}基金.*资产管理计划"))
             v.Type = AmacInvestorType.FundCompanyAssetManagementPlan;
-        else if (Regex.IsMatch(customerName, "有限公司"))
+        else if (Regex.IsMatch(InvestorName, "有限公司"))
             v.Type = AmacInvestorType.LegalEntity;
-        else if (Regex.IsMatch(customerName, "有限合伙"))
+        else if (Regex.IsMatch(InvestorName, "有限合伙"))
             v.Type = AmacInvestorType.NonLegalEntity;
 
         if (v.EntityType == EntityType.Natural)

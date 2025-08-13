@@ -37,7 +37,7 @@ public class ApiResponse
 /// </summary>
 public class ResponseData
 {
-    public string? customerName { get; set; }
+    public string? InvestorName { get; set; }
 
     public string? productName { get; set; }
 

@@ -25,8 +25,36 @@ public  static partial class DatabaseAssist
         [62] = RebuildFundShareRecord,
         [64] = ChangeOrderFilePathToRelative,
         [65] = UpdateLiqudatingTA,
-        [66] = ChangeAPIAndClearData
+        [66] = ChangeAPIAndClearData,
+
+        [67] = Customer2Investor
     };
+
+    private static void Customer2Investor(BaseDatabase db)
+    {
+        var req = db.GetCollection(nameof(TransferRequest)).FindAll().ToArray();
+        foreach (var item in req)
+        {
+            var modi = item.Keys.Where(x => x.StartsWith("Customer")).ToList();
+            foreach (var m in modi)
+            {
+                item[m.Replace("Customer", "Investor")] = item[m];
+            }
+        }
+        db.GetCollection(nameof(TransferRequest)).Update(req); 
+
+
+        var rec = db.GetCollection(nameof(TransferRecord)).FindAll().ToArray();
+        foreach (var item in rec)
+        {
+            var modi = item.Keys.Where(x => x.StartsWith("Customer")).ToList();
+            foreach (var m in modi)
+            {
+                item[m.Replace("Customer", "Investor")] = item[m];
+            }
+        }
+        db.GetCollection(nameof(TransferRecord)).Update(rec);
+    }
 
 
     /// <summary>
@@ -121,7 +149,7 @@ public  static partial class DatabaseAssist
     }
 
     /// <summary>
-    /// 校验ta，为TransferRecord的CustomerId为0的设置Id
+    /// 校验ta，为TransferRecord的InvestorId为0的设置Id
     /// </summary>
     /// <param name="db"></param>
     private static void VerifyAndFixInvestorMission(BaseDatabase db)
@@ -130,25 +158,25 @@ public  static partial class DatabaseAssist
         var cc = db.GetCollection<Investor>().FindAll().ToArray();
         var cids = cc.Select(x => x.Id).ToArray();
 
-        foreach (var item in d.ExceptBy([0, .. cids], x => x.CustomerId))
+        foreach (var item in d.ExceptBy([0, .. cids], x => x.InvestorId))
         {
-            var tmp = cc.Where(x => x.Identity?.Id == item.CustomerIdentity).ToArray();
+            var tmp = cc.Where(x => x.Identity?.Id == item.InvestorIdentity).ToArray();
 
             // 没有找到investor
             if (tmp.Length == 0)
             {
-                var c = new Investor { Name = item.CustomerName, Identity = new Identity { Id = item.CustomerIdentity } };
+                var c = new Investor { Name = item.InvestorName, Identity = new Identity { Id = item.InvestorIdentity } };
                 db.GetCollection<Investor>().Insert(c);
-                item.CustomerId = c.Id;
+                item.InvestorId = c.Id;
 
-                WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Info, $"新增投资人 {item.CustomerName}，请完善材料"));
+                WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Info, $"新增投资人 {item.InvestorName}，请完善材料"));
             }
             else if (tmp.Length == 1)
-                item.CustomerId = tmp.First().Id;
+                item.InvestorId = tmp.First().Id;
             else
             {
-                Log.Error($"TransferRecord {item.Id} {item.FundName} {item.CustomerName} 与多个Inverstor对应");
-                WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, $"{item.FundName} {item.CustomerName} 交易无法对应投资人，因为证件号重复"));
+                Log.Error($"TransferRecord {item.Id} {item.FundName} {item.InvestorName} 与多个Inverstor对应");
+                WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, $"{item.FundName} {item.InvestorName} 交易无法对应投资人，因为证件号重复"));
             }
         }
         db.GetCollection<TransferRecord>().Update(d);
@@ -250,12 +278,12 @@ public  static partial class DatabaseAssist
             // 未匹配流水
             if (string.IsNullOrWhiteSpace(old.TransactionId))
             {
-                var banks = db.GetCollection<InvestorBankAccount>().Find(x => x.OwnerId == rec.CustomerId).Select(x => x.Number);
+                var banks = db.GetCollection<InvestorBankAccount>().Find(x => x.OwnerId == rec.InvestorId).Select(x => x.Number);
                 if (rec.IsSell()) // 只有赎回需要匹配
                 {
                     var limit = new DateTime(rec.ConfirmedDate, TimeOnly.MinValue);
                     foreach (var t in db.GetCollection<RaisingBankTransaction>().Find(x => x.FundId == rec.FundId && x.Direction == TransctionDirection.Pay
-                            && x.Time >= limit && (banks.Contains(x.CounterNo) || x.CounterName == rec.CustomerName)).OrderByDescending(x => x.Time))
+                            && x.Time >= limit && (banks.Contains(x.CounterNo) || x.CounterName == rec.InvestorName)).OrderByDescending(x => x.Time))
                     {
                         if (t.Amount == rec.RequestAmount)
                             old.TransactionId = t.Id;

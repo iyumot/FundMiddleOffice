@@ -108,8 +108,8 @@ internal class TransferRecordJson : JsonBase
 
         var r = new TransferRecord
         {
-            CustomerIdentity = CertificateNo,
-            CustomerName = CustName,
+            InvestorIdentity = CertificateNo,
+            InvestorName = CustName,
             Agency = DistributorName,
             RequestDate = DateOnly.ParseExact(TransactionDate, "yyyyMMdd"),
             RequestAmount = ParseDecimal(ApplicationAmount),

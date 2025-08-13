@@ -162,9 +162,9 @@ public partial class AddTAWindowViewModel : ObservableObject
             FundId = SelectedFund!.Id,
             FundCode = SelectedFund!.Code,
             FundName = SelectedFund!.Name,
-            CustomerId = SelectedInvestor!.Id,
-            CustomerIdentity = SelectedInvestor!.Identity!.Id,
-            CustomerName = SelectedInvestor!.Name,
+            InvestorId = SelectedInvestor!.Id,
+            InvestorIdentity = SelectedInvestor!.Identity!.Id,
+            InvestorName = SelectedInvestor!.Name,
             RequestDate = DateOnly.FromDateTime(RequestDate!.Value),
             RequestAmount = SelectedType switch { TransferRecordType.Subscription or TransferRecordType.Purchase => RequestNumber ?? 0, _ => 0 },
             RequestShare = SelectedType switch { TransferRecordType.Redemption or TransferRecordType.ForceRedemption => RequestNumber ?? 0, _ => 0 },
@@ -182,9 +182,9 @@ public partial class AddTAWindowViewModel : ObservableObject
             FundId = SelectedFund!.Id,
             FundCode = SelectedFund!.Code,
             FundName = SelectedFund!.Name,
-            CustomerId = SelectedInvestor!.Id,
-            CustomerIdentity = SelectedInvestor.Identity.Id,
-            CustomerName = SelectedInvestor!.Name,
+            InvestorId = SelectedInvestor!.Id,
+            InvestorIdentity = SelectedInvestor.Identity.Id,
+            InvestorName = SelectedInvestor!.Name,
             RequestDate = DateOnly.FromDateTime(RequestDate!.Value),
             ConfirmedDate = DateOnly.FromDateTime(ConfirmDate!.Value),
             RequestAmount = SelectedType switch { TransferRecordType.Subscription or TransferRecordType.Purchase => RequestNumber ?? 0, _ => 0 },
@@ -217,7 +217,7 @@ public partial class AddTAWindowViewModel : ObservableObject
         {
             // 检查是否有重复数据
             using var db = DbHelper.Base();
-            var old = db.GetCollection<TransferRecord>().Find(x => x.FundId == SelectedFund!.Id && x.CustomerId == SelectedInvestor!.Id && x.Type == SelectedType && x.ConfirmedDate == DateOnly.FromDateTime(ConfirmDate!.Value)).ToArray();
+            var old = db.GetCollection<TransferRecord>().Find(x => x.FundId == SelectedFund!.Id && x.InvestorId == SelectedInvestor!.Id && x.Type == SelectedType && x.ConfirmedDate == DateOnly.FromDateTime(ConfirmDate!.Value)).ToArray();
             old = old.Where(x => x.ConfirmedShare == ConfirmShare && x.ConfirmedAmount == ConfirmAmount && x.ConfirmedNetAmount == ConfirmNetAmount && x.PerformanceFee == (PerformanceFee ?? 0)).ToArray();
 
             if (old.Any())

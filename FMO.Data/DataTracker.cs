@@ -225,7 +225,7 @@ public static partial class DataTracker
         using var db = DbHelper.Base();
         var coll = db.GetCollection<InvestorBalance>().FindAll().OrderBy(x => x.Id).ToList();
         var tas = db.GetCollection<TransferRecord>().FindAll().ToList();
-        IEnumerable<(long key, DateOnly date)> ta = tas.Select(x => new { id = InvestorBalance.MakeId(x.CustomerId, x.FundId), date = x.ConfirmedDate }).
+        IEnumerable<(long key, DateOnly date)> ta = tas.Select(x => new { id = InvestorBalance.MakeId(x.InvestorId, x.FundId), date = x.ConfirmedDate }).
             GroupBy(x => x.id).Select(x => (key: x.Key, date: x.Max(y => y.date))).OrderBy(x => x.key);
 
         foreach (var item in ta)
@@ -234,7 +234,7 @@ public static partial class DataTracker
             if (o is null || o.Date != item.date)
             {
                 var (c, f) = InvestorBalance.ParseId(item.key);
-                var tf = tas.Where(x => x.CustomerId == c && x.FundId == f);
+                var tf = tas.Where(x => x.InvestorId == c && x.FundId == f);
                 var share = tf.Sum(x => x.ShareChange());
                 var deposit = tf.Where(x => x.Type switch { TransferRecordType.Subscription or TransferRecordType.Purchase or TransferRecordType.MoveIn or TransferRecordType.SwitchIn or TransferRecordType.TransferIn => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
                 var withdraw = tf.Where(x => x.Type switch { TransferRecordType.Redemption or TransferRecordType.Redemption or TransferRecordType.MoveOut or TransferRecordType.SwitchOut or TransferRecordType.TransferOut or TransferRecordType.Distribution => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
@@ -252,8 +252,8 @@ public static partial class DataTracker
     public static void CheckTAMissOwner()
     {
         using var db = DbHelper.Base();
-        var e1 = db.GetCollection<TransferRequest>().Count(x => x.FundId == 0 || x.CustomerId == 0);
-        var e2 = db.GetCollection<TransferRecord>().Count(x => x.FundId == 0 || x.CustomerId == 0);
+        var e1 = db.GetCollection<TransferRequest>().Count(x => x.FundId == 0 || x.InvestorId == 0);
+        var e2 = db.GetCollection<TransferRecord>().Count(x => x.FundId == 0 || x.InvestorId == 0);
 
         if (e1 + e2 > 0)
             UniformTips.AddOrUpdate(TipType.TANoOwner, $"发现未关联Request {e1}个，Record {e2}个", (x, y) => $"发现未关联Request {e1}个，Record {e2}个");
@@ -297,7 +297,7 @@ public static partial class DataTracker
             item.OrderId = 0;
 
         // 清理对不上的
-        bad = tas.Where(x => x.OrderId != 0).Join(orders, x => x.OrderId, x => x.Id, (x, y) => (x, y)).Where(x => x.x.FundId != x.y.FundId || x.x.CustomerId != x.y.InvestorId).Select(x => x.x).ToArray();
+        bad = tas.Where(x => x.OrderId != 0).Join(orders, x => x.OrderId, x => x.Id, (x, y) => (x, y)).Where(x => x.x.FundId != x.y.FundId || x.x.InvestorId != x.y.InvestorId).Select(x => x.x).ToArray();
         foreach (var item in bad)
             item.OrderId = 0;
 
@@ -309,10 +309,10 @@ public static partial class DataTracker
         foreach (var od in un)
         {
             // 找当日或后的第一个ta
-            DateOnly date = tas.Where(x => x.FundId == od.FundId && x.CustomerId == od.InvestorId).OrderBy(x => x.RequestDate).FirstOrDefault(x => x.RequestDate >= od.Date)?.RequestDate ?? default;
+            DateOnly date = tas.Where(x => x.FundId == od.FundId && x.InvestorId == od.InvestorId).OrderBy(x => x.RequestDate).FirstOrDefault(x => x.RequestDate >= od.Date)?.RequestDate ?? default;
 
             // 可能有同日多ta
-            var list = tas.Where(x => x.FundId == od.FundId && x.CustomerId == od.InvestorId && x.RequestDate == date);
+            var list = tas.Where(x => x.FundId == od.FundId && x.InvestorId == od.InvestorId && x.RequestDate == date);
 
             // 单独匹配
             foreach (var record in list)
@@ -382,7 +382,7 @@ public static partial class DataTracker
     public static bool IsPair(TransferOrder order, TransferRecord record)
     {
         if (order.FundId != record.FundId) return false;
-        if (order.InvestorId != record.CustomerId) return false;
+        if (order.InvestorId != record.InvestorId) return false;
 
         if (order.Date > record.RequestDate) return false;
 
@@ -650,13 +650,13 @@ public static partial class DataTracker
         var customers = db.GetCollection<Investor>().Query().Where(x => x.Identity != null).Select(x => new { IdNo = x.Identity!.Id, Id = x.Id }).ToList().ToDictionary(x => x.IdNo);
         foreach (var r in data)
         {
-            if (customers.TryGetValue(r.CustomerIdentity, out var cus))
-                r.CustomerId = cus.Id;
+            if (customers.TryGetValue(r.InvestorIdentity, out var cus))
+                r.InvestorId = cus.Id;
             else // 添加数据
             {
-                var c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
+                var c = new Investor { Name = r.InvestorName, Identity = new Identity { Id = r.InvestorIdentity } };
                 db.GetCollection<Investor>().Insert(c);
-                r.CustomerId = c.Id;
+                r.InvestorId = c.Id;
             }
         }
 
@@ -725,13 +725,13 @@ public static partial class DataTracker
         var customers = db.GetCollection<Investor>().Query().Where(x => x.Identity != null).Select(x => new { IdNo = x.Identity!.Id, Id = x.Id }).ToList().ToDictionary(x => x.IdNo);
         foreach (var r in records)
         {
-            if (customers.TryGetValue(r.CustomerIdentity, out var cus))
-                r.CustomerId = cus.Id;
+            if (customers.TryGetValue(r.InvestorIdentity, out var cus))
+                r.InvestorId = cus.Id;
             else // 添加数据
             {
-                var c = new Investor { Name = r.CustomerName, Identity = new Identity { Id = r.CustomerIdentity } };
+                var c = new Investor { Name = r.InvestorName, Identity = new Identity { Id = r.InvestorIdentity } };
                 db.GetCollection<Investor>().Insert(c);
-                r.CustomerId = c.Id;
+                r.InvestorId = c.Id;
             }
         }
 
@@ -745,7 +745,7 @@ public static partial class DataTracker
                 r.Id = old.Id;
 
             //// 同日同名
-            //var exi = olds.Where(x => x.ExternalId == r.ExternalId || (x.FundId == r.FundId && x.CustomerIdentity == r.CustomerIdentity && x.ConfirmedDate == r.ConfirmedDate && x.Type == r.Type && x.req && x.Source == "manual")).ToList();
+            //var exi = olds.Where(x => x.ExternalId == r.ExternalId || (x.FundId == r.FundId && x.InvestorIdentity == r.InvestorIdentity && x.ConfirmedDate == r.ConfirmedDate && x.Type == r.Type && x.req && x.Source == "manual")).ToList();
 
             //// 只有一个，替换
             //if (exi.Count == 1 && (exi[0].Source != "api" || exi[0].ExternalId == r.ExternalId))
@@ -786,8 +786,8 @@ public static partial class DataTracker
         var tableBalance = db.GetCollection<InvestorBalance>();
 
         // 更新投资人平衡表 
-        foreach (var g in records.GroupBy(x => (x.CustomerId, x.FundId)))
-            UpdateInvestorBalance(tableRecord, tableBalance, g.Key.CustomerId, g.Key.FundId, g.Min(x => x.ConfirmedDate));
+        foreach (var g in records.GroupBy(x => (x.InvestorId, x.FundId)))
+            UpdateInvestorBalance(tableRecord, tableBalance, g.Key.InvestorId, g.Key.FundId, g.Min(x => x.ConfirmedDate));
 
         // 更新基金份额平衡表
         var t2 = db.GetCollection<FundShareRecordByTransfer>();
@@ -925,7 +925,7 @@ public static partial class DataTracker
         // 有 orderid 没有 requestid
         var ordermaps = mapTable.Query().Where(x => x.RequestId == 0 && x.OrderId != 0).ToList().Select(x => new { map = x, order = oTable.FindById(x.OrderId) }).ToList();
 
-        var reqDates = unmapRequest.OrderBy(x=>x.RequestDate).GroupBy(x => ((long)x.FundId << 32) | (long)x.CustomerId).ToDictionary(x => x.Key);
+        var reqDates = unmapRequest.OrderBy(x=>x.RequestDate).GroupBy(x => ((long)x.FundId << 32) | (long)x.InvestorId).ToDictionary(x => x.Key);
         foreach (var om in ordermaps)
         {
             var o = om.order;
@@ -1060,7 +1060,7 @@ public static partial class DataTracker
     public static void UpdateInvestorBalance(ILiteCollection<TransferRecord> table, ILiteCollection<InvestorBalance> tableIB, int investorId, int fundId, DateOnly from = default)
     {
         var old = tableIB.Query().OrderByDescending(x => x.Date).Where(x => x.Date < from).FirstOrDefault();
-        var data = table.Find(x => x.FundId == fundId && x.CustomerId == investorId && x.ConfirmedDate >= from).GroupBy(x => x.ConfirmedDate).OrderBy(x => x.Key);
+        var data = table.Find(x => x.FundId == fundId && x.InvestorId == investorId && x.ConfirmedDate >= from).GroupBy(x => x.ConfirmedDate).OrderBy(x => x.Key);
         var list = new List<InvestorBalance>();
         if (old is not null) list.Add(old);
         foreach (var tf in data)
@@ -1102,8 +1102,8 @@ public static partial class DataTracker
             map.Add(new TransferMapping { RecordId = item.Id });
 
         // 对应order
-        var reqDates = requests.GroupBy(x => ((long)x.FundId << 32) | (long)x.CustomerId).ToDictionary(x => x.Key);
-        var recDates = records.GroupBy(x => ((long)x.FundId << 32) | (long)x.CustomerId).ToDictionary(x => x.Key);
+        var reqDates = requests.GroupBy(x => ((long)x.FundId << 32) | (long)x.InvestorId).ToDictionary(x => x.Key);
+        var recDates = records.GroupBy(x => ((long)x.FundId << 32) | (long)x.InvestorId).ToDictionary(x => x.Key);
         foreach (var o in orders)
         {
             var gid = ((long)o.FundId << 32) | (long)o.InvestorId;

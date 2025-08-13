@@ -142,8 +142,8 @@ public partial class CITICS : TrusteeApiBase
 
                     if (map.TryGetValue(item.FundAcco, out var m))
                     {
-                        r.CustomerName = m.Name;
-                        r.CustomerIdentity = m.Indentity;
+                        r.InvestorName = m.Name;
+                        r.InvestorIdentity = m.Indentity;
                     }
                     list.Add(r);
                 }

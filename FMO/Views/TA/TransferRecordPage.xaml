@@ -30,7 +30,32 @@
             <Setter Property="shared:MaskService.IsMask" Value="True" />
         </Style>
 
+        <local:BindingProxy x:Key="proxy" Data="{Binding}" />
 
+
+        <DataTemplate x:Key="StringFilterTemplate">
+            <Border Background="WhiteSmoke">
+                <DockPanel MaxHeight="600">
+                    <DockPanel DockPanel.Dock="Top">
+                        <Button
+                            hc:IconElement.Geometry="{StaticResource f.xmark}"
+                            Command="{Binding ClearCommand}"
+                            Style="{StaticResource ButtonIcon.Small}" />
+                        <TextBox Text="{Binding SearchKey, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                    </DockPanel>
+                    <ListBox ItemsSource="{Binding FilterSource.View}" Style="{StaticResource ListBoxCustom}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox
+                                    Margin="0,4"
+                                    Content="{Binding Title}"
+                                    IsChecked="{Binding IsSelected}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+        </DataTemplate>
     </UserControl.Resources>
     <Grid>
 
@@ -625,6 +650,14 @@
 
 
                         <DataGridTemplateColumn>
+                            <DataGridTemplateColumn.Header>
+                                <ToggleButton
+                                    hc:IconElement.Geometry="{StaticResource f.filter}"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Style="{StaticResource ToggleButtonIcon.Small}" />
+                            </DataGridTemplateColumn.Header>
+
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <hc:SimplePanel>
@@ -660,7 +693,56 @@
                             ElementStyle="{StaticResource LeftText}"
                             Header="代码" />
 
-                        <DataGridTemplateColumn Header="产品">
+                        <DataGridTemplateColumn
+                            shared:FilterColumn.FilterSource="{Binding Data.FundNameFilter, Source={StaticResource proxy}}"
+                            shared:FilterColumn.Header="产品"
+                            shared:FilterColumn.PopupContentTemplate="{StaticResource StringFilterTemplate}">
+                            <!--<DataGridTemplateColumn.Header>
+                                <ContentControl Content="{Binding Data, Source={StaticResource proxy}}">
+                                    <ContentControl.ContentTemplate>
+                                        <DataTemplate>
+                                            <DockPanel>
+                                                <TextBlock Text="产品" />
+                                                <ToggleButton
+                                                    x:Name="ttt"
+                                                    hc:IconElement.Geometry="{StaticResource f.filter}"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Style="{StaticResource ToggleButtonIcon.Small}" />
+
+                                                <Popup
+                                                    AllowsTransparency="True"
+                                                    IsOpen="{Binding ElementName=ttt, Path=IsChecked}"
+                                                    StaysOpen="False">
+                                                    <Border Background="WhiteSmoke">
+                                                        <DockPanel MaxHeight="600">
+                                                            <DockPanel DockPanel.Dock="Top">
+                                                                <CheckBox />
+                                                                <TextBox />
+                                                            </DockPanel>
+                                                            <ListBox ItemsSource="{Binding FundNameFilter.Filters}" Style="{StaticResource ListBoxCustom}">
+                                                                <ListBox.ItemTemplate>
+                                                                    <DataTemplate>
+                                                                        <CheckBox
+                                                                            Margin="0,4"
+                                                                            Content="{Binding Title}"
+                                                                            IsChecked="{Binding IsSelected}" />
+                                                                    </DataTemplate>
+                                                                </ListBox.ItemTemplate>
+                                                            </ListBox>
+                                                        </DockPanel>
+                                                    </Border>
+                                                </Popup>
+                                            </DockPanel>
+                                            <DataTemplate.Triggers>
+                                                <DataTrigger Binding="{Binding FundNameFilter.IsActive}" Value="True">
+                                                    <Setter TargetName="ttt" Property="Foreground" Value="Green" />
+                                                </DataTrigger>
+                                            </DataTemplate.Triggers>
+                                        </DataTemplate>
+                                    </ContentControl.ContentTemplate>
+                                </ContentControl>
+                            </DataGridTemplateColumn.Header>-->
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <DockPanel Background="Transparent" LastChildFill="False">
@@ -681,11 +763,14 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="投资人">
+                        <DataGridTemplateColumn
+                            shared:FilterColumn.FilterSource="{Binding Data.InvestorNameFilter, Source={StaticResource proxy}}"
+                            shared:FilterColumn.Header="投资人"
+                            shared:FilterColumn.PopupContentTemplate="{StaticResource StringFilterTemplate}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <DockPanel Background="Transparent" LastChildFill="False">
-                                        <shared:CopyableTextBlock MinWidth="70" Text="{Binding CustomerName}" />
+                                        <shared:CopyableTextBlock MinWidth="70" Text="{Binding InvestorName}" />
                                         <Button
                                             x:Name="goto"
                                             hc:IconElement.Geometry="{StaticResource f.paper-plane}"
@@ -705,7 +790,7 @@
                         <DataGridTemplateColumn Header="证件">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <shared:CopyableTextBlock IsMasked="True" Text="{Binding CustomerIdentity}" />
+                                    <shared:CopyableTextBlock IsMasked="True" Text="{Binding InvestorIdentity}" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -846,13 +931,13 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <!--<DataGridTextColumn Binding="{Binding CustomerName}" Header="投资人" />-->
+                        <!--<DataGridTextColumn Binding="{Binding InvestorName}" Header="投资人" />-->
                         <DataGridTemplateColumn Header="投资人">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <DockPanel Background="Transparent" LastChildFill="False">
-                                        <shared:CopyableTextBlock MinWidth="70" Text="{Binding CustomerName}" />
-                                        <shared:CopyableTextBlock IsMasked="True" Text="{Binding CustomerIdentity}" />
+                                        <shared:CopyableTextBlock MinWidth="70" Text="{Binding InvestorName}" />
+                                        <shared:CopyableTextBlock IsMasked="True" Text="{Binding InvestorIdentity}" />
                                         <Button
                                             x:Name="goto"
                                             hc:IconElement.Geometry="{StaticResource f.paper-plane}"
