@@ -681,18 +681,28 @@ public static partial class DataTracker
         }
 
         // 对齐id 
-        if (db.GetCollection<TransferRequest>().Query().Select(x => new { x.Id, x.ExternalId, x.FundId, x.OrderId }).ToList() is var olds &&
-            olds.Count > 0 && olds.ToDictionary(r => (r.FundId, r.ExternalId), r => (r.Id, r.OrderId)) is var keymap)
-            foreach (var r in data)
-            {
-                var key = (r.FundId, r.ExternalId);
-                if (keymap.TryGetValue(key, out var exist))
-                {
-                    r.Id = exist.Id;
-                    if (r.OrderId == 0 && exist.OrderId != 0)
-                        r.OrderId = exist.OrderId;
-                }
-            }
+        //if (db.GetCollection<TransferRequest>().Query().Select(x => new { x.Id, x.ExternalId, x.FundId, x.OrderId }).ToList() is var olds &&
+        //    olds.Count > 0 && olds.ToDictionary(r => (r.FundId, r.ExternalId), r => (r.Id, r.OrderId)) is var keymap)
+        //    foreach (var r in data)
+        //    {
+        //        var key = (r.FundId, r.ExternalId);
+        //        if (keymap.TryGetValue(key, out var exist))
+        //        {
+        //            r.KeepNotDefault(exist);
+        //            r.Id = exist.Id;
+        //            if (r.OrderId == 0 && exist.OrderId != 0)
+        //                r.OrderId = exist.OrderId;
+        //        }
+        //    }
+        var eid = data.Select(x => x.ExternalId).ToList();
+        var col = db.GetCollection<TransferRequest>().Find(x=> x.ExternalId != null && eid.Contains(x.ExternalId)).ToDictionary(x=>x.ExternalId!);
+        foreach (var r in data)
+        {
+            if (col.TryGetValue(r.ExternalId!, out var old))
+                r.KeepNotDefault(old);
+        }
+
+
 
         // 如果是api来的，清除其它来源
         var dlf = data.Where(x => x.Source == "api").Select(x => x.FundId).Distinct().ToList();
@@ -752,20 +762,26 @@ public static partial class DataTracker
         }
 
         // 对齐id    
-        if (db.GetCollection<TransferRecord>().Query().Select(x => new { x.Id, x.ExternalId, x.FundId, x.OrderId }).ToList() is var olds &&
-            olds.Count > 0 && olds.ToDictionary(r => (r.FundId, r.ExternalId), r => (r.Id, r.OrderId)) is var keyToIdMap)
-            foreach (var r in records)
-            {
-                // 不再处理手动录的
-                var key = (r.FundId, r.ExternalId);
-                if (keyToIdMap.TryGetValue(key, out var exist))
-                {
-                    r.Id = exist.Id;
-                    if (r.OrderId == 0 && exist.OrderId != 0)
-                        r.OrderId = exist.OrderId;
-                }
-            }
-
+        //if (db.GetCollection<TransferRecord>().Query().Select(x => new { x.Id, x.ExternalId, x.FundId, x.OrderId }).ToList() is var olds &&
+        //    olds.Count > 0 && olds.ToDictionary(r => (r.FundId, r.ExternalId), r => (r.Id, r.OrderId)) is var keyToIdMap)
+        //    foreach (var r in records)
+        //    {
+        //        // 不再处理手动录的
+        //        var key = (r.FundId, r.ExternalId);
+        //        if (keyToIdMap.TryGetValue(key, out var exist))
+        //        {
+        //            r.Id = exist.Id;
+        //            if (r.OrderId == 0 && exist.OrderId != 0)
+        //                r.OrderId = exist.OrderId;
+        //        }
+        //    }
+        var eid = records.Select(x => x.ExternalId).ToList();
+        var col = db.GetCollection<TransferRecord>().Find(x => x.ExternalId != null && eid.Contains(x.ExternalId)).ToDictionary(x => x.ExternalId!);
+        foreach (var r in records)
+        {
+            if (col.TryGetValue(r.ExternalId!, out var old))
+                r.KeepNotDefault(old);
+        }
 
         // 对齐request
         var requests = db.GetCollection<TransferRequest>().Query().Select(x => new { x.Id, x.OrderId, x.ExternalId }).ToList();

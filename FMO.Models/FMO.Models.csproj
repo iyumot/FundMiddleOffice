@@ -11,6 +11,10 @@
     <Compile Remove="LegalEntity\LegalEntity.cs" />
   </ItemGroup>
 
+  <ItemGroup> 
+    <ProjectReference Include="..\FMO.SourceGenerator\FMO.SourceGenerator.csproj" OutputItemType="Analyzer" />
+  </ItemGroup>
+  
   <ItemGroup>
     <None Remove="day.csv" />
   </ItemGroup>

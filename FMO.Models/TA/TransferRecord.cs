@@ -2,7 +2,6 @@
 using System.ComponentModel;
 
 namespace FMO.Models;
-
 public record ManualLinkOrder(int Id, int OrderId, string ExternalId);
 
 /// <summary>
@@ -10,6 +9,7 @@ public record ManualLinkOrder(int Id, int OrderId, string ExternalId);
 /// 更新后应该 调用更新  db.BuildFundShareRecord 
 /// </summary>
 [Description("TA记录")]
+[UpdateBy(typeof(TransferRecord))]
 public class TransferRecord// : IEquatable<TransferRecord>
 {
     public int Id { get; set; }

@@ -7,6 +7,7 @@ namespace FMO.Models;
 /// <summary>
 /// 交易申请
 /// </summary>
+[UpdateBy(typeof(TransferRequest))]
 public class TransferRequest
 {
     public int Id { get; set; }
