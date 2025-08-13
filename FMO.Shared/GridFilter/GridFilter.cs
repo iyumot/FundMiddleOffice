@@ -21,12 +21,13 @@ public partial class GridFilterItem : ObservableObject
 
 public partial class GridFilter : ObservableObject
 {
-    public GridFilter(CollectionViewSource source)
+    public GridFilter(params CollectionViewSource[] sources)
     {
         Debouncer = new Debouncer(Update);
-        Source = new WeakReference<CollectionViewSource>(source);
+        SourceList = sources.Select(x => new WeakReference<CollectionViewSource>(x)).ToList();
 
-        source.Filter += (s, e) => e.Accepted = e.Accepted && Filter(e.Item);
+        foreach (var source in sources)
+            source.Filter += (s, e) => e.Accepted = e.Accepted && Filter(e.Item);
 
         FilterSource.Filter += (s, e) => e.Accepted = string.IsNullOrWhiteSpace(SearchKey) ? true : e.Item switch { GridFilterItem f => f.Title.Contains(SearchKey), _ => true };
     }
@@ -47,7 +48,7 @@ public partial class GridFilter : ObservableObject
     [ObservableProperty]
     public partial bool IsActive { get; set; }
 
-    public WeakReference<CollectionViewSource> Source { get; }
+    public List<WeakReference<CollectionViewSource>> SourceList { get; }
 
     public bool Filter(object obj) => !IsActive ? true : Filters?.Any(x => x.IsSelected && x.FilterFunc(obj)) ?? false;
 
@@ -55,8 +56,9 @@ public partial class GridFilter : ObservableObject
     private void Update()
     {
         IsActive = Filters?.Any(x => x.IsSelected) ?? false;
-        if (Source.TryGetTarget(out var obj))
-            Application.Current.Dispatcher.BeginInvoke(() => obj.View.Refresh());
+        foreach (var source in SourceList)
+            if (source.TryGetTarget(out var obj))
+                Application.Current.Dispatcher.BeginInvoke(() => obj.View.Refresh());
     }
     partial void OnFiltersChanged(IEnumerable<GridFilterItem>? value)
     {

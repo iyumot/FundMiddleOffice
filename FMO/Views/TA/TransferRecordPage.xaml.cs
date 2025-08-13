@@ -94,7 +94,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     public GridFilter InvestorNameFilter { get; }
 
 
-
+    public GridFilter OrderStatusFilter { get; }
 
 
 
@@ -114,8 +114,9 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         WeakReferenceMessenger.Default.RegisterAll(this);
 
 
-        FundNameFilter = new(RequestsSource);
-        InvestorNameFilter = new(RequestsSource);
+        FundNameFilter = new(RequestsSource, OrderSource);
+        InvestorNameFilter = new(RequestsSource, OrderSource);
+        OrderStatusFilter = new(RequestsSource);
 
         Task.Run(() =>
         {
@@ -134,7 +135,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
                 IsSelected = false
             }).ToArray();
 
-            InvestorNameFilter.Filters = tr.Select(x => x.InvestorName).Union(t3.Select(x => x.InvestorName)).Distinct().Where(x=>x is not null).Select(x => new GridFilterItem
+            InvestorNameFilter.Filters = tr.Select(x => x.InvestorName).Union(t3.Select(x => x.InvestorName)).Distinct().Where(x => x is not null).Select(x => new GridFilterItem
             {
                 Title = x,
                 FilterFunc = y => y switch { ITransferViewModel v => v.InvestorName == x, _ => true },
@@ -142,6 +143,12 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
             }).ToArray();
 
 
+            OrderStatusFilter.Filters = [
+                new GridFilterItem{ Title = "缺少认申购订单", FilterFunc = y=>y switch{ IHasOrderViewModel x=> x.IsOrderRequired && !x.IsSameManager && x.LackOrder && x.IsBuy(),_=>true } },
+                new GridFilterItem{ Title = "缺少赎回订单", FilterFunc = y=>y switch{ IHasOrderViewModel x=> x.IsOrderRequired && !x.IsSameManager && x.LackOrder && x.IsSell(),_=>true } },
+                new GridFilterItem{ Title = "本管理人产品缺少订单", FilterFunc = y=>y switch{ IHasOrderViewModel x=> x.IsOrderRequired && x.IsSameManager ,_=>true } },
+                new GridFilterItem{ Title = "有订单", FilterFunc = y=> y switch{IHasOrderViewModel x=>x.OrderId != 0}}
+                ];
 
 
             //var mapd = map.ToDictionary(x => x.OrderId, x => x);
@@ -234,7 +241,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
                 RecordsSource.Source = Records;
 
 
-                RecordsSource.Filter += (s, e) => e.Accepted = FilterRecord(e.Item);
+                RecordsSource.Filter += (s, e) => e.Accepted = e.Accepted && FilterRecord(e.Item);
             });
 
             App.Current.Dispatcher.BeginInvoke(() =>
@@ -253,7 +260,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
                 TranscationSource.SortDescriptions.Add(new SortDescription(nameof(BankTransaction.Time), ListSortDirection.Descending));
 
 
-                RequestsSource.Filter += (s, e) => e.Accepted = e.Accepted && (string.IsNullOrWhiteSpace(SearchKeyword) ? true : SearchPair(e.Item, SearchKeyword));
+               // RequestsSource.Filter += (s, e) => e.Accepted = e.Accepted && (string.IsNullOrWhiteSpace(SearchKeyword) ? true : SearchPair(e.Item, SearchKeyword));
             });
         });
 
@@ -314,7 +321,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     {
         if (obj is not TransferRecordViewModel r || r.Type is null) return false;
 
-        bool show = !ShowOnlySignable || TransferRecord.RequireOrder(r.Type.Value);
+        bool show = !ShowOnlySignable || TAHelper.RequiredOrder(r.Type.Value);
         return show && (string.IsNullOrWhiteSpace(SearchKeyword) ? true : SearchPair(obj, SearchKeyword));
     }
 

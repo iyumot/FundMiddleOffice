@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
 using System.Windows;
+using FMO.Utilities;
 
 namespace FMO;
 
@@ -11,11 +12,30 @@ public interface ITransferViewModel
 {
     string FundName { get; }
 
-    string InvestorName { get; }    
+    string InvestorName { get; }
 }
 
+public interface IHasOrderViewModel
+{
+    int OrderId { get; }
+
+    bool HasOrder { get; }
+
+    bool LackOrder { get; }
+
+    bool IsSameManager { get; }
+
+    bool IsOrderRequired { get; }
+
+    public bool IsBuy();
+
+    public bool IsSell();
+}
+
+
+
 [AutoChangeableViewModel(typeof(TransferRequest))]
-partial class TransferRequestViewModel : ITransferViewModel
+partial class TransferRequestViewModel : ITransferViewModel, IHasOrderViewModel
 {
 
     public int OrderId
@@ -62,4 +82,8 @@ partial class TransferRequestViewModel : ITransferViewModel
 
     [RelayCommand]
     public void OpenFund() => WeakReferenceMessenger.Default.Send(new OpenFundMessage(FundId!.Value));
+
+    public bool IsBuy() => RequestType!.Value.IsBuy();
+    public bool IsSell() => RequestType!.Value.IsSell();
+
 }

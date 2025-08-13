@@ -1,4 +1,5 @@
 ﻿using HandyControl.Controls;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -96,6 +97,7 @@ public static class FilterColumn
         toggleButton.SetValue(ToggleButton.StyleProperty, Application.Current.FindResource("ToggleButtonIcon.Small") as Style);
        // toggleButton.SetValue(FrameworkElement.NameProperty, "toggleBtn");
         toggleButton.Name = "toggleBtn";
+        toggleButton.SetValue(ToggleButton.ForegroundProperty, new Binding("IsActive") { Source = filter, Converter = new IsAcitveConverter() });
         dockPanel.AppendChild(toggleButton);
 
         // Popup
@@ -127,15 +129,7 @@ public static class FilterColumn
         popup.AppendChild(border);
 
         dockPanel.AppendChild(popup);
-
-        // 触发器：IsActive 为 True 时变绿色
-        var trigger = new DataTrigger
-        {
-            Binding = new Binding("IsActive"),
-            Value = true
-        };
-        trigger.Setters.Add(new Setter(ToggleButton.ForegroundProperty, Brushes.Green ));
-        template.Triggers.Add(trigger);
+         
 
         // 设置 ContentControl 的模板
         contentControl.SetValue(ContentControl.ContentTemplateProperty, new DataTemplate { VisualTree = dockPanel });
@@ -169,5 +163,19 @@ public static class FilterColumn
 
         template.VisualTree = dockPanel;
         return template;
+    }
+
+
+    public class IsAcitveConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value switch { true => Brushes.Green ,_=> Brushes.Black };
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

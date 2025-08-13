@@ -2,20 +2,27 @@
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
+using FMO.Utilities;
 using System.IO;
 using System.Windows;
 
 namespace FMO;
 
 [AutoChangeableViewModel(typeof(TransferRecord))]
-partial class TransferRecordViewModel : ITransferViewModel
+partial class TransferRecordViewModel : ITransferViewModel, IHasOrderViewModel
 {
     public FileInfo File => new FileInfo(@$"files\tac\{Id}.pdf");
 
 
     public bool FileExists => System.IO.File.Exists(File.FullName);
 
+    int IHasOrderViewModel.OrderId => OrderId!.Value;
+
     public bool HasOrder => OrderId != 0;
+
+    public bool LackOrder => TAHelper.RequiredOrder(Type.Value) && OrderId == 0;
+
+    public bool IsSameManager { get; set; }
 
     /// <summary>
     /// 是否有同日同向订单
@@ -80,4 +87,8 @@ partial class TransferRecordViewModel : ITransferViewModel
                 return 0;
         }
     }
+
+
+    public bool IsBuy() => Type!.Value.IsBuy();
+    public bool IsSell() => Type!.Value.IsSell();
 }

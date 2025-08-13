@@ -183,39 +183,6 @@ public class TransferRecord : IEquatable<TransferRecord>
         }
     }
 
-
-    public static bool RequireOrder(TransferRecordType t)
-    {
-        return RequireBuyOrder(t) || RequireSellOrder(t);
-    }
-
-    public static bool RequireBuyOrder(TransferRecordType t)
-    {
-        switch (t)
-        {
-            case TransferRecordType.Subscription: 
-            case TransferRecordType.Purchase:  
-            case TransferRecordType.MoveIn: 
-            case TransferRecordType.SwitchIn:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    public static bool RequireSellOrder(TransferRecordType t)
-    {
-        switch (t)
-        { 
-            case TransferRecordType.Redemption:
-            case TransferRecordType.ForceRedemption:
-            case TransferRecordType.MoveOut:
-            case TransferRecordType.SwitchOut:
-                return true;
-
-            default:
-                return false;
-        }
-    }
+ 
 }
 
