@@ -20,7 +20,7 @@ partial class TransferRecordViewModel : ITransferViewModel, IHasOrderViewModel
 
     public bool HasOrder => OrderId != 0;
 
-    public bool LackOrder => TAHelper.RequiredOrder(Type.Value) && OrderId == 0;
+    public bool LackOrder => IsOrderRequired && OrderId == 0;
 
     public bool IsSameManager { get; set; }
 
@@ -31,8 +31,7 @@ partial class TransferRecordViewModel : ITransferViewModel, IHasOrderViewModel
 
     public bool FirstTrade { get; set; }
 
-
-    public bool LackRequest { get; set; }
+    public bool LackRequest => Type != TransferRecordType.Distribution && RequestId == 0;
 
 
     [RelayCommand]
@@ -55,11 +54,11 @@ partial class TransferRecordViewModel : ITransferViewModel, IHasOrderViewModel
         var wnd = new HandyControl.Controls.Window
         {
             MaxHeight = App.Current.MainWindow.ActualHeight,
-            Content = new CustomerView() { Margin = new Thickness(10)},
+            Content = new CustomerView() { Margin = new Thickness(10) },
             DataContext = new CustomerViewModel(InvestorId!.Value),
-            SizeToContent =  SizeToContent.WidthAndHeight,
+            SizeToContent = SizeToContent.WidthAndHeight,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            Owner = App.Current.MainWindow,          
+            Owner = App.Current.MainWindow,
         };
         wnd.KeyDown += (s, e) => { if (e.Key == System.Windows.Input.Key.Escape) wnd.Close(); };
         wnd.ShowDialog();
@@ -68,6 +67,17 @@ partial class TransferRecordViewModel : ITransferViewModel, IHasOrderViewModel
 
     [RelayCommand]
     public void OpenFund() => WeakReferenceMessenger.Default.Send(new OpenFundMessage(FundId!.Value));
+
+    [RelayCommand]
+    public void ViewOrder()
+    {
+        if (OrderId is null) return;
+
+        var wnd = new ModifyOrderWindow();
+        wnd.DataContext = new ModifyOrderWindowViewModel(OrderId.Value);
+        wnd.Owner = App.Current.MainWindow;
+        wnd.ShowDialog();
+    }
 
 
     public decimal ShareChange()

@@ -41,9 +41,14 @@
                             hc:IconElement.Geometry="{StaticResource f.xmark}"
                             Command="{Binding ClearCommand}"
                             Style="{StaticResource ButtonIcon.Small}" />
-                        <TextBox Text="{Binding SearchKey, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                        <hc:TextBox hc:InfoElement.Placeholder="搜索" Text="{Binding SearchKey, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
                     </DockPanel>
-                    <ListBox ItemsSource="{Binding FilterSource.View}" Style="{StaticResource ListBoxCustom}">
+                    <ListBox
+                        Margin="0,3,0,0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ItemsSource="{Binding FilterSource.View}"
+                        Style="{StaticResource ListBoxCustom}">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <CheckBox
@@ -863,7 +868,37 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn>
+                        <DataGridTemplateColumn shared:FilterColumn.FilterSource="{Binding Data.OrderStatusFilter, Source={StaticResource proxy}}" shared:FilterColumn.PopupContentTemplate="{StaticResource StringFilterTemplate}">
+
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <hc:SimplePanel>
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.feather-pointed}"
+                                            hc:IconElement.Height="15"
+                                            hc:IconElement.Width="15"
+                                            Command="{Binding ViewOrderCommand}"
+                                            Foreground="Green"
+                                            Style="{StaticResource ButtonIcon.Small}"
+                                            Visibility="{Binding HasOrder, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                                        <Viewbox Height="15" Visibility="{Binding LackOrder, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                            <Path
+                                                x:Name="co"
+                                                Data="{StaticResource f.feather-pointed}"
+                                                Fill="Red" />
+                                        </Viewbox>
+                                    </hc:SimplePanel>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding IsSameManager}" Value="True">
+                                            <Setter TargetName="co" Property="Fill" Value="Gray" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+
+                        <!--<DataGridTemplateColumn>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Viewbox Height="15" Visibility="{Binding HasOrder, Converter={StaticResource Boolean2VisibilityReConverter}}">
@@ -874,7 +909,7 @@
                                     </Viewbox>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
+                        </DataGridTemplateColumn>-->
 
                         <DataGridTemplateColumn>
                             <DataGridTemplateColumn.CellTemplate>

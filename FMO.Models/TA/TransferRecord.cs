@@ -14,6 +14,8 @@ public class TransferRecord : IEquatable<TransferRecord>
 
     public int OrderId { get; set; }
 
+    public int RequestId { get; set; }
+
     public int FundId { get; set; }
 
     public string? FundName { get; set; }
@@ -25,7 +27,6 @@ public class TransferRecord : IEquatable<TransferRecord>
 
     public string? ExternalRequestId { get; set; }
 
-    public int RequestId { get; set; }
 
     /// <summary>
     /// 份额类型

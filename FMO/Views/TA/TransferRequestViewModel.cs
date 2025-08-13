@@ -38,16 +38,18 @@ public interface IHasOrderViewModel
 partial class TransferRequestViewModel : ITransferViewModel, IHasOrderViewModel
 {
 
-    public int OrderId
-    {
-        get => field; set
-        {
-            field = value;
-            OnPropertyChanged(nameof(OrderId));
-            OnPropertyChanged(nameof(LackOrder));
-            OnPropertyChanged(nameof(HasOrder));
-        }
-    }
+    //public int OrderId
+    //{
+    //    get => field; set
+    //    {
+    //        field = value;
+    //        OnPropertyChanged(nameof(OrderId));
+    //        OnPropertyChanged(nameof(LackOrder));
+    //        OnPropertyChanged(nameof(HasOrder));
+    //    }
+    //}
+
+    int IHasOrderViewModel.OrderId => OrderId!.Value;
 
     public bool HasOrder => OrderId != 0;
 
@@ -75,7 +77,7 @@ partial class TransferRequestViewModel : ITransferViewModel, IHasOrderViewModel
     public void ViewOrder()
     {
         var wnd = new ModifyOrderWindow();
-        wnd.DataContext = new ModifyOrderWindowViewModel(OrderId);
+        wnd.DataContext = new ModifyOrderWindowViewModel(OrderId!.Value);
         wnd.Owner = App.Current.MainWindow;
         wnd.ShowDialog();
     }

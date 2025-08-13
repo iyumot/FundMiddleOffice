@@ -11,6 +11,8 @@ public class TransferRequest
 {
     public int Id { get; set; }
 
+    public int OrderId { get; set; }
+
     /// <summary>
     /// 在托管外包系统中的id
     /// </summary>
@@ -100,6 +102,10 @@ public class TransferRequest
 
     public string? ShareClass { get; set; }
 
+    /// <summary>
+    /// 是否被取消
+    /// </summary>
+    public bool IsCanceled { get; set; }
 
     /// <summary>
     /// 需要order

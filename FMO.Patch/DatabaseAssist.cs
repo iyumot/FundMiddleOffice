@@ -237,76 +237,76 @@ public  static partial class DatabaseAssist
     }
 
 
-    private static void MapTA(BaseDatabase db)
-    {
-        var btr = db.GetCollection<RaisingBankTransaction>().FindAll().OrderBy(x => x.Time).ToList();
-        var orders = db.GetCollection<TransferOrder>().FindAll().OrderBy(x => x.Date).ToList();
-        var requests = db.GetCollection<TransferRequest>().Find(x => x.IsOrderRequired).OrderBy(x => x.RequestDate).ToList();
-        var records = db.GetCollection<TransferRecord>().Find(x => x.OrderRequired).OrderBy(x => x.ConfirmedDate).ToList();
+    //private static void MapTA(BaseDatabase db)
+    //{
+    //    var btr = db.GetCollection<RaisingBankTransaction>().FindAll().OrderBy(x => x.Time).ToList();
+    //    var orders = db.GetCollection<TransferOrder>().FindAll().OrderBy(x => x.Date).ToList();
+    //    var requests = db.GetCollection<TransferRequest>().Find(x => x.IsOrderRequired).OrderBy(x => x.RequestDate).ToList();
+    //    var records = db.GetCollection<TransferRecord>().Find(x => x.OrderRequired).OrderBy(x => x.ConfirmedDate).ToList();
 
-        // var jo = requests.Join(records, x => x.ExternalId, x => x.ExternalId, (x, y) => new { x, y });
+    //    // var jo = requests.Join(records, x => x.ExternalId, x => x.ExternalId, (x, y) => new { x, y });
 
-        // var unp = requests.Select(x=>x.ExternalId).Except(records.Select(x => x.ExternalRequestId)).Except(records.Select(x=>x.ExternalId)).ToList();
-        var runp = records.ExceptBy(requests.Select(x => x.ExternalId), x => x.ExternalId).ExceptBy(requests.Select(x => x.ExternalId), x => x.ExternalRequestId).ToList();
+    //    // var unp = requests.Select(x=>x.ExternalId).Except(records.Select(x => x.ExternalRequestId)).Except(records.Select(x=>x.ExternalId)).ToList();
+    //    var runp = records.ExceptBy(requests.Select(x => x.ExternalId), x => x.ExternalId).ExceptBy(requests.Select(x => x.ExternalId), x => x.ExternalRequestId).ToList();
 
-        // // 构建时间线
-        // var timeline = btr.Select(x => x.Time).Union(orders.Select(x => new DateTime(x.Date, TimeOnly.MinValue))).Union(requests.Select(x => new DateTime(x.RequestDate, TimeOnly.MinValue))).
-        //      Union(records.Select(x => new DateTime(x.ConfirmedDate, TimeOnly.MinValue))).Distinct().ToList();
+    //    // // 构建时间线
+    //    // var timeline = btr.Select(x => x.Time).Union(orders.Select(x => new DateTime(x.Date, TimeOnly.MinValue))).Union(requests.Select(x => new DateTime(x.RequestDate, TimeOnly.MinValue))).
+    //    //      Union(records.Select(x => new DateTime(x.ConfirmedDate, TimeOnly.MinValue))).Distinct().ToList();
 
-        ////////////////////////////////////// record
-        /// 上对应request 下对应 transaction
-        // 找已知的map 
-        var rids = records.Select(x => x.Id).ToList();
-        var mapTable = db.GetCollection<TransferMapping>();
-        var exists = mapTable.Find(x => rids.Contains(x.RecordId)).ToList();
-        foreach (var rec in records)
-        {
-            var old = exists.FirstOrDefault(x => x.RecordId == rec.Id) ?? new() { RecordId = rec.Id, OrderId = rec.OrderId };
+    //    ////////////////////////////////////// record
+    //    /// 上对应request 下对应 transaction
+    //    // 找已知的map 
+    //    var rids = records.Select(x => x.Id).ToList();
+    //    var mapTable = db.GetCollection<TransferMapping>();
+    //    var exists = mapTable.Find(x => rids.Contains(x.RecordId)).ToList();
+    //    foreach (var rec in records)
+    //    {
+    //        var old = exists.FirstOrDefault(x => x.RecordId == rec.Id) ?? new() { RecordId = rec.Id, OrderId = rec.OrderId };
 
-            // 未匹配request
-            if (old.RequestId == 0)
-            {
-                // cms的ExternalRequestId不匹配
-                if (db.GetCollection<TransferRequest>().FindOne(x => x.FundId == rec.FundId && (x.ExternalId == rec.ExternalRequestId || x.ExternalId == rec.ExternalId)) is TransferRequest req)
-                    old.RequestId = req.Id;
-                else if (requests.FirstOrDefault(x => x.FundId == rec.FundId && (x.ExternalId == rec.ExternalRequestId || x.ExternalId == rec.ExternalId)) is TransferRequest req2)
-                    old.RequestId = req2.Id;
-                else if (requests.FirstOrDefault(x => (x.ExternalId == rec.ExternalRequestId || x.ExternalId == rec.ExternalId)) is TransferRequest req4)
-                    old.RequestId = req4.Id;
-            }
+    //        // 未匹配request
+    //        if (old.RequestId == 0)
+    //        {
+    //            // cms的ExternalRequestId不匹配
+    //            if (db.GetCollection<TransferRequest>().FindOne(x => x.FundId == rec.FundId && (x.ExternalId == rec.ExternalRequestId || x.ExternalId == rec.ExternalId)) is TransferRequest req)
+    //                old.RequestId = req.Id;
+    //            else if (requests.FirstOrDefault(x => x.FundId == rec.FundId && (x.ExternalId == rec.ExternalRequestId || x.ExternalId == rec.ExternalId)) is TransferRequest req2)
+    //                old.RequestId = req2.Id;
+    //            else if (requests.FirstOrDefault(x => (x.ExternalId == rec.ExternalRequestId || x.ExternalId == rec.ExternalId)) is TransferRequest req4)
+    //                old.RequestId = req4.Id;
+    //        }
 
-            // 未匹配流水
-            if (string.IsNullOrWhiteSpace(old.TransactionId))
-            {
-                var banks = db.GetCollection<InvestorBankAccount>().Find(x => x.OwnerId == rec.InvestorId).Select(x => x.Number);
-                if (rec.IsSell()) // 只有赎回需要匹配
-                {
-                    var limit = new DateTime(rec.ConfirmedDate, TimeOnly.MinValue);
-                    foreach (var t in db.GetCollection<RaisingBankTransaction>().Find(x => x.FundId == rec.FundId && x.Direction == TransctionDirection.Pay
-                            && x.Time >= limit && (banks.Contains(x.CounterNo) || x.CounterName == rec.InvestorName)).OrderByDescending(x => x.Time))
-                    {
-                        if (t.Amount == rec.RequestAmount)
-                            old.TransactionId = t.Id;
+    //        // 未匹配流水
+    //        if (string.IsNullOrWhiteSpace(old.TransactionId))
+    //        {
+    //            var banks = db.GetCollection<InvestorBankAccount>().Find(x => x.OwnerId == rec.InvestorId).Select(x => x.Number);
+    //            if (rec.IsSell()) // 只有赎回需要匹配
+    //            {
+    //                var limit = new DateTime(rec.ConfirmedDate, TimeOnly.MinValue);
+    //                foreach (var t in db.GetCollection<RaisingBankTransaction>().Find(x => x.FundId == rec.FundId && x.Direction == TransctionDirection.Pay
+    //                        && x.Time >= limit && (banks.Contains(x.CounterNo) || x.CounterName == rec.InvestorName)).OrderByDescending(x => x.Time))
+    //                {
+    //                    if (t.Amount == rec.RequestAmount)
+    //                        old.TransactionId = t.Id;
 
-                    }
-                }
-            }
-            mapTable.Upsert(old);
-        }
+    //                }
+    //            }
+    //        }
+    //        mapTable.Upsert(old);
+    //    }
 
-        var list = mapTable.FindAll().ToList();
+    //    var list = mapTable.FindAll().ToList();
 
-        ////////////////////////////////////// request
-        /// 上对应order 下对应 record
-        rids = requests.Select(x => x.Id).ToList();
-        exists = mapTable.Find(x => rids.Contains(x.RequestId)).ToList();
-        foreach (var req in requests)
-        {
+    //    ////////////////////////////////////// request
+    //    /// 上对应order 下对应 record
+    //    rids = requests.Select(x => x.Id).ToList();
+    //    exists = mapTable.Find(x => rids.Contains(x.RequestId)).ToList();
+    //    foreach (var req in requests)
+    //    {
 
-        }
-
-
+    //    }
 
 
-    }
+
+
+    //}
 }

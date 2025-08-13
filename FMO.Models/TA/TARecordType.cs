@@ -14,7 +14,7 @@ public enum TransferRecordType
     /// <summary>
     /// 认购
     /// </summary>
-    [Description("认购结果")] Subscription,
+    [Description("认购")] Subscription,
 
     /// <summary>
     /// 申购

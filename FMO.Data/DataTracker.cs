@@ -606,7 +606,7 @@ public static partial class DataTracker
         // 匹配订单
         using var db = DbHelper.Base();
 
-        SaveTransferRequests(db, data);
+        SaveRequests(db, data);
 
         try { PostHandleTransferRequests(db, data); }
         catch (Exception ex) { Log.Error($"{ex}"); }
@@ -621,7 +621,27 @@ public static partial class DataTracker
         catch { }
     }
 
-    private static void SaveTransferRequests(BaseDatabase db, IList<TransferRequest> data)
+
+    public static void OnBatchTransferRecord(IList<TransferRecord> records)
+    {
+        if (records.Count == 0) return;
+
+        using var db = DbHelper.Base();
+        SaveRecords(records, db);
+
+        // 通知UI
+        try
+        {
+            foreach (var item in records)
+                WeakReferenceMessenger.Default.Send(item);
+        }
+        catch { }
+
+        PostHandleTransferRecords(db, records);
+
+    }
+
+    private static void SaveRequests(BaseDatabase db, IList<TransferRequest> data)
     {
         if (data is null || data.Count == 0) return;
 
@@ -661,12 +681,17 @@ public static partial class DataTracker
         }
 
         // 对齐id 
-        if (db.GetCollection<TransferRequest>().Query().Select(x => new { x.Id, x.ExternalId, x.FundId }).ToList() is var olds && olds.Count > 0)
+        if (db.GetCollection<TransferRequest>().Query().Select(x => new { x.Id, x.ExternalId, x.FundId, x.OrderId }).ToList() is var olds &&
+            olds.Count > 0 && olds.ToDictionary(r => (r.FundId, r.ExternalId), r => (r.Id, r.OrderId)) is var keymap)
             foreach (var r in data)
             {
-                // 不再处理手动录的
-                if (olds.FirstOrDefault(x => x.FundId == r.FundId && x.ExternalId == r.ExternalId) is var old && old is not null)
-                    r.Id = old.Id;
+                var key = (r.FundId, r.ExternalId);
+                if (keymap.TryGetValue(key, out var exist))
+                {
+                    r.Id = exist.Id;
+                    if (r.OrderId == 0 && exist.OrderId != 0)
+                        r.OrderId = exist.OrderId;
+                }
             }
 
         // 如果是api来的，清除其它来源
@@ -678,28 +703,8 @@ public static partial class DataTracker
 
         db.GetCollection<PostHandleIds>("ph_request").Upsert(data.Select(x => new PostHandleIds(x.Id)));
     }
-    private static void PostHandleTransferRequests(BaseDatabase db, IList<TransferRequest>? data = null)
+    private static void SaveRecords(IList<TransferRecord> records, BaseDatabase db)
     {
-        if (data is null)
-        {
-            var ids = db.GetCollection<PostHandleIds>("ph_request").FindAll().Select(x => x.Id).ToList();
-            data = db.GetCollection<TransferRequest>().Find(x => ids.Contains(x.Id)).ToList();
-        }
-
-        MapRequestRecord(data);
-
-        MapRequestToOrder(data);
-
-        var handled = data.Select(x => x.Id).ToList();
-        db.GetCollection<PostHandleIds>("ph_request").DeleteMany(x => handled.Contains(x.Id));
-    }
-
-
-    public static void OnBatchTransferRecord(IList<TransferRecord> records)
-    {
-        if (records.Count == 0) return;
-
-        using var db = DbHelper.Base();
         var manager = db.GetCollection<Manager>().Query().First();
 
         // 对齐数据   
@@ -727,7 +732,7 @@ public static partial class DataTracker
         {
             if (customers.TryGetValue(r.InvestorIdentity, out var cus))
                 r.InvestorId = cus.Id;
-            else // 添加数据
+            else if (r.InvestorName != "unset")// 添加数据
             {
                 var c = new Investor { Name = r.InvestorName, Identity = new Identity { Id = r.InvestorIdentity } };
                 db.GetCollection<Investor>().Insert(c);
@@ -735,65 +740,104 @@ public static partial class DataTracker
             }
         }
 
-        // 对齐id 
-        var rmin = records.Min(x => x.ConfirmedDate);
-        var olds = db.GetCollection<TransferRecord>().Query().Select(x => new { x.Id, x.ExternalId, x.FundId }).ToList();
-        foreach (var r in records)
+        // 对齐id    
+        if (db.GetCollection<TransferRecord>().Query().Select(x => new { x.Id, x.ExternalId, x.FundId, x.OrderId }).ToList() is var olds &&
+            olds.Count > 0 && olds.ToDictionary(r => (r.FundId, r.ExternalId), r => (r.Id, r.OrderId)) is var keyToIdMap)
+            foreach (var r in records)
+            {
+                // 不再处理手动录的
+                var key = (r.FundId, r.ExternalId);
+                if (keyToIdMap.TryGetValue(key, out var exist))
+                {
+                    r.Id = exist.Id;
+                    if (r.OrderId == 0 && exist.OrderId != 0)
+                        r.OrderId = exist.OrderId;
+                }
+            }
+
+
+        // 对齐request
+        var requests = db.GetCollection<TransferRequest>().Query().Select(x => new { x.Id, x.OrderId, x.ExternalId }).ToList();
+        foreach (var item in requests.Join(records, x => x.ExternalId, x => x.ExternalRequestId, (request, confirm) => new { request, confirm }))
         {
-            // 不再处理手动录的
-            if (olds.FirstOrDefault(x => x.FundId == r.FundId && x.ExternalId == r.ExternalId) is var old && old is not null)
-                r.Id = old.Id;
-
-            //// 同日同名
-            //var exi = olds.Where(x => x.ExternalId == r.ExternalId || (x.FundId == r.FundId && x.InvestorIdentity == r.InvestorIdentity && x.ConfirmedDate == r.ConfirmedDate && x.Type == r.Type && x.req && x.Source == "manual")).ToList();
-
-            //// 只有一个，替换
-            //if (exi.Count == 1 && (exi[0].Source != "api" || exi[0].ExternalId == r.ExternalId))
-            //{
-            //    r.Id = exi[0].Id;
-            //    r.OrderId = exi[0].OrderId;
-            //    r.RequestId = exi[0].RequestId;
-            //    continue;
-            //}
-
-            //// > 1个
-            //// 存在同ex id，替换
-            //var old = exi.Where(x => x.ExternalId == r.ExternalId);
-            //if (old.Any())
-            //{
-            //    r.Id = old.First().Id;
-            //    r.OrderId = old.First().OrderId;
-            //    r.RequestId = old.First().RequestId;
-            //}
-            //// 如果存在手动录入的，也删除
-            //foreach (var item in exi)
-            //    db.GetCollection<TransferRecord>().DeleteMany(item => item.Source == "manual" || item.ExternalId == r.ExternalId);
-
+            item.confirm.RequestId = item.request.Id;
+            if (item.confirm.OrderId == 0 && item.request.OrderId != 0)
+                item.confirm.OrderId = item.request.OrderId;
         }
+
+        // bak
+        {
+            var data = db.GetCollection("ta_record_bak").FindAll().Select(x => new { ExId = x[nameof(TransferRecord.ExternalId)], OrderId = x[nameof(TransferRecord.OrderId)] }).ToDictionary(x => x.ExId);
+
+            var confirm = db.GetCollection<TransferRecord>().FindAll().ToList();
+            var request = db.GetCollection<TransferRequest>().FindAll().ToDictionary(x => x.Id);
+
+            foreach (var c in confirm)
+            {
+                var key = c.ExternalId!.Split('.')[1];
+
+                if (data.TryGetValue(key, out var value))
+                {
+                    c.OrderId = value.OrderId;
+
+                    if (c.RequestId != 0 && request.TryGetValue(c.RequestId, out var r))
+                        r.OrderId = value.OrderId;
+                }
+            }
+
+            db.GetCollection<TransferRecord>().Update(confirm);
+            db.GetCollection<TransferRequest>().Update(request.Select(x => x.Value));
+        }
+
+        // 如果是api来的，清除其它来源
+        var dlf = records.Where(x => x.Source == "api").Select(x => x.FundId).Distinct().ToList();
+        db.GetCollection<TransferRecord>().DeleteMany(x => x.Source != "api" && dlf.Contains(x.FundId));
 
         db.GetCollection<TransferRecord>().Upsert(records);
-        //db.GetCollection<PostHandleIds>("ph_record").Upsert(records.Select(x => new PostHandleIds(x.Id)));
+        db.GetCollection<PostHandleIds>("ph_record").Upsert(records.Select(x => new PostHandleIds(x.Id)));
+    }
 
-        // 通知UI
-        try
+    private static void PostHandleTransferRequests(BaseDatabase db, IList<TransferRequest>? data = null)
+    {
+        if (data is null)
         {
-            foreach (var item in records)
-                WeakReferenceMessenger.Default.Send(item);
+            var ids = db.GetCollection<PostHandleIds>("ph_request").FindAll().Select(x => x.Id).ToList();
+            data = db.GetCollection<TransferRequest>().Find(x => ids.Contains(x.Id)).ToList();
         }
-        catch { }
+
+        //MapRequestRecord(data);
+
+        MapRequestToOrder();
+
+        var handled = data.Select(x => x.Id).ToList();
+        db.GetCollection<PostHandleIds>("ph_request").DeleteMany(x => handled.Contains(x.Id));
+    }
+
+
+    private static void PostHandleTransferRecords(BaseDatabase db, IList<TransferRecord>? records = null)
+    {
+        if (records is null)
+        {
+            var dids = db.GetCollection<PostHandleIds>("ph_record").FindAll().Select(x => x.Id).ToList();
+            records = db.GetCollection<TransferRecord>().Find(x => dids.Contains(x.Id)).ToList();
+        }
 
         var tableRecord = db.GetCollection<TransferRecord>();
         var tableBalance = db.GetCollection<InvestorBalance>();
 
         // 更新投资人平衡表 
+        db.BeginTrans();
         foreach (var g in records.GroupBy(x => (x.InvestorId, x.FundId)))
             UpdateInvestorBalance(tableRecord, tableBalance, g.Key.InvestorId, g.Key.FundId, g.Min(x => x.ConfirmedDate));
+        db.Commit();
 
         // 更新基金份额平衡表
+        db.BeginTrans();
         var t2 = db.GetCollection<FundShareRecordByTransfer>();
         List<FundShareRecordByTransfer> fsr = new();
         foreach (var g in records.GroupBy(x => x.FundId))
             fsr.AddRange(UpdateFundShareBalanceByTransfer(tableRecord, t2, g.Key, g.Min(x => x.ConfirmedDate)));
+        db.Commit();
 
 
         var ids = records.Select(x => x.FundId).Distinct().ToList();
@@ -804,14 +848,15 @@ public static partial class DataTracker
         {
             if (g.First().Share == 0) //清盘
             {
+                var fid = g.Key;
                 var last = g.First().Date;
                 db.BeginTrans();
-                foreach (var item in db.GetCollection<TransferRecord>().Find(x => x.FundId == g.Key && x.ConfirmedDate == last).ToList())
+                foreach (var item in db.GetCollection<TransferRecord>().Find(x => x.FundId == fid && x.ConfirmedDate == last).ToList())
                 {
                     // 校验一定是赎回类型
                     if (item.Type != TransferRecordType.Redemption && item.Type != TransferRecordType.ForceRedemption)
                     {
-                        Log.Error($"基金 {g.Key} 清盘时， 最后 TransferRecordType = {item.Type}，应为 赎回");
+                        Log.Error($"基金 {fid} 清盘时， 最后 TransferRecordType = {item.Type}，应为 赎回");
                         db.Rollback();
                         break;
                     }
@@ -823,10 +868,18 @@ public static partial class DataTracker
             }
         }
 
+        // map
+        //var mids = records.Select(x => x.RequestId).ToList();
+        //var map = db.GetCollection<TransferMapping>().Find(x => mids.Contains(x.RequestId)).ToList().Join(records, x => x.RequestId, x => x.RequestId, (a, b) => new { a, b.Id });
+        //foreach (var item in map)
+        //    item.a.RecordId = item.Id;
+        //db.GetCollection<TransferMapping>().Upsert(map.Select(x => x.a));
+
         Task.Run(() => VerifyRules.OnEntityArrival(fsr));
 
+        var handled = records.Select(x => x.Id).ToList();
+        db.GetCollection<PostHandleIds>("ph_record").DeleteMany(x => handled.Contains(x.Id));
     }
-
 
     public static void OnFundShareRecordByTransfer(IList<FundShareRecordByTransfer> list)
     {
@@ -910,7 +963,7 @@ public static partial class DataTracker
     /// 关联Order 和 request
     /// </summary>
     /// <param name="data"></param>
-    public static void MapRequestToOrder(IList<TransferRequest> data)
+    public static void MapRequestToOrder2(IList<TransferRequest> data)
     {
         using var db = DbHelper.Base();
         var rids = data.Select(x => x.Id).ToList();
@@ -925,7 +978,7 @@ public static partial class DataTracker
         // 有 orderid 没有 requestid
         var ordermaps = mapTable.Query().Where(x => x.RequestId == 0 && x.OrderId != 0).ToList().Select(x => new { map = x, order = oTable.FindById(x.OrderId) }).ToList();
 
-        var reqDates = unmapRequest.OrderBy(x=>x.RequestDate).GroupBy(x => ((long)x.FundId << 32) | (long)x.InvestorId).ToDictionary(x => x.Key);
+        var reqDates = unmapRequest.OrderBy(x => x.RequestDate).GroupBy(x => ((long)x.FundId << 32) | (long)x.InvestorId).ToDictionary(x => x.Key);
         foreach (var om in ordermaps)
         {
             var o = om.order;
@@ -1023,6 +1076,67 @@ public static partial class DataTracker
 
         db.GetCollection<TransferMapping>().Upsert(ordermaps.Select(x => x.map));
         db.GetCollection<TransferMapping>().Upsert(newMap);
+    }
+
+    public static void MapRequestToOrder()
+    {
+        using var db = DbHelper.Base();
+        var unmapRequset = db.GetCollection<TransferRequest>().Find(x => x.OrderId == 0).ToList();
+        var mapedOrderIds = db.GetCollection<TransferRequest>().Query().Where(x => x.OrderId != 0).Select(x => x.OrderId).ToList();
+        var unmapOrder = db.GetCollection<TransferOrder>().Find(x => !mapedOrderIds.Contains(x.Id)).ToList();
+
+        db.BeginTrans();
+        var reqDict = unmapRequset.OrderBy(x => x.RequestDate).GroupBy(x => ((long)x.FundId << 32) | (long)x.InvestorId).ToDictionary(x => x.Key);
+        foreach (var o in unmapOrder)
+        {
+            // 筛选同Fund 同investor
+            var gid = ((long)o.FundId << 32) | (long)o.InvestorId;
+
+            if (reqDict.ContainsKey(gid))
+            {
+                List<TransferRequest> req = [.. reqDict[gid]];
+
+                // 找 o.Date 后一个日期的所有同fundId InvestorId的 request
+                // 使用二分查找找到第一个符合条件的请求
+                int index = req.Select(x => x.RequestDate).ToList().BinarySearch(o.Date);
+                if (index < 0) index = ~index;
+
+                var take = 1;
+                for (int i = index + 1; i < req.Count; i++, take++)
+                {
+                    if (req[i].RequestDate != req[index].RequestDate)
+                        break;
+                }
+
+                // 日期和类型匹配
+                var may = req.Skip(index).Take(take).Where(x => x.IsCompatible(o));
+
+                bool pair = false;
+
+                // 检验 金额 一致，默认同一天只有一个订单，可能多个申请，因为多卡打款，申请有多个
+                switch (o.Type)
+                {
+                    case TransferOrderType.FirstTrade:
+                    case TransferOrderType.Buy:
+                    case TransferOrderType.Amount:
+                    case TransferOrderType.RemainAmout:
+                        pair = o.Number == may.Sum(x => x.RequestAmount);
+                        break;
+                    case TransferOrderType.Share:
+                        pair = o.Number == may.Sum(x => x.RequestShare);
+                        break;
+                }
+
+                if (pair)
+                {
+                    foreach (var item in may)
+                        item.OrderId = o.Id;
+                    db.GetCollection<TransferRequest>().Update(may);
+                }
+            }
+        }
+
+        db.Commit();
     }
 
 

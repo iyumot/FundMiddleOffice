@@ -268,7 +268,7 @@ public partial class TrusteeWorker : ObservableObject
                     // 获取历史区间
                     var range = GetWorkedRange(tr.Identifier, method);
 
-                    DateOnly begin = range.End, end =  DateOnly.FromDateTime(DateTime.Now);
+                    DateOnly begin = range.End, end = DateOnly.FromDateTime(DateTime.Now);
 
                     var rc = await tr.QueryTransferRequests(begin, end);
                     if (rc.Code != ReturnCode.Success && rc.Code != ReturnCode.TrafficLimit)
@@ -278,9 +278,9 @@ public partial class TrusteeWorker : ObservableObject
                     ///
                     // 保存数据库，部分成功的也保存
                     if (rc.Data?.Length > 0)
-                    { 
+                    {
                         // 如果返回有失败的，更新end
-                        if (rc.Code != ReturnCode.Success) 
+                        if (rc.Code != ReturnCode.Success)
                             end = rc.Data.Max(x => x.RequestDate);
 
                         // 统一更新处理
@@ -299,7 +299,7 @@ public partial class TrusteeWorker : ObservableObject
                     range.Merge(begin, end);
                     using var pdb = DbHelper.Platform();
                     pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
-                    
+
                 }
                 catch (Exception e)
                 {
@@ -336,12 +336,7 @@ public partial class TrusteeWorker : ObservableObject
             List<WorkReturn> ret = new();
             // 保存数据库
             using var db = DbHelper.Base();
-            var funds = db.GetCollection<Fund>().FindAll().ToArray();
-            var manager = db.GetCollection<Manager>().FindById(1);
-            var StartDateOfAny = StartOfAnyWork();
-
-            using var pdb = DbHelper.Platform();
-            var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
+            var funds = db.GetCollection<Fund>().FindAll().ToArray(); 
             var method = nameof(ITrustee.QueryTransferRecords);
 
 
@@ -356,38 +351,31 @@ public partial class TrusteeWorker : ObservableObject
                 try
                 {
                     // 获取历史区间
-                    var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + method);
+                    var range = GetWorkedRange(tr.Identifier, method);
 
-                    DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
+                    DateOnly begin = range.End, end = DateOnly.FromDateTime(DateTime.Now);
 
-                    do
+                    var rc = await tr.QueryTransferRecords(begin, end);
+
+                    ///
+                    // 保存数据库 
+                    if (rc.Data?.Length > 0)
                     {
-                        var rc = await tr.QueryTransferRecords(begin, end);
+                        DataTracker.OnBatchTransferRecord(rc.Data);
+                    }
 
-                        ///
-                        // 保存数据库 
-                        if (rc.Data?.Length > 0)
-                        {
-                            DataTracker.OnBatchTransferRecord(rc.Data);
-                        }
+                    // 如果有unset，表示数据异常，不保存进度
+                    if (rc.Data?.Any(x => x.InvestorName == "unset" || x.FundName == "unset" || x.InvestorIdentity == "unset") ?? false)
+                        break;
 
-                        // 如果有unset，表示数据异常，不保存进度
-                        if (rc.Data?.Any(x => x.InvestorName == "unset" || x.FundName == "unset" || x.InvestorIdentity == "unset") ?? false)
-                            break;
+                    // 更新进度
+                    range.Merge(begin, end);
+                    using var pdb = DbHelper.Platform();
+                    pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
 
-                        // 更新进度
-                        if (range is null) range = new(tr.Identifier + method, begin, end);
-                        else range.Merge(begin, end);
-                        pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
+                    // 合并记录
+                    ret.Add(new(tr.Title, rc.Code, rc.Data));
 
-                        // 合并记录
-                        ret.Add(new(tr.Title, rc.Code, rc.Data));
-
-                        // 向前一年
-                        end = range.Begin.AddDays(-1);
-                        if (end.Year < 1970) break;
-                        begin = end.AddYears(-1);
-                    } while (begin > StartDateOfAny);
                 }
                 catch (Exception e)
                 {

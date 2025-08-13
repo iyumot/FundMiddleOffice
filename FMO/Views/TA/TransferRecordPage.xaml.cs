@@ -114,9 +114,9 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         WeakReferenceMessenger.Default.RegisterAll(this);
 
 
-        FundNameFilter = new(RequestsSource, OrderSource);
-        InvestorNameFilter = new(RequestsSource, OrderSource);
-        OrderStatusFilter = new(RequestsSource);
+        FundNameFilter = new(RequestsSource, OrderSource, RecordsSource);
+        InvestorNameFilter = new(RequestsSource, OrderSource, RecordsSource);
+        OrderStatusFilter = new(RequestsSource, RecordsSource);
 
         Task.Run(() =>
         {
@@ -126,7 +126,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
             var tr = db.GetCollection<TransferRecord>().FindAll().ToList();
             var tr2 = db.GetCollection<TransferRequest>().FindAll().OrderByDescending(x => x.RequestDate).ToList();
             var t3 = db.GetCollection<TransferOrder>().FindAll().ToList();
-            var map = db.GetCollection<TransferMapping>().FindAll().ToList();
+            //var map = db.GetCollection<TransferMapping>().FindAll().ToList();
 
             FundNameFilter.Filters = funds.Select(x => new GridFilterItem
             {
@@ -163,30 +163,48 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
             var transaction = db.GetCollection<RaisingBankTransaction>().FindAll().Select(x => new RaisingBankTranscationViewModel(x, funds!)).ToArray();
 
-            foreach (var item in records.IntersectBy<TransferRecordViewModel, int>(map.Where(x => x.RequestId == 0).Select(x => x.RecordId), x => x.Id))
-                item.LackRequest = true;
-
-            foreach (var item in orders.Join(map, x => x.Id, x => x.OrderId, (o, m) => new { o, m }))
-            {
-                if (item.m.RequestId != 0)
-                    item.o.IsApplyed = true;
-                if (item.m.RecordId != 0)
-                    item.o.IsConfirmed = true;
-            }
+            //foreach (var item in records.IntersectBy<TransferRecordViewModel, int>(map.Where(x => x.RequestId == 0).Select(x => x.RecordId), x => x.Id))
+            //    item.LackRequest = true;
 
 
+            //foreach (var item in records.Join(map, x => x.Id, x => x.RecordId, (o, m) => new { o, m }))
+            //{
+            //    item.o.OrderId = item.m.OrderId; 
+            //}
 
-            foreach (var item in requests.Join(map, x => x.Id, x => x.RequestId, (o, m) => new { o, m }))
-            {
-                if (item.m.OrderId != 0)
-                    item.o.OrderId = item.m.OrderId;
-            }
+            foreach (var item in orders.Join(requests.Where(x => x.OrderId != 0).Select(x => x.OrderId), x => x.Id, x => x, (o, _) => o))
+                item.IsApplyed = true;
+
+            foreach (var item in orders.Join(records.Where(x => x.OrderId != 0).Select(x => x.OrderId), x => x.Id, x => x, (o, _) => o))
+                item.IsConfirmed = true;
+
+
+            //foreach (var item in orders.Join(map, x => x.Id, x => x.OrderId, (o, m) => new { o, m }))
+            //{
+            //    if (item.m.RequestId != 0)
+            //        item.o.IsApplyed = true;
+            //    if (item.m.RecordId != 0)
+            //        item.o.IsConfirmed = true;
+            //}
+
+
+
+            //foreach (var item in requests.Join(map, x => x.Id, x => x.RequestId, (o, m) => new { o, m }))
+            //{
+            //    if (item.m.OrderId != 0)
+            //        item.o.OrderId = item.m.OrderId;
+            //}
 
             var codes = funds.Select(x => x.Code).Order().ToList();
             foreach (var item in requests.Where(x => codes.Contains(x.InvestorIdentity)))
             {
                 item.IsSameManager = true;
             }
+            foreach (var item in records.Where(x => codes.Contains(x.InvestorIdentity)))
+            {
+                item.IsSameManager = true;
+            }
+
 
             LackOrderBuyCount = requests.Count(x => x.IsOrderRequired && !x.IsSameManager && x.LackOrder && x.RequestType!.Value.IsBuy());
             LackOrderSellCount = requests.Count(x => x.IsOrderRequired && !x.IsSameManager && x.LackOrder && x.RequestType!.Value.IsSell());
@@ -260,7 +278,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
                 TranscationSource.SortDescriptions.Add(new SortDescription(nameof(BankTransaction.Time), ListSortDirection.Descending));
 
 
-               // RequestsSource.Filter += (s, e) => e.Accepted = e.Accepted && (string.IsNullOrWhiteSpace(SearchKeyword) ? true : SearchPair(e.Item, SearchKeyword));
+                // RequestsSource.Filter += (s, e) => e.Accepted = e.Accepted && (string.IsNullOrWhiteSpace(SearchKeyword) ? true : SearchPair(e.Item, SearchKeyword));
             });
         });
 
@@ -585,21 +603,29 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     {
         await Task.Run(DataTracker.RebuildTARelation);
 
+
+        if (Orders is null || Requests is null || Records is null) return;
+
         using var db = DbHelper.Base();
-        var map = db.GetCollection<TransferMapping>().FindAll().ToList();
 
-        if (Records is not null)
-            foreach (var item in Records.IntersectBy<TransferRecordViewModel, int>(map.Where(x => x.RequestId == 0).Select(x => x.RecordId), x => x.Id))
-                item.LackRequest = true;
 
-        if (Orders is not null)
-            foreach (var item in Orders.Join(map, x => x.Id, x => x.OrderId, (o, m) => new { o, m }))
-            {
-                if (item.m.RequestId != 0)
-                    item.o.IsApplyed = true;
-                if (item.m.RecordId != 0)
-                    item.o.IsConfirmed = true;
-            }
+        foreach (var item in Orders.Join(Requests.Where(x => x.OrderId != 0).Select(x => x.OrderId), x => x.Id, x => x, (o, _) => o))
+            item.IsApplyed = true;
+
+        foreach (var item in Orders.Join(Records.Where(x => x.OrderId != 0).Select(x => x.OrderId), x => x.Id, x => x, (o, _) => o))
+            item.IsConfirmed = true;
+
+        //var map = db.GetCollection<TransferMapping>().FindAll().ToList();
+         
+
+        //if (Orders is not null)
+        //    foreach (var item in Orders.Join(map, x => x.Id, x => x.OrderId, (o, m) => new { o, m }))
+        //    {
+        //        if (item.m.RequestId != 0)
+        //            item.o.IsApplyed = true;
+        //        if (item.m.RecordId != 0)
+        //            item.o.IsConfirmed = true;
+        //    }
 
     }
 
