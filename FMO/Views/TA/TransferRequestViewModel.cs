@@ -4,6 +4,7 @@ using FMO.Models;
 using FMO.Shared;
 using System.Windows;
 using FMO.Utilities;
+using FMO.Trustee;
 
 namespace FMO;
 
@@ -80,6 +81,14 @@ partial class TransferRequestViewModel : ITransferViewModel, IHasOrderViewModel
         wnd.DataContext = new ModifyOrderWindowViewModel(OrderId!.Value);
         wnd.Owner = App.Current.MainWindow;
         wnd.ShowDialog();
+    }
+
+
+    [RelayCommand]
+    public void ViewJson()
+    {
+       // using (var db = DbHelper.Platform())
+       //     db.GetCollection($"{Identifier}_{nameof(ITrustee.QueryTransferRequests)}").Find("");
     }
 
     [RelayCommand]

@@ -807,6 +807,17 @@
                             Binding="{Binding ExternalId}"
                             ElementStyle="{StaticResource LeftText}"
                             Header="外部ID" />
+
+                        <DataGridTemplateColumn>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button
+                                        hc:IconElement.Geometry="{StaticResource f.s}"
+                                        Command="{Binding ViewJsonCommand}"
+                                        Style="{StaticResource ButtonIcon.Small}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
             </TabItem>
