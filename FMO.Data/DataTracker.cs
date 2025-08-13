@@ -285,7 +285,7 @@ public static partial class DataTracker
     public static void CheckPairOrder(BaseDatabase db)
     {
         var orders = db.GetCollection<TransferOrder>().FindAll().ToArray();
-        var tas = db.GetCollection<TransferRecord>().FindAll().Where(x => TransferRecord.RequireOrder(x.Type)).ToArray();
+        var tas = db.GetCollection<TransferRecord>().FindAll().Where(x => TAHelper.RequiredOrder(x.Type)).ToArray();
 
         // 检查缺失request
         var miss = db.GetCollection<TransferMapping>().Find(x => x.RequestId == 0 && x.RecordId != 0).ToList();
@@ -387,8 +387,8 @@ public static partial class DataTracker
         if (order.Date > record.RequestDate) return false;
 
         var orderbuy = order.Type switch { TransferOrderType.FirstTrade or TransferOrderType.Buy => true, _ => false };
-        if (orderbuy && !TransferRecord.RequireBuyOrder(record.Type)) return false;
-        if (!orderbuy && !TransferRecord.RequireSellOrder(record.Type)) return false;
+        if (orderbuy && !TAHelper.IsBuy(record.Type)) return false;
+        if (!orderbuy && !TAHelper.IsSell(record.Type)) return false;
 
         if (orderbuy && order.Number != record.RequestAmount) return false;
         if (!orderbuy)

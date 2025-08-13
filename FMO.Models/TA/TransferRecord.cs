@@ -134,6 +134,9 @@ public class TransferRecord : IEquatable<TransferRecord>
     /// </summary>
     public string? ConfirmFile { get; set; }
 
+
+    public bool IsOrderRequired => TAHelper.RequiredOrder(Type);
+
     public override int GetHashCode()
     {
         return FundId ^ InvestorName.GetHashCode() ^ RequestDate.GetHashCode() ^ Type.GetHashCode();

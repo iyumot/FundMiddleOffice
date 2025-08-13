@@ -115,7 +115,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         var ta = db.GetCollection<TransferRecord>().FindAll().ToArray();
         var cleard = db.GetCollection<Fund>().FindAll().ToDictionary(x => x.Id, x => x.ClearDate == default ? DateOnly.MaxValue : x.ClearDate);
         
-        foreach (var item in Customers.IntersectBy(ta.Where(x => x.FundId != 0 && x.OrderId == 0 && x.ConfirmedDate < cleard[x.FundId] && TransferRecord.RequireOrder(x.Type)).Select(x => x.InvestorId), x => x.Id))
+        foreach (var item in Customers.IntersectBy(ta.Where(x => x.FundId != 0 && x.OrderId == 0 && x.ConfirmedDate < cleard[x.FundId] && TAHelper.RequiredOrder(x.Type)).Select(x => x.InvestorId), x => x.Id))
             item.LackOrder = true;
 
         CustomerSource.Source = Customers;
@@ -629,7 +629,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         if (c is not null)
         {
             using var db = DbHelper.Base();
-            c.LackOrder = db.GetCollection<TransferRecord>().Find(x => x.InvestorId == c.Id).Any(x => x.OrderId == 0 && TransferRecord.RequireOrder(x.Type));
+            c.LackOrder = db.GetCollection<TransferRecord>().Find(x => x.InvestorId == c.Id).Any(x => x.OrderId == 0 && TAHelper.RequiredOrder(x.Type));
         }
     }
 }

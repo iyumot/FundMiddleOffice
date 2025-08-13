@@ -276,7 +276,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
             var Asset = Share * nv;
             var profit = Asset + Withdraw - Deposit;
 
-            var rvm = tf.Where(x => TransferRecord.RequireOrder(x.Type)).OrderBy(x => x.ConfirmedDate).Select(x => new TransferRecordViewModel(x)).ToList();
+            var rvm = tf.Where(x => TAHelper.RequiredOrder(x.Type)).OrderBy(x => x.ConfirmedDate).Select(x => new TransferRecordViewModel(x)).ToList();
 
             rvm[0].FirstTrade = true;
             decimal share = rvm[0].ShareChange();
