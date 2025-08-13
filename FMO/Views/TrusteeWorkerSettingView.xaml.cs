@@ -81,7 +81,7 @@ public partial class TrusteeWorkerSettingViewModel : ObservableObject
  
     public TrusteeMethodConfigViewModel Create(TrusteeMethodShotRange[] ranges, string identifier, string method)
     {
-        var range = ranges.FirstOrDefault(x => x.Id == identifier + method);
+        var range = ranges.FirstOrDefault(x => x.Id == $"{identifier}.{method}");
         return new TrusteeMethodConfigViewModel
         {
             Identifier = identifier,
