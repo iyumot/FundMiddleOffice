@@ -525,7 +525,7 @@ public partial class CITICS : TrusteeApiBase
     }
 
 
-    protected async Task<ReturnWrap<TEntity>> SyncWork<TEntity, TJSON>(string part, object? param, Func<TJSON, TEntity> transfer, [CallerMemberName] string? caller = null) where TJSON : JsonBase
+    protected async Task<ReturnWrap<TEntity>> SyncWork<TEntity, TJSON>(string part, object? param, Func<TJSON, TEntity> transfer, [CallerMemberName] string caller = "") where TJSON : JsonBase
     {
         // ะฃั้
         if (CheckBreforeSync() is ReturnCode rc && rc != ReturnCode.Success) return new(rc, null);
