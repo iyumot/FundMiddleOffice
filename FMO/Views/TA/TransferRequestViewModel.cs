@@ -100,7 +100,11 @@ partial class TransferRequestViewModel : ITransferViewModel, IHasOrderViewModel
                 Width = 500,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Owner = App.Current.MainWindow,
-                Content = new DataGrid { ItemsSource = json?.ToDictionary(x => x.Key, x => x.Value) }
+                Content = new DataGrid
+                {
+                    ItemsSource = json?.ToDictionary(x => x.Key, x => x.Value),
+                    Style = App.Current.FindResource("DataGrid.Small") as Style
+                }
             };
 
             wnd.ShowDialog();

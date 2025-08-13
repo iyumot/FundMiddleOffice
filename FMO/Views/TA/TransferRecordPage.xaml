@@ -634,6 +634,9 @@
                                 <DataTrigger Binding="{Binding IsOrderRequired}" Value="False">
                                     <Setter Property="Background" Value="#e1e1e1" />
                                 </DataTrigger>
+                                <!--<DataTrigger Binding="{Binding IsCanceled}" Value="True">
+                                    <Setter Property="Background" Value="Coral" />
+                                </DataTrigger>-->
                             </Style.Triggers>
                         </Style>
                     </DataGrid.RowStyle>
@@ -799,25 +802,34 @@
                             Binding="{Binding Agency}"
                             ElementStyle="{StaticResource CenterText}"
                             Header="销售" />
-                        <DataGridTextColumn
-                            Binding="{Binding Source}"
-                            ElementStyle="{StaticResource CenterText}"
-                            Header="数据源" />
-                        <DataGridTextColumn
+
+                        <DataGridTemplateColumn Header="数据源">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button
+                                        Command="{Binding ViewJsonCommand}"
+                                        Content="{Binding Source}"
+                                        Style="{StaticResource ButtonCustom}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!--<DataGridTextColumn
                             Binding="{Binding ExternalId}"
                             ElementStyle="{StaticResource LeftText}"
-                            Header="外部ID" />
+                            Header="外部ID" />-->
 
                         <DataGridTemplateColumn>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button
-                                        hc:IconElement.Geometry="{StaticResource f.s}"
-                                        Command="{Binding ViewJsonCommand}"
-                                        Style="{StaticResource ButtonIcon.Small}" />
+                                    <TextBlock
+                                        Foreground="Coral"
+                                        Text="申请已撤回"
+                                        Visibility="{Binding IsCanceled, Converter={StaticResource Boolean2VisibilityConverter}}" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
+
                     </DataGrid.Columns>
                 </DataGrid>
             </TabItem>
@@ -1017,11 +1029,23 @@
                             Binding="{Binding Agency}"
                             ElementStyle="{StaticResource LeftText}"
                             Header="销售" />
-                        <DataGridTextColumn Binding="{Binding Source}" Header="来源" />
-                        <DataGridTextColumn
+
+
+                        <DataGridTemplateColumn Header="数据源">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button
+                                        Command="{Binding ViewJsonCommand}"
+                                        Content="{Binding Source}"
+                                        Style="{StaticResource ButtonCustom}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!--<DataGridTextColumn
                             Binding="{Binding ExternalId}"
                             ElementStyle="{StaticResource LeftText}"
-                            Header="ID" />
+                            Header="ID" />-->
                     </DataGrid.Columns>
                 </DataGrid>
             </TabItem>

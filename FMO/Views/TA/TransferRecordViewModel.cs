@@ -2,9 +2,11 @@
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
+using FMO.Trustee;
 using FMO.Utilities;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace FMO;
 
@@ -79,6 +81,31 @@ partial class TransferRecordViewModel : ITransferViewModel, IHasOrderViewModel
         wnd.ShowDialog();
     }
 
+    [RelayCommand]
+    public void ViewJson()
+    {
+        if (ExternalId?.Split('.') is string[] arr && arr.Length > 0)
+        {
+            using var db = DbHelper.Platform();
+            var json = db.GetCollection($"{arr[0]}_{nameof(ITrustee.QueryTransferRecords)}").Find($"JsonId='{ExternalId}'").LastOrDefault();
+
+            if (json is null) return;
+
+            Window wnd = new Window
+            {
+                Width = 500,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = App.Current.MainWindow,
+                Content = new DataGrid
+                {
+                    ItemsSource = json?.ToDictionary(x => x.Key, x => x.Value),
+                    Style = App.Current.FindResource("DataGrid.Small") as Style
+                }
+            };
+
+            wnd.ShowDialog();
+        }
+    }
 
     public decimal ShareChange()
     {
