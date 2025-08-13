@@ -89,7 +89,7 @@ public partial class CSC : TrusteeApiBase
         var part = "/institution/tgpt/erp/file/productFile/findProductList";
         var result = await SyncWork<SubjectFundMapping, SubjectFundMappingJson>(part, null, x => x.ToObject());
 
-        if (result.Data?.Length > 0)
+        if (result.Data?.Count > 0)
             FundsInfo = [.. result.Data];
 
         return result;
@@ -150,7 +150,7 @@ public partial class CSC : TrusteeApiBase
             if (result.Code != ReturnCode.Success)
                 return result;
 
-            if (result.Data?.Length > 0)
+            if (result.Data?.Count > 0)
                 list.AddRange(result.Data);
         }
 
@@ -214,7 +214,7 @@ public partial class CSC : TrusteeApiBase
         using var db = DbHelper.Base();
 
 
-        List<DailyValue> ret = new List<DailyValue>(data.Data.Length);
+        List<DailyValue> ret = new List<DailyValue>(data.Data.Count);
         foreach (var item in data.Data.GroupBy(x => x.FundCode))
         {
             var code = item.Key;

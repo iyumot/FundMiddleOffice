@@ -51,7 +51,7 @@ public partial class CMS : TrusteeApiBase
     {
         var data = await SyncWork<SubjectFundMapping, SubjectFundMappingJson>(1018, null, x => x.ToObject());
 
-        if (data.Code == ReturnCode.Success && data.Data?.Length > 0)
+        if (data.Code == ReturnCode.Success && data.Data?.Count > 0)
             FundsInfo = data.Data.ToArray();
         return data;
     }
@@ -63,7 +63,7 @@ public partial class CMS : TrusteeApiBase
         var data = await SyncWork<TransferRequest, TransferRequestJson>(1006, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
 
         // 无数据返回
-        if (data.Data?.Length == 0) return data;
+        if (data.Data?.Count == 0) return data;
 
         // 子产品 映射
         if (FundsInfo is null)
@@ -124,7 +124,7 @@ public partial class CMS : TrusteeApiBase
             if (data.Code != ReturnCode.Success)
                 return data;
 
-            if (data.Data?.Length > 0)
+            if (data.Data?.Count > 0)
                 transactions.AddRange(data.Data);
         }
         return new(ReturnCode.Success, transactions.ToArray());
@@ -159,7 +159,7 @@ public partial class CMS : TrusteeApiBase
             if (data.Code != ReturnCode.Success)
                 return data;
 
-            if (data.Data?.Length > 0)
+            if (data.Data?.Count > 0)
                 transactions.AddRange(data.Data);
         }
 
@@ -197,7 +197,7 @@ public partial class CMS : TrusteeApiBase
         using var db = DbHelper.Base();
 
 
-        List<DailyValue> ret = new List<DailyValue>(data.Data.Length);
+        List<DailyValue> ret = new List<DailyValue>(data.Data.Count);
         foreach (var item in data.Data.GroupBy(x => x.FundCode))
         {
             var code = item.Key;

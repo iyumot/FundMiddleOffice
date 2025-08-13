@@ -45,7 +45,7 @@ public partial class CITICS : TrusteeApiBase
         var r = await SyncWork<InvestorJson, InvestorJson>(part, null, x => x);
 
         // 需要保存基金账号到投资人映射，因为TA返回数据没有投资人信息
-        if (r.Data?.Length > 0)
+        if (r.Data?.Count > 0)
         {
             using var db = DbHelper.Platform();
             db.GetCollection<InvestorAccountMapping>("citics_cus_accout_map").Upsert(r.Data.Select(x => new InvestorAccountMapping { Id = x.FundAcco, Indentity = x.CertiNo, Name = x.CustName }));
@@ -115,7 +115,7 @@ public partial class CITICS : TrusteeApiBase
 
         List<TransferRecord> list = new();
         // 后处理
-        if (result.Data?.Length > 0)
+        if (result.Data?.Count > 0)
         {
             // 获取待处理账号列表
             var unk = result.Data.Select(x => x.FundAcco).Distinct().ToList();
@@ -150,7 +150,7 @@ public partial class CITICS : TrusteeApiBase
             }
 
             // 如果有任何未映射的 
-            if (list.Count != result.Data.Length)
+            if (list.Count != result.Data.Count)
                 return new(ReturnCode.CITICS_Investor, list.ToArray());
 
         }
@@ -397,7 +397,7 @@ public partial class CITICS : TrusteeApiBase
             if (data.Code != ReturnCode.Success)
                 return new ReturnWrap<DailyValue>(data.Code, []);
 
-            if (data.Data?.Length > 0)
+            if (data.Data?.Count > 0)
                 list.AddRange(data.Data);
         }
 

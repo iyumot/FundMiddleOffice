@@ -13,7 +13,7 @@ public class JsonBase
     private static Debouncer debouncer = new(SaveUnusual);
      
 
-    public int Id { get; set; }
+    public string? Id { get; set; }
 
 
     protected static decimal ParseDecimal(string value)

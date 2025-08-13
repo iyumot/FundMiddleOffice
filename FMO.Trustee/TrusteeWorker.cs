@@ -277,7 +277,7 @@ public partial class TrusteeWorker : ObservableObject
                     }
                     ///
                     // 保存数据库，部分成功的也保存
-                    if (rc.Data?.Length > 0)
+                    if (rc.Data?.Count > 0)
                     {
                         // 如果返回有失败的，更新end
                         if (rc.Code != ReturnCode.Success)
@@ -359,7 +359,7 @@ public partial class TrusteeWorker : ObservableObject
 
                     ///
                     // 保存数据库 
-                    if (rc.Data?.Length > 0)
+                    if (rc.Data?.Count > 0)
                     {
                         DataTracker.OnBatchTransferRecord(rc.Data);
                     }
