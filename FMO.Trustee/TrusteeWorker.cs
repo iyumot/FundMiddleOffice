@@ -269,6 +269,7 @@ public partial class TrusteeWorker : ObservableObject
                     var range = GetWorkedRange(tr.Identifier, method);
 
                     DateOnly begin = range.End, end = DateOnly.FromDateTime(DateTime.Now);
+                    if (begin == end) begin = begin.AddDays(-5);
 
                     var rc = await tr.QueryTransferRequests(begin, end);
                     if (rc.Code != ReturnCode.Success && rc.Code != ReturnCode.TrafficLimit)

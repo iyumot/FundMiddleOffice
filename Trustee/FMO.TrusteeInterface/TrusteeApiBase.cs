@@ -233,7 +233,7 @@ public abstract class TrusteeApiBase : ITrustee
 #if DEBUG
     protected static string? GetCache(string Identifier, string Method, object Params)
     {
-        return _db.GetCollection<APIDebugCache>().FindOne(x => x.Identifier == Identifier && x.Method == Method && x.Params == Params)?.Json;
+        return _db.GetCollection<APIDebugCache>().Find(x => x.Identifier == Identifier && x.Method == Method && x.Params == Params).LastOrDefault()?.Json;
     }
 
     protected static void SetCache(string Identifier, string Method, object Params, string json)

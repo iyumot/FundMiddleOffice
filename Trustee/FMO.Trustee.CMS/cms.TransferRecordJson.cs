@@ -1,5 +1,6 @@
 using FMO.Models;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
 
 namespace FMO.Trustee;
@@ -127,9 +128,11 @@ internal class TransferRecordJson : JsonBase
             PerformanceFee = ParseDecimal(Performance),
             ExternalRequestId = $"{CMS._Identifier}.{ApplyNo}",
             FundCode = FundCode,
-            FundName = FundName,
+            FundName = FundName, 
+            Background = Regex.IsMatch(Note, "自动申购|付费强赎|子基金"),
             Source = "api",
         }; 
+         
 
         if (r.Type == TransferRecordType.UNK)
             JsonBase.ReportSpecialType(new(0, CMS._Identifier, nameof(TransferRecord), Remark1, BusinessCode));

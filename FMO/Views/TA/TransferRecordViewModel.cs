@@ -22,7 +22,7 @@ partial class TransferRecordViewModel : ITransferViewModel, IHasOrderViewModel
 
     public bool HasOrder => OrderId != 0;
 
-    public bool LackOrder => IsOrderRequired && OrderId == 0;
+    public bool LackOrder => IsOrderRequired && OrderId == 0 && !Background;
 
     public bool IsSameManager { get; set; }
 
@@ -33,7 +33,12 @@ partial class TransferRecordViewModel : ITransferViewModel, IHasOrderViewModel
 
     public bool FirstTrade { get; set; }
 
-    public bool LackRequest => Type != TransferRecordType.Distribution && RequestId == 0;
+    public bool LackRequest => Type != TransferRecordType.Distribution && !IsLiquidating && RequestId == 0 && !Background;
+
+    /// <summary>
+    /// 互投的产品，托管后台赎回付费，没有order request
+    /// </summary>
+    //public bool BackRedemption => Type == TransferRecordType.ForceRedemption && IsSameManager && RequestId == 0;
 
 
     [RelayCommand]

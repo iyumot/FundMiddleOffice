@@ -121,11 +121,7 @@ public class TransferRecord// : IEquatable<TransferRecord>
     /// 没有order 和 request 
     /// </summary>
     public bool IsLiquidating { get; set; }
-
-    /// <summary>
-    /// 需要order
-    /// </summary>
-    public bool OrderRequired => TAHelper.RequiredOrder(Type);
+     
 
     /// <summary>
     /// 数据来源
@@ -141,6 +137,14 @@ public class TransferRecord// : IEquatable<TransferRecord>
     /// 确认失败
     /// </summary>
     public bool IsFailed { get; set; }
+
+    /// <summary>
+    /// 后台生成的TA
+    ///  互投的产品，托管后台赎回付费，没有order request
+    ///  自动申购母基金等
+    /// </summary>
+    public bool Background { get; set; }
+
 
     public bool IsOrderRequired => TAHelper.RequiredOrder(Type);
 
