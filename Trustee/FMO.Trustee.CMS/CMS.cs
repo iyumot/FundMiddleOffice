@@ -307,63 +307,63 @@ public partial class CMS : TrusteeApiBase
                 var json = await Query(interfaceId, formatedParams);
 #endif
 
-                    try
+                try
+                {
+                    if (json is null) return new(ReturnCode.EmptyResponse, null);
+                    var ret = JsonSerializer.Deserialize<JsonRoot>(json);
+
+                    var code = int.Parse(ret!.Code);
+
+                    // 有错误
+                    if (code != 10000)
                     {
-                        if (json is null) return new(ReturnCode.EmptyResponse, null);
-                        var ret = JsonSerializer.Deserialize<JsonRoot>(json);
+                        Log(caller, json, ret.Msg);
+                        return new(TransferReturnCode(code, ret.Msg), list.Select(x => transfer(x)).ToArray());
+                    }
 
-                        var code = int.Parse(ret!.Code);
+                    // 调用成功，实际无数据
+                    if (string.IsNullOrWhiteSpace(ret.Data))
+                        break;// return new(ReturnCode.Success, []);
 
-                        // 有错误
-                        if (code != 10000)
+                    // 解析实际数据
+                    var data = JsonSerializer.Deserialize<List<JsonElement>>(ret.Data);
+
+                    // 记录返回的类型，用于debug
+                    //if (data?.Count > 0)
+                    //    CacheJson(caller, data!);
+
+
+                    var options = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true,
+                    };
+                    if (data is not null && data.Count > 0)
+                        list.AddRange(data.Select(x =>
                         {
-                            Log(caller, json, ret.Msg);
-                            return new(TransferReturnCode(code, ret.Msg), list.Select(x => transfer(x)).ToArray());
-                        }
-
-                        // 调用成功，实际无数据
-                        if (string.IsNullOrWhiteSpace(ret.Data))
-                            break;// return new(ReturnCode.Success, []);
-
-                        // 解析实际数据
-                        var data = JsonSerializer.Deserialize<List<JsonElement>>(ret.Data);
-
-                        // 记录返回的类型，用于debug
-                        if (data?.Count > 0)
-                            CacheJson(caller, data!);
-
-
-                        var options = new JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true,
-                        };
-                        if (data is not null && data.Count > 0)
-                            list.AddRange(data.Select(x =>
+                            try { return x.Deserialize<TJSON>(options)!; }
+                            catch (Exception ex)
                             {
-                                try { return x.Deserialize<TJSON>(options)!; }
-                                catch (Exception ex)
-                                {
-                                    // 记录具体哪个元素反序列化失败
-                                    JsonBase.ReportJsonUnexpected(Identifier, caller!, $"Failed to deserialize item Error: {ex.Message}: {x}.");
-                                    throw;
-                                }
-                            }));
+                                // 记录具体哪个元素反序列化失败
+                                JsonBase.ReportJsonUnexpected(Identifier, caller!, $"Failed to deserialize item Error: {ex.Message}: {x}.");
+                                throw;
+                            }
+                        }));
 
 
-                        // 数据获取是否齐全
-                        var pi = JsonSerializer.Deserialize<PaginationInfo>(ret.Page!)!;
-                        if (pi.PageNumber >= pi.PageCount)
-                            break;
+                    // 数据获取是否齐全
+                    var pi = JsonSerializer.Deserialize<PaginationInfo>(ret.Page!)!;
+                    if (pi.PageNumber >= pi.PageCount)
+                        break;
 
-                        // 下一页
-                        var page = (int)formatedParams["pageNumber"];
-                        formatedParams["pageNumber"] = page + 1;
-                    }
-                    catch
-                    {
-                        Log(caller, json, "Json Serialize Error");
-                        return new(ReturnCode.JsonNotPairToEntity, null);
-                    }
+                    // 下一页
+                    var page = (int)formatedParams["pageNumber"];
+                    formatedParams["pageNumber"] = page + 1;
+                }
+                catch
+                {
+                    Log(caller, json, "Json Serialize Error");
+                    return new(ReturnCode.JsonNotPairToEntity, null);
+                }
             }
         }
         catch (Exception e)
@@ -372,6 +372,8 @@ public partial class CMS : TrusteeApiBase
             return new(ReturnCode.Unknown, null);
         }
 
+        if (list.Count > 0)
+            CacheJson(caller, list);
         Log(caller, null, list.Count == 0 ? "OK [Empty]" : $"OK [{list.Count}]");
 
         try { var dd = list.Select(x => transfer(x)).ToArray(); return new(ReturnCode.Success, dd); }

@@ -7,6 +7,7 @@ namespace FMO.Trustee;
 
 internal class TransferRequestJson : JsonBase
 {
+    public override string? JsonId => $"{CITICS._Identifier}.{RequestNo}";
     /// <summary>
     /// …Í«Î±‡∫≈
     /// </summary>

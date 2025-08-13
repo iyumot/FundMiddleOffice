@@ -2,9 +2,10 @@
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Shared;
-using System.Windows;
-using FMO.Utilities;
 using FMO.Trustee;
+using FMO.Utilities;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace FMO;
 
@@ -87,8 +88,23 @@ partial class TransferRequestViewModel : ITransferViewModel, IHasOrderViewModel
     [RelayCommand]
     public void ViewJson()
     {
-       // using (var db = DbHelper.Platform())
-       //     db.GetCollection($"{Identifier}_{nameof(ITrustee.QueryTransferRequests)}").Find("");
+        if (ExternalId?.Split('.') is string[] arr && arr.Length > 0)
+        {
+            using var db = DbHelper.Platform();
+            var json = db.GetCollection($"{arr[0]}_{nameof(ITrustee.QueryTransferRequests)}").Find($"JsonId='{ExternalId}'").LastOrDefault();
+
+            if (json is null) return;
+
+            Window wnd = new Window
+            {
+                Width = 500,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = App.Current.MainWindow,
+                Content = new DataGrid { ItemsSource = json?.ToDictionary(x => x.Key, x => x.Value) }
+            };
+
+            wnd.ShowDialog();
+        }
     }
 
     [RelayCommand]

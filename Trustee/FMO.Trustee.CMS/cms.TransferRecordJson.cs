@@ -6,6 +6,7 @@ namespace FMO.Trustee;
 
 internal class TransferRecordJson : JsonBase
 {
+    public override string? JsonId => $"{CMS._Identifier}.{Remark1}";
 
     [JsonPropertyName("custName")]
     public required string CustName { get; set; }

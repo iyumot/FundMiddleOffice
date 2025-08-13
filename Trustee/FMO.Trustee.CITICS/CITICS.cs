@@ -576,8 +576,8 @@ public partial class CITICS : TrusteeApiBase
                     var data = ret.Data.Deserialize<QueryRoot<JsonElement>>()!;
 
                     // 记录返回的类型，用于debug
-                    if (data.List is not null)
-                        CacheJson(caller, data!.List);
+                    //if (data.List is not null)
+                    //    CacheJson(caller, data!.List);
 
                     if (data.List is not null)
                         list.AddRange(data.List.Select(x =>
@@ -615,6 +615,9 @@ public partial class CITICS : TrusteeApiBase
             return new(ReturnCode.Unknown, null);
         }
 
+
+        if (list.Count > 0)
+            CacheJson(caller, list);
         Log(caller, null, list.Count == 0 ? "OK [Empty]" : $"OK [{list.Count}]");
         return new(ReturnCode.Success, list.Select(x => transfer(x)).ToArray());
     }

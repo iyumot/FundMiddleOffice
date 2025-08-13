@@ -8,6 +8,8 @@ namespace FMO.Trustee;
 
 internal class TransferRequestJson : JsonBase
 {
+    public override string? JsonId => $"{CMS._Identifier}.{Remark1}";
+
     /// <summary>
     /// 客户名称（最大长度：200）
     /// </summary>

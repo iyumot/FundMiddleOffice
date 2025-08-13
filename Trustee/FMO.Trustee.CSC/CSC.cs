@@ -363,8 +363,8 @@ public partial class CSC : TrusteeApiBase
                     //    return new(ReturnCode., null);
 
                     // 记录返回的类型，用于debug
-                    if (data!.Data.Data.Count > 0)
-                        CacheJson(caller, data!.Data.Data);
+                    //if (data!.Data.Data.Count > 0)
+                    //    CacheJson(caller, data!.Data.Data);
 
                     total += data!.Data.Data.Count;
                     list.AddRange(data.Data.Data.Select(x =>
@@ -401,6 +401,8 @@ public partial class CSC : TrusteeApiBase
         }
 
 
+        if (list.Count > 0)
+            CacheJson(caller, list);
         Log(caller, null, list.Count == 0 ? "OK [Empty]" : $"OK [{list.Count}]");
         return new(ReturnCode.Success, list.Select(x => transfer(x)).ToArray());
     }

@@ -158,6 +158,8 @@ public class TransferRequestJson : JsonBase
     [JsonPropertyName("describe")]
     public string Describe { get; set; }
 
+    public override string? JsonId => $"{CSC._Identifier}.{OriginalNo}";
+
     public TransferRequest ToObject()
     {
         return new TransferRequest

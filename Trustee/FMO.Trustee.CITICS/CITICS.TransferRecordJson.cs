@@ -177,6 +177,8 @@ internal class TransferRecordJson : JsonBase
     [JsonPropertyName("oriCserialNo")]
     public string OriCserialNo { get; set; } // 原确认单号
 
+    public override string? JsonId => $"{CITICS._Identifier}.{AckNo}";
+
     /// <summary>
     /// 缺少Customer 信息
     /// Fund 信息

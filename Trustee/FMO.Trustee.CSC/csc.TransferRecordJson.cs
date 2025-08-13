@@ -212,6 +212,8 @@ internal class TransferRecordJson : JsonBase
     [JsonPropertyName("operWayNew")]
     public string OperWayNew { get; set; }
 
+    public override string? JsonId => $"{CSC._Identifier}.{CserialNo}";
+
     /// <summary>
     /// </summary>
     /// <returns></returns>
