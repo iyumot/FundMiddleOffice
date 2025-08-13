@@ -48,7 +48,7 @@ public partial class CITICS : TrusteeApiBase
         if (r.Data?.Length > 0)
         {
             using var db = DbHelper.Platform();
-            db.GetCollection<InvestorAccountMapping>(Identifier).Upsert(r.Data.Select(x => new InvestorAccountMapping { Id = x.FundAcco, Indentity = x.CertiNo, Name = x.CustName }));
+            db.GetCollection<InvestorAccountMapping>("citics_cus_accout_map").Upsert(r.Data.Select(x => new InvestorAccountMapping { Id = x.FundAcco, Indentity = x.CertiNo, Name = x.CustName }));
         }
 
         return new(r.Code, r.Data?.Select(x => x.ToObject()).ToArray());
@@ -144,10 +144,14 @@ public partial class CITICS : TrusteeApiBase
                     {
                         r.InvestorName = m.Name;
                         r.InvestorIdentity = m.Indentity;
+                        list.Add(r);
                     }
-                    list.Add(r);
                 }
             }
+
+            // 如果有任何未映射的 
+            if (list.Count != result.Data.Length)
+                return new(ReturnCode.CITICS_Investor, list.ToArray());
 
             // 排除失败的
             return new(result.Code, list.Where(x => x.Source != "failed").ToArray());

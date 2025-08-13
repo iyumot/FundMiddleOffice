@@ -183,7 +183,9 @@ public enum ReturnCode
     /// <summary>
     /// 流量受限
     /// </summary>
-    [Description("流量受限")] CITICS_Limited, 
+    [Description("流量受限")] CITICS_Limited,
+
+    [Description("无法匹配投资人信息")] CITICS_Investor,
 
     #endregion
 
