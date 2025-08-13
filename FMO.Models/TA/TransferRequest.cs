@@ -108,6 +108,11 @@ public class TransferRequest
     public bool IsCanceled { get; set; }
 
     /// <summary>
+    /// 清盘时的申请，托管自动生成
+    /// </summary>
+    public bool IsLiquidating { get; set; }
+
+    /// <summary>
     /// 需要order
     /// </summary>
     public bool IsOrderRequired => TAHelper.RequiredOrder(RequestType);

@@ -3,6 +3,8 @@ using System.ComponentModel;
 
 namespace FMO.Models;
 
+public record ManualLinkOrder(int Id, int OrderId, string ExternalId);
+
 /// <summary>
 /// TA 记录
 /// 更新后应该 调用更新  db.BuildFundShareRecord 
@@ -161,7 +163,7 @@ public class TransferRecord : IEquatable<TransferRecord>
             case TransferRecordType.Redemption:
             case TransferRecordType.ForceRedemption:
             case TransferRecordType.Decrease:
-                return -ConfirmedShare; 
+                return -ConfirmedShare;
             default:
                 return 0;
         }
@@ -184,6 +186,6 @@ public class TransferRecord : IEquatable<TransferRecord>
         }
     }
 
- 
+
 }
 
