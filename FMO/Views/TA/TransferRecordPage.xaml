@@ -858,6 +858,16 @@
                     Style="{StaticResource DataGrid.NoSelect}"
                     VirtualizingStackPanel.IsVirtualizing="True"
                     VirtualizingStackPanel.VirtualizationMode="Recycling">
+                    <DataGrid.RowStyle>
+                        <Style BasedOn="{StaticResource NoSelectDataGridRowStyle}" TargetType="DataGridRow">
+
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsFailed}" Value="True">
+                                    <Setter Property="Background" Value="Coral" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
                     <DataGrid.Columns>
                         <DataGridTemplateColumn>
                             <DataGridTemplateColumn.CellTemplate>
@@ -881,6 +891,7 @@
                                             Foreground="Red"
                                             Style="{StaticResource ButtonIcon.Small}"
                                             Visibility="Collapsed" />
+
                                     </hc:SimplePanel>
                                     <DataTemplate.Triggers>
                                         <DataTrigger Binding="{Binding Source}" Value="manual">
@@ -1031,6 +1042,7 @@
                             Header="销售" />
 
 
+
                         <DataGridTemplateColumn Header="数据源">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -1042,6 +1054,17 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
+                        <DataGridTemplateColumn>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock
+                                        FontWeight="Black"
+                                        Foreground="White"
+                                        Text="失败"
+                                        Visibility="{Binding IsFailed, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                         <!--<DataGridTextColumn
                             Binding="{Binding ExternalId}"
                             ElementStyle="{StaticResource LeftText}"

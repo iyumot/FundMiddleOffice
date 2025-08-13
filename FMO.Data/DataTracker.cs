@@ -698,7 +698,18 @@ public static partial class DataTracker
         var dlf = data.Where(x => x.Source == "api").Select(x => x.FundId).Distinct().ToList();
         db.GetCollection<TransferRequest>().DeleteMany(x => x.Source != "api" && dlf.Contains(x.FundId));
 
-        //
+        // 取消 招商会增加一条取消的申请，还对方有确认，原申请和取消申请的值是一样的，标记一下
+        foreach (var can in data.Where(x => x.RequestType == TransferRequestType.Abort))
+        {
+            var todo = data.Where(x => x.FundId == can.FundId && x.InvestorId == can.InvestorId && x.RequestDate == can.RequestDate && x.RequestAmount == can.RequestAmount && x.RequestShare == can.RequestShare);
+            foreach (var x in todo)
+                x.IsCanceled = true;
+
+            //var reqd = db.GetCollection<TransferRequest>().Find(x => x.FundId == can.FundId && x.InvestorId == can.InvestorId && x.RequestDate == can.RequestDate && x.RequestAmount == can.RequestAmount && x.RequestShare == can.RequestShare).ToList();
+            db.Execute($"UPDATE {nameof(TransferRequest)} SET IsCanceled = true WHERE FundId={can.FundId} AND InvestorId={can.InvestorId} AND RequestDate=@date AND RequestShare={can.RequestAmount} AND RequestShare={can.RequestShare}", BsonMapper.Global.ToDocument(can.RequestDate));
+        }
+
+
         db.GetCollection<TransferRequest>().Upsert(data);
 
         db.GetCollection<PostHandleIds>("ph_request").Upsert(data.Select(x => new PostHandleIds(x.Id)));
@@ -784,7 +795,7 @@ public static partial class DataTracker
                         r.OrderId = value.OrderId;
                 }
             }
-
+            db.GetCollection<ManualLinkOrder>().Upsert(confirm.Where(x => x.OrderId != 0).Select(x => new ManualLinkOrder(x.Id, x.OrderId, x.ExternalId!)));
             db.GetCollection<TransferRecord>().Update(confirm);
             db.GetCollection<TransferRequest>().Update(request.Select(x => x.Value));
         }
@@ -863,6 +874,9 @@ public static partial class DataTracker
 
                     item.IsLiquidating = true;
                     db.GetCollection<TransferRecord>().Update(item);
+
+                    // 同步request
+                    db.Execute($"UPDATE {nameof(TransferRequest)} SET IsLiquidating = true WHERE Id = {item.RequestId}");
                 }
                 db.Commit();
             }

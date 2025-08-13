@@ -206,7 +206,8 @@ internal class TransferRecordJson : JsonBase
             InvestorName = "unset",
             CreateDate = DateOnly.FromDateTime(DateTime.Now),
             ConfirmedNetAmount = ParseDecimal(RealBalance),
-            Source = AckStatus switch { "2" or "3" or "5" => "failed", _ => "api" },
+            Source = "api",
+            IsFailed = AckStatus switch { "2" or "3" or "5" => true, _ => false },
         };
         r.Fee -= r.PerformanceFee;
         r.ConfirmedNetAmount = r.ConfirmedAmount - r.Fee;

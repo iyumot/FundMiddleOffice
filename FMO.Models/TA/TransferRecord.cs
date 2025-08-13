@@ -10,7 +10,7 @@ public record ManualLinkOrder(int Id, int OrderId, string ExternalId);
 /// 更新后应该 调用更新  db.BuildFundShareRecord 
 /// </summary>
 [Description("TA记录")]
-public class TransferRecord : IEquatable<TransferRecord>
+public class TransferRecord// : IEquatable<TransferRecord>
 {
     public int Id { get; set; }
 
@@ -137,6 +137,10 @@ public class TransferRecord : IEquatable<TransferRecord>
     /// </summary>
     public string? ConfirmFile { get; set; }
 
+    /// <summary>
+    /// 确认失败
+    /// </summary>
+    public bool IsFailed { get; set; }
 
     public bool IsOrderRequired => TAHelper.RequiredOrder(Type);
 
@@ -144,12 +148,12 @@ public class TransferRecord : IEquatable<TransferRecord>
     {
         return FundId ^ InvestorName.GetHashCode() ^ RequestDate.GetHashCode() ^ Type.GetHashCode();
     }
-    public bool Equals(TransferRecord? other)
-    {
-        if (other is null) return false;
+    //public bool Equals(TransferRecord? other)
+    //{
+    //    if (other is null) return false;
 
-        return FundId == other.FundId && InvestorIdentity == other.InvestorIdentity && RequestDate == other.RequestDate && Type == other.Type;
-    }
+    //    return FundId == other.FundId && InvestorIdentity == other.InvestorIdentity && RequestDate == other.RequestDate && Type == other.Type;
+    //}
 
     public decimal ShareChange()
     {

@@ -121,6 +121,7 @@ internal class TransferRecordJson : JsonBase
             ConfirmedNetAmount = ParseDecimal(ConfirmedNavVol),
             CreateDate = DateOnly.FromDateTime(DateTime.Today),
             ExternalId = $"{CMS._Identifier}.{Remark1}",
+            IsFailed = Remark2 == "»∑»œ ß∞‹",
             Type = transferRecordType,
             Fee = ParseDecimal(Charge),
             PerformanceFee = ParseDecimal(Performance),

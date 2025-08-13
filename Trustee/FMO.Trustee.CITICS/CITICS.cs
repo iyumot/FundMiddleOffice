@@ -161,8 +161,18 @@ public partial class CITICS : TrusteeApiBase
         if (dis.Code == ReturnCode.Success && dis.Data is not null)
             list.AddRange(dis.Data);
 
-        // 排除失败的
-        return new(result.Code, list.Where(x => x.Source != "failed").ToArray());
+        // 排除失败的 特殊情况
+        // 如果有失败，会一条替代， 且reqid和id一样，
+        foreach(var failed in list.Where(x=>x.IsFailed).ToList())
+        {
+            if (list.FirstOrDefault(x => !x.IsFailed && x.FundCode == failed.FundCode && x.InvestorIdentity == failed.InvestorIdentity && x.ConfirmedDate == failed.ConfirmedDate && x.ExternalRequestId == x.ExternalId) is TransferRecord repl)
+            {
+                repl.ExternalRequestId = failed.ExternalRequestId; // 替换失败的请求id
+                list.Remove(failed);
+            }
+        }
+
+        return new(result.Code, list);
         //return new(result.Code, null);
     }
 

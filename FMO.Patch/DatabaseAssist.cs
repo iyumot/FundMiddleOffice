@@ -27,8 +27,16 @@ public  static partial class DatabaseAssist
         [65] = UpdateLiqudatingTA,
         [66] = ChangeAPIAndClearData,
 
-        [67] = Customer2Investor
+        [67] = Customer2Investor,
+        //[68] = AddManualLink
     };
+
+    //private static void AddManualLink(BaseDatabase db)
+    //{ 
+    //    var recs = db.GetCollection("ta_record_bak").FindAll().ToList();
+        
+    //    db.GetCollection<ManualLinkOrder>().InsertBulk(recs.Select(x => new ManualLinkOrder(x["_id"], x["OrderId"], x["ExternalId"])));
+    //}
 
     private static void Customer2Investor(BaseDatabase db)
     {
