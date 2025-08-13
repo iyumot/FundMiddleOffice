@@ -662,7 +662,6 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-
                         <DataGridTemplateColumn shared:FilterColumn.FilterSource="{Binding Data.OrderStatusFilter, Source={StaticResource proxy}}" shared:FilterColumn.PopupContentTemplate="{StaticResource StringFilterTemplate}">
 
                             <DataGridTemplateColumn.CellTemplate>
@@ -676,22 +675,57 @@
                                             Foreground="Green"
                                             Style="{StaticResource ButtonIcon.Small}"
                                             Visibility="{Binding HasOrder, Converter={StaticResource Boolean2VisibilityConverter}}" />
-                                        <Viewbox Height="15" Visibility="{Binding LackOrder, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                        <Viewbox
+                                            x:Name="fea"
+                                            Height="15"
+                                            Visibility="Collapsed">
                                             <Path
                                                 x:Name="co"
                                                 Data="{StaticResource f.feather-pointed}"
                                                 Fill="Red" />
                                         </Viewbox>
+                                        <hc:SimplePanel
+                                            x:Name="clear"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Visibility="Collapsed">
+                                            <Ellipse
+                                                Width="18"
+                                                Height="18"
+                                                Fill="Black" />
+                                            <TextBlock
+                                                Margin="3,2"
+                                                VerticalAlignment="Center"
+                                                Background="Transparent"
+                                                FontSize="11"
+                                                Foreground="White"
+                                                Text="清" />
+                                        </hc:SimplePanel>
                                     </hc:SimplePanel>
                                     <DataTemplate.Triggers>
                                         <DataTrigger Binding="{Binding IsSameManager}" Value="True">
                                             <Setter TargetName="co" Property="Fill" Value="Gray" />
                                         </DataTrigger>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding LackOrder}" Value="True" />
+                                                <Condition Binding="{Binding IsLiquidating}" Value="True" />
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter TargetName="clear" Property="Visibility" Value="Visible" />
+                                            <Setter TargetName="fea" Property="Visibility" Value="Collapsed" />
+                                        </MultiDataTrigger>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding LackOrder}" Value="True" />
+                                                <Condition Binding="{Binding IsLiquidating}" Value="False" />
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter TargetName="clear" Property="Visibility" Value="Collapsed" />
+                                            <Setter TargetName="fea" Property="Visibility" Value="Visible" />
+                                        </MultiDataTrigger>
                                     </DataTemplate.Triggers>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-
 
 
                         <DataGridTextColumn Binding="{Binding RequestDate, StringFormat=yyyy-MM-dd}" Header="日期" />
@@ -915,21 +949,58 @@
                                             Foreground="Green"
                                             Style="{StaticResource ButtonIcon.Small}"
                                             Visibility="{Binding HasOrder, Converter={StaticResource Boolean2VisibilityConverter}}" />
-                                        <Viewbox Height="15" Visibility="{Binding LackOrder, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                        <Viewbox
+                                            x:Name="fea"
+                                            Height="15"
+                                            Visibility="Collapsed">
                                             <Path
                                                 x:Name="co"
                                                 Data="{StaticResource f.feather-pointed}"
                                                 Fill="Red" />
                                         </Viewbox>
+                                        <hc:SimplePanel
+                                            x:Name="clear"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Visibility="Collapsed">
+                                            <Ellipse
+                                                Width="18"
+                                                Height="18"
+                                                Fill="Black" />
+                                            <TextBlock
+                                                Margin="3,2"
+                                                VerticalAlignment="Center"
+                                                Background="Transparent"
+                                                FontSize="11"
+                                                Foreground="White"
+                                                Text="清" />
+                                        </hc:SimplePanel>
                                     </hc:SimplePanel>
                                     <DataTemplate.Triggers>
                                         <DataTrigger Binding="{Binding IsSameManager}" Value="True">
                                             <Setter TargetName="co" Property="Fill" Value="Gray" />
                                         </DataTrigger>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding LackOrder}" Value="True" />
+                                                <Condition Binding="{Binding IsLiquidating}" Value="True" />
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter TargetName="clear" Property="Visibility" Value="Visible" />
+                                            <Setter TargetName="fea" Property="Visibility" Value="Collapsed" />
+                                        </MultiDataTrigger>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding LackOrder}" Value="True" />
+                                                <Condition Binding="{Binding IsLiquidating}" Value="False" />
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter TargetName="clear" Property="Visibility" Value="Collapsed" />
+                                            <Setter TargetName="fea" Property="Visibility" Value="Visible" />
+                                        </MultiDataTrigger>
                                     </DataTemplate.Triggers>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
+
 
 
                         <!--<DataGridTemplateColumn>

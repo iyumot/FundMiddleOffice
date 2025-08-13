@@ -876,11 +876,18 @@ public static partial class DataTracker
                     db.GetCollection<TransferRecord>().Update(item);
 
                     // 同步request
-                    db.Execute($"UPDATE {nameof(TransferRequest)} SET IsLiquidating = true WHERE Id = {item.RequestId}");
+                    //db.Execute($"UPDATE {nameof(TransferRequest)} SET IsLiquidating = true WHERE Id = {item.RequestId}");
                 }
                 db.Commit();
             }
         }
+        var liq = db.GetCollection<TransferRecord>().Find(x => x.IsLiquidating).Select(x => x.RequestId).Distinct().ToList();
+        db.GetCollection<TransferRequest>().UpdateMany("{IsLiquidating : true}", BsonExpression.Create("_id IN @ids", new BsonDocument { ["ids"] = new BsonArray(liq.Select(x => new BsonValue(x))) }));
+
+
+        //var eq = db.Execute("UPDATE TransferRequest SET IsLiquidating = true WHERE Id IN (  SELECT RequestId FROM TransferRecord WHERE IsLiquidating = true );");
+
+        //db.GetCollection<TransferRequest>().Include<TransferRecord>(x=>x.Id)
 
         // map
         //var mids = records.Select(x => x.RequestId).ToList();

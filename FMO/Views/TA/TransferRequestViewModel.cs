@@ -29,6 +29,8 @@ public interface IHasOrderViewModel
 
     bool IsOrderRequired { get; }
 
+    bool IsLiquidating { get; }
+
     public bool IsBuy();
 
     public bool IsSell();

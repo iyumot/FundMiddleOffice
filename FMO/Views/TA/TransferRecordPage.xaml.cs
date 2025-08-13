@@ -145,8 +145,8 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
             OrderStatusFilter.Filters = [
                 new GridFilterItem{ Title = "缺少认申购订单", FilterFunc = y=>y switch{ IHasOrderViewModel x=> x.IsOrderRequired && !x.IsSameManager && x.LackOrder && x.IsBuy(),_=>true } },
-                new GridFilterItem{ Title = "缺少赎回订单", FilterFunc = y=>y switch{ IHasOrderViewModel x=> x.IsOrderRequired && !x.IsSameManager && x.LackOrder && x.IsSell(),_=>true } },
-                new GridFilterItem{ Title = "本管理人产品缺少订单", FilterFunc = y=>y switch{ IHasOrderViewModel x=> x.IsOrderRequired && x.IsSameManager ,_=>true } },
+                new GridFilterItem{ Title = "缺少赎回订单", FilterFunc = y=>y switch{ IHasOrderViewModel x=> !x.IsLiquidating && x.IsOrderRequired && !x.IsSameManager && x.LackOrder && x.IsSell(),_=>true } },
+                new GridFilterItem{ Title = "本管理人产品缺少订单", FilterFunc = y=>y switch{ IHasOrderViewModel x=>!x.IsLiquidating && x.IsOrderRequired && x.IsSameManager ,_=>true } },
                 new GridFilterItem{ Title = "有订单", FilterFunc = y=> y switch{IHasOrderViewModel x=>x.OrderId != 0}}
                 ];
 
@@ -207,8 +207,8 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
 
 
             LackOrderBuyCount = requests.Count(x => x.IsOrderRequired && !x.IsSameManager && x.LackOrder && x.RequestType!.Value.IsBuy());
-            LackOrderSellCount = requests.Count(x => x.IsOrderRequired && !x.IsSameManager && x.LackOrder && x.RequestType!.Value.IsSell());
-            LackOrderCount2 = requests.Count(x => x.IsOrderRequired && x.LackOrder && x.IsSameManager);
+            LackOrderSellCount = requests.Count(x => !x.IsLiquidating && x.IsOrderRequired && !x.IsSameManager && x.LackOrder && x.RequestType!.Value.IsSell());
+            LackOrderCount2 = requests.Count(x => !x.IsLiquidating && x.IsOrderRequired && x.LackOrder && x.IsSameManager);
             //int lo1 = 0, lo2 = 0, lo3 = 0;
             //foreach (var item in requests.ExceptBy(map.Where(x => x.OrderId != 0 && x.RequestId != 0).Select(x => x.RequestId), x => x.Id))
             //{
