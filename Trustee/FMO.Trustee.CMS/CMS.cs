@@ -60,7 +60,7 @@ public partial class CMS : TrusteeApiBase
 
     public override async Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end)
     {
-        var data = await SyncWork<TransferRequest, TransferRequestJson>(1006, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
+        var data = await SyncWork<TransferRequest, TransferRequestJson>(1007, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
 
         // 无数据返回
         if (data.Data?.Count == 0) return data;

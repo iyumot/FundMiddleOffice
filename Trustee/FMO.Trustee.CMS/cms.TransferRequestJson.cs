@@ -159,16 +159,16 @@ internal class TransferRequestJson : JsonBase
     {
         return c switch
         {
-            "120" => TransferRequestType.InitialOffer,
-            "122" => TransferRequestType.Purchase,
-            "124" => TransferRequestType.Redemption,
-            "129" => TransferRequestType.BonusType,//"分红方式",
-            "130" => TransferRequestType.Subscription,
-            "142" => TransferRequestType.ForceRedemption,
-            "143" => TransferRequestType.Distribution,     //"分红确认",
-            "144" => TransferRequestType.Increase,     //"强行调增", 份额类型调整
-            "145" => TransferRequestType.Decrease,     //"强行调减",
-            "152" => TransferRequestType.Abort,
+            "020" => TransferRequestType.InitialOffer,
+            "022" => TransferRequestType.Purchase,
+            "024" => TransferRequestType.Redemption,
+            "029" => TransferRequestType.BonusType,//"分红方式",
+            "030" => TransferRequestType.Subscription,
+            "042" => TransferRequestType.ForceRedemption,
+            "043" => TransferRequestType.Distribution,     //"分红确认",
+            "044" => TransferRequestType.Increase,     //"强行调增", 份额类型调整
+            "045" => TransferRequestType.Decrease,     //"强行调减",
+            "052" => TransferRequestType.Abort,
             _ => TransferRequestType.UNK
         };
     }
