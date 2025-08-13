@@ -166,7 +166,7 @@ internal class DistrubutionJson : JsonBase
         {
             InvestorIdentity = CertificateNumber,
             InvestorName = InvestorName,
-            ExternalId = TaConfirmNo,
+            ExternalId = $"{CITICS._Identifier}.{TaConfirmNo}",
             ConfirmedDate = DateOnly.ParseExact(ConfirmDate, "yyyyMMdd"),
             ConfirmedShare = ParseDecimal(ReinvestShares),
             ConfirmedAmount = ParseDecimal(RealCashDividend),

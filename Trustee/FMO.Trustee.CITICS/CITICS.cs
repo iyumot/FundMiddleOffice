@@ -113,6 +113,7 @@ public partial class CITICS : TrusteeApiBase
         var part = "/v1/ta/TradeConfirmationForApi";
         var result = await SyncWork<TransferRecordJson, TransferRecordJson>(part, new { ackBeginDate = $"{begin:yyyyMMdd}", ackEndDate = $"{end:yyyyMMdd}" }, x => x);
 
+        List<TransferRecord> list = new();
         // 后处理
         if (result.Data?.Length > 0)
         {
@@ -132,7 +133,6 @@ public partial class CITICS : TrusteeApiBase
                 map = db.GetCollection<InvestorAccountMapping>("citics_cus_accout_map").FindAll().ToDictionary(x => x.Id);
             }
 
-            List<TransferRecord> list = new();
             // 映射基金名、投资人
             using (var b = DbHelper.Base())
             {
@@ -153,11 +153,17 @@ public partial class CITICS : TrusteeApiBase
             if (list.Count != result.Data.Length)
                 return new(ReturnCode.CITICS_Investor, list.ToArray());
 
-            // 排除失败的
-            return new(result.Code, list.Where(x => x.Source != "failed").ToArray());
         }
 
-        return new(result.Code, null);
+
+        // 分红
+        var dis = await QueryDistibution(begin, end);
+        if (dis.Code == ReturnCode.Success && dis.Data is not null)
+            list.AddRange(dis.Data);
+
+        // 排除失败的
+        return new(result.Code, list.Where(x => x.Source != "failed").ToArray());
+        //return new(result.Code, null);
     }
 
 
