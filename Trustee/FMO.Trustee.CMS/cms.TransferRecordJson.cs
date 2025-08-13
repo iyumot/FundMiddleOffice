@@ -123,7 +123,7 @@ internal class TransferRecordJson : JsonBase
             Type = transferRecordType,
             Fee = ParseDecimal(Charge),
             PerformanceFee = ParseDecimal(Performance),
-            ExternalRequestId = $"{CMS._Identifier}.{ApplyNo}",
+            ExternalRequestId = $"{CMS._Identifier}.{Remark1}",//$"{CMS._Identifier}.{ApplyNo}",
             FundCode = FundCode,
             FundName = FundName,
             Source = "api",
