@@ -60,7 +60,7 @@ public record EntityChanged<TProperty>(Type Type, object Id, string PropertyName
 /// </summary>
 /// <param name="RecordId"></param>
 /// <param name="OrderId"></param>
-public record TransferRecordLinkOrderMessage(int RecordId, int OrderId);
+public record TransferRecordLinkOrderMessage(int RecordId, int OrderId, int RequestId);
 
 
 public record TipChangeMessage(TipType Type);

@@ -2,7 +2,7 @@
 using System.ComponentModel;
 
 namespace FMO.Models;
-public record ManualLinkOrder(int Id, int OrderId, string ExternalId);
+public record ManualLinkOrder(int Id, int OrderId, string ExternalId, string ExternalRequestId);
 
 /// <summary>
 /// TA 记录

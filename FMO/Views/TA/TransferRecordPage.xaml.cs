@@ -26,7 +26,7 @@ public partial class TransferRecordPage : UserControl
 }
 
 
-public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<TransferRecord>, IRecipient<PageTAMessage>, IRecipient<TransferOrder>, IRecipient<TipChangeMessage>
+public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<TransferRecord>, IRecipient<PageTAMessage>, IRecipient<TransferOrder>, IRecipient<TipChangeMessage>, IRecipient<IEnumerable<TransferRecordLinkOrderMessage>>
 {
     [ObservableProperty]
     public partial ObservableCollection<TransferRecordViewModel>? Records { get; set; }
@@ -616,7 +616,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
             item.IsConfirmed = true;
 
         //var map = db.GetCollection<TransferMapping>().FindAll().ToList();
-         
+
 
         //if (Orders is not null)
         //    foreach (var item in Orders.Join(map, x => x.Id, x => x.OrderId, (o, m) => new { o, m }))
@@ -671,5 +671,31 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     public void Receive(TipChangeMessage message)
     {
         CheckDataError();
+    }
+
+    public void Receive(IEnumerable<TransferRecordLinkOrderMessage> message)
+    {
+        try
+        {
+            if (Records is not null)
+                foreach (var (confirm, link) in Records.Join(message, x => x.Id, x => x.RecordId, (confirm, link) => (confirm, link)))
+                {
+                    confirm.OrderId = link.OrderId;
+                    confirm.OnPropertyChanged(nameof(confirm.HasOrder));
+                    confirm.OnPropertyChanged(nameof(confirm.LackOrder));
+                }
+
+            if(Requests is not null)
+                foreach (var (request, link) in Requests.Join(message, x => x.Id, x => x.RequestId, (request, link) => (request, link)))
+                {
+                    request.OrderId = link.OrderId;
+                    request.OnPropertyChanged(nameof(request.HasOrder));
+                    request.OnPropertyChanged(nameof(request.LackOrder));
+                }
+        }
+        catch (Exception e)
+        {
+            Log.Error($"void Receive(TransferRecordLinkOrderMessage message) {e}");
+        }
     }
 }

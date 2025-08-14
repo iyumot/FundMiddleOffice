@@ -692,14 +692,15 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
                 foreach (var item in same)
                     item.OrderId = Id;
 
-                DataTracker.LinkOrder(same);
                 db.GetCollection<TransferRecord>().Update(same);
+                DataTracker.LinkOrder(same);
             }
             else
             {
                 var rec = db.GetCollection<TransferRecord>().FindById(Record.Id);
                 rec.OrderId = Id;
                 db.GetCollection<TransferRecord>().Update(rec);
+                db.GetCollection<ManualLinkOrder>().Upsert(new ManualLinkOrder(Record.Id, Id, Record.ExternalId!, Record.ExternalRequestId!));
                 DataTracker.LinkOrder(rec);
             }
 

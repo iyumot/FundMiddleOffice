@@ -597,8 +597,21 @@ public static partial class DataTracker
     /// <param name="same"></param>
     public static void LinkOrder(params TransferRecord[] same)
     {
+        using var db = DbHelper.Base();
+        db.BeginTrans();
         foreach (var item in same)
-            WeakReferenceMessenger.Default.Send(new TransferRecordLinkOrderMessage(item.Id, item.OrderId));
+        {
+            db.GetCollection<ManualLinkOrder>().Upsert(new ManualLinkOrder(item.Id, item.OrderId, item.ExternalId!, item.ExternalRequestId!));
+
+            // 更新request
+            db.GetCollection<TransferRequest>().UpdateMany($"{{OrderId:{item.OrderId}}}", $"RequestId={item.RequestId}");
+        }
+        db.Commit();
+
+        WeakReferenceMessenger.Default.Send(same.Select(x => new TransferRecordLinkOrderMessage(x.Id, x.OrderId, x.RequestId)));
+
+        //foreach (var item in same)
+        //    WeakReferenceMessenger.Default.Send(new TransferRecordLinkOrderMessage(item.Id, item.OrderId));
     }
 
     public static void OnBatchTransferRequest(IList<TransferRequest> data)
@@ -695,7 +708,7 @@ public static partial class DataTracker
         //        }
         //    }
         var eid = data.Select(x => x.ExternalId).ToList();
-        var col = db.GetCollection<TransferRequest>().Find(x=> x.ExternalId != null && eid.Contains(x.ExternalId)).ToDictionary(x=>x.ExternalId!);
+        var col = db.GetCollection<TransferRequest>().Find(x => x.ExternalId != null && eid.Contains(x.ExternalId)).ToDictionary(x => x.ExternalId!);
         foreach (var r in data)
         {
             if (col.TryGetValue(r.ExternalId!, out var old))

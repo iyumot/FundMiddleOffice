@@ -40,7 +40,7 @@ public partial class CustomerView : UserControl
 /// <summary>
 /// customer vm
 /// </summary>
-public partial class CustomerViewModel : EditableControlViewModelBase<Investor>, IRecipient<TransferRecordLinkOrderMessage>, IRecipient<EntityDeleted>
+public partial class CustomerViewModel : EditableControlViewModelBase<Investor>, IRecipient<IEnumerable<TransferRecordLinkOrderMessage>>, IRecipient<EntityDeleted>
 {
     [TypeConverter(typeof(EnumDescriptionTypeConverter))] public enum NaturalType { [Description("非员工")] NonEmployee, [Description("员工")] Employee };
 
@@ -944,6 +944,26 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
     {
         if (message.Type == typeof(RiskAssessment) && message.Id is int id && RiskAssessments.FirstOrDefault(x => x.Id == id) is RiskAssessmentViewModel r)
             RiskAssessments.Remove(r);
+    }
+
+    public void Receive(IEnumerable<TransferRecordLinkOrderMessage> message)
+    {
+        if (TransferRecords is null) return;
+        try
+        {
+
+            foreach (var (confirm, link) in TransferRecords.Where(x => x.Records is not null).SelectMany(x => x.Records!).Join(message, x => x.Id, x => x.RecordId, (confirm, link) => (confirm, link)))
+            {
+                confirm.OrderId = link.OrderId;
+                confirm.OnPropertyChanged(nameof(confirm.HasOrder));
+                confirm.OnPropertyChanged(nameof(confirm.LackOrder));
+            }
+
+        }
+        catch (Exception e)
+        {
+            Log.Error($"void Receive(TransferRecordLinkOrderMessage message) {e}");
+        }
     }
 
     public partial class TransferRecordByFund : ObservableObject
