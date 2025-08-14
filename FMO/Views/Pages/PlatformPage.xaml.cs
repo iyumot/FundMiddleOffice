@@ -225,8 +225,8 @@ public partial class PlatformPageViewModel : ObservableObject, IRecipient<Truste
             new((Geometry)App.Current.Resources["f.table-cells"], QueryNetValueOnceCommand, nameof(TrusteeWorker.QueryNetValueOnce), "同步净值"),
             new((Geometry)App.Current.Resources["f.hand-holding-dollar"], QueryRaisingBalanceOnceCommand, nameof(TrusteeWorker.QueryRaisingBalanceOnce), "同步募集户余额"),
             new((Geometry)App.Current.Resources["f.tornado"], QueryRaisingAccountTransctionOnceCommand,  nameof(TrusteeWorker.QueryRaisingAccountTransctionOnce),"同步募集户流水"),
-            new((Geometry)App.Current.Resources["f.bars"], QueryTransferRequestOnceCommand, nameof(TrusteeWorker.QueryTransferRequestOnce), "同步交易申请"),
-            new((Geometry)App.Current.Resources["f.calendar-days"], QueryTransferRecordOnceCommand, nameof(QueryTransferRecordOnce), "同步交易确认"),
+            new((Geometry)App.Current.Resources["f.file-circle-plus"], QueryTransferRequestOnceCommand, nameof(TrusteeWorker.QueryTransferRequestOnce), "同步交易申请"),
+            new((Geometry)App.Current.Resources["f.clipboard-check"], QueryTransferRecordOnceCommand, nameof(QueryTransferRecordOnce), "同步交易确认"),
             new((Geometry)App.Current.Resources["f.file-invoice-dollar"], QueryDailyFeeOnceCommand, nameof(QueryDailyFeeOnce), "同步每日计提费用"), ];
 
 
