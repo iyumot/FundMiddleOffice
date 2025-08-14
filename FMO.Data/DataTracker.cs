@@ -1255,31 +1255,52 @@ public static partial class DataTracker
         var orders = db.GetCollection<TransferOrder>().FindAll().OrderBy(x => x.Date).ToList();
         var requests = db.GetCollection<TransferRequest>().FindAll().OrderBy(x => x.RequestDate).Where(x => x.RequiredOrder()).ToList();
         var records = db.GetCollection<TransferRecord>().FindAll().OrderBy(x => x.RequestDate).Where(x => x.RequiredOrder()).ToList();
+        var man = db.GetCollection<ManualLinkOrder>().FindAll().ToList();
 
-        // 对应request 和 record
-        List<TransferMapping> map = new();
-        var rq = requests.Join(records, x => x.ExternalId, x => x.ExternalRequestId, (q, r) => new TransferMapping { RequestId = q.Id, RecordId = r.Id });
-        map.AddRange(rq);
+        // 关联req rec
+        foreach (var (c, r) in records.Join(requests, x => x.ExternalRequestId, x => x.ExternalId, (confirm, request) => (confirm, request)))
+            c.RequestId = r.Id;
 
-        // 有request 无record
-        rq = requests.ExceptBy(records.Select(x => x.ExternalRequestId), x => x.ExternalId).Join(records, x => x.ExternalId, x => x.ExternalId, (q, r) => new TransferMapping { RequestId = q.Id, RecordId = r.Id });
-        map.AddRange(rq);
+        // 先按手动的关联
+        var manc = records.Join(man, x => x.ExternalId, x => x.ExternalId, (confirm, link) => (confirm, link)).ToList();
+        foreach (var (c, m) in manc)
+        {
+            c.OrderId = m.OrderId;
+            records.Remove(c);
+        }
+        var manr = requests.Join(man, x => x.ExternalId, x => x.ExternalRequestId, (request, link) => (request, link)).ToList();
+        foreach (var (r, m) in manr)
+        {
+            r.OrderId = m.OrderId;
+            requests.Remove(r);
+        }
 
-        foreach (var item in requests.ExceptBy(map.Select(x => x.RequestId), x => x.Id))
-            map.Add(new TransferMapping { RequestId = item.Id });
 
-        // 有  record 无 request
-        foreach (var item in records.ExceptBy(map.Select(x => x.RecordId), x => x.Id))
-            map.Add(new TransferMapping { RecordId = item.Id });
+        //// 对应request 和 record
+        //List<TransferMapping> map = new();
+        //var rq = requests.Join(records, x => x.ExternalId, x => x.ExternalRequestId, (q, r) => new TransferMapping { RequestId = q.Id, RecordId = r.Id });
+        //map.AddRange(rq);
+
+        //// 有request 无record
+        //rq = requests.ExceptBy(records.Select(x => x.ExternalRequestId), x => x.ExternalId).Join(records, x => x.ExternalId, x => x.ExternalId, (q, r) => new TransferMapping { RequestId = q.Id, RecordId = r.Id });
+        //map.AddRange(rq);
+
+        //foreach (var item in requests.ExceptBy(map.Select(x => x.RequestId), x => x.Id))
+        //    map.Add(new TransferMapping { RequestId = item.Id });
+
+        //// 有  record 无 request
+        //foreach (var item in records.ExceptBy(map.Select(x => x.RecordId), x => x.Id))
+        //    map.Add(new TransferMapping { RecordId = item.Id });
 
         // 对应order
         var reqDates = requests.GroupBy(x => ((long)x.FundId << 32) | (long)x.InvestorId).ToDictionary(x => x.Key);
         var recDates = records.GroupBy(x => ((long)x.FundId << 32) | (long)x.InvestorId).ToDictionary(x => x.Key);
+        var mapedRequestId = new List<int>();
         foreach (var o in orders)
         {
             var gid = ((long)o.FundId << 32) | (long)o.InvestorId;
 
-            bool needtestrec = false;
+            //bool needtestrec = false;
 
             if (reqDates.ContainsKey(gid))
             {
@@ -1315,71 +1336,81 @@ public static partial class DataTracker
 
                 if (pair)
                 {
-                    var rids = may.Select(x => x.Id);
-                    foreach (var item in map.Where(x => rids.Contains(x.RequestId)).ToArray())
+                    //var rids = may.Select(x => x.Id);
+                    foreach (var item in may)
                     {
-                        // 有冲突
-                        if (item.OrderId != 0 && item.OrderId != o.Id)
-                            map.Add(new TransferMapping { OrderId = o.Id, RequestId = item.RequestId, RecordId = item.RecordId });
-                        else
-                            item.OrderId = o.Id;
+                        item.OrderId = o.Id;
+                        mapedRequestId.Add(item.Id);
                     }
+                    //foreach (var item in map.Where(x => rids.Contains(x.RequestId)).ToArray())
+                    //{
+                    //    // 有冲突
+                    //    if (item.OrderId != 0 && item.OrderId != o.Id)
+                    //        map.Add(new TransferMapping { OrderId = o.Id, RequestId = item.RequestId, RecordId = item.RecordId });
+                    //    else
+                    //        item.OrderId = o.Id;
+                    //}
                 }
-                else needtestrec = true;
+                // else needtestrec = true;
             }
 
-            if (needtestrec && recDates.ContainsKey(gid))
-            {
-                List<TransferRecord> rec = recDates[gid].ToList();
+            //if (needtestrec && recDates.ContainsKey(gid))
+            //{
+            //    List<TransferRecord> rec = recDates[gid].ToList();
 
-                // 找 o.Date 后一个日期的所有同fundId InvestorId的 request
-                // 使用二分查找找到第一个符合条件的请求
-                int index = rec.Select(x => x.RequestDate).ToList().BinarySearch(o.Date);
-                if (index < 0) index = ~index;
+            //    // 找 o.Date 后一个日期的所有同fundId InvestorId的 request
+            //    // 使用二分查找找到第一个符合条件的请求
+            //    int index = rec.Select(x => x.RequestDate).ToList().BinarySearch(o.Date);
+            //    if (index < 0) index = ~index;
 
-                var take = 1;
-                for (int i = index + 1; i < rec.Count; i++, take++)
-                {
-                    if (rec[i].RequestDate != rec[index].RequestDate)
-                        break;
-                }
+            //    var take = 1;
+            //    for (int i = index + 1; i < rec.Count; i++, take++)
+            //    {
+            //        if (rec[i].RequestDate != rec[index].RequestDate)
+            //            break;
+            //    }
 
-                var may = rec.Skip(index).Take(take);
+            //    var may = rec.Skip(index).Take(take);
 
-                bool pair = false;
-                switch (o.Type)
-                {
-                    case TransferOrderType.FirstTrade:
-                    case TransferOrderType.Buy:
-                    case TransferOrderType.Amount:
-                    case TransferOrderType.RemainAmout:
-                        pair = o.Number == may.Sum(x => x.RequestAmount);
-                        break;
-                    case TransferOrderType.Share:
-                        pair = o.Number == may.Sum(x => x.RequestShare);
-                        break;
-                }
+            //    bool pair = false;
+            //    switch (o.Type)
+            //    {
+            //        case TransferOrderType.FirstTrade:
+            //        case TransferOrderType.Buy:
+            //        case TransferOrderType.Amount:
+            //        case TransferOrderType.RemainAmout:
+            //            pair = o.Number == may.Sum(x => x.RequestAmount);
+            //            break;
+            //        case TransferOrderType.Share:
+            //            pair = o.Number == may.Sum(x => x.RequestShare);
+            //            break;
+            //    }
 
-                if (pair)
-                {
-                    var rids = may.Select(x => x.Id);
-                    foreach (var item in map.Where(x => rids.Contains(x.RecordId)).ToArray())
-                    {
-                        // 有冲突
-                        if (item.OrderId != 0 && item.OrderId != o.Id)
-                            map.Add(new TransferMapping { OrderId = o.Id, RequestId = item.RequestId, RecordId = item.RecordId });
-                        else
-                            item.OrderId = o.Id;
-                    }
-                }
-            }
+            //    if (pair)
+            //    {
+            //        var rids = may.Select(x => x.Id);
+            //        foreach (var item in map.Where(x => rids.Contains(x.RecordId)).ToArray())
+            //        {
+            //            // 有冲突
+            //            if (item.OrderId != 0 && item.OrderId != o.Id)
+            //                map.Add(new TransferMapping { OrderId = o.Id, RequestId = item.RequestId, RecordId = item.RecordId });
+            //            else
+            //                item.OrderId = o.Id;
+            //        }
+            //    }
+            //}
 
         }
+        // 上面连接的，同步到record中
+        foreach (var (c, r) in records.Join(requests.IntersectBy(mapedRequestId, x => x.Id), x => x.RequestId, x => x.Id, (confirm, request) => (confirm, request)))
+            c.OrderId = r.OrderId;
 
-        //if (db.GetCollection<TransferMapping>().Query().FirstOrDefault() is not null)
-        var col = db.GetCollection<TransferMapping>();
-        col.DeleteAll();
-        col.InsertBulk(map);
+        db.GetCollection<TransferRequest>().Update(requests);
+        db.GetCollection<TransferRecord>().Update(records);
+        ////if (db.GetCollection<TransferMapping>().Query().FirstOrDefault() is not null)
+        //var col = db.GetCollection<TransferMapping>();
+        //col.DeleteAll();
+        //col.InsertBulk(map);
     }
 
     public static void OnDeleteTransferRecord(int id)
