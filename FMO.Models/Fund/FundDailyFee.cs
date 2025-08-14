@@ -11,6 +11,8 @@ public class FundDailyFee
 
     public int FundId { get; set; }
 
+    public string? Class { get; set; }
+
     public required string FundCode { get; set; }
 
 

@@ -194,6 +194,7 @@ public partial class TrusteeWorker : ObservableObject
     {
         try
         {
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Info, $"开始同步 募集户余额"));
             List<WorkReturn> ret = new();
             // 保存数据库
             using var db = DbHelper.Base();
@@ -251,6 +252,8 @@ public partial class TrusteeWorker : ObservableObject
     {
         try
         {
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Info, $"开始同步 交易申请"));
+
             List<WorkReturn> ret = new();
             // 保存数据库
             var method = nameof(ITrustee.QueryTransferRequests);
@@ -334,10 +337,11 @@ public partial class TrusteeWorker : ObservableObject
     {
         try
         {
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Info, $"开始同步 交易确认"));
             List<WorkReturn> ret = new();
             // 保存数据库
             using var db = DbHelper.Base();
-            var funds = db.GetCollection<Fund>().FindAll().ToArray(); 
+            var funds = db.GetCollection<Fund>().FindAll().ToArray();
             var method = nameof(ITrustee.QueryTransferRecords);
 
 
@@ -411,10 +415,6 @@ public partial class TrusteeWorker : ObservableObject
             List<WorkReturn> ret = new();
             // 保存数据库
             using var db = DbHelper.Base();
-            var funds = db.GetCollection<Fund>().FindAll().ToArray();
-            var StartDateOfAny = StartOfAnyWork();
-            using var pdb = DbHelper.Platform();
-            var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
 
             var method = nameof(ITrustee.QueryFundDailyFee);
 
@@ -429,39 +429,40 @@ public partial class TrusteeWorker : ObservableObject
                 try
                 {
                     // 获取历史区间
-                    var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + method);
+                    var range = GetWorkedRange(tr.Identifier, method);
+                    DateOnly begin = range.End, end = DateOnly.FromDateTime(DateTime.Now);
+                    if (begin == end) begin = begin.AddDays(-5);
 
-                    DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
 
-                    do
+                    var rc = await tr.QueryFundDailyFee(begin, end);
+
+                    ///
+                    // 保存数据库 
+                    if (rc.Data is not null)
                     {
-                        var rc = await tr.QueryFundDailyFee(begin, end);
-
-                        ///
-                        // 保存数据库 
-                        if (rc.Data is not null)
+                        // 对齐Fund
+                        foreach (var fs in rc.Data.GroupBy(x => x.FundCode))
                         {
-                            // 对齐Fund
-                            foreach (var f in rc.Data)
+                            var (f, c) = db.FindFundByCode(fs.Key);
+                            if (f is null) continue;
+                            foreach (var item in fs)
                             {
-                                f.FundId = funds.FirstOrDefault(x => x.Code == f.FundCode)?.Id ?? 0;
+                                item.FundId = f.Id;
+                                item.Class = c;
                             }
-
-                            db.GetCollection<FundDailyFee>().Upsert(rc.Data);
                         }
 
-                        if (range is null) range = new(tr.Identifier + method, begin, end);
-                        else range.Merge(begin, end);
-                        pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
+                        db.GetCollection<FundDailyFee>().Upsert(rc.Data);
+                    }
 
-                        // 合并记录
-                        ret.Add(new(tr.Title, rc.Code, rc.Data));
+                    // 更新进度
+                    range.Merge(begin, end);
+                    using var pdb = DbHelper.Platform();
+                    pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
 
-                        // 向前一年
-                        end = range.Begin.AddDays(-1);
-                        if (end.Year < 1970) break;
-                        begin = end.AddYears(-1);
-                    } while (begin > StartDateOfAny);
+                    // 合并记录
+                    ret.Add(new(tr.Title, rc.Code, rc.Data));
+
                 }
                 catch (Exception e)
                 {
@@ -491,14 +492,12 @@ public partial class TrusteeWorker : ObservableObject
     /// <returns></returns>
     private async Task QueryRaisingAccountTransctionImpl()
     {
+        WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Info, $"开始同步 募集户余额"));
+
         List<WorkReturn> ret = new();
         // 保存数据库
         using var db = DbHelper.Base();
-        var funds = db.GetCollection<Fund>().FindAll().ToArray();
-        var StartDateOfAny = StartOfAnyWork();
-        using var pdb = DbHelper.Platform();
-        var ranges = pdb.GetCollection<TrusteeMethodShotRange>().FindAll().ToArray();
-
+        var method = nameof(QueryRaisingAccountTransctionOnce);
 
         foreach (var tr in Trustees)
         {
@@ -511,34 +510,29 @@ public partial class TrusteeWorker : ObservableObject
             try
             {
                 // 获取历史区间
-                var range = ranges.FirstOrDefault(x => x.Id == tr.Identifier + nameof(tr.QueryRaisingAccountTransction));
+                var range = GetWorkedRange(tr.Identifier, method);
 
-                DateOnly begin = range?.End ?? new DateOnly(DateTime.Today.Year, 1, 1), end = DateOnly.FromDateTime(DateTime.Now);
-                do
+                DateOnly begin = range.End, end = DateOnly.FromDateTime(DateTime.Now);
+
+                var rc = await tr.QueryRaisingAccountTransction(begin, end);
+
+                ///
+                // 保存数据库 
+                if (rc.Data is not null)
                 {
-                    var rc = await tr.QueryRaisingAccountTransction(begin, end);
+                    // 对齐数据   
 
-                    ///
-                    // 保存数据库 
-                    if (rc.Data is not null)
-                    {
-                        // 对齐数据   
+                    db.GetCollection<RaisingBankTransaction>().Upsert(rc.Data);
+                }
 
-                        db.GetCollection<RaisingBankTransaction>().Upsert(rc.Data);
-                    }
+                // 合并记录
+                ret.Add(new(tr.Title, rc.Code, rc.Data));
 
-                    if (range is null) range = new(tr.Identifier + nameof(tr.QueryRaisingAccountTransction), begin, end);
-                    else range.Merge(begin, end);
-                    pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
 
-                    // 合并记录
-                    ret.Add(new(tr.Title, rc.Code, rc.Data));
-
-                    // 向前一年
-                    end = range.Begin.AddDays(-1);
-                    if (end.Year < 1970) break;
-                    begin = end.AddYears(-1);
-                } while (begin > StartDateOfAny);
+                // 更新进度
+                range.Merge(begin, end);
+                using var pdb = DbHelper.Platform();
+                pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
             }
             catch (Exception e)
             {
