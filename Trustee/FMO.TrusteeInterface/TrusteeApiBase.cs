@@ -46,8 +46,6 @@ public abstract class TrusteeApiBase : ITrustee
     private static ILiteDatabase _db { get; } = new LiteDatabase(@$"FileName=data\platformlog.db;Connection=Shared");
 
 
-
-
     public abstract Task<ReturnWrap<Investor>> QueryInvestors();
 
 

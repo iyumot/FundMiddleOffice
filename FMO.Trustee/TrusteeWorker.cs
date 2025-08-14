@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 
 namespace FMO.Trustee;
 
-internal record FundTrusteePair(int FundId, ITrustee trustee);
+internal record FundTrusteePair(int FundId, ITrustee Trustee, bool IsCleared);
 
 
 /// <summary>
@@ -95,7 +95,7 @@ public partial class TrusteeWorker : ObservableObject
 
 
 
-    (WorkConfig Config, Func<Task> Command)[] tasks;
+    (WorkConfig Config, Func<IEnumerable<ITrustee>, Task> Command)[] tasks;
 
     public TrusteeWorker(ITrustee[] trustees)
     {
@@ -129,18 +129,14 @@ public partial class TrusteeWorker : ObservableObject
         // 基金映射
         using (var db = DbHelper.Base())
         {
-            var funds = db.GetCollection<Fund>().Query().Select(x => new { x.Id, x.SetupDate, x.Trustee }).ToList();
-            var unk = funds.ExceptBy(maps.Select(x => x.FundId), x => x.Id);
-            foreach (var item in unk)
+            var funds = db.GetCollection<Fund>().Query().Select(x => new { x.Id, x.SetupDate, x.Trustee, x.Status }).ToList();
+
+            foreach (var item in funds)
             {
                 if (trustees.FirstOrDefault(x => x.IsSuit(item.Trustee)) is ITrustee trustee)
-                    Maps.Add(new(item.Id, trustee));
+                    Maps.Add(new(item.Id, trustee, item.Status > FundStatus.StartLiquidation));
             }
-            foreach (var item in maps)
-            {
-                if (trustees.FirstOrDefault(x => x.IsSuit(item.Identifier)) is ITrustee trustee)
-                    Maps.Add(new(item.FundId, trustee));
-            }
+
 
             // 所有任务的最小日期
             StartOfAny = db.GetCollection<Manager>().Query().First().SetupDate;
@@ -190,16 +186,17 @@ public partial class TrusteeWorker : ObservableObject
     /// 获取募集户余额
     /// </summary>
     /// <returns></returns>
-    private async Task QueryRaisingBalanceImpl()
+    private async Task QueryRaisingBalanceImpl(IEnumerable<ITrustee>? trustees = null)
     {
         try
         {
             WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Info, $"开始同步 募集户余额"));
+            if (trustees is null || trustees.Any()) trustees = Trustees;
             List<WorkReturn> ret = new();
             // 保存数据库
             using var db = DbHelper.Base();
 
-            foreach (var tr in Trustees)
+            foreach (var tr in trustees)
             {
                 if (!tr.IsValid)
                 {
@@ -248,17 +245,18 @@ public partial class TrusteeWorker : ObservableObject
     /// 
     /// </summary>
     /// <returns></returns>
-    private async Task QueryTransferRequestImpl()
+    private async Task QueryTransferRequestImpl(IEnumerable<ITrustee>? trustees = null)
     {
         try
         {
             WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Info, $"开始同步 交易申请"));
+            if (trustees is null || trustees.Any()) trustees = Trustees;
 
             List<WorkReturn> ret = new();
             // 保存数据库
             var method = nameof(ITrustee.QueryTransferRequests);
 
-            foreach (var tr in Trustees)
+            foreach (var tr in trustees)
             {
                 if (!tr.IsValid)
                 {
@@ -333,11 +331,13 @@ public partial class TrusteeWorker : ObservableObject
     /// 获取交易确认记录
     /// </summary>
     /// <returns></returns>
-    private async Task QueryTransferRecordImpl()
+    private async Task QueryTransferRecordImpl(IEnumerable<ITrustee>? trustees = null)
     {
         try
         {
             WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Info, $"开始同步 交易确认"));
+            if (trustees is null || trustees.Any()) trustees = Trustees;
+
             List<WorkReturn> ret = new();
             // 保存数据库
             using var db = DbHelper.Base();
@@ -345,7 +345,7 @@ public partial class TrusteeWorker : ObservableObject
             var method = nameof(ITrustee.QueryTransferRecords);
 
 
-            foreach (var tr in Trustees)
+            foreach (var tr in trustees)
             {
                 if (!tr.IsValid)
                 {
@@ -408,17 +408,19 @@ public partial class TrusteeWorker : ObservableObject
     /// 获取每日费用明细
     /// </summary>
     /// <returns></returns>
-    private async Task QueryDailyFeeImpl()
+    private async Task QueryDailyFeeImpl(IEnumerable<ITrustee>? trustees = null)
     {
         try
         {
+            if (trustees is null || trustees.Any()) trustees = Trustees;
+
             List<WorkReturn> ret = new();
             // 保存数据库
             using var db = DbHelper.Base();
 
             var method = nameof(ITrustee.QueryFundDailyFee);
 
-            foreach (var tr in Trustees)
+            foreach (var tr in trustees)
             {
                 if (!tr.IsValid)
                 {
@@ -490,16 +492,17 @@ public partial class TrusteeWorker : ObservableObject
     /// 获取募集户流水
     /// </summary>
     /// <returns></returns>
-    private async Task QueryRaisingAccountTransctionImpl()
+    private async Task QueryRaisingAccountTransctionImpl(IEnumerable<ITrustee>? trustees = null)
     {
         WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Info, $"开始同步 募集户流水"));
+        if (trustees is null || trustees.Any()) trustees = Trustees;
 
         List<WorkReturn> ret = new();
         // 保存数据库
         using var db = DbHelper.Base();
         var method = nameof(QueryRaisingAccountTransctionOnce);
 
-        foreach (var tr in Trustees)
+        foreach (var tr in trustees)
         {
             if (!tr.IsValid)
             {
@@ -557,8 +560,10 @@ public partial class TrusteeWorker : ObservableObject
     /// </summary>
     /// <returns></returns>
 
-    private async Task QueryNetValueImpl()
+    private async Task QueryNetValueImpl(IEnumerable<ITrustee>? trustees = null)
     {
+        if (trustees is null || trustees.Any()) trustees = Trustees;
+
         using var db = DbHelper.Base();
         var funds = db.GetCollection<Fund>().Query().Select(x => new { x.Id, x.Code, x.SetupDate, x.ClearDate, x.LastUpdate, x.Status }).ToList();
 
@@ -574,19 +579,19 @@ public partial class TrusteeWorker : ObservableObject
     /// 获取募集户流水
     /// </summary>
     /// <returns></returns>
-    public async Task QueryRaisingAccountTransctionOnce() => await RunTask(QueryRaisingAccountTransctionImpl());
+    public async Task QueryRaisingAccountTransctionOnce(IEnumerable<ITrustee>? trustees = null) => await RunTask(QueryRaisingAccountTransctionImpl(trustees));
 
     /// <summary>
     /// 获取交易确认记录
     /// </summary>
     /// <returns></returns>
-    public async Task QueryTransferRecordOnce() => await RunTask(QueryTransferRecordImpl());
+    public async Task QueryTransferRecordOnce(IEnumerable<ITrustee>? trustees = null) => await RunTask(QueryTransferRecordImpl(trustees));
 
     /// <summary>
     /// 获取每日费用明细
     /// </summary>
     /// <returns></returns>
-    public async Task QueryDailyFeeOnce() => await RunTask(QueryDailyFeeImpl());
+    public async Task QueryDailyFeeOnce(IEnumerable<ITrustee>? trustees = null) => await RunTask(QueryDailyFeeImpl(trustees));
 
     /// <summary>
     /// 获取交易申请记录
@@ -595,26 +600,26 @@ public partial class TrusteeWorker : ObservableObject
     /// 
     /// </summary>
     /// <returns></returns>
-    public async Task QueryTransferRequestOnce() => await RunTask(QueryTransferRequestImpl());
+    public async Task QueryTransferRequestOnce(IEnumerable<ITrustee>? trustees = null) => await RunTask(QueryTransferRequestImpl(trustees));
 
     /// <summary>
     /// 获取募集户余额
     /// </summary>
     /// <returns></returns>
-    public async Task QueryRaisingBalanceOnce() => await RunTask(QueryRaisingBalanceImpl());
+    public async Task QueryRaisingBalanceOnce(IEnumerable<ITrustee>? trustees = null) => await RunTask(QueryRaisingBalanceImpl(trustees));
 
 
     /// <summary>
     /// 查询净值
     /// </summary>
     /// <returns></returns>
-    public async Task QueryNetValueOnce() => await RunTask(QueryNetValueImpl());
+    public async Task QueryNetValueOnce(IEnumerable<ITrustee>? trustees = null) => await RunTask(QueryNetValueImpl());
 
     public async Task QueryNetValueOnce(int fundId, string code, DateOnly begin, DateOnly end)
     {
         if (Maps.LastOrDefault(x => x.FundId == fundId) is FundTrusteePair pair)
         {
-            var rc = await pair.trustee.QueryNetValue(begin, end, code);
+            var rc = await pair.Trustee.QueryNetValue(begin, end, code);
 
             ///
             // 保存数据库 
@@ -734,6 +739,8 @@ public partial class TrusteeWorker : ObservableObject
         // 是否非工作时间 8-19点
         bool offwork = (now.Hour < 8 || now.Hour >= 19);
 
+        var ava = Maps.Where(x => !x.IsCleared).Select(x => x.Trustee).Distinct().ToList();
+
 
         foreach (var (Config, Task) in tasks)
         {
@@ -746,7 +753,7 @@ public partial class TrusteeWorker : ObservableObject
                 {
                     if (minuteIndex / Config.Interval != Config.GetLastRunIndex())
                     {
-                        await Task();
+                        await Task(ava);
                     }
                 }
                 catch (Exception ex)
