@@ -6,6 +6,7 @@ using Microsoft.Win32;
 using Serilog;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -318,6 +319,11 @@ public partial class SingleFileViewModel : ObservableObject, IFileSelector//,IFi
     }
 }
 
+public partial class SealedFileViewModel : SingleFileViewModel
+{
+    [ObservableProperty]
+    public partial SingleFileViewModel? Sealed { get; set; }
+}
 
 
 
@@ -418,6 +424,7 @@ public partial class MultipleFileViewModel : ObservableObject, IFileSelector
             Log.Error($"文件另存为失败: {ex.Message}");
         }
     }
+
 }
 
 
