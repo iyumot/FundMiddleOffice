@@ -26,7 +26,7 @@ public partial class TransferRecordPage : UserControl
 }
 
 
-public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<TransferRecord>, IRecipient<PageTAMessage>, IRecipient<TransferOrder>, IRecipient<TipChangeMessage>, IRecipient<IEnumerable<TransferRecordLinkOrderMessage>>
+public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<TransferRecord>, IRecipient<PageTAMessage>, IRecipient<TransferOrder>, IRecipient<TipChangeMessage>, IRecipient<IEnumerable<LinkOrderMessage>>
 {
     [ObservableProperty]
     public partial ObservableCollection<TransferRecordViewModel>? Records { get; set; }
@@ -673,7 +673,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         CheckDataError();
     }
 
-    public void Receive(IEnumerable<TransferRecordLinkOrderMessage> message)
+    public void Receive(IEnumerable<LinkOrderMessage> message)
     {
         try
         {

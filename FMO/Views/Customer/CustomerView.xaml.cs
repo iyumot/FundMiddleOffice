@@ -40,7 +40,7 @@ public partial class CustomerView : UserControl
 /// <summary>
 /// customer vm
 /// </summary>
-public partial class CustomerViewModel : EditableControlViewModelBase<Investor>, IRecipient<IEnumerable<TransferRecordLinkOrderMessage>>, IRecipient<EntityDeleted>
+public partial class CustomerViewModel : EditableControlViewModelBase<Investor>, IRecipient<IEnumerable<LinkOrderMessage>>, IRecipient<EntityDeleted>
 {
     [TypeConverter(typeof(EnumDescriptionTypeConverter))] public enum NaturalType { [Description("非员工")] NonEmployee, [Description("员工")] Employee };
 
@@ -914,7 +914,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
 
     protected override Investor InitNewEntity() => new Investor { Name = string.Empty };
 
-    public void Receive(TransferRecordLinkOrderMessage message)
+    public void Receive(LinkOrderMessage message)
     {
         if (TransferRecords is null) return;
         try
@@ -946,7 +946,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
             RiskAssessments.Remove(r);
     }
 
-    public void Receive(IEnumerable<TransferRecordLinkOrderMessage> message)
+    public void Receive(IEnumerable<LinkOrderMessage> message)
     {
         if (TransferRecords is null) return;
         try

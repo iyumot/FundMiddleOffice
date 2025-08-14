@@ -608,7 +608,7 @@ public static partial class DataTracker
         }
         db.Commit();
 
-        WeakReferenceMessenger.Default.Send(same.Select(x => new TransferRecordLinkOrderMessage(x.Id, x.OrderId, x.RequestId)));
+        WeakReferenceMessenger.Default.Send(same.Select(x => new LinkOrderMessage(x.Id, x.OrderId, x.RequestId)));
 
         //foreach (var item in same)
         //    WeakReferenceMessenger.Default.Send(new TransferRecordLinkOrderMessage(item.Id, item.OrderId));
@@ -805,6 +805,8 @@ public static partial class DataTracker
                 item.confirm.OrderId = item.request.OrderId;
         }
 
+        WeakReferenceMessenger.Default.Send(records.Select(x => new LinkOrderMessage(x.Id, x.OrderId, x.RequestId)));
+
         // bak
         {
             var data = db.GetCollection("ta_record_bak").FindAll().Select(x => new { ExId = x[nameof(TransferRecord.ExternalId)], OrderId = x[nameof(TransferRecord.OrderId)] }).ToDictionary(x => x.ExId);
@@ -824,7 +826,7 @@ public static partial class DataTracker
                         r.OrderId = value.OrderId;
                 }
             }
-            db.GetCollection<ManualLinkOrder>().Upsert(confirm.Where(x => x.OrderId != 0).Select(x => new ManualLinkOrder(x.Id, x.OrderId, x.ExternalId!)));
+            db.GetCollection<ManualLinkOrder>().Upsert(confirm.Where(x => x.OrderId != 0).Select(x => new ManualLinkOrder(x.Id, x.OrderId, x.ExternalId!, x.ExternalRequestId!)));
             db.GetCollection<TransferRecord>().Update(confirm);
             db.GetCollection<TransferRequest>().Update(request.Select(x => x.Value));
         }
@@ -1135,6 +1137,7 @@ public static partial class DataTracker
         var mapedOrderIds = db.GetCollection<TransferRequest>().Query().Where(x => x.OrderId != 0).Select(x => x.OrderId).ToList();
         var unmapOrder = db.GetCollection<TransferOrder>().Find(x => !mapedOrderIds.Contains(x.Id)).ToList();
 
+        List<LinkOrderMessage> msg = new();
         db.BeginTrans();
         var reqDict = unmapRequset.OrderBy(x => x.RequestDate).GroupBy(x => ((long)x.FundId << 32) | (long)x.InvestorId).ToDictionary(x => x.Key);
         foreach (var o in unmapOrder)
@@ -1180,13 +1183,17 @@ public static partial class DataTracker
                 if (pair)
                 {
                     foreach (var item in may)
+                    {
                         item.OrderId = o.Id;
+                        msg.Add(new LinkOrderMessage(0, item.OrderId, item.Id));
+                    }
                     db.GetCollection<TransferRequest>().Update(may);
                 }
             }
         }
 
         db.Commit();
+        WeakReferenceMessenger.Default.Send(msg.AsEnumerable());
     }
 
 
