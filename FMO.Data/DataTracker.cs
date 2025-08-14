@@ -721,7 +721,7 @@ public static partial class DataTracker
         foreach (var r in data)
         {
             if (col.TryGetValue(r.ExternalId!, out var old))
-                r.KeepNotDefault(old);
+                r.ReplaceAndKeep(old);
         }
 
 
@@ -802,7 +802,7 @@ public static partial class DataTracker
         foreach (var r in records)
         {
             if (col.TryGetValue(r.ExternalId!, out var old))
-                r.KeepNotDefault(old);
+                r.ReplaceAndKeep(old);
         }
 
         // 对齐request

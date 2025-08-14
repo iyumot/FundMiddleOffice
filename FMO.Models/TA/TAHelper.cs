@@ -1,5 +1,4 @@
 ﻿using FMO.Models;
-using System.Diagnostics;
 
 namespace FMO.Utilities;
 
@@ -64,5 +63,19 @@ public static class TAHelper
     public static bool IsCompatible(this TransferRecord o, TransferOrder r) => (o.IsBuy() && r.IsBuy()) || (o.IsSell() && r.IsSell());
 
 
+    public static void ReplaceAndKeep(this TransferRecord r, TransferRecord old)
+    {
+        if (r.Id == 0) r.Id = old.Id;
+        if (r.RequestId == 0) r.RequestId = old.RequestId;
+        if (r.OrderId == 0) r.OrderId = old.OrderId;
+        if (!r.IsLiquidating) r.IsLiquidating = old.IsLiquidating;
+        if (r.ConfirmFile is null) r.ConfirmFile = old.ConfirmFile;
+    }
 
+    public static void ReplaceAndKeep(this TransferRequest r, TransferRequest old)
+    {
+        if (r.Id == 0) r.Id = old.Id;
+        if (r.OrderId == 0) r.OrderId = old.OrderId;
+        if (!r.IsLiquidating) r.IsLiquidating = old.IsLiquidating;
+    }
 }
