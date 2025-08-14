@@ -50,8 +50,9 @@ public partial class TrusteeWorkerSettingViewModel : ObservableObject
         var cms = Create(CMS._Identifier, ranges);
         var citics = Create(CITICS._Identifier, ranges);
         var csc = Create(CSC._Identifier, ranges);
+        var xyzq = Create(XYZQ._Identifier, ranges);
 
-        Configs = [cms, citics, csc];
+        Configs = [cms, citics, csc, xyzq];
 
 
         var cfg = pdb.GetCollection<WorkConfig>().FindAll().ToArray();
