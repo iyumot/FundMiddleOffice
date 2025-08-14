@@ -492,7 +492,7 @@ public partial class TrusteeWorker : ObservableObject
     /// <returns></returns>
     private async Task QueryRaisingAccountTransctionImpl()
     {
-        WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Info, $"开始同步 募集户余额"));
+        WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Info, $"开始同步 募集户流水"));
 
         List<WorkReturn> ret = new();
         // 保存数据库
