@@ -10,6 +10,7 @@
     xmlns:local="clr-namespace:FMO"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
+    xmlns:xyzq="clr-namespace:FMO.Trustee;assembly=FMO.Trustee.XYZQ"
     d:DataContext="{d:DesignInstance Type=local:PlatformPageViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="1300"
@@ -153,6 +154,38 @@
 
         </DataTemplate>
 
+
+        <DataTemplate DataType="{x:Type xyzq:XYZQViewModel}">
+            <StackPanel>
+                <BulletDecorator>
+                    <BulletDecorator.Bullet>
+                        <TextBlock Text="ClientId" />
+                    </BulletDecorator.Bullet>
+                    <TextBox Text="{Binding ClientId, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                </BulletDecorator>
+
+                <BulletDecorator>
+                    <BulletDecorator.Bullet>
+                        <TextBlock Text="ClientSecret" />
+                    </BulletDecorator.Bullet>
+                    <TextBox Text="{Binding ClientSecret, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                </BulletDecorator>
+
+                <BulletDecorator>
+                    <BulletDecorator.Bullet>
+                        <TextBlock Text="UserName" />
+                    </BulletDecorator.Bullet>
+                    <TextBox Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                </BulletDecorator>
+                <BulletDecorator>
+                    <BulletDecorator.Bullet>
+                        <TextBlock Text="Password" />
+                    </BulletDecorator.Bullet>
+                    <TextBox Text="{Binding Password, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                </BulletDecorator>
+            </StackPanel>
+
+        </DataTemplate>
 
         <DataTemplate DataType="{x:Type citics:CITISCViewModel}">
             <BulletDecorator>

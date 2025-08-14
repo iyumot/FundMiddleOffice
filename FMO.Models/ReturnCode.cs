@@ -195,4 +195,7 @@ public enum ReturnCode
     /// </summary>
     [Description("开始到结束不能超过一个月")]
     CMS_DateRangeLimitOneMonth,
+
+
+    XYZQ_CanNotGetToken,
 }

@@ -30,6 +30,7 @@
   <ItemGroup>
     <ProjectReference Include="..\FMO.Data\FMO.Data.csproj" />
     <ProjectReference Include="..\FMO.Models\FMO.Models.csproj" />
+    <ProjectReference Include="..\FMO.Trustee.XYZQ\FMO.Trustee.XYZQ.csproj" />
     <ProjectReference Include="..\FMO.Utilities\FMO.Utilities.csproj" />
     <ProjectReference Include="..\Trustee\FMO.Trustee.CITICS\FMO.Trustee.CITICS.csproj" />
     <ProjectReference Include="..\Trustee\FMO.Trustee.CMS\FMO.Trustee.CMS.csproj" />
