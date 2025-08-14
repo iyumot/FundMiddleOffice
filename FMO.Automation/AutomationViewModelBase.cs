@@ -12,7 +12,7 @@ public record RemoveMissionMessage(AutomationViewModelBase ViewModel);
 
 public partial class AutomationViewModelBase : ObservableObject, IRecipient<MissionMessage>, IRecipient<MissionProgressMessage>, IRecipient<MissionWorkMessage>
 {
-    public Type MissionType { get;  }
+    public Type MissionType { get; }
 
     /// <summary>
     /// 后台任务
@@ -105,8 +105,14 @@ public partial class AutomationViewModelBase : ObservableObject, IRecipient<Miss
 
 
     [RelayCommand]
-    public void ShowLog() => IsLogVisible = true;
+    public void ShowLog()
+    {
+        using var db = new MissionDatabase();
+        WorkLog = string.Join("\n\n", db.GetCollection<MissionRecord>().Find(x => x.MissionId == Id).
+            OrderByDescending(x => x.Time).Take(10).Select(x => $"{x.Time}\n{x.Record}"));
 
+        IsLogVisible = WorkLog?.Length > 0; 
+    }
     partial void OnNextRunTimeChanged(DateTime? value)
     {
 

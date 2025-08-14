@@ -38,6 +38,7 @@ public class DailyFromMailMission : MailMission
             return false;
         }
 
+        string log = "";
         // 获取所有文件
         var files = di.GetFiles();
         using var db = new MissionDatabase();
@@ -54,7 +55,7 @@ public class DailyFromMailMission : MailMission
         {
             try
             {
-                bool err = WorkOne(f);
+                bool err = WorkOne(f, log);
                 coll.Upsert(new MailMissionRecord { Id = f.Name, Time = DateTime.Now, HasError = err });
             }
             catch (Exception ex)
@@ -65,11 +66,15 @@ public class DailyFromMailMission : MailMission
             progress += unit;
             WeakReferenceMessenger.Default.Send(new MissionProgressMessage { Id = Id, Progress = progress });
         }
+
+        using (var mdb = new MissionDatabase())
+            mdb.GetCollection<MissionRecord>().Insert(new MissionRecord { MissionId = Id, Time = DateTime.Now, Record = log });
+
         WeakReferenceMessenger.Default.Send(new MissionProgressMessage { Id = Id, Progress = 100 });
         return true;
     }
 
-    private bool WorkOne(FileInfo file)
+    private bool WorkOne(FileInfo file, string log)
     {
         using MimeMessage msg = MimeMessage.Load(file.FullName);
 
@@ -78,7 +83,6 @@ public class DailyFromMailMission : MailMission
         using var db = DbHelper.Base();
         var funds = db.GetCollection<Fund>().FindAll().ToArray();
         bool haserror = false;
-        string log = "";
 
         // 有附件
         if (msg.Attachments.Any())

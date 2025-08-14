@@ -124,6 +124,7 @@
                             hc:IconElement.Geometry="{StaticResource f.circle-info}"
                             Background="Transparent"
                             BorderThickness="0"
+                            Command="{Binding ShowLogCommand}"
                             DockPanel.Dock="Right"
                             IsChecked="{Binding IsLogVisible}"
                             Style="{StaticResource ToggleButtonIcon}" />
@@ -153,14 +154,16 @@
                             PlacementTarget="{Binding ElementName=info}"
                             StaysOpen="False">
                             <Border
-                                Width="500"
-                                Height="300"
+                                MaxWidth="500"
+                                MaxHeight="600"
                                 Background="WhiteSmoke">
-                                <TextBlock
-                                    Margin="10"
-                                    Foreground="Gray"
-                                    Text="{Binding WorkLog}"
-                                    TextWrapping="Wrap" />
+                                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                    <TextBlock
+                                        Margin="10"
+                                        Foreground="Gray"
+                                        Text="{Binding WorkLog}"
+                                        TextWrapping="Wrap" />
+                                </ScrollViewer>
                             </Border>
                         </Popup>
                     </DockPanel>

@@ -57,7 +57,7 @@ public class TAFromMailMission : MailMission
 
         var work = IgnoreHistory ? files : files.ExceptBy(worked.Select(x => x.Id), x => x.Name).ToArray();
 
-        WorkLog = $"待处理邮件 {work.Length} 个";
+        var log = $"待处理邮件 {work.Length} 个";
 
         double unit = 100.0 / work.Length;
         double progress = 0;
@@ -65,7 +65,7 @@ public class TAFromMailMission : MailMission
         {
             try
             {
-                WorkOne(f);
+                WorkOne(f, log);
                 coll.Upsert(new MailMissionRecord { Id = f.Name, Time = DateTime.Now });
             }
             catch (Exception ex)
@@ -77,11 +77,11 @@ public class TAFromMailMission : MailMission
             WeakReferenceMessenger.Default.Send(new MissionProgressMessage { Id = Id, Progress = progress });
         }
 
-        WorkLog += $"完成";
+        log += $"完成";
         return true;
     }
 
-    private void WorkOne(FileInfo f)
+    private void WorkOne(FileInfo f, string log)
     {
         using MimeMessage mime = MimeMessage.Load(f.FullName);
 
@@ -110,13 +110,13 @@ public class TAFromMailMission : MailMission
                     {
                         if (ent.Name.Contains("交易"))
                         {
-                            WorkLog += $"\n{ent.Name}";
+                            log += $"\n{ent.Name}";
                         }
 
                         using var ss = ent.Open();
                         var mss = new MemoryStream();
                         ss.CopyTo(mss);
-                        WorkOnSheet(mss, sender);
+                        WorkOnSheet(mss, sender, log);
                     }
                     else if (Regex.IsMatch(ent.Name, ".pdf", RegexOptions.IgnoreCase))
                     {
@@ -131,13 +131,13 @@ public class TAFromMailMission : MailMission
             {
                 if (filepath.Contains("交易确认"))
                 {
-                    WorkLog += $"\n{filepath}";
+                    log += $"\n{filepath}";
                 }
 
                 var ms = new MemoryStream();
                 item.Content.DecodeTo(ms);
 
-                WorkOnSheet(ms, sender);
+                WorkOnSheet(ms, sender,log);
             }
             else if (Regex.IsMatch(filepath, ".pdf", RegexOptions.IgnoreCase))
             {
@@ -169,7 +169,7 @@ public class TAFromMailMission : MailMission
     /// </summary>
     /// <param name="stream"></param>
     /// <param name="domain">识别托管</param>
-    private bool WorkOnSheet(Stream stream, string domain)
+    private bool WorkOnSheet(Stream stream, string domain, string log)
     {
         if (stream is null || stream.Length == 0) return false;
 
@@ -209,7 +209,7 @@ public class TAFromMailMission : MailMission
         // 更新
         if (records.Count > 0)
         {
-            WorkLog += $"\n {string.Join('\n', records.Select(x => $"{x.InvestorName}-{x.ConfirmedDate}-{x.FundName}"))}\n";
+            log += $"\n {string.Join('\n', records.Select(x => $"{x.InvestorName}-{x.ConfirmedDate}-{x.FundName}"))}\n";
             using var db = DbHelper.Base();
             foreach (var rec in records)
             {
