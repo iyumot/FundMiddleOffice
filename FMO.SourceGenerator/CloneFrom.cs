@@ -213,7 +213,7 @@ public class CloneFromGenerator : IIncrementalGenerator
             var toDisplay = toType.ToDisplayString();
 
             sb.AppendLine($"        /// <summary>Auto-generated from '{toDisplay}.CloneFrom({fromDisplay})' call</summary>");
-            sb.AppendLine($"        {accessibility} static {toDisplay} CloneFrom(this {toDisplay} to, {fromDisplay} from)");
+            sb.AppendLine($"        {accessibility} static void CloneFrom(this {toDisplay} to, {fromDisplay} from)");
             sb.AppendLine("        {{");
             sb.AppendLine("            if (to is null) return;");
             sb.AppendLine("            if (from is null) return;");
@@ -223,7 +223,7 @@ public class CloneFromGenerator : IIncrementalGenerator
                 sb.AppendLine($"            to.{src.Name} = from.{src.Name};");
             }
 
-            sb.AppendLine("            return to;");
+            //sb.AppendLine("            return to;");
             sb.AppendLine("        }}");
             sb.AppendLine();
         }
