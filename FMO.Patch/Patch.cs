@@ -25,14 +25,14 @@ public static partial class DatabaseAssist
         [66] = ChangeAPIAndClearData,
 
         [67] = Customer2Investor,
-        [70] = PlatformTable
+        [71] = PlatformTable
         //[68] = AddManualLink
     };
 
     private static void PlatformTable(BaseDatabase database)
     {
         using var db = DbHelper.Platform();
-        foreach (var item in db.GetCollectionNames().Where(x => x.StartsWith("trustee_") && x.ToCharArray().Count(x => x == '_') == 1))
+        foreach (var item in db.GetCollectionNames().Where(x => x.StartsWith("trustee_")))
         {
             db.DropCollection(item);
         }
