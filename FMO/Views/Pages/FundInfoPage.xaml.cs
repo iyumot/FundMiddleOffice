@@ -243,7 +243,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
                 case LiquidationFlow d:
                     Flows.Add(new LiquidationFlowViewModel(d));
-                    DataTracker.OnEntityChanged(d);
+                    //DataTracker.OnEntityChanged(d);
                     break;
 
                 case DividendFlow d:
@@ -518,7 +518,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     [RelayCommand]
     public void CreateClearFlow()
     {
-        if (FundStatus >= FundStatus.StartLiquidation) return;
+        //if (FundStatus >= FundStatus.StartLiquidation) return;
 
         if (Flows.Any(x => x is LiquidationFlowViewModel)) return;
 
@@ -526,7 +526,8 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         var db = DbHelper.Base();
         db.GetCollection<FundFlow>().Insert(flow);
         var fund = db.GetCollection<Fund>().FindById(Fund.Id);
-        fund.Status = FundStatus.StartLiquidation;
+        if (fund.Status < FundStatus.StartLiquidation)
+            fund.Status = FundStatus.StartLiquidation;
         db.GetCollection<Fund>().Update(fund);
         db.Dispose();
         Flows.Add(new LiquidationFlowViewModel(flow));
@@ -546,7 +547,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     {
         using var db = DbHelper.Base();
         db.GetCollection<FundFlow>().Delete(flow.FlowId);
-        if (flow is LiquidationFlowViewModel && FundStatus == FundStatus.StartLiquidation)
+        if (flow is LiquidationFlowViewModel && FundStatus <= FundStatus.StartLiquidation)
         {
             FundStatus = FundStatus.Normal;
 

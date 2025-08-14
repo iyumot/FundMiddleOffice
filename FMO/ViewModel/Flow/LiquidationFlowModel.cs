@@ -13,17 +13,17 @@ namespace FMO;
 public partial class LiquidationFlowViewModel : FlowViewModel
 {
 
-    public FileViewModel  LiquidationReport { get; }
-                         
-    public FileViewModel  SealedLiquidationReport { get; set; }
-                         
-    public FileViewModel  CommitmentLetter { get; }
-                         
-    public FileViewModel  SealedCommitmentLetter { get; }
-                         
-    public FileViewModel  InvestorSheet { get; }
-                         
-    public FileViewModel  LiquidationSheet { get; }
+    public FileViewModel LiquidationReport { get; }
+
+    public FileViewModel SealedLiquidationReport { get; set; }
+
+    public FileViewModel CommitmentLetter { get; }
+
+    public FileViewModel SealedCommitmentLetter { get; }
+
+    public FileViewModel InvestorSheet { get; }
+
+    public FileViewModel LiquidationSheet { get; }
 
 
 
@@ -125,6 +125,22 @@ public partial class LiquidationFlowViewModel : FlowViewModel
     protected override void OnPropertyChanged(PropertyChangedEventArgs e)
     {
         base.OnPropertyChanged(e);
+
+        if (Initialized && e.PropertyName == nameof(Date))
+        {
+            using var db = DbHelper.Base();
+            if (db.GetCollection<Fund>().FindById(FundId) is Fund f)
+            {
+
+                var old = f.ClearDate;
+
+                f.ClearDate = Date is null ? default : DateOnly.FromDateTime(Date.Value);
+                db.GetCollection<Fund>().Update(f);
+
+                DataTracker.OnEntityChanged(new EntityChanged<Fund, DateOnly>(f, nameof(Fund.ClearDate), old, f.ClearDate));
+                WeakReferenceMessenger.Default.Send(new EntityChangedMessage<Fund, DateOnly>(f, nameof(Fund.ClearDate), f.ClearDate));
+            }
+        }
 
         //
         if (e.PropertyName == nameof(LiquidationFlowViewModel.IsReadOnly) && IsReadOnly && Date is DateTime d && d != default)
