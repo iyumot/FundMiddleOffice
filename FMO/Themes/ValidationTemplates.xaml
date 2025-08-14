@@ -201,4 +201,27 @@
             </DataGrid.Columns>
         </DataGrid>
     </DataTemplate>
+
+
+    <DataTemplate x:Key="FundClearNotFinished">
+        <DataGrid
+            AutoGenerateColumns="False"
+            ColumnHeaderStyle="{StaticResource CenterColumnHeader}"
+            IsReadOnly="False"
+            ItemsSource="{Binding .}"
+            Style="{StaticResource DataGrid.NoSelect}">
+            <DataGrid.Columns>
+                <DataGridTextColumn
+                    Binding="{Binding Context.FundName}"
+                    ElementStyle="{StaticResource LeftText}"
+                    Header="基金" />
+                <!--<DataGridTextColumn
+                    Width="100"
+                    Binding="{Binding Context.Code}"
+                    ElementStyle="{StaticResource CenterText}"
+                    Header="代码" />-->
+
+            </DataGrid.Columns>
+        </DataGrid>
+    </DataTemplate>
 </ResourceDictionary>

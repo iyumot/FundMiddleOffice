@@ -243,6 +243,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
                 case LiquidationFlow d:
                     Flows.Add(new LiquidationFlowViewModel(d));
+                    DataTracker.OnEntityChanged(d);
                     break;
 
                 case DividendFlow d:
@@ -530,6 +531,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         db.Dispose();
         Flows.Add(new LiquidationFlowViewModel(flow));
 
+        VerifyRules.OnEntityArrival([flow]);
         WeakReferenceMessenger.Default.Send(new EntityChangedMessage<Fund, FundStatus>(fund, nameof(Fund.Status), fund.Status));
         //WeakReferenceMessenger.Default.Send(new FundStatusChangedMessage(default, default) { FundId = fund.Id, Status = fund.Status });
     }
@@ -556,6 +558,9 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
             //WeakReferenceMessenger.Default.Send(new FundStatusChangedMessage(default, default) { FundId = fund.Id, Status = fund.Status });
         }
         Flows.Remove(flow);
+
+        if (flow is LiquidationFlowViewModel)
+            VerifyRules.OnEntityArrival([new FundEntityRemoved<int>(typeof(LiquidationFlow), flow.FlowId, flow.FundId)]);
     }
 
 

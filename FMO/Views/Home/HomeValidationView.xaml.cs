@@ -25,6 +25,7 @@ public partial class HomeValidationViewModel : ObservableObject
         DailyMissing.View.Filter += (o) => o switch { IDataTip d => d.Tags.Contains(nameof(FundDailyMissingRule)), _ => false };
         ShareNotPair.View.Filter = (o) => o switch { IDataTip d => d.Tags.Contains(nameof(FundSharePairRule)), _ => false };
         FundOverdue.View.Filter = (o) => o switch { IDataTip d => d.Tags.Contains(nameof(FundOverdueRule)), _ => false };
+        FundClearNotFinished.View.Filter = (o) => o switch { IDataTip d => d.Tags.Contains(nameof(FundClearNotFinishedRule)), _ => false };
     }
 
     /// <summary>
@@ -43,7 +44,13 @@ public partial class HomeValidationViewModel : ObservableObject
     public CollectionViewSource ShareNotPair { get; } = new() { Source = DataObserver.Instance.Tips };
 
     /// <summary>
-    /// 净值中的份额与TA的份额不一致
+    ///  
     /// </summary>
     public CollectionViewSource FundOverdue { get; } = new() { Source = DataObserver.Instance.Tips };
+
+
+    /// <summary>
+    ///  
+    /// </summary>
+    public CollectionViewSource FundClearNotFinished { get; } = new() { Source = DataObserver.Instance.Tips };
 }

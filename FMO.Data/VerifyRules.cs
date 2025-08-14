@@ -14,6 +14,9 @@ public static partial class VerifyRules
 
     public static FundOverdueRule FundOverdueRule { get; } = new();
 
+
+    public static FundClearNotFinishedRule FundClearNotFinishedRule { get; } = new();
+
 }
 
 ////生成结果如下 

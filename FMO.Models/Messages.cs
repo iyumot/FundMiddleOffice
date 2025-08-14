@@ -45,6 +45,10 @@ public record EntityDeleted<T>(T Value);
 
 public record EntityDeleted(Type Type, object Id);
 
+public record EntityRemoved<T>(Type Type, T Id);
+
+public record FundEntityRemoved<T>(Type Type, T Id, int FundId);
+
 
 public record EntityChangedMessage<TEntity,TProperty>(TEntity Entity, string PropertyName, TProperty Value);
 

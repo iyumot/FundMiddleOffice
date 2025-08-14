@@ -38,5 +38,12 @@
             DataContext="{Binding FundOverdue.View}"
             Header="基金超期运作"
             TipTemplate="{StaticResource FundOverdue}" />
+
+
+        <local:ValidationItemView
+            DataContext="{Binding FundClearNotFinished.View}"
+            Header="基金清算长期未完成"
+            TipTemplate="{StaticResource FundClearNotFinished}" />
+
     </hc:UniformSpacingPanel>
 </UserControl>

@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using System.Threading.Channels;
 
 namespace FMO.Utilities;
 
@@ -590,7 +591,15 @@ public static partial class DataTracker
     {
         VerifyRules.OnEntityArrival([changed]);
     }
+    public static void OnEntityChanged(LiquidationFlow d)
+    {
+        VerifyRules.OnEntityArrival([d]);
+    }
 
+    //public static void OnEntityDeleted<T>(EntityRemoved<T> entityDeleted)
+    //{
+    //    VerifyRules.OnEntityArrival([entityDeleted]);
+    //}
     /// <summary>
     ///  关联订单
     /// </summary>
@@ -1417,6 +1426,7 @@ public static partial class DataTracker
     {
         throw new NotImplementedException();
     }
+
 }
 
 
