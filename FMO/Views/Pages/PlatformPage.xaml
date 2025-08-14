@@ -259,6 +259,7 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBoxItem">
                         <Border
+                            x:Name="bd"
                             BorderBrush="Gray"
                             BorderThickness="1"
                             CornerRadius="8">
@@ -330,14 +331,10 @@
 
                         </Border>
                         <ControlTemplate.Triggers>
+                            <DataTrigger Binding="{Binding IsAvaliable}" Value="False">
+                                <Setter TargetName="bd" Property="BorderBrush" Value="Red" />
+                            </DataTrigger>
                             <DataTrigger Binding="{Binding CanSave}" Value="False">
-                                <!--<Setter TargetName="tog" Property="Content">
-                                    <Setter.Value>
-                                        <Viewbox Width="18" Height="18">
-                                            <Path Data="{StaticResource f.gear}" Fill="Red" />
-                                        </Viewbox>
-                                    </Setter.Value>
-                                </Setter>-->
                                 <Setter TargetName="pn" Property="Fill" Value="Red" />
                             </DataTrigger>
                             <DataTrigger Binding="{Binding ShowConfigSetting}" Value="True">

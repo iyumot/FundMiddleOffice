@@ -291,7 +291,11 @@ public abstract class TrusteeApiBase : ITrustee
     protected void SetDisabled()
     {
         IsValid = false;
+        WeakReferenceMessenger.Default.Send(new TrusteeStatus(Identifier, false));
     }
+
+
+    internal void Renew() => IsValid = true;
 
     public abstract bool IsSuit(string? comapny);
 

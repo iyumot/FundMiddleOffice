@@ -1,22 +1,22 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace FMO.Trustee;
 
-public abstract partial class TrusteeViewModelBase : ObservableObject
+public abstract partial class TrusteeViewModelBase : ObservableObject,IRecipient<TrusteeStatus>
 {
+    public string Idenitifier { get; set; } = "";
+
     public string? Title { get; protected set; }
 
+    [ObservableProperty]
+    public partial bool IsAvaliable { get; set; }
 
 
     [ObservableProperty]
     public partial bool ShowConfigSetting { get; set; }
-
-
-    public TrusteeViewModelBase()
-    {
-    }
-
+     
 
 
     public bool CanSave
@@ -34,14 +34,15 @@ public abstract partial class TrusteeViewModelBase : ObservableObject
 
 
 
-    [RelayCommand(CanExecute = nameof(CanSave))]
-    public void SaveConfig()
+
+    public void Receive(TrusteeStatus message)
     {
-        SaveConfigOverride();
-        ShowConfigSetting = false;
+        if (message.Identifier == Idenitifier)
+            IsAvaliable = message.Status;
     }
 }
 
+public record TrusteeStatus(string Identifier, bool Status);
 
 public interface ITrusteeViewModel
 {
@@ -54,7 +55,9 @@ public abstract partial class TrusteeViewModelBase<T> : TrusteeViewModelBase, IT
     {
         Assist = new T();
         Assist.LoadConfig();
+        IsAvaliable = Assist.IsValid;
 
+        Idenitifier = Assist.Identifier;
         Title = Assist.Title;
     }
 
@@ -62,4 +65,13 @@ public abstract partial class TrusteeViewModelBase<T> : TrusteeViewModelBase, IT
     public T Assist { get; }
 
     ITrustee ITrusteeViewModel.Assist => Assist;
+
+
+    [RelayCommand(CanExecute = nameof(CanSave))]
+    public void SaveConfig()
+    {
+        SaveConfigOverride();
+        ShowConfigSetting = false;
+        Assist.Renew();
+    }
 }
