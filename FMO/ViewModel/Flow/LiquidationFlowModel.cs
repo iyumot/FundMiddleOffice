@@ -13,16 +13,17 @@ namespace FMO;
 public partial class LiquidationFlowViewModel : FlowViewModel
 {
 
-    public FileViewModel? LiquidationReport { get; }
-
-
-    public FileViewModel? CommitmentLetter { get; }
-
-    public FileViewModel? SealedCommitmentLetter { get; }
-
-    public FileViewModel? InvestorSheet { get; }
-
-    public FileViewModel? LiquidationSheet { get; }
+    public FileViewModel  LiquidationReport { get; }
+                         
+    public FileViewModel  SealedLiquidationReport { get; set; }
+                         
+    public FileViewModel  CommitmentLetter { get; }
+                         
+    public FileViewModel  SealedCommitmentLetter { get; }
+                         
+    public FileViewModel  InvestorSheet { get; }
+                         
+    public FileViewModel  LiquidationSheet { get; }
 
 
 
@@ -37,6 +38,14 @@ public partial class LiquidationFlowViewModel : FlowViewModel
             GetProperty = x => x switch { LiquidationFlow f => f.LiquidationReport, _ => null },
             SetProperty = (x, y) => { if (x is LiquidationFlow f) f.LiquidationReport = y; },
         }; LiquidationReport.Init(flow);
+
+        SealedLiquidationReport = new()
+        {
+            Label = "清算报告",
+            SaveFolder = FundHelper.GetFolder(FundId, "Liquidation"),
+            GetProperty = x => x switch { LiquidationFlow f => f.SealedLiquidationReport, _ => null },
+            SetProperty = (x, y) => { if (x is LiquidationFlow f) f.SealedLiquidationReport = y; },
+        }; SealedLiquidationReport.Init(flow);
 
 
         CommitmentLetter = new()

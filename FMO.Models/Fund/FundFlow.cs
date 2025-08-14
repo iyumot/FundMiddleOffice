@@ -430,6 +430,7 @@ public class LiquidationFlow : FundFlow
     /// </summary>
     public FileStorageInfo? LiquidationReport { get; set; }
 
+    public FileStorageInfo? SealedLiquidationReport { get; set; }
 
     public FileStorageInfo? CommitmentLetter { get; set; }
 

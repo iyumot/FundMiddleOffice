@@ -658,7 +658,10 @@
 
                     <StackPanel VerticalAlignment="Center">
 
-                        <shared:FileControl Binding="{Binding LiquidationReport}" />
+                        <WrapPanel>
+                            <shared:FileControl Binding="{Binding LiquidationReport}" />
+                            <shared:FileControl Binding="{Binding SealedLiquidationReport}" Style="{StaticResource SealedFile}" />
+                        </WrapPanel>
 
                         <WrapPanel>
                             <Button CommandParameter="{Binding CommitmentLetter}" Style="{StaticResource GeneratorButton}" />
