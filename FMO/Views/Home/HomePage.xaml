@@ -253,7 +253,7 @@
 
 
             <hc:UniformSpacingPanel
-                Margin="0,10"
+                Margin="5,30"
                 DockPanel.Dock="Top"
                 Orientation="Vertical">
 
@@ -330,7 +330,7 @@
                 </ContentControl>
             </hc:UniformSpacingPanel>
 
-            <local:HomeValidationView DockPanel.Dock="Top" />
+            <local:HomeValidationView Margin="0,10" DockPanel.Dock="Top" />
 
             <WrapPanel Margin="0,10,0,0">
 
