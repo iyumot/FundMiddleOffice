@@ -132,6 +132,13 @@ public partial class App : Application
     protected override async void OnExit(ExitEventArgs e)
     {
         await Automation.DisposeAsync();
+
+
+        DirectoryInfo tmpd = new("temp");
+        if (tmpd.Exists)
+            foreach (var item in tmpd.GetDirectories())
+                try { item.Delete(true); } catch { }
+
         base.OnExit(e);
     }
 
