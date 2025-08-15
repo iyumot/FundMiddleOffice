@@ -498,8 +498,7 @@ public partial class TrusteeWorker : ObservableObject
         if (trustees is null || trustees.Any()) trustees = Trustees;
 
         List<WorkReturn> ret = new();
-        // 保存数据库
-        using var db = DbHelper.Base();
+        // 保存数据库 
         var method = nameof(QueryRaisingAccountTransctionOnce);
 
         foreach (var tr in trustees)
@@ -522,10 +521,8 @@ public partial class TrusteeWorker : ObservableObject
                 ///
                 // 保存数据库 
                 if (rc.Data is not null)
-                {
-                    // 对齐数据   
-
-                    db.GetCollection<RaisingBankTransaction>().Upsert(rc.Data);
+                { 
+                    DataTracker.OnRaisingBankTransaction(rc.Data);
                 }
 
                 // 合并记录

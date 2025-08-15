@@ -1422,6 +1422,13 @@ public static partial class DataTracker
         throw new NotImplementedException();
     }
 
+    public static void OnRaisingBankTransaction(IList<RaisingBankTransaction> data)
+    {
+        using var db = DbHelper.Base();
+        db.GetCollection<RaisingBankTransaction>().Upsert(data);
+
+        WeakReferenceMessenger.Default.Send(data);
+    }
 }
 
 
