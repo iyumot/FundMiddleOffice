@@ -551,6 +551,16 @@
                     </DataGrid.Columns>
                 </DataGrid>
             </StackPanel>
+
+
+            <ListBox ItemsSource="{Binding PolicyDocuments}" Style="{StaticResource ListBoxCustom}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <shared:MultiSealedFileView Content="{Binding}" Header="{Binding Label}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
         </StackPanel>
 
 

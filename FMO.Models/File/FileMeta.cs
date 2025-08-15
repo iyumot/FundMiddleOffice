@@ -1,5 +1,6 @@
 ﻿namespace FMO.Models;
 
+using FMO.Logging;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -13,11 +14,11 @@ using System.Security.Cryptography;
 public record FileMeta(string Id, string Name, DateTime Time, string Hash)
 {
 
-    public bool Exists => File.Exists(@$"hardlink\{Name}");
+    public bool Exists => File.Exists(@$"hardlink\{Id}");
 
 
 
-    public static FileMeta Create(FileInfo fi)
+    public static FileMeta Create(FileInfo fi, string desire)
     {
         string hash;
         using (var md5 = MD5.Create())
@@ -29,28 +30,52 @@ public record FileMeta(string Id, string Name, DateTime Time, string Hash)
         if (!File.Exists(hard))
             File.Copy(fi.FullName, hard, true);
 
+        // 目录同名
+        var di = new FileInfo(desire).Directory!;
+        if (!di.Exists) di.Create();
+        else desire = GetSafeFileName(di, fi.Name);
+
+
+        FileMeta.CreateHardLink(@$"hardlink\{id}", desire);
+
         return new FileMeta(id, fi.Name, fi.LastWriteTime, hash);
     }
 
-    public static FileMeta Create(string path) => Create(new FileInfo(path));
+    public static FileMeta Create(string path, string desire) => Create(new FileInfo(path), desire);
+
+
+    public static string GetSafeFileName(DirectoryInfo di, string filename)
+    {
+        string name = Path.GetFileNameWithoutExtension(filename), ext = Path.GetExtension(filename);
+
+        for (int i = 0; i < 20; i++)
+        {
+            var path = Path.Combine(di.Name, i == 0 ? filename : $"{name}（{i + 1}）{ext}");
+            if (!System.IO.File.Exists(path))
+                return path;
+        }
+        return Path.Combine(di.Name, $"{name}{DateTime.Now.Ticks.GetHashCode()}{ext}");
+    }
 
 
     // 导入Windows API函数
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern bool CreateHardLink(string lpFileName, string lpExistingFileName, IntPtr lpSecurityAttributes);
 
-    public static bool Create(string sourcePath, string linkPath)
+    public static bool CreateHardLink(string sourcePath, string linkPath)
     {
         if (string.IsNullOrEmpty(sourcePath) || string.IsNullOrEmpty(linkPath))
             return false;
+
+        var tarfolder = new FileInfo(linkPath).Directory;
+        if (tarfolder is not null && !tarfolder.Exists) tarfolder.Create();
 
         bool result = CreateHardLink(linkPath, sourcePath, IntPtr.Zero);
 
         if (!result)
         {
             // 获取详细错误信息
-            int errorCode = Marshal.GetLastWin32Error();
-            throw new System.ComponentModel.Win32Exception(errorCode);
+            LogEx.Error($"{Marshal.GetLastWin32Error()}");
         }
 
         return result;
@@ -83,6 +108,13 @@ public record FileMeta(string Id, string Name, DateTime Time, string Hash)
 
 
 
+public class SealedFileMeta
+{
+    public FileMeta? Normal { get; set; }
+
+    public FileMeta? Sealed { get; set; }
+}
+
 public class SimpleFile
 {
     public string? Label { get; set; }
@@ -101,4 +133,13 @@ public class MultiFile
 public class SealedFile : SimpleFile
 {
     public FileMeta? Sealed { get; set; }
+}
+
+
+public class MultiSealedFile
+{
+    public string? Label { get; set; }
+
+    public List<SealedFileMeta>? Files { get; set; }
+
 }

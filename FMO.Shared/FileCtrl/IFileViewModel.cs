@@ -319,12 +319,6 @@ public partial class SingleFileViewModel : ObservableObject, IFileSelector//,IFi
     }
 }
 
-public partial class SealedFileViewModel : SingleFileViewModel
-{
-    [ObservableProperty]
-    public partial SingleFileViewModel? Sealed { get; set; }
-}
-
 
 
 public partial class MultipleFileViewModel : ObservableObject, IFileSelector

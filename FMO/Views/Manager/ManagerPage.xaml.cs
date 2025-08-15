@@ -184,6 +184,10 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
 
     public ObservableCollection<ManagerFlowViewModel> Flows { get; }
 
+
+    public ObservableCollection<MultiSealedFileViewModel> PolicyDocuments { get; }
+
+
     public ManagerPageViewModel()
     {
         WeakReferenceMessenger.Default.Register<ParticipantChangedMessage>(this);
@@ -444,6 +448,12 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
 
 
         Flows = [.. db.GetCollection<ManagerFlow>().FindAll().Select(x => new ManagerFlowViewModel(x))];
+
+
+        MultiSealedFile[] docs  = [new() { Label = "交易制度", Files = [new() { Normal = new("432urjeowr", "aaa.pdf", DateTime.Now, "fdf") }] }, new() { Label = "管理制度" }];
+
+        PolicyDocuments = [..docs.Select(x=>new MultiSealedFileViewModel(x))];
+
 
         //BusinessLicense = mfile?.BusinessLicense is null ? new() : new ObservableCollection<FileInfo>(mfile.BusinessLicense.Files.Select(x => new FileInfo(x.Path)));
         //BusinessLicense.CollectionChanged += BusinessLicense_CollectionChanged;
@@ -1175,8 +1185,8 @@ public partial class ParticipantViewModel : ObservableObject
 
     [ObservableProperty]
     public partial string? Profile { get; set; }
-    
-    public string? CertCode { get;  set; }
+
+    public string? CertCode { get; set; }
     public string? Post { get; private set; }
     [ObservableProperty]
     public partial FileInfo? IdFile { get; set; }
@@ -1299,7 +1309,7 @@ public partial class ManagerFlowViewModel : EditableControlViewModelBase<Manager
 
     private void SaveFile(DragEventArgs e, string folder)
     {
-        if(e.Data.GetData(DataFormats.FileDrop) is string[] s)
+        if (e.Data.GetData(DataFormats.FileDrop) is string[] s)
         {
             foreach (var item in s)
             {
