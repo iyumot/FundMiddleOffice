@@ -97,8 +97,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
         //启动api
         TrusteeGallay.Initialize();
-
-
+         
         Task.Run(() =>
         {
             IsInitializing = true;
@@ -115,6 +114,8 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
             MissionSchedule.Init();
 
 
+            InitializeMesage = "每日数据更新中";
+            OnNewDate();
 
             // 数据验证
             InitializeMesage = "数据检验中，请耐心等待";
@@ -122,9 +123,6 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
             // 加载托管消息
             LoadTrusteeMessages();
-
-            InitializeMesage = "每日数据更新中";
-            OnNewDate();
 
             InitializeMesage = null;
             IsInitializing = false;
@@ -639,6 +637,8 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
         return resourceDictionary["f.ghost"] as Geometry;
     }
+
+
     private void OnNewDate()
     {
         if (DailyUpdateTime.Date == DateTime.Today) return;

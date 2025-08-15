@@ -265,8 +265,8 @@
                                 <hc:UniformSpacingPanel>
                                     <TextBlock FontWeight="Bold" Text="近7日认申购" />
                                     <ToggleButton
-                                        Content="{Binding BuyCount}"
-                                        IsChecked="{Binding ShowBuyList}"
+                                        x:Name="vbuy"
+                                        Content="{Binding BuySource.View.Count}"
                                         Style="{StaticResource ToggleButton.HyperlinkLike}" />
                                     <TextBlock Text="笔" />
 
@@ -276,21 +276,32 @@
                                         FontWeight="Bold"
                                         Text="赎回" />
                                     <ToggleButton
-                                        Content="{Binding SellCount}"
-                                        IsChecked="{Binding ShowSellList}"
+                                        x:Name="vsell"
+                                        Content="{Binding SellSource.View.Count}"
+                                        Style="{StaticResource ToggleButton.HyperlinkLike}" />
+                                    <TextBlock Text="笔" />
+
+
+                                    <TextBlock
+                                        Margin="10,0,0,0"
+                                        FontWeight="Bold"
+                                        Text="未交收" />
+                                    <ToggleButton
+                                        x:Name="vun"
+                                        Content="{Binding UnsettledSource.View.Count}"
                                         Style="{StaticResource ToggleButton.HyperlinkLike}" />
                                     <TextBlock Text="笔" />
                                 </hc:UniformSpacingPanel>
 
                                 <Popup
                                     AllowsTransparency="True"
-                                    IsOpen="{Binding ShowBuyList}"
+                                    IsOpen="{Binding ElementName=vbuy, Path=IsChecked}"
                                     StaysOpen="False">
                                     <Border>
                                         <DataGrid
                                             AutoGenerateColumns="False"
-                                            ItemsSource="{Binding BuyRequests}"
-                                            Style="{StaticResource DataGrid.Small}">
+                                            ItemsSource="{Binding BuySource.View}"
+                                            Style="{StaticResource DataGrid.NoSelect}">
                                             <DataGrid.Columns>
                                                 <DataGridTextColumn Binding="{Binding Id}" Header="Id" />
                                                 <DataGridTextColumn Binding="{Binding RequestDate, StringFormat=yyyy-MM-dd}" Header="日期" />
@@ -305,13 +316,35 @@
                                 </Popup>
                                 <Popup
                                     AllowsTransparency="True"
-                                    IsOpen="{Binding ShowSellList}"
+                                    IsOpen="{Binding ElementName=vsell, Path=IsChecked}"
                                     StaysOpen="False">
                                     <Border>
                                         <DataGrid
                                             AutoGenerateColumns="False"
-                                            ItemsSource="{Binding SellRequests}"
-                                            Style="{StaticResource DataGrid.Small}">
+                                            ItemsSource="{Binding SellSource.View}"
+                                            Style="{StaticResource DataGrid.NoSelect}">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Binding="{Binding Id}" Header="Id" />
+                                                <DataGridTextColumn Binding="{Binding RequestDate, StringFormat=yyyy-MM-dd}" Header="日期" />
+                                                <DataGridTextColumn Binding="{Binding FundName}" Header="基金" />
+                                                <DataGridTextColumn Binding="{Binding InvestorName}" Header="投资人" />
+                                                <DataGridTextColumn Binding="{Binding RequestType}" Header="类型" />
+                                                <DataGridTextColumn Binding="{Binding RequestAmount}" Header="金额" />
+                                                <DataGridTextColumn Binding="{Binding RequestShare}" Header="份额" />
+                                                <DataGridCheckBoxColumn Binding="{Binding IsSettled}" Header="交收" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Border>
+                                </Popup>
+                                <Popup
+                                    AllowsTransparency="True"
+                                    IsOpen="{Binding ElementName=vun, Path=IsChecked}"
+                                    StaysOpen="False">
+                                    <Border>
+                                        <DataGrid
+                                            AutoGenerateColumns="False"
+                                            ItemsSource="{Binding UnsettledSource.View}"
+                                            Style="{StaticResource DataGrid.NoSelect}">
                                             <DataGrid.Columns>
                                                 <DataGridTextColumn Binding="{Binding Id}" Header="Id" />
                                                 <DataGridTextColumn Binding="{Binding RequestDate, StringFormat=yyyy-MM-dd}" Header="日期" />
@@ -325,6 +358,16 @@
                                     </Border>
                                 </Popup>
                             </hc:SimplePanel>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding BuySource.View.Count}" Value="0">
+                                    <Setter TargetName="vbuy" Property="IsHitTestVisible" Value="False" />
+                                </DataTrigger>
+
+                                <DataTrigger Binding="{Binding SellSource.View.Count}" Value="0">
+                                    <Setter TargetName="vsell" Property="IsHitTestVisible" Value="False" />
+                                </DataTrigger>
+
+                            </DataTemplate.Triggers>
                         </DataTemplate>
                     </ContentControl.ContentTemplate>
                 </ContentControl>
@@ -418,7 +461,7 @@
             Visibility="{Binding IsInitializing, Converter={StaticResource Boolean2VisibilityConverter}}">
             <Run FontSize="150" Text="加载中" />
             <LineBreak />
-            <Run BaselineAlignment="Center" FontSize="22" />
+            <Run BaselineAlignment="Center" Text="{Binding InitializeMesage}" FontSize="22" />
         </TextBlock>
     </hc:SimplePanel>
 </UserControl>
