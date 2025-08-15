@@ -634,13 +634,8 @@ public static partial class DataTracker
         catch (Exception ex) { Log.Error($"{ex}"); }
 
 
-        // 通知
-        try
-        {
-            foreach (var item in data)
-                WeakReferenceMessenger.Default.Send(item);
-        }
-        catch { }
+        WeakReferenceMessenger.Default.Send(data);
+ 
     }
 
 

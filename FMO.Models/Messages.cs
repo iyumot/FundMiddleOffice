@@ -70,3 +70,9 @@ public record LinkOrderMessage(int RecordId, int OrderId, int RequestId);
 public record TipChangeMessage(TipType Type);
 
 public record TrusteeRunMessage(string Name, bool IsRunning);
+
+/// <summary>
+/// 新一天
+/// </summary>
+/// <param name="Date"></param>
+public record NewDay(DateOnly Date);

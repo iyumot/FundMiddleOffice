@@ -5,6 +5,7 @@ using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
 using Serilog;
+using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
@@ -26,7 +27,7 @@ public partial class TransferRecordPage : UserControl
 }
 
 
-public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<TransferRecord>, IRecipient<PageTAMessage>, IRecipient<TransferOrder>, IRecipient<TipChangeMessage>, IRecipient<IEnumerable<LinkOrderMessage>>
+public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<IList<TransferRequest>>, IRecipient<TransferRecord>, IRecipient<PageTAMessage>, IRecipient<TransferOrder>, IRecipient<TipChangeMessage>, IRecipient<IEnumerable<LinkOrderMessage>>
 {
     [ObservableProperty]
     public partial ObservableCollection<TransferRecordViewModel>? Records { get; set; }
@@ -685,7 +686,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
                     confirm.OnPropertyChanged(nameof(confirm.LackOrder));
                 }
 
-            if(Requests is not null)
+            if (Requests is not null)
                 foreach (var (request, link) in Requests.Join(message, x => x.Id, x => x.RequestId, (request, link) => (request, link)))
                 {
                     request.OrderId = link.OrderId;
@@ -697,5 +698,46 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         {
             Log.Error($"void Receive(TransferRecordLinkOrderMessage message) {e}");
         }
+    }
+
+    public void Receive(IList<TransferRequest> message)
+    {
+        // 更新的, 跳过，实际运行，更新没有意义，值应该是一样的
+        //App.Current.Dispatcher.InvokeAsync(() =>
+        //{
+        //    if (Requests is not null)
+        //        Requests.IntersectBy(message.Select(x => x.Id), x => x.Id);
+        //});
+
+        // 新的
+        App.Current.Dispatcher.InvokeAsync(() =>
+        {
+            // 需要添加的
+            var add = Requests is null ? message.Select(x => new TransferRequestViewModel(x)).ToList() : message.ExceptBy(Requests.Select(x => x.Id), x => x.Id).Select(x => new TransferRequestViewModel(x)).ToList();
+            if (add.Count == 0) return;
+            
+            // 影响order
+            if (Orders is not null)
+                foreach (var (o, q) in Orders.Join(add, x => x.Id, x => x.OrderId, (order, request) => (order, request)))
+                    o.IsApplyed = true;
+
+            // IsSameManager
+            using var db = DbHelper.Base();
+            var codes = db.GetCollection<Fund>().Query().Select(x => x.Code).ToList(); codes.Sort();
+            foreach (var item in add)
+            {
+                if (codes.BinarySearch(item.InvestorIdentity) >= 0)
+                    item.IsSameManager = true;
+            }
+
+            // 入列
+            if (Requests is null || Requests.Count == 0)
+                Requests = [.. add];
+            else
+                Requests = [.. Requests, .. add];
+
+            RequestsSource.Source = Requests;
+        });
+
     }
 }
