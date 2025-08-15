@@ -139,7 +139,7 @@ internal class BankTransactionJson : JsonBase
             CounterNo = OthBankAcco,
             Amount = ParseDecimal(OccurAmt),
             Balance = ParseDecimal(AcctBal),
-            Direction = DirectFlag == "¸¶¿î" ? TransctionDirection.Pay : TransctionDirection.Receive,
+            Direction = DirectFlag == "2" ? TransctionDirection.Pay : TransctionDirection.Receive,
             Remark = BankNote,
             Serial = BankJour,
         };
