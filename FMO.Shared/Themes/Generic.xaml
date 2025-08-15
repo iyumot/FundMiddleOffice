@@ -4,17 +4,17 @@
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO.Shared">
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml" />
-        <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml" />
+        <ResourceDictionary Source="/FMO.Shared;component/Themes/ChangeableControls.xaml" />
+        <ResourceDictionary Source="/FMO.Shared;component/Themes/Copyable.xaml" />
+        <ResourceDictionary Source="/FMO.Shared;component/Themes/FileControls.xaml" />
+        <ResourceDictionary Source="/FMO.Shared;component/Themes/YearCalender.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
 
-    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-    <local:BooleanToVisibilityReverseConverter x:Key="BooleanToVisibilityReverseConverter" />
 
     <SolidColorBrush x:Key="LabelBrush">Gray</SolidColorBrush>
 
-    <ControlTemplate x:Key="Tpl.Changeable.Default" TargetType="local:ChangeableContainer">
+    <!--<ControlTemplate x:Key="Tpl.Changeable.Default" TargetType="local:ChangeableContainer">
         <DockPanel
             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
             Background="Transparent"
@@ -57,7 +57,9 @@
 
 
     <Style TargetType="local:ChangeableContainer">
-        <!--<Setter Property="Entity" Value="{Binding DataContext, RelativeSource={RelativeSource Mode=Self}}" />-->
+    -->
+    <!--<Setter Property="Entity" Value="{Binding DataContext, RelativeSource={RelativeSource Mode=Self}}" />-->
+    <!--
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="ContentTemplate">
             <Setter.Value>
@@ -69,9 +71,11 @@
         <Setter Property="EditTemplate" Value="{StaticResource Tpl.Changeable.Default}" />
         <Setter Property="Template" Value="{Binding RelativeSource={RelativeSource Self}, Path=EditTemplate, TargetNullValue={StaticResource Tpl.Changeable.Default}}" />
         <Style.Triggers>
-            <!--<Trigger Property="EditTemplate" Value="{x:Null}">
+    -->
+    <!--<Trigger Property="EditTemplate" Value="{x:Null}">
                 <Setter Property="Template" Value="{StaticResource Tpl.Changeable.Default}" />
             </Trigger>-->
+    <!--
             <Trigger Property="IsReadOnly" Value="True">
                 <Setter Property="Template">
                     <Setter.Value>
@@ -326,12 +330,14 @@
 
 
                                         </DockPanel>
-                                        <!--<Button
+    -->
+    <!--<Button
                                             hc:IconElement.Geometry="{DynamicResource f.repeat}"
                                             Command="{Binding SetFileCommand}"
                                             CommandParameter="{Binding Binding, RelativeSource={RelativeSource TemplatedParent}}"
                                             ToolTip="更换"
                                             Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityReverseConverter}}" />-->
+    <!--
                                         <Button
                                             hc:IconElement.Geometry="{DynamicResource f.xmark}"
                                             Command="{Binding ClearCommand}"
@@ -366,9 +372,11 @@
                             <Setter TargetName="file" Property="Foreground" Value="Gray" />
                         </DataTrigger>
 
-                        <!--<DataTrigger Binding="{Binding Binding.Exists, TargetNullValue=False, RelativeSource={RelativeSource Self}}" Value="True">
+    -->
+    <!--<DataTrigger Binding="{Binding Binding.Exists, TargetNullValue=False, RelativeSource={RelativeSource Self}}" Value="True">
                             <Setter TargetName="lb" Property="Foreground" Value="Green" />
                         </DataTrigger>-->
+    <!--
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -773,12 +781,14 @@
 
 
                                         </DockPanel>
-                                        <!--<Button
+    -->
+    <!--<Button
                                       hc:IconElement.Geometry="{DynamicResource f.repeat}"
                                       Command="{Binding SetFileCommand}"
                                       CommandParameter="{Binding Binding, RelativeSource={RelativeSource TemplatedParent}}"
                                       ToolTip="更换"
                                       Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityReverseConverter}}" />-->
+    <!--
                                         <Button
                                             hc:IconElement.Geometry="{DynamicResource f.xmark}"
                                             Command="{Binding Binding.DeleteFileCommand, RelativeSource={RelativeSource TemplatedParent}}"
@@ -812,9 +822,11 @@
                             <Setter TargetName="file" Property="Foreground" Value="Gray" />
                         </DataTrigger>
 
-                        <!--<DataTrigger Binding="{Binding Binding.Exists, TargetNullValue=False, RelativeSource={RelativeSource Self}}" Value="True">
+    -->
+    <!--<DataTrigger Binding="{Binding Binding.Exists, TargetNullValue=False, RelativeSource={RelativeSource Self}}" Value="True">
                       <Setter TargetName="lb" Property="Foreground" Value="Green" />
                   </DataTrigger>-->
+    <!--
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -1025,5 +1037,5 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-    </Style>
+    </Style>-->
 </ResourceDictionary>
