@@ -461,7 +461,10 @@
             Visibility="{Binding IsInitializing, Converter={StaticResource Boolean2VisibilityConverter}}">
             <Run FontSize="150" Text="加载中" />
             <LineBreak />
-            <Run BaselineAlignment="Center" Text="{Binding InitializeMesage}" FontSize="22" />
+            <Run
+                BaselineAlignment="Center"
+                FontSize="22"
+                Text="{Binding InitializeMesage}" />
         </TextBlock>
     </hc:SimplePanel>
 </UserControl>
