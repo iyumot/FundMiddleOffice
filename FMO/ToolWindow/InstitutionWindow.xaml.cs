@@ -353,55 +353,8 @@ public partial class InstitutionWindowViewModel : EditableControlViewModelBase<I
     }
 
 
-    private FileStorageInfo? SetFile(Func<InstitutionCertifications, List<FileStorageInfo>> func, FileInfo fi)
-    {
-        string hash = fi.ComputeHash()!;
+  
 
-        // 保存副本
-        var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "organization", $"{Id}"));
-
-        var tar = FileHelper.CopyFile2(fi, dir.FullName);
-        if (tar is null)
-        {
-            Log.Error($"保存文件出错，{fi.Name}");
-            HandyControl.Controls.Growl.Error($"无法保存{fi.Name}，文件名异常或者存在过多重名文件");
-            return null;
-        }
-
-        var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
-
-        using var db = DbHelper.Base();
-        var q = db.GetCollection<InstitutionCertifications>().FindById(InstitutionCode.OldValue);
-        var l = func(q);
-        FileStorageInfo fsi = new()
-        {
-            Title = "",
-            Path = path,
-            Hash = hash,
-            Time = fi.LastWriteTime
-        };
-        l!.Add(fsi);
-        db.GetCollection<InstitutionCertifications>().Update(q);
-        return fsi;
-    }
-
-
-    private void DeleleFile(Func<InstitutionCertifications, List<FileStorageInfo>?> func, FileStorageInfo file)
-    {
-        using var db = DbHelper.Base();
-        var q = db.GetCollection<InstitutionCertifications>().FindById(InstitutionCode.OldValue);
-
-        var l = func(q);
-        if (l is null) return;
-        var old = l.Find(x => x.Path is not null && file.Path is not null && Path.GetFullPath(x.Path) == Path.GetFullPath(file.Path));
-        if (old is not null)
-        {
-            l.Remove(old);
-
-            try { File.Delete(old.Path!); } catch (Exception e) { Log.Error($"delete file failed {e}"); }
-        }
-        db.GetCollection<InstitutionCertifications>().Update(q);
-    }
 
 
     [RelayCommand]

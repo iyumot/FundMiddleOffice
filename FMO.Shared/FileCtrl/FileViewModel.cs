@@ -36,6 +36,10 @@ public class FileExistsToVisibilityConverter : IValueConverter
             case FileMeta f:
                 show = f.Exists;
                 break;
+
+            case SimpleFile f:
+                show = f.File?.Exists ?? false;
+                break;
             default:
                 show = false;
                 break;

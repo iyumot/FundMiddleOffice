@@ -68,31 +68,31 @@ public class TransferOrder
     /// <summary>
     /// 合同
     /// </summary>
-    public FileMeta? Contract { get; set; }
+    public SimpleFile? Contract { get; set; }
 
     /// <summary>
     /// 风险揭示
     /// </summary>
-    public FileMeta? RiskDiscloure { get; set; }
+    public SimpleFile? RiskDiscloure { get; set; }
 
     /// <summary>
     /// 认申购、赎回单
     /// </summary>
-    public FileMeta? OrderSheet { get; set; }
+    public SimpleFile? OrderSheet { get; set; }
 
     /// <summary>
     /// 风险匹配
     /// </summary>
-    public FileMeta? RiskPair { get; set; }
+    public SimpleFile? RiskPair { get; set; }
 
     /// <summary>
     /// 双录
     /// </summary>
-    public FileMeta? Videotape { get; set; }
+    public SimpleFile? Videotape { get; set; }
 
 
     /// <summary>
     /// 回访
     /// </summary>
-    public FileMeta? Review { get; set; }
+    public SimpleFile? Review { get; set; }
 }

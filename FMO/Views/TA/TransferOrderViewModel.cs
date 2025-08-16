@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.Input;
+﻿using ClosedXML;
+using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using FMO.Logging;
@@ -50,16 +51,17 @@ partial class TransferOrderViewModel : ITransferViewModel
 
 
     [RelayCommand]
-    public void OpenFile(FileMeta? file)
+    public void OpenFile(SimpleFile? file)
     {
-        if (file is null) return;
+        if (file?.File is null) return;
         try
         {
-            Directory.CreateDirectory(@$"temp\{file.Id}");
-            string tmp = @$"temp\{file.Id}\{file.Name}";
+            var f = file.File;
+            Directory.CreateDirectory(@$"temp\{f.Id}");
+            string tmp = @$"temp\{f.Id}\{f.Name}";
 
             if (!File.Exists(tmp))
-                FileMeta.CreateHardLink(@$"files\hardlink\{file.Id}", tmp);
+                FileMeta.CreateHardLink(@$"files\hardlink\{f.Id}", tmp);
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(tmp) { UseShellExecute = true });
         }
         catch (Exception e) { LogEx.Error(e); WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "无法打开文件")); }

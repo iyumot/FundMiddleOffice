@@ -1,13 +1,14 @@
-﻿using System.Collections.ObjectModel;
-using System.IO;
-using System.Windows;
-using System.Windows.Controls;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
+using LiteDB;
 using Microsoft.Win32;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace FMO;
 
@@ -63,7 +64,7 @@ public partial class FundAnnouncementViewModel : ObservableObject
 
 
 
-public partial class AnnouncementViewModel : EditableControlViewModelBase<FundAnnouncement>, IFileSetter
+public partial class AnnouncementViewModel : EditableControlViewModelBase<FundAnnouncement>
 {
     public AnnouncementViewModel(FundAnnouncement obj)
     {
@@ -87,25 +88,18 @@ public partial class AnnouncementViewModel : EditableControlViewModelBase<FundAn
         };
         Date.Init(obj);
 
-        File = new()
+        File = new(obj.File);
+        File.FileChanged += f =>
         {
-            SaveFolder = FundHelper.GetFolder(obj.FundId, "Announcement"),
-            GetProperty = x => x.File,
-            SetProperty = (x, y) => x.File = y,
+            if(Id == 0) return; // 新建时不保存
+            using var db = DbHelper.Base();
+            db.GetCollection<FundAnnouncement>().UpdateMany(BsonMapper.Global.ToDocument(f).ToString(), $"_id={Id}");
         };
-        File.Init(obj);
-
-        Sealed = new()
-        {
-            SaveFolder = FundHelper.GetFolder(obj.FundId, "Announcement"),
-            GetProperty = x => x.Sealed,
-            SetProperty = (x, y) => x.Sealed = y,
-        };
-        Sealed.Init(obj);
     }
 
-    public FileViewModel<FundAnnouncement> File { get; }
-    public FileViewModel<FundAnnouncement> Sealed { get; }
+    public DualFileViewModel File { get; }
+
+
     public int FundId { get; }
 
 
@@ -113,71 +107,6 @@ public partial class AnnouncementViewModel : EditableControlViewModelBase<FundAn
 
     public ChangeableViewModel<FundAnnouncement, DateTime?> Date { get; }
 
-    [RelayCommand]
-    public void ChooseFile(FileViewModel<FundAnnouncement> file)
-    {
-        var fd = new OpenFileDialog();
-        fd.Filter = file?.Filter;
-        if (fd.ShowDialog() != true)
-            return;
-
-        SetFile(file, fd.FileName);
-    }
-
-
-    public void SetFile(IFileViewModel? file, string path)
-    {
-        if (file is FileViewModel<FundAnnouncement> ff)
-        {
-            FileStorageInfo? tar = ff.Build(path);
-            if (tar?.Path is not null)
-                ff.File = new FileInfo(tar.Path);
-
-            using var db = DbHelper.Base();
-            var obj = db.GetCollection<FundAnnouncement>().FindById(Id);
-            if (obj is not null)
-            {
-                ff.SetProperty(obj, tar);
-                db.GetCollection<FundAnnouncement>().Update(obj);
-            }
-        }
-    }
-
-
-
-
-    [RelayCommand]
-    public void Clear(FileViewModel<FundAnnouncement> file)
-    {
-        if (file is null) return;
-
-        var r = HandyControl.Controls.MessageBox.Show("是否删除文件", "提示", MessageBoxButton.YesNoCancel);
-        if (r == MessageBoxResult.Cancel) return;
-
-        if (r == MessageBoxResult.Yes)
-        {
-            try
-            {
-                file.File?.Delete();
-            }
-            catch (Exception e)
-            {
-                HandyControl.Controls.Growl.Warning("文件已打开，无法删除，请先关闭文件");
-                return;
-            }
-        }
-
-
-        using var db = DbHelper.Base();
-        var obj = db.GetCollection<FundAnnouncement>().FindById(Id);
-
-        if (obj is not null)
-        {
-            file.SetProperty(obj, null);
-            db.GetCollection<FundAnnouncement>().Update(obj);
-            file.File = null;
-        }
-    }
-
+   
     protected override FundAnnouncement InitNewEntity() => new FundAnnouncement { FundId = FundId };
 }

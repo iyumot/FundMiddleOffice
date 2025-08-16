@@ -169,51 +169,51 @@ public class InvestorQualification
     /// <summary>
     /// 承诺函
     /// </summary>
-    public FileMeta? CommitmentLetter { get; set; }
+    public SimpleFile? CommitmentLetter { get; set; }
 
     /// <summary>
     /// 基本信息表
     /// </summary>
-    public FileMeta? InfomationSheet { get; set; }
+    public SimpleFile? InfomationSheet { get; set; }
 
     /// <summary>
     /// 普通/专业投资者告知书
     /// </summary>
-    public FileMeta? Notice { get; set; }
+    public SimpleFile? Notice { get; set; }
 
     /// <summary>
     /// 税收声明
     /// </summary>
-    public FileMeta? TaxDeclaration { get; set; }
+    public SimpleFile? TaxDeclaration { get; set; }
 
     /// <summary>
     /// 证明材料：资产证明、收入证明、资产负债表
     /// </summary>
-    //public FileMeta? CertificationMaterials { get; set; }
+    //public SimpleFile? CertificationMaterials { get; set; }
 
-    //public List<FileMeta>? CertificationFiles { get; set; }
+    //public List<SimpleFile>? CertificationFiles { get; set; }
     public MultiFile? CertificationFiles { get; set; }
 
     /// <summary>
     /// 投资经历
     /// </summary>
-    public FileMeta? ProofOfExperience { get; set; }
+    public SimpleFile? ProofOfExperience { get; set; }
 
     /// <summary>
     /// 特殊投资者
     /// </summary>
-    public FileMeta? ProofOfSpecial { get; set; }
+    public SimpleFile? ProofOfSpecial { get; set; }
 
 
     /// <summary>
     /// 代理人证件
     /// </summary>
-    public FileMeta? Agent { get; set; }
+    public SimpleFile? Agent { get; set; }
 
     /// <summary>
     /// 授权书
     /// </summary>
-    public FileMeta? Authorization { get; set; }
+    public SimpleFile? Authorization { get; set; }
 
     /// <summary>
     /// 代理人是法代
@@ -227,7 +227,7 @@ public class InvestorQualification
 
     public bool HasError => Check().HasError;
 
-    private bool IsFileExists(FileMeta? info) => info?.Exists ?? false;
+    private bool IsFileExists(SimpleFile? info) => info?.File?.Exists ?? false;
 
     public (bool HasError, string? Info) Check()
     {

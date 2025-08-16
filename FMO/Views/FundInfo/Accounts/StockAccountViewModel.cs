@@ -1,12 +1,13 @@
-﻿using System.IO;
-using System.Windows.Media;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
+using LiteDB;
 using Microsoft.Win32;
 using Serilog;
+using System.IO;
+using System.Windows.Media;
 
 namespace FMO;
 
@@ -50,7 +51,7 @@ public partial class StockAccountViewModel : ObservableObject
         public BasicAccountViewModel(int id, OpenAccountEvent? common)
         {
             Id = id;
-
+            
             if (common is not null)
             {
                 IsReadOnly = true;
@@ -58,28 +59,24 @@ public partial class StockAccountViewModel : ObservableObject
                 Account = common.Account;
                 TradePassword = common.TradePassword;
                 CapitalPassword = common.CapitalPassword;
-                BankLetter = new FileViewModel<OpenAccountEvent>
-                {
-                    Label = "银证",
-                    SaveFolder = Path.Combine("files", "accounts", "stock", Id.ToString(), Name),
-                    GetProperty = x => x.BankLetter,
-                    SetProperty = (x, y) => x.BankLetter = y,
-                };
-
-                BankLetter.Init(common);
 
 
-                ServiceAgreement = new FileViewModel<OpenAccountEvent>
-                {
-                    Label = "经服",
-                    SaveFolder = Path.Combine("files", "accounts", "stock", Id.ToString(), Name),
-                    GetProperty = x => x.ServiceAgreement,
-                    SetProperty = (x, y) => x.ServiceAgreement = y,
-                };
+                BankLetter = new(common.BankLetter);
+                BankLetter.FileChanged += f => UpdateFile(new { BankLetter = f });
 
-                ServiceAgreement.Init(common);
+
+                ServiceAgreement = new(common.ServiceAgreement);
+                ServiceAgreement.FileChanged += f => UpdateFile(new { ServiceAgreement = f });
+                 
             }
 
+        }
+
+        private void UpdateFile<T>(T f)
+        {
+            if (Id == 0) return; // 新建时不保存
+            using var db = DbHelper.Base();
+            db.GetCollection<FundAnnouncement>().UpdateMany(BsonMapper.Global.ToDocument(f).ToString(), $"_id={Id}");
         }
 
         [ObservableProperty]
@@ -109,62 +106,15 @@ public partial class StockAccountViewModel : ObservableObject
         /// <summary>
         /// 银证、银期等
         /// </summary>
-        public FileViewModel<OpenAccountEvent>? BankLetter { get; }
+        public SimpleFileViewModel? BankLetter { get; }
 
 
-        /// <summary>
-        /// 经服
-        /// </summary>
-        public FileViewModel<OpenAccountEvent>? ServiceAgreement { get; }
+
+        public SimpleFileViewModel? ServiceAgreement { get; }
+         
 
         public int Id { get; }
 
-
-        [RelayCommand]
-        public void ChooseFile(IFileSelector obj)
-        {
-            if (obj is not FileViewModel<OpenAccountEvent> v) return;
-
-            var fd = new OpenFileDialog();
-            fd.Filter = v.Filter;
-            if (fd.ShowDialog() != true)
-                return;
-
-            var old = v.File;
-
-            var fi = new FileInfo(fd.FileName);
-            if (fi is not null)
-                SetFile(v, fi);
-
-            try { if (old is not null) File.Delete(old.FullName); } catch { }
-        }
-
-        private void SetFile(FileViewModel<OpenAccountEvent> v, FileInfo fi)
-        {
-            if (Id == 0 || string.IsNullOrWhiteSpace(Name))
-            {
-                return;
-            }
-
-
-            var s = v.Build(fi.FullName);
-
-            using var db = DbHelper.Base();
-            var obj = db.GetCollection<StockAccount>().FindById(Id);
-
-            if (Name == obj.Common?.Name)
-            {
-                v.SetProperty(obj.Common, s);
-                db.GetCollection<StockAccount>().Update(obj);
-            }
-            else if (Name == obj.Credit?.Name)
-            {
-                v.SetProperty(obj.Credit, s);
-                db.GetCollection<StockAccount>().Update(obj);
-            }
-
-            v.File = s?.Path is null ? null : new FileInfo(s.Path);
-        }
 
 
         [RelayCommand]
@@ -218,37 +168,6 @@ public partial class StockAccountViewModel : ObservableObject
             IsReadOnly = true;
         }
 
-        [RelayCommand]
-        public void Clear(IFileSelector file)
-        {
-            if (file is FileViewModel<OpenAccountEvent> v)
-            {
-                if (v.File is null) return;
-                try
-                {
-
-                    using var db = DbHelper.Base();
-                    var obj = db.GetCollection<StockAccount>().FindById(Id);
-
-                    if (Name == obj.Common?.Name)
-                    {
-                        obj.Common!.BankLetter = null;
-                        db.GetCollection<StockAccount>().Update(obj);
-                    }
-                    else if (Name == obj.Credit?.Name)
-                    {
-                        obj.Credit!.BankLetter = null;
-                        db.GetCollection<StockAccount>().Update(obj);
-                    }
-                    File.Delete(v.File.FullName);
-                    v.File = null;
-                }
-                catch (Exception e)
-                {
-                    Log.Error($"删除股票账户银行关联文件失败 {e.Message}");
-                }
-            }
-        }
     }
 
 

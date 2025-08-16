@@ -46,12 +46,12 @@ public partial class ModifyOrderWindowViewModel : AddOrderWindowViewModelBase
         {
             Id = order.Id;
             Date = new DateTime(order.Date, default);
-            Contract.Meta = order.Contract;
-            OrderFile.Meta = order.OrderSheet;
-            RiskDisclosure.Meta = order.RiskDiscloure;
-            RiskPair.Meta = order.RiskPair;
-            Video.Meta = order.Videotape;
-            Review.Meta = order.Review;
+            Contract.Meta = order.Contract?.File;
+            OrderFile.Meta = order.OrderSheet?.File;
+            RiskDisclosure.Meta = order.RiskDiscloure?.File;
+            RiskPair.Meta = order.RiskPair?.File;
+            Video.Meta = order.Videotape?.File;
+            Review.Meta = order.Review?.File;
         }
 
 
@@ -102,12 +102,12 @@ public partial class ModifyOrderWindowViewModel : AddOrderWindowViewModelBase
             Order.Date = DateOnly.FromDateTime(Date ?? default);
             Order.Type = SelectedType!.Value;
             Order.Number = Number ?? 0;
-            Order.Contract = Contract.Meta;
-            Order.RiskDiscloure = RiskDisclosure.Meta;
-            Order.OrderSheet = OrderFile.Meta;
-            Order.Videotape = Video.Meta;
-            Order.RiskPair = RiskPair.Meta;
-            Order.Review = Review.Meta;
+            Order.Contract = new SimpleFile { File = Contract.Meta };
+            Order.RiskDiscloure =new SimpleFile { File = RiskDisclosure.Meta };
+            Order.OrderSheet =new SimpleFile { File = OrderFile.Meta };
+            Order.Videotape =new SimpleFile { File = Video.Meta };
+            Order.RiskPair =new SimpleFile { File = RiskPair.Meta };
+            Order.Review =new SimpleFile { File = Review.Meta };
 
             db.GetCollection<TransferOrder>().Upsert(Order);
             db.Commit();

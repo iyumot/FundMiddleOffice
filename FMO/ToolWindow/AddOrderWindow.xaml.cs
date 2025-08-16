@@ -36,50 +36,27 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
     public AddOrderWindowViewModelBase()
     {
         Contract = new();
-        Contract.MetaChanged += f =>
-        {
-            using var db = DbHelper.Base();
-            db.GetCollection<TransferOrder>().UpdateMany(BsonMapper.Global.ToDocument(new { Contract = f }).ToString(), $"_id={Id}");
-        };
+        Contract.FileChanged += f => UpdateFile(new { Contract = f });
+
 
         RiskDisclosure = new();
-        RiskDisclosure.MetaChanged += f =>
-        {
-            using var db = DbHelper.Base();
-            db.GetCollection<TransferOrder>().UpdateMany(BsonMapper.Global.ToDocument(new { RiskDisclosure = f }).ToString(), $"_id={Id}");
-        };
+        RiskDisclosure.FileChanged += f => UpdateFile(new { RiskDisclosure = f });
 
 
         OrderFile = new();
-        OrderFile.MetaChanged += f =>
-        {
-            using var db = DbHelper.Base();
-            db.GetCollection<TransferOrder>().UpdateMany(BsonMapper.Global.ToDocument(new { OrderFile = f }).ToString(), $"_id={Id}");
-        };
+        OrderFile.FileChanged += f => UpdateFile(new { OrderFile = f });
 
 
         Video = new();
-        Video.MetaChanged += f =>
-        {
-            using var db = DbHelper.Base();
-            db.GetCollection<TransferOrder>().UpdateMany(BsonMapper.Global.ToDocument(new { Video = f }).ToString(), $"_id={Id}");
-        };
+        Video.FileChanged += f => UpdateFile(new { Video = f });
 
 
         RiskPair = new();
-        RiskPair.MetaChanged += f =>
-        {
-            using var db = DbHelper.Base();
-            db.GetCollection<TransferOrder>().UpdateMany(BsonMapper.Global.ToDocument(new { RiskPair = f }).ToString(), $"_id={Id}");
-        };
+        RiskPair.FileChanged += f => UpdateFile(new { RiskPair = f });
 
 
         Review = new();
-        Review.MetaChanged += f =>
-        {
-            using var db = DbHelper.Base();
-            db.GetCollection<TransferOrder>().UpdateMany(BsonMapper.Global.ToDocument(new { Review = f }).ToString(), $"_id={Id}");
-        };
+        Review.FileChanged += f => UpdateFile(new { Review = f });
 
         //Contract = new()
         //{
@@ -128,6 +105,13 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
         //};
     }
 
+
+    private void UpdateFile<T>(T v)
+    {
+        if (Id == 0) return;
+        using var db = DbHelper.Base();
+        db.GetCollection<TransferOrder>().UpdateMany(BsonMapper.Global.ToDocument(v).ToString(), $"_id={Id}");
+    }
 
     public int Id { get; set; }
 
@@ -263,89 +247,7 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
     //}
 
 
-    protected FileStorageInfo? SetFile(System.IO.FileInfo fi, string title, Action<TransferOrder, FileStorageInfo> func)
-    {
-        // 如果文件名中有日期
-        if (Date is null && !fi.Name.Contains("回访") && DateTimeHelper.TryFindDate(fi.Name) is DateOnly date)
-            Date = new DateTime(date, default);
 
-
-        if (Id == 0) //新增加的
-        {
-            return new FileStorageInfo(fi.FullName, "", DateTime.Now);
-        }
-        else
-        {
-            string hash = fi.ComputeHash()!;
-
-            // 保存副本
-            var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "order", Id.ToString()));
-
-            var tar = FileHelper.CopyFile2(fi, dir.FullName);
-            if (tar is null)
-            {
-                Log.Error($"保存文件出错，{fi.Name}");
-                HandyControl.Controls.Growl.Error($"无法保存{fi.Name}，文件名异常或者存在过多重名文件");
-                return null;
-            }
-
-            var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
-
-            using var db = DbHelper.Base();
-            var q = db.GetCollection<TransferOrder>().FindById(Id);
-
-            FileStorageInfo fsi = new()
-            {
-                Title = title,
-                Path = path,
-                Hash = hash,
-                Time = DateTime.Now
-            };
-            func(q, fsi);
-            db.GetCollection<TransferOrder>().Update(q);
-            return fsi;
-        }
-    }
-
-
-    protected FileStorageInfo? SetFile2(FileInfo fi, string title, Action<TransferOrder, FileStorageInfo> func)
-    {
-        var fsi = SetFile(fi, title, func);
-
-        // 如果是pdf，解析日期
-        try
-        {
-            //var texts = PdfHelper.GetTexts(fi.FullName);
-
-
-            if (PdfHelper.GetSignDate(fi.FullName) is DateOnly d)
-                Date = new DateTime(d, default);
-        }
-        catch { }
-        return fsi;
-    }
-
-    protected FileStorageInfo? Move(FileStorageInfo? fsi)
-    {
-        if (fsi?.Path is null) return null;
-
-        var fi = new FileInfo(fsi.Path);
-        string hash = fi.ComputeHash()!;
-
-        // 保存副本
-        var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "order", Id.ToString()));
-
-        var tar = FileHelper.CopyFile2(fi, dir.FullName);
-        if (tar is null)
-        {
-            Log.Error($"保存文件出错，{fi.Name}");
-            HandyControl.Controls.Growl.Error($"无法保存{fi.Name}，文件名异常或者存在过多重名文件");
-            return null;
-        }
-
-        var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
-        return new() { Title = "", Path = path, Hash = hash, Time = DateTime.Now };
-    }
 
 
     private TransferOrder? Parse(string text)
@@ -462,7 +364,7 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
     {
 
         using var db = DbHelper.Base();
-       // db.BeginTrans();
+        // db.BeginTrans();
         try
         {
             // 如果是新增加的
@@ -472,12 +374,12 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
             //    db.GetCollection<TransferOrder>().Insert(obj);
             //    Id = obj.Id;
 
-                //// 移动文件
-                //Contract.File = Move(Contract.File);
-                //RiskDisclosure.File = Move(RiskDisclosure.File);
-                //OrderFile.File = Move(OrderFile.File);
-                //Video.File = Move(Video.File);
-                //Contract.File = Move(Contract.File);
+            //// 移动文件
+            //Contract.File = Move(Contract.File);
+            //RiskDisclosure.File = Move(RiskDisclosure.File);
+            //OrderFile.File = Move(OrderFile.File);
+            //Video.File = Move(Video.File);
+            //Contract.File = Move(Contract.File);
             //}
 
 
@@ -493,12 +395,12 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
                 InvestorIdentity = SelectedInvestor.Identity?.Id,
                 Type = SelectedType!.Value,
                 Number = Number ?? 0,
-                Contract = Contract.Meta,
-                RiskDiscloure = RiskDisclosure.Meta,
-                OrderSheet = OrderFile.Meta,
-                Videotape = Video.Meta,
-                RiskPair = RiskPair.Meta,
-                Review = Review.Meta,
+                Contract = new SimpleFile { File = Contract.Meta },
+                RiskDiscloure = new SimpleFile { File = RiskDisclosure.Meta },
+                OrderSheet = new SimpleFile { File = OrderFile.Meta },
+                Videotape = new SimpleFile { File = Video.Meta },
+                RiskPair = new SimpleFile { File = RiskPair.Meta },
+                Review = new SimpleFile { File = Review.Meta },
             };
             db.GetCollection<TransferOrder>().Upsert(order);
             //db.Commit();
@@ -642,12 +544,12 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
         {
             Id = order.Id;
             Date = new DateTime(order.Date, default);
-            Contract.Meta = order.Contract;
-            OrderFile.Meta = order.OrderSheet;
-            RiskDisclosure.Meta = order.RiskDiscloure;
-            RiskPair.Meta = order.RiskPair;
-            Video.Meta = order.Videotape;
-            Review.Meta = order.Review;
+            Contract.Meta = order.Contract?.File;
+            OrderFile.Meta = order.OrderSheet?.File;
+            RiskDisclosure.Meta = order.RiskDiscloure?.File;
+            RiskPair.Meta = order.RiskPair?.File;
+            Video.Meta = order.Videotape?.File;
+            Review.Meta = order.Review?.File;
 
         }
 
@@ -725,12 +627,12 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
                 InvestorName = Record.InvestorName,
                 Type = SelectedType!.Value,
                 Number = Number ?? 0,
-                Contract = Contract.Meta,
-                RiskDiscloure = RiskDisclosure.Meta,
-                OrderSheet = OrderFile.Meta,
-                Videotape = Video.Meta,
-                RiskPair = RiskPair.Meta,
-                Review = Review.Meta,
+                Contract = new SimpleFile { File = Contract.Meta },
+                RiskDiscloure = new SimpleFile { File = RiskDisclosure.Meta },
+                OrderSheet = new SimpleFile { File = OrderFile.Meta },
+                Videotape = new SimpleFile { File = Video.Meta },
+                RiskPair = new SimpleFile { File = RiskPair.Meta },
+                Review = new SimpleFile { File = Review.Meta },
             };
             // 同日订单
             if (MergeOrderBySameDay)
@@ -866,7 +768,7 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
 }
 
 
-public partial class OrderFileViewModel: FileMetaViewModel
+public partial class OrderFileViewModel : SimpleFileViewModel
 {
     [ObservableProperty]
     public partial bool IsRequired { get; set; }

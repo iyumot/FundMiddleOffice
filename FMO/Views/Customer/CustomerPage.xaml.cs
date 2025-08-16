@@ -417,15 +417,15 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
                             var fsi = FileMeta.Create(path);// new FileStorageInfo(path, FileHelper.ComputeHash(ffs)!, File.GetLastWriteTime(path));
 
                             if (qf.Name.Contains("基本信息表"))
-                                old.InfomationSheet = fsi;
+                                old.InfomationSheet = new SimpleFile { File = fsi };
                             else if (qf.Name.Contains("税收居民身份声明"))
-                                old.TaxDeclaration = fsi;
+                                old.TaxDeclaration = new SimpleFile { File = fsi };
                             else if (qf.Name.Contains("投资者告知书"))
-                                old.Notice = fsi;
+                                old.Notice = new SimpleFile { File = fsi };
                             else if (qf.Name.Contains("投资经历"))
-                                old.ProofOfExperience = fsi;
+                                old.ProofOfExperience = new SimpleFile { File = fsi };
                             else if (qf.Name.Contains("合格投资者承诺函"))
-                                old.CommitmentLetter = fsi;
+                                old.CommitmentLetter = new SimpleFile { File = fsi };
                             else if (qf.Name.Contains("证明"))
                             {
                                 if (old.CertificationFiles is null)
@@ -447,38 +447,11 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
                             using var ms = MergeCards(db, idcards);
                             if (ms is not null)
                             {
-                                var di = new DirectoryInfo($@"files\investor\{cus.Id}\cards");
-                                if (!di.Exists) di.Create();
-                                var path = Path.Combine(di.FullName, $"photo-{DateTime.Now:yyyyMMdd}.jpg");
-                                using (var ffs = new FileStream(path, FileMode.Create))
-                                {
-                                    ms.Seek(0, SeekOrigin.Begin);
-                                    ms.CopyTo(ffs);
-                                    ffs.Close();
-                                }
 
-                                // 保存
-                                var fi = new FileInfo(path);
-                                var hash = fi.ComputeHash();
-                                FileStorageInfo fsi = new()
-                                {
-                                    Title = "",
-                                    Path = path,
-                                    Hash = hash,
-                                    Time = DateTime.Now
-                                };
+                                var cert = db.GetCollection<InvestorCertifications>().FindById(cus.Id) ?? new();
+                                cert.Files.Add(FileMeta.Create(ms, $"身份证-{cus.Name}.jpg", idcards[0].LastWriteTime.LocalDateTime));
 
-                                if (cus.IDCards is null) cus.IDCards = [fsi];
-                                else
-                                {
-                                    foreach (var ic in cus.IDCards.ToArray())
-                                    {
-                                        if (ic.Path == fsi.Path)
-                                            cus.IDCards.Remove(ic);
-                                    }
-                                    cus.IDCards.Add(fsi);
-                                }
-                                db.GetCollection<Investor>().Update(cus);
+                                db.GetCollection<InvestorCertifications>().Upsert(cert);
                             }
                         }
                     }

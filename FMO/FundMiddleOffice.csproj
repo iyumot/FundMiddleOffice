@@ -63,6 +63,7 @@
     <Compile Remove="Controls\EquityStructureDiagram.xaml.cs" />
     <Compile Remove="Controls\FileDisplay.cs" />
     <Compile Remove="PageView.cs" />
+    <Compile Remove="ViewModel\FileViewModel.cs" />
     <Compile Remove="ViewModel\UnitViewModel.cs" />
     <Compile Remove="Views\TransferRequestPage.xaml.cs" />
   </ItemGroup>

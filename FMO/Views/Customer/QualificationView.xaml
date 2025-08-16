@@ -83,7 +83,8 @@
 
             <shared:FileView
                 Content="{Binding CertificationFiles}"
-                Header="证明文件" IsReadOnly="{Binding IsReadOnly}"
+                Header="证明文件"
+                IsReadOnly="{Binding IsReadOnly}"
                 Style="{StaticResource MultiFileStyle}" />
 
 

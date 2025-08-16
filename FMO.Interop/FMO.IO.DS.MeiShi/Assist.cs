@@ -709,17 +709,17 @@ public class Assist : AssistBase
                     switch (ff.codeType)
                     {
                         case 121:
-                            order.RiskPair = new FileStorageInfo { Title = ff.documentName, Time = time, Path = filepath, Hash = FileHelper.ComputeHash(filepath) };
+                            order.RiskPair = new SimpleFile { Label = ff.documentName, File = FileMeta.Create(filepath) with { Time = time } };
                             break;
 
                         case 122:
-                            order.RiskDiscloure = new FileStorageInfo { Title = ff.documentName, Time = time, Path = filepath, Hash = FileHelper.ComputeHash(filepath) };
+                            order.RiskDiscloure = new SimpleFile { Label = ff.documentName, File = FileMeta.Create(filepath) with { Time = time } };
                             break;
                         case 123:
-                            order.Contract = new FileStorageInfo { Title = ff.documentName, Time = time, Path = filepath, Hash = FileHelper.ComputeHash(filepath) };
+                            order.Contract = new SimpleFile { Label = ff.documentName, File = FileMeta.Create(filepath) with { Time = time } };
                             break;
                         case 125:
-                            order.OrderSheet = new FileStorageInfo { Title = ff.documentName, Time = time, Path = filepath, Hash = FileHelper.ComputeHash(filepath) };
+                            order.OrderSheet = new SimpleFile { Label = ff.documentName, File = FileMeta.Create(filepath) with { Time = time } };
                             break;
 
                         default:
@@ -745,7 +745,9 @@ public class Assist : AssistBase
                             fileStream.Flush();
                         }
 
-                        order.Videotape = new FileStorageInfo { Title = "双录", Time = order.OrderSheet?.Time ?? default, Path = filepath, Hash = FileHelper.ComputeHash(filepath) };
+                        order.Videotape = new SimpleFile { Label = "双录", File = FileMeta.Create(filepath) };
+                        if (order.OrderSheet?.File?.Time is DateTime t)
+                            order.Videotape.File = order.Videotape.File with { Time = t }; // 双录时间与订单时间一致
                     }
                 }
 
@@ -865,7 +867,7 @@ public class Assist : AssistBase
 
         var fi = qfiles.FirstOrDefault(x => x.Name.Contains("合格投资者承诺函"));
         if (fi is not null)
-            q.CommitmentLetter = new FileStorageInfo { Title = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+            q.CommitmentLetter = new SimpleFile { Label = fi.Name, File = FileMeta.Create(fi.FullName) };
 
 
         fi = qfiles.FirstOrDefault(x => x.Name.Contains("基本信息表"));
@@ -875,28 +877,28 @@ public class Assist : AssistBase
             {
                 q.Result = QualifiedInvestorType.Professional;
             }
-            q.InfomationSheet = new FileStorageInfo { Title = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+            q.InfomationSheet = new SimpleFile { Label = fi.Name, File = FileMeta.Create(fi.FullName) };
             qfiles.Remove(fi);
         }
 
         fi = qfiles.FirstOrDefault(x => x.Name.Contains("告知书"));
         if (fi is not null)
         {
-            q.Notice = new FileStorageInfo { Title = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+            q.Notice = new SimpleFile { Label = fi.Name, File = FileMeta.Create(fi.FullName) };
             qfiles.Remove(fi);
         }
 
         fi = qfiles.FirstOrDefault(x => x.Name.Contains("税收居民身份声明"));
         if (fi is not null)
         {
-            q.TaxDeclaration = new FileStorageInfo { Title = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+            q.TaxDeclaration = new SimpleFile { Label = fi.Name, File = FileMeta.Create(fi.FullName) };
             qfiles.Remove(fi);
         }
 
         fi = qfiles.FirstOrDefault(x => x.Name.Contains("经办人身份证件") || x.Name.Contains("法人"));
         if (fi is not null)
         {
-            q.Agent = new FileStorageInfo { Title = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+            q.Agent = new SimpleFile { Label = fi.Name, File = FileMeta.Create(fi.FullName) };
             qfiles.Remove(fi);
         }
 
@@ -906,14 +908,14 @@ public class Assist : AssistBase
         fi = qfiles.FirstOrDefault(x => x.Name.Contains("授权委托书"));
         if (fi is not null)
         {
-            q.Authorization = new FileStorageInfo { Title = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+            q.Authorization = new SimpleFile { Label = fi.Name, File = FileMeta.Create(fi.FullName) };
             qfiles.Remove(fi);
         }
 
         fi = qfiles.FirstOrDefault(x => x.Name.Contains("投资经历"));
         if (fi is not null)
         {
-            q.ProofOfExperience = new FileStorageInfo { Title = fi.Name, Time = fi.LastWriteTime, Path = fi.Name, Hash = FileHelper.ComputeHash(fi) };
+            q.ProofOfExperience = new SimpleFile { Label = fi.Name, File = FileMeta.Create(fi.FullName) };
             qfiles.Remove(fi);
         }
 
@@ -924,7 +926,7 @@ public class Assist : AssistBase
 
             foreach (var item in prof)
             {
-                q.CertificationFiles.Add(new FileStorageInfo { Title = item.Name, Time = item.LastWriteTime, Path = item.Name, Hash = FileHelper.ComputeHash(item) });
+                q.CertificationFiles.Files.Add(FileMeta.Create(item.Name));
                 qfiles.Remove(item);
             }
         }

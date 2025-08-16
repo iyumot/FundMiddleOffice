@@ -138,23 +138,34 @@
             AllowDrop="True"
             Orientation="Vertical"
             Spacing="4">
-            <hc:UniformSpacingPanel.Resources>
-                <Style TargetType="shared:SingleFileView">
-                    <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}" />
-                </Style>
-            </hc:UniformSpacingPanel.Resources>
-            <shared:SingleFileView Binding="{Binding OrderFile}" />
 
-            <shared:SingleFileView Binding="{Binding RiskPair}" Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+            <shared:FileView Content="{Binding OrderFile}" Header="申请表" />
 
-            <shared:SingleFileView Binding="{Binding Contract}" Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+            <shared:FileView
+                Content="{Binding RiskPair}"
+                Header="风险匹配告知书"
+                Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
 
-            <shared:SingleFileView Binding="{Binding RiskDisclosure}" Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+            <shared:FileView
+                Content="{Binding Contract}"
+                Header="基金合同"
+                Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
 
-            <shared:SingleFileView Binding="{Binding Review}" Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+            <shared:FileView
+                Content="{Binding RiskDisclosure}"
+                Header="风险揭示书"
+                Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+            <shared:FileView
+                Content="{Binding Review}"
+                Header="回访"
+                Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
 
 
-            <shared:SingleFileView Binding="{Binding Video}" Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+            <shared:FileView
+                Content="{Binding Video}"
+                Header="双录"
+                Visibility="{Binding IsSell, Converter={StaticResource Boolean2VisibilityReConverter}}" />
 
         </hc:UniformSpacingPanel>
 

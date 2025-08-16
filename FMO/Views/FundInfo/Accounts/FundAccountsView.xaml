@@ -314,9 +314,15 @@
                                 </DockPanel>
                             </UniformGrid>
 
-                            <shared:FileControl Binding="{Binding BankLetter}" IsReadOnly="{Binding IsReadOnly}" />
+                            <shared:FileView
+                                Content="{Binding BankLetter}"
+                                Header="银行关联函"
+                                IsReadOnly="{Binding IsReadOnly}" />
 
-                            <shared:FileControl Binding="{Binding ServiceAgreement}" IsReadOnly="{Binding IsReadOnly}" />
+                            <shared:FileView
+                                Content="{Binding ServiceAgreement}"
+                                Header="经服协议"
+                                IsReadOnly="{Binding IsReadOnly}" />
 
 
 
@@ -429,7 +435,8 @@
                                     <Button hc:IconElement.Geometry="{StaticResource f.folder}" Style="{StaticResource ButtonIcon.Small}" />
                                 </DockPanel>
                             </UniformGrid>
-                            <shared:FileControl />
+
+
 
 
                             <BulletDecorator>
@@ -585,10 +592,20 @@
                                 </DockPanel>
                             </UniformGrid>
 
-                            <shared:FileControl Binding="{Binding BankLetter}" IsReadOnly="{Binding IsReadOnly}" />
+                            <shared:FileView
+                                Content="{Binding BankLetter}"
+                                Header="银行关联函"
+                                IsReadOnly="{Binding IsReadOnly}" />
 
-                            <shared:FileControl Binding="{Binding ServiceAgreement}" IsReadOnly="{Binding IsReadOnly}" />
-                            <shared:FileControl Binding="{Binding AccountLetter}" IsReadOnly="{Binding IsReadOnly}" />
+                            <shared:FileView
+                                Content="{Binding ServiceAgreement}"
+                                Header="经服协议"
+                                IsReadOnly="{Binding IsReadOnly}" />
+
+                            <shared:FileView
+                                Content="{Binding AccountLetter}"
+                                Header="账户信息函"
+                                IsReadOnly="{Binding IsReadOnly}" />
 
                             <BulletDecorator>
                                 <BulletDecorator.Bullet>

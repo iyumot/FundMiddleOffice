@@ -98,13 +98,13 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
     public partial decimal? Income { get; set; }
 
     // public FileViewModel<InvestorQualification> InfomationSheet { get; }
-    public FileMetaViewModel InfomationSheet { get; }
+    public SimpleFileViewModel InfomationSheet { get; }
 
-    public FileMetaViewModel CommitmentLetter { get; }
+    public SimpleFileViewModel CommitmentLetter { get; }
 
-    public FileMetaViewModel Notice { get; }
+    public SimpleFileViewModel Notice { get; }
 
-    public FileMetaViewModel TaxDeclaration { get; }
+    public SimpleFileViewModel TaxDeclaration { get; }
 
 
 
@@ -114,11 +114,11 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
 
 
 
-    public FileMetaViewModel ProofOfExperience { get; }
+    public SimpleFileViewModel ProofOfExperience { get; }
 
-    public FileMetaViewModel Authorization { get; }
+    public SimpleFileViewModel Authorization { get; }
 
-    public FileMetaViewModel Agent { get; }
+    public SimpleFileViewModel Agent { get; }
 
     /// <summary>
     /// 代理人是法代
@@ -204,7 +204,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         IgnoreError = obj.IsSettled;
 
         InfomationSheet = new(obj.InfomationSheet);
-        InfomationSheet.MetaChanged += (x) =>
+        InfomationSheet.FileChanged += (x) =>
         {
             using var db = DbHelper.Base();
             db.GetCollection<InvestorQualification>().UpdateMany(BsonMapper.Global.ToDocument(new { InfomationSheet = x }).ToString(), $"_id={id}");
@@ -212,7 +212,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         };
 
         CommitmentLetter = new(obj.CommitmentLetter);
-        CommitmentLetter.MetaChanged += (x) =>
+        CommitmentLetter.FileChanged += (x) =>
         {
             using var db = DbHelper.Base();
             db.GetCollection<InvestorQualification>().UpdateMany(BsonMapper.Global.ToDocument(new { CommitmentLetter = x }).ToString(), $"_id={id}");
@@ -220,7 +220,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         };
 
         Notice = new(obj.Notice);
-        Notice.MetaChanged += (x) =>
+        Notice.FileChanged += (x) =>
         {
             using var db = DbHelper.Base();
             db.GetCollection<InvestorQualification>().UpdateMany(BsonMapper.Global.ToDocument(new { Notice = x }).ToString(), $"_id={id}");
@@ -228,7 +228,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         };
 
         TaxDeclaration = new(obj.TaxDeclaration);
-        TaxDeclaration.MetaChanged += (x) =>
+        TaxDeclaration.FileChanged += (x) =>
         {
             using var db = DbHelper.Base();
             db.GetCollection<InvestorQualification>().UpdateMany(BsonMapper.Global.ToDocument(new { TaxDeclaration = x }).ToString(), $"_id={id}");
@@ -244,7 +244,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         };
 
         ProofOfExperience = new(obj.ProofOfExperience);
-        ProofOfExperience.MetaChanged += (x) =>
+        ProofOfExperience.FileChanged += (x) =>
         {
             using var db = DbHelper.Base();
             db.GetCollection<InvestorQualification>().UpdateMany(BsonMapper.Global.ToDocument(new { ProofOfExperience = x }).ToString(), $"_id={id}");
@@ -252,7 +252,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         };
 
         Authorization = new(obj.Authorization);
-        Authorization.MetaChanged += (x) =>
+        Authorization.FileChanged += (x) =>
         {
             using var db = DbHelper.Base();
             db.GetCollection<InvestorQualification>().UpdateMany(BsonMapper.Global.ToDocument(new { Authorization = x }).ToString(), $"_id={id}");
@@ -260,7 +260,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         };
 
         Agent = new(obj.Agent);
-        Agent.MetaChanged += (x) =>
+        Agent.FileChanged += (x) =>
         {
             using var db = DbHelper.Base();
             db.GetCollection<InvestorQualification>().UpdateMany(BsonMapper.Global.ToDocument(new { Agent = x }).ToString(), $"_id={id}");
@@ -395,109 +395,6 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
 
 
 
-
-
-    private FileStorageInfo? SetFile(FileInfo fi, string label, Action<InvestorQualification, FileStorageInfo> func)
-    {
-        string hash = fi.ComputeHash()!;
-
-        // 保存副本
-        var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "qualification", Id.ToString()));
-
-        var tar = FileHelper.CopyFile2(fi, dir.FullName);
-        if (tar is null)
-        {
-            Log.Error($"保存合投文件出错，{fi.Name}");
-            HandyControl.Controls.Growl.Error($"无法保存{fi.Name}，文件名异常或者存在过多重名文件");
-            return null;
-        }
-
-        var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
-
-        var fsi = new FileStorageInfo
-        {
-            Title = label,
-            Path = path,
-            Hash = hash,
-            Time = fi.LastWriteTime
-        };
-
-        using var db = DbHelper.Base();
-        var q = db.GetCollection<InvestorQualification>().FindById(Id);
-        func(q, fsi);
-        db.GetCollection<InvestorQualification>().Update(q);
-
-        return fsi;
-    }
-
-
-    private void DeleteFile(Action<InvestorQualification> func)
-    {
-        using var db = DbHelper.Base();
-        var q = db.GetCollection<InvestorQualification>().FindById(Id);
-        func(q);
-        db.GetCollection<InvestorQualification>().Update(q);
-
-        (HasError, Statement) = q.Check();
-    }
-
-    //private FileStorageInfo? SetCertFile(int id, FileInfo fi)
-    //{
-    //    string hash = fi.ComputeHash()!;
-
-    //    // 保存副本
-    //    var dir = Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "files", "qualification", id.ToString()));
-
-    //    var tar = FileHelper.CopyFile2(fi, dir.FullName);
-    //    if (tar is null)
-    //    {
-    //        Log.Error($"保存文件出错，{fi.Name}");
-    //        HandyControl.Controls.Growl.Error($"无法保存{fi.Name}，文件名异常或者存在过多重名文件");
-    //        return null;
-    //    }
-
-    //    var path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar);
-
-    //    using var db = DbHelper.Base();
-    //    var q = db.GetCollection<InvestorQualification>().FindById(Id);
-    //    if (q.CertificationFiles is null) q.CertificationFiles = new();
-
-    //    var l = q.CertificationFiles;
-    //    FileStorageInfo fsi = new()
-    //    {
-    //        Title = "",
-    //        Path = path,
-    //        Hash = hash,
-    //        Time = DateTime.Now
-    //    };
-    //    l!.Add(fsi);
-    //    db.GetCollection<InvestorQualification>().Update(q);
-
-
-    //    (HasError, Statement) = q.Check();
-    //    return fsi;
-    //}
-
-
-    //private void DeleteCertFile(FileStorageInfo file)
-    //{
-    //    using var db = DbHelper.Base();
-    //    var q = db.GetCollection<InvestorQualification>().FindById(Id);
-
-    //    var l = q.CertificationFiles;
-    //    if (l is null) return;
-    //    var old = l.Find(x => x.Path is not null && file.Path is not null && Path.GetFullPath(x.Path) == Path.GetFullPath(file.Path));
-    //    if (old is not null)
-    //    {
-    //        l.Remove(old);
-
-    //        try { File.Delete(old.Path!); } catch (Exception e) { Log.Error($"delete file failed {e}"); }
-    //    }
-    //    db.GetCollection<InvestorQualification>().Update(q);
-
-
-    //    (HasError, Statement) = q.Check();
-    //}
 
     public void Check()
     {

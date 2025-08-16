@@ -349,7 +349,7 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
 
-    private FileStorageInfo? SaveTo(Stream ms, string title, string path)
+    private SimpleFile? SaveTo(Stream ms, string title, string path)
     {
         using var fs = new FileStream(path, FileMode.Create);
         if (ms.CanSeek)
@@ -358,12 +358,9 @@ public partial class MainWindowViewModel : ObservableObject
         fs.Flush();
 
         fs.Seek(0, SeekOrigin.Begin);
-        return new FileStorageInfo
+        return new SimpleFile
         {
-            Title = "",
-            Path = path,
-            Hash = FileHelper.ComputeHash(fs),
-            Time = DateTime.Now
+            File = FileMeta.Create(fs, Path.GetFileName(path))
         };
     }
 

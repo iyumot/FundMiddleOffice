@@ -33,18 +33,18 @@ public class OpenAccountEvent : AccountEvent
     /// <summary>
     /// 银证、银期等
     /// </summary>
-    public FileStorageInfo? BankLetter { get; set; }
+    public SimpleFile? BankLetter { get; set; }
 
 
     /// <summary>
     /// 经服
     /// </summary>
-    public FileStorageInfo? ServiceAgreement { get; set; }
+    public SimpleFile? ServiceAgreement { get; set; }
 
     /// <summary>
     /// 开户信息
     /// </summary>
-    public FileStorageInfo? AccountLetter { get; set; }
+    public SimpleFile? AccountLetter { get; set; }
 }
 
 

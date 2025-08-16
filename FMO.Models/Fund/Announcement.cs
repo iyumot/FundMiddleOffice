@@ -12,7 +12,6 @@ public class FundAnnouncement
 
     public string? Title { get; set; }
 
-    public FileStorageInfo? File { get; set; }
-
-    public FileStorageInfo? Sealed { get; set; }
+    public DualFile? File { get; set; }
+     
 }

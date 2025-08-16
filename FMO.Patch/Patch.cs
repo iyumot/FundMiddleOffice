@@ -34,8 +34,34 @@ public static partial class DatabaseAssist
         [75] = MiggrateRisk,
         [78] = MiggrateOrderFile,
         [84] = MiggrateFlow,
-       // [85] = MiggrateFlow2
+        [85] = MiggrateTradeAccount
     };
+
+    private static void MiggrateTradeAccount(BaseDatabase db)
+    {
+        void move(BsonDocument item, string key, string name)
+        {
+            item[key] = BsonMapper.Global.ToDocument(new SimpleFile { Label = name, File = FromStorate(item[key].AsDocument) });
+        }
+        var stock = db.GetCollection(nameof(StockAccount)).FindAll().ToList();
+        foreach (var item in stock)
+        {
+            move(item["Common"].AsDocument, nameof(StockAccount.Common.BankLetter), "银行函");
+            move(item["Common"].AsDocument, nameof(StockAccount.Common.ServiceAgreement), "经服协议");
+        }
+        db.GetCollection(nameof(StockAccount)).Update(stock);
+
+        var future = db.GetCollection(nameof(FutureAccount)).FindAll().ToList();
+        foreach (var item in stock)
+        {
+            move(item["Common"].AsDocument, nameof(FutureAccount.Common.BankLetter), "银行函");
+            move(item["Common"].AsDocument, nameof(FutureAccount.Common.ServiceAgreement), "经服协议");
+            move(item["Common"].AsDocument, nameof(FutureAccount.Common.AccountLetter), "账户信息函");
+        }
+        db.GetCollection(nameof(FutureAccount)).Update(future);
+
+
+    }
 
     //private static void MiggrateFlow2(BaseDatabase db)
     //{
@@ -155,7 +181,7 @@ public static partial class DatabaseAssist
     private static void MiggrateOrderFile(BaseDatabase db)
     {
         if (!db.CollectionExists(nameof(TransferOrder) + "_bak"))
-            db.GetCollection(nameof(TransferOrder) + "_bak").InsertBulk(db.GetCollection(nameof(TransferOrder)).FindAll());
+            db.GetCollection(nameof(TransferOrder) + "_bak").InsertBulk(db.GetCollection(nameof(TransferOrder)).FindAll().ToList());
 
         var list = db.GetCollection(nameof(TransferOrder) + "_bak").FindAll().ToList();
         foreach (var item in list)
@@ -164,7 +190,7 @@ public static partial class DatabaseAssist
             {
                 if (v.Type == BsonType.Array)
                 {
-                    if (v.AsArray.FirstOrDefault() is BsonValue bv && bv.Type == BsonType.Document && bv.AsDocument.Keys.Intersect(["Path", "Time", "Hash"]).Count() == 3)
+                    if (v.AsArray.FirstOrDefault() is BsonValue bv && bv.Type == BsonType.Document && bv.AsDocument.Keys.Intersect(["Path", "Time",]).Count() == 2)
                     {
                         var label = v.AsArray.Select(x => x.AsDocument.TryGetValue("Title", out var t) ? t : null).FirstOrDefault()?.AsString;
                         var meta = v.AsArray.Select(x => FromStorate(x.AsDocument)).Where(x => x is not null);
@@ -172,7 +198,7 @@ public static partial class DatabaseAssist
                     }
                 }
                 else if (v.Type == BsonType.Document && v.AsDocument.Keys.Intersect(["Path", "Time"]).Count() == 2)
-                    item[k] = FromStorate(v.AsDocument) is FileMeta me ? BsonMapper.Global.ToDocument(me) : null;
+                    item[k] = FromStorate(v.AsDocument) is FileMeta me ? BsonMapper.Global.ToDocument(new SimpleFile { File = me }) : null;
             }
         }
 
@@ -213,7 +239,7 @@ public static partial class DatabaseAssist
                     }
                 }
                 else if (v.Type == BsonType.Document && v.AsDocument.Keys.Intersect(["Path", "Time", "Hash"]).Count() == 3)
-                    item[k] = BsonMapper.Global.ToDocument(FromStorate(v.AsDocument));
+                    item[k] = FromStorate(v.AsDocument) is FileMeta me ? BsonMapper.Global.ToDocument(new SimpleFile { File = me }) : null;
             }
         }
 
