@@ -105,7 +105,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
         // 更新到customers
         foreach (var item in Customers.IntersectBy(ib.Where(x => x.Share == 0).Select(x => x.InvestorId), x => x.Id))
-                item.Holding = InvestorReadOnlyViewModel.HoldingMode.Previous;
+            item.Holding = InvestorReadOnlyViewModel.HoldingMode.Previous;
         foreach (var item in Customers.IntersectBy(ib.Where(x => x.Share > 0).Select(x => x.InvestorId), x => x.Id))
             item.Holding = InvestorReadOnlyViewModel.HoldingMode.Current;
 
@@ -114,7 +114,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         // 是否缺失订单
         var ta = db.GetCollection<TransferRecord>().FindAll().ToArray();
         var cleard = db.GetCollection<Fund>().FindAll().ToDictionary(x => x.Id, x => x.ClearDate == default ? DateOnly.MaxValue : x.ClearDate);
-        
+
         foreach (var item in Customers.IntersectBy(ta.Where(x => x.FundId != 0 && x.OrderId == 0 && x.ConfirmedDate < cleard[x.FundId] && TAHelper.RequiredOrder(x.Type)).Select(x => x.InvestorId), x => x.Id))
             item.LackOrder = true;
 
@@ -124,7 +124,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
         CustomerSource.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(InvestorReadOnlyViewModel.Id), System.ComponentModel.ListSortDirection.Ascending));
         CustomerSource.Filter += CustomerSource_Filter;
         CustomerSource.IsLiveSortingRequested = true;
-        CustomerSource.LiveSortingProperties.Add(nameof(InvestorReadOnlyViewModel.Holding)); 
+        CustomerSource.LiveSortingProperties.Add(nameof(InvestorReadOnlyViewModel.Holding));
         CustomerSource.View.MoveCurrentTo(null);
 
         RefreshRiskAssessmentData(db, ib);
@@ -168,9 +168,9 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
     public void AddInvestor(DataGrid grid)
     {
         AddInvestorWindowViewModel vm = new();
-        var wnd = new AddInvestorWindow { DataContext = vm , Owner = Application.Current.MainWindow };
-   
-        if(wnd.ShowDialog()??false)
+        var wnd = new AddInvestorWindow { DataContext = vm, Owner = Application.Current.MainWindow };
+
+        if (wnd.ShowDialog() ?? false)
         {
             var c = vm.Investor!;
             using var db = DbHelper.Base();
@@ -371,12 +371,13 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
                                 old = new RiskAssessment { Date = date, InvestorId = cus.Id, Level = ra };
                             db.GetCollection<RiskAssessment>().Upsert(old);
 
-                            string savePath = @$"files\evaluation\{old.Id}{Path.GetExtension(item.Name)}";
-                            using var sw = new FileStream(savePath, FileMode.Create);
-                            using var ffs = item.Open();
-                            ffs.CopyTo(sw);
-                            sw.Flush();
-                            old.Path = savePath;
+                            old.File = FileMeta.Create(item.Open(), $"风险调查问卷-{cus.Name}{Path.GetExtension(item.Name)}", new DateTime(date, default));
+                            //string savePath = @$"files\evaluation\{old.Id}{Path.GetExtension(item.Name)}";
+                            //using var sw = new FileStream(savePath, FileMode.Create);
+                            //using var ffs = item.Open();
+                            //ffs.CopyTo(sw);
+                            //sw.Flush();
+                            //old.Path = savePath;
                             db.GetCollection<RiskAssessment>().Upsert(old);
                         }
                         catch (Exception e)
@@ -413,7 +414,7 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
                             using var tmp = qf.Open();
                             tmp.CopyTo(ffs);
                             ffs.Flush();
-                            var fsi = new FileStorageInfo(path, FileHelper.ComputeHash(ffs)!, File.GetLastWriteTime(path));
+                            var fsi = FileMeta.Create(path);// new FileStorageInfo(path, FileHelper.ComputeHash(ffs)!, File.GetLastWriteTime(path));
 
                             if (qf.Name.Contains("基本信息表"))
                                 old.InfomationSheet = fsi;
@@ -430,8 +431,8 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
                                 if (old.CertificationFiles is null)
                                     old.CertificationFiles = new();
 
-                                if (!old.CertificationFiles.Any(x => x.Path == fsi.Path))
-                                    old.CertificationFiles.Add(fsi);
+                                //if (!old.CertificationFiles.Files.Any(x => x.Path == fsi.Path))
+                                old.CertificationFiles.Files.Add(fsi);
                             }
                             else Log.Warning($"未识别的合投文件 {cus.Name}:{qf.Name}");
                         }

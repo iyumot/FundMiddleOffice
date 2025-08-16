@@ -57,7 +57,27 @@ public record FileMeta(string Id, string Name, DateTime Time, string Hash)
         return new FileMeta(id, desireName, fi.LastWriteTime, hash);
     }
 
+    public static FileMeta Create(Stream stream, string desireName, DateTime time = default)
+    {
+        string id = Guid.NewGuid().ToString();
+        Directory.CreateDirectory("files\\hardlink");
+        var hard = @$"files\hardlink\{id}";
+
+        using var fs = new FileStream(hard, FileMode.Create);
+        stream.CopyTo(fs);
+        fs.Flush();
+        fs.Seek(0, SeekOrigin.Begin);
+
+        string hash;
+        using (var md5 = MD5.Create())
+            hash = BitConverter.ToString(md5.ComputeHash(fs)).Replace("-", "").ToLowerInvariant();
+
+        return new FileMeta(id, desireName, time == default ? DateTime.Now : time, hash);
+    }
+
+
     public static FileMeta Create(string path, string desireName) => Create(new FileInfo(path), desireName);
+    public static FileMeta Create(string path) => Create(new FileInfo(path));
 
 
     public static string GetSafeFileName(DirectoryInfo di, string filename)
@@ -142,7 +162,9 @@ public class MultiFile
 {
     public string? Label { get; set; }
 
-    public List<FileMeta>? Files { get; set; }
+    public List<FileMeta> Files { get; init; } = [];
+
+    public int Count => Files?.Count ?? 0;
 }
 
 
@@ -156,6 +178,6 @@ public class MultiDualFile
 {
     public string? Label { get; set; }
 
-    public List<DualFileMeta>? Files { get; set; }
+    public List<DualFileMeta>? Files { get; init; } = [];
 
 }

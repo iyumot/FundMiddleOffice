@@ -118,7 +118,7 @@ public partial class ReadOnlyFileMetaViewModel : ObservableObject
 
 public partial class FileMetaViewModel : ReadOnlyFileMetaViewModel
 {
-    public FileMetaViewModel(FileMeta meta) => Meta = meta;
+    public FileMetaViewModel(FileMeta? meta) => Meta = meta;
 
     public FileMetaViewModel() { }
 
@@ -133,12 +133,12 @@ public partial class FileMetaViewModel : ReadOnlyFileMetaViewModel
 
     public string? SaveFolder { get; set; }
 
-    internal delegate void MetaChangedHandler(FileMetaViewModel sender);
-    internal event MetaChangedHandler? MetaChanged;
+    public delegate void MetaChangedHandler(FileMetaViewModel sender);
+    public event MetaChangedHandler? MetaChanged;
 
 
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanSet))]
     public void Choose()
     {
         var fd = new OpenFileDialog();
@@ -162,7 +162,11 @@ public partial class FileMetaViewModel : ReadOnlyFileMetaViewModel
     }
 
 
-    protected virtual void OnMetaChanged() => MetaChanged?.Invoke(this);
+    protected virtual void OnMetaChanged()
+    {
+        ChooseCommand.NotifyCanExecuteChanged(); 
+        MetaChanged?.Invoke(this);
+    }
 }
 
 
@@ -280,7 +284,7 @@ public partial class MultiFileViewModel : ObservableObject
     public string? Label { get; set; }
 
 
-    public List<FileMetaViewModel> Files { get; } = new();
+    public ObservableCollection<FileMetaViewModel> Files { get; } = new();
 
     public string? Filter { get; set; }
 

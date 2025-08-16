@@ -169,50 +169,51 @@ public class InvestorQualification
     /// <summary>
     /// 承诺函
     /// </summary>
-    public FileStorageInfo? CommitmentLetter { get; set; }
+    public FileMeta? CommitmentLetter { get; set; }
 
     /// <summary>
     /// 基本信息表
     /// </summary>
-    public FileStorageInfo? InfomationSheet { get; set; }
+    public FileMeta? InfomationSheet { get; set; }
 
     /// <summary>
     /// 普通/专业投资者告知书
     /// </summary>
-    public FileStorageInfo? Notice { get; set; }
+    public FileMeta? Notice { get; set; }
 
     /// <summary>
     /// 税收声明
     /// </summary>
-    public FileStorageInfo? TaxDeclaration { get; set; }
+    public FileMeta? TaxDeclaration { get; set; }
 
     /// <summary>
     /// 证明材料：资产证明、收入证明、资产负债表
     /// </summary>
-    //public FileStorageInfo? CertificationMaterials { get; set; }
+    //public FileMeta? CertificationMaterials { get; set; }
 
-    public List<FileStorageInfo>? CertificationFiles { get; set; }
+    //public List<FileMeta>? CertificationFiles { get; set; }
+    public MultiFile? CertificationFiles { get; set; }
 
     /// <summary>
     /// 投资经历
     /// </summary>
-    public FileStorageInfo? ProofOfExperience { get; set; }
+    public FileMeta? ProofOfExperience { get; set; }
 
     /// <summary>
     /// 特殊投资者
     /// </summary>
-    public FileStorageInfo? ProofOfSpecial { get; set; }
+    public FileMeta? ProofOfSpecial { get; set; }
 
 
     /// <summary>
     /// 代理人证件
     /// </summary>
-    public FileStorageInfo? Agent { get; set; }
+    public FileMeta? Agent { get; set; }
 
     /// <summary>
     /// 授权书
     /// </summary>
-    public FileStorageInfo? Authorization { get; set; }
+    public FileMeta? Authorization { get; set; }
 
     /// <summary>
     /// 代理人是法代
@@ -226,7 +227,7 @@ public class InvestorQualification
 
     public bool HasError => Check().HasError;
 
-    private bool IsFileExists(FileStorageInfo? info) => string.IsNullOrWhiteSpace(info?.Path) ? false : File.Exists(info.Path);
+    private bool IsFileExists(FileMeta? info) => info?.Exists ?? false;
 
     public (bool HasError, string? Info) Check()
     {

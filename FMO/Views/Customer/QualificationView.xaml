@@ -29,6 +29,10 @@
                     Left="0"
                     Right="0"
                     Top="4" />
+
+                <Style BasedOn="{StaticResource SimpleFileStyle}" TargetType="shared:FileView">
+                    <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}" />
+                </Style>
             </StackPanel.Resources>
 
 
@@ -64,32 +68,35 @@
 
 
 
-            <shared:SingleFileView Binding="{Binding InfomationSheet}" IsReadOnly="{Binding IsReadOnly}" />
+            <shared:FileView Content="{Binding InfomationSheet}" Header="基本信息表" />
 
-            <shared:SingleFileView Binding="{Binding CommitmentLetter}" IsReadOnly="{Binding IsReadOnly}" />
-
-
+            <shared:FileView Content="{Binding CommitmentLetter}" Header="合格投资者承诺函" />
 
 
-            <shared:SingleFileView Binding="{Binding Notice}" IsReadOnly="{Binding IsReadOnly}" />
+
+
+            <shared:FileView Content="{Binding Notice}" Header="普通/专业投资者告知书" />
 
             <Grid Visibility="{Binding ShowTax, Converter={StaticResource Boolean2VisibilityConverter}}">
-                <shared:SingleFileView Binding="{Binding TaxDeclaration}" IsReadOnly="{Binding IsReadOnly}" />
+                <shared:FileView Content="{Binding TaxDeclaration}" Header="税收声明文件" />
             </Grid>
 
-            <shared:MultipleFileView Binding="{Binding CertificationFiles}" IsReadOnly="{Binding IsReadOnly}" />
+            <shared:FileView
+                Content="{Binding CertificationFiles}"
+                Header="证明文件" IsReadOnly="{Binding IsReadOnly}"
+                Style="{StaticResource MultiFileStyle}" />
 
 
             <StackPanel Visibility="{Binding ShowAgent, Converter={StaticResource Boolean2VisibilityConverter}}">
-                <shared:SingleFileView Binding="{Binding Authorization}" IsReadOnly="{Binding IsReadOnly}" />
+                <shared:FileView Content="{Binding Authorization}" />
 
-                <shared:SingleFileView Binding="{Binding Agent}" IsReadOnly="{Binding IsReadOnly}" />
+                <shared:FileView Content="{Binding Agent}" />
             </StackPanel>
             <Grid Visibility="{Binding NeedExperience, Converter={StaticResource Boolean2VisibilityConverter}}">
 
-                <shared:SingleFileView
-                    Binding="{Binding ProofOfExperience}"
-                    IsReadOnly="{Binding IsReadOnly}"
+                <shared:FileView
+                    Content="{Binding ProofOfExperience}"
+                    Header="投资经历证明"
                     Visibility="{Binding IsProfessional, Converter={StaticResource Boolean2VisibilityConverter}}" />
             </Grid>
 

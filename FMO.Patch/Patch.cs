@@ -28,8 +28,51 @@ public static partial class DatabaseAssist
         [71] = PlatformTable,
         //[68] = AddManualLink
         [72] = MiggrateInstitutionCertifications,
-        [73] = MiggigrateFileInInvestor
+        [73] = MiggigrateFileInInvestor,
+        [74] = MiggrateQualification,
+        [75] = MiggrateRisk,
     };
+
+    private static void MiggrateRisk(BaseDatabase db)
+    {
+        var list = db.GetCollection<RiskAssessment>().FindAll().ToList();
+        foreach (var item in list)
+        {
+            if (item.Path is not null && File.Exists(item.Path))
+                item.File = FileMeta.Create(item.Path);
+        }
+        db.GetCollection<RiskAssessment>().Update(list);
+    }
+
+    private static void MiggrateQualification(BaseDatabase db)
+    {
+        var list = db.GetCollection(nameof(InvestorQualification)).FindAll().ToList();
+        if (!db.CollectionExists(nameof(InvestorQualification) + "_bak"))
+            db.GetCollection(nameof(InvestorQualification) + "_bak").InsertBulk(list);
+
+        foreach (var item in list)
+        {
+            foreach (var (k, v) in item)
+            {
+                if (v.Type == BsonType.Array)
+                {
+                    if (v.AsArray.FirstOrDefault() is BsonValue bv && bv.Type == BsonType.Document && bv.AsDocument.Keys.Intersect(["Path", "Time", "Hash"]).Count() == 3)
+                    {
+                        var label = v.AsArray.Select(x => x.AsDocument.TryGetValue("Title", out var t) ? t : null).FirstOrDefault()?.AsString;
+                        var meta = v.AsArray.Select(x => FromStorate(x.AsDocument)).Where(x => x is not null);
+                        item[k] = BsonMapper.Global.ToDocument(new MultiFile { Label = label, Files = [.. meta] });
+                    }
+                }
+                else if (v.Type == BsonType.Document && v.AsDocument.Keys.Intersect(["Path", "Time", "Hash"]).Count() == 3)
+                    item[k] = BsonMapper.Global.ToDocument(FromStorate(v.AsDocument));
+            }
+        }
+
+        db.GetCollection(nameof(InvestorQualification)).DeleteAll();
+        db.GetCollection(nameof(InvestorQualification)).Insert(list);
+
+
+    }
 
     /// <summary>
     /// 迁移投资人中的文件
@@ -38,7 +81,7 @@ public static partial class DatabaseAssist
     /// <exception cref="NotImplementedException"></exception>
     private static void MiggigrateFileInInvestor(BaseDatabase db)
     {
-        var cus = db.GetCollection<Investor>().Query().Where(x=>x.IDCards != null).Select(x => new { x.Id, x.IDCards }).ToList().Select(x=> new { x.Id, IDCards= x.IDCards.Select(x => new { x.Name, p = x.Path!, m = Regex.Match(x.Path!, "files.*") }).Select(x => new { x.Name, Path = x.m.Success ? x.m.Value : x.p }) }).ToList();
+        var cus = db.GetCollection<Investor>().Query().Where(x => x.IDCards != null).Select(x => new { x.Id, x.IDCards }).ToList().Select(x => new { x.Id, IDCards = x.IDCards.Select(x => new { x.Name, p = x.Path!, m = Regex.Match(x.Path!, "files.*") }).Select(x => new { x.Name, Path = x.m.Success ? x.m.Value : x.p }) }).ToList();
         var mig = cus.Select(x => new InvestorCertifications { Id = x.Id, Files = x.IDCards?.Where(x => x.Path?.Length > 5).Select(y => FileMeta.Create(y.Path, y.Name!)).ToList() });
         db.GetCollection<InvestorCertifications>().DeleteAll();
         db.GetCollection<InvestorCertifications>().InsertBulk(mig.Where(x => x.Files is not null && x.Files.Count > 0));
@@ -85,7 +128,11 @@ public static partial class DatabaseAssist
         if (fileStorageInfo.Keys.Intersect(["Path", "Time", "Hash"]).Count() != 3)
             return null;
 
-        return FileMeta.Create(fileStorageInfo["Path"].AsString, fileStorageInfo["Name"].AsString)
+        var path = fileStorageInfo["Path"].AsString;
+        var m = Regex.Match(path!, "files.*");
+        if (m.Success) path = m.Value;
+
+        return FileMeta.Create(path, fileStorageInfo["Name"].AsString)
             with
         { Time = fileStorageInfo["Time"].AsDateTime, Hash = fileStorageInfo["Hash"].AsString };
     }

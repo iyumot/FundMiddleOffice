@@ -14,4 +14,6 @@ public class RiskAssessment
     public RiskEvaluation Level { get; set; }
     
     public string? Path { get; set; }
+
+    public FileMeta? File { get; set; }
 }

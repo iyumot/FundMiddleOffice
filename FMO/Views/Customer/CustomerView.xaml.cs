@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using DocumentFormat.OpenXml.Wordprocessing;
+using FMO.Logging;
 using FMO.Models;
 using FMO.PDF;
 using FMO.Shared;
@@ -480,9 +482,9 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
         QualificationViewModel q = QualificationViewModel.From(entity, Type.OldValue, EntityType.OldValue);
 
         // 复用投资经历
-        if (Qualifications.Select(x => x.ProofOfExperience).FirstOrDefault(x => x.Exists) is SingleFileViewModel sf && sf.File?.Path is not null)
+        if (Qualifications.Select(x => x.ProofOfExperience).FirstOrDefault(x => x.Exists) is FileMetaViewModel sf && sf.Exists)
         {
-            q.ProofOfExperience.File = q.ProofOfExperience.OnSetFile(new FileInfo(sf.File.Path), "");
+            q.ProofOfExperience.Meta = sf.Meta;
         }
         Qualifications.Add(q);
     }
@@ -572,9 +574,12 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
 
         db.GetCollection<RiskAssessment>().Insert(r);
 
-        string destFileName = @$"files\evaluation\{r.Id}{Path.GetExtension(fd.Name)}";
-        File.Copy(fd.FullName, destFileName, true);
-        r.Path = destFileName;
+        //string destFileName = @$"files\evaluation\{r.Id}{Path.GetExtension(fd.Name)}";
+        //File.Copy(fd.FullName, destFileName, true);
+        //r.Path = destFileName;
+
+        r.File = FileMeta.Create(fd);
+
         db.GetCollection<RiskAssessment>().Update(r);
         db.Dispose();
 
@@ -1116,9 +1121,11 @@ public partial class RiskAssessmentViewModel : ObservableObject
 
     public RiskEvaluation Level { get; set; }
 
-    public string? Path { get; }
 
-    public bool FileIsExists => string.IsNullOrWhiteSpace(Path) ? false : File.Exists(Path);
+
+    public FileMeta? File { get; set; }
+
+    public bool FileIsExists => File?.Exists ?? false;// string.IsNullOrWhiteSpace(Path) ? false : File.Exists(Path);
 
     public RiskAssessmentViewModel(RiskAssessment risk)
     {
@@ -1126,19 +1133,26 @@ public partial class RiskAssessmentViewModel : ObservableObject
         InvestorId = risk.InvestorId;
         Date = risk.Date;
         Level = risk.Level;
-        Path = risk.Path;
+      
+        File = risk.File;
     }
 
 
     [RelayCommand(CanExecute = nameof(FileIsExists))]
     public void ViewFile()
     {
-        if (Path is null) return;
+        if (File is null) return;
 
-        var file = new FileInfo(Path);
-        if (Path is not null && file.Exists)
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(file.FullName) { UseShellExecute = true });
-        else WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "风险调查问卷不存在"));
+        try
+        {
+            Directory.CreateDirectory(@$"temp\{File.Id}");
+            string tmp = @$"temp\{File.Id}\{File.Name}";
+
+            if (!System.IO.File.Exists(tmp))
+                FileMeta.CreateHardLink(@$"files\hardlink\{File.Id}", tmp);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(tmp) { UseShellExecute = true });
+        }
+        catch (Exception e) { LogEx.Error(e); WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "风险调查问卷不存在")); }
     }
 
     [RelayCommand]
