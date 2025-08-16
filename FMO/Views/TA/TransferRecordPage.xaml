@@ -477,7 +477,7 @@
                                     <Button
                                         hc:IconElement.Geometry="{StaticResource f.file}"
                                         BorderThickness="0"
-                                        Command="{Binding DataContext.OpenFileCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
+                                        Command="{Binding OpenFileCommand}"
                                         CommandParameter="{Binding OrderSheet}"
                                         Style="{StaticResource ButtonIcon.Small}"
                                         Visibility="{Binding OrderSheet, Converter={StaticResource FileExistsToVisibilityConverter}}" />
@@ -491,7 +491,7 @@
                                     <Button
                                         hc:IconElement.Geometry="{StaticResource f.file}"
                                         BorderThickness="0"
-                                        Command="{Binding DataContext.OpenFileCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
+                                        Command="{Binding OpenFileCommand}"
                                         CommandParameter="{Binding Contract}"
                                         Style="{StaticResource ButtonIcon.Small}"
                                         Visibility="{Binding Contract, Converter={StaticResource FileExistsToVisibilityConverter}}" />
@@ -506,7 +506,7 @@
                                     <Button
                                         hc:IconElement.Geometry="{StaticResource f.file}"
                                         BorderThickness="0"
-                                        Command="{Binding DataContext.OpenFileCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
+                                        Command="{Binding OpenFileCommand}"
                                         CommandParameter="{Binding RiskDiscloure}"
                                         Style="{StaticResource ButtonIcon.Small}"
                                         Visibility="{Binding RiskDiscloure, Converter={StaticResource FileExistsToVisibilityConverter}}" />
@@ -520,7 +520,7 @@
                                     <Button
                                         hc:IconElement.Geometry="{StaticResource f.file}"
                                         BorderThickness="0"
-                                        Command="{Binding DataContext.OpenFileCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
+                                        Command="{Binding OpenFileCommand}"
                                         CommandParameter="{Binding RiskPair}"
                                         Style="{StaticResource ButtonIcon.Small}"
                                         Visibility="{Binding RiskPair, Converter={StaticResource FileExistsToVisibilityConverter}}" />
@@ -534,7 +534,7 @@
                                     <Button
                                         hc:IconElement.Geometry="{StaticResource f.file}"
                                         BorderThickness="0"
-                                        Command="{Binding DataContext.OpenFileCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
+                                        Command="{Binding OpenFileCommand}"
                                         CommandParameter="{Binding Videotape}"
                                         Style="{StaticResource ButtonIcon.Small}"
                                         Visibility="{Binding Videotape, Converter={StaticResource FileExistsToVisibilityConverter}}" />
@@ -548,7 +548,7 @@
                                     <Button
                                         hc:IconElement.Geometry="{StaticResource f.file}"
                                         BorderThickness="0"
-                                        Command="{Binding DataContext.OpenFileCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
+                                        Command="{Binding OpenFileCommand}"
                                         CommandParameter="{Binding Review}"
                                         Style="{StaticResource ButtonIcon.Small}"
                                         Visibility="{Binding Review, Converter={StaticResource FileExistsToVisibilityConverter}}" />

@@ -25,6 +25,9 @@ public class FileExistsToVisibilityConverter : IValueConverter
             case FileStorageInfo fsi:
                 show = fsi.Exists;
                 break;
+            case FileMeta f:
+                show = f.Exists;
+                break;
             default:
                 show = false;
                 break;

@@ -46,12 +46,12 @@ public partial class ModifyOrderWindowViewModel : AddOrderWindowViewModelBase
         {
             Id = order.Id;
             Date = new DateTime(order.Date, default);
-            Contract.File = order.Contract;
-            OrderFile.File = order.OrderSheet;
-            RiskDisclosure.File = order.RiskDiscloure;
-            RiskPair.File = order.RiskPair;
-            Video.File = order.Videotape;
-            Review.File = order.Review;
+            Contract.Meta = order.Contract;
+            OrderFile.Meta = order.OrderSheet;
+            RiskDisclosure.Meta = order.RiskDiscloure;
+            RiskPair.Meta = order.RiskPair;
+            Video.Meta = order.Videotape;
+            Review.Meta = order.Review;
         }
 
 
@@ -102,12 +102,12 @@ public partial class ModifyOrderWindowViewModel : AddOrderWindowViewModelBase
             Order.Date = DateOnly.FromDateTime(Date ?? default);
             Order.Type = SelectedType!.Value;
             Order.Number = Number ?? 0;
-            Order.Contract = Contract.File;
-            Order.RiskDiscloure = RiskDisclosure.File;
-            Order.OrderSheet = OrderFile.File;
-            Order.Videotape = Video.File;
-            Order.RiskPair = RiskPair.File;
-            Order.Review = Review.File;
+            Order.Contract = Contract.Meta;
+            Order.RiskDiscloure = RiskDisclosure.Meta;
+            Order.OrderSheet = OrderFile.Meta;
+            Order.Videotape = Video.Meta;
+            Order.RiskPair = RiskPair.Meta;
+            Order.Review = Review.Meta;
 
             db.GetCollection<TransferOrder>().Upsert(Order);
             db.Commit();

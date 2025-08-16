@@ -31,7 +31,38 @@ public static partial class DatabaseAssist
         [73] = MiggigrateFileInInvestor,
         [74] = MiggrateQualification,
         [75] = MiggrateRisk,
+        //[79] = MiggrateOrderFile,
     };
+
+    private static void MiggrateOrderFile(BaseDatabase db)
+    {
+        if (!db.CollectionExists(nameof(TransferOrder) + "_bak"))
+            db.GetCollection(nameof(TransferOrder) + "_bak").InsertBulk(db.GetCollection(nameof(TransferOrder)).FindAll());
+
+        var list = db.GetCollection(nameof(TransferOrder) + "_bak").FindAll().ToList();
+        foreach (var item in list)
+        {
+            foreach (var (k, v) in item)
+            {
+                if (v.Type == BsonType.Array)
+                {
+                    if (v.AsArray.FirstOrDefault() is BsonValue bv && bv.Type == BsonType.Document && bv.AsDocument.Keys.Intersect(["Path", "Time", "Hash"]).Count() == 3)
+                    {
+                        var label = v.AsArray.Select(x => x.AsDocument.TryGetValue("Title", out var t) ? t : null).FirstOrDefault()?.AsString;
+                        var meta = v.AsArray.Select(x => FromStorate(x.AsDocument)).Where(x => x is not null);
+                        item[k] = BsonMapper.Global.ToDocument(new MultiFile { Label = label, Files = [.. meta] });
+                    }
+                }
+                else if (v.Type == BsonType.Document && v.AsDocument.Keys.Intersect(["Path", "Time"]).Count() == 2)
+                    item[k] = FromStorate(v.AsDocument) is FileMeta me ? BsonMapper.Global.ToDocument(me) : null;
+            }
+        }
+
+        db.GetCollection(nameof(TransferOrder)).DeleteAll();
+        db.GetCollection(nameof(TransferOrder)).Insert(list);
+
+
+    }
 
     private static void MiggrateRisk(BaseDatabase db)
     {
@@ -134,7 +165,7 @@ public static partial class DatabaseAssist
 
         return FileMeta.Create(path, fileStorageInfo["Name"].AsString)
             with
-        { Time = fileStorageInfo["Time"].AsDateTime, Hash = fileStorageInfo["Hash"].AsString };
+        { Time = fileStorageInfo["Time"].AsDateTime };
     }
 
 
@@ -248,23 +279,23 @@ public static partial class DatabaseAssist
 
     private static void ChangeOrderFilePathToRelative(BaseDatabase db)
     {
-        void Modify(FileStorageInfo? fileStorageInfo)
-        {
-            if (fileStorageInfo?.Path is not null && !fileStorageInfo.Exists && Regex.Match(fileStorageInfo.Path, @"\w:(?:\\\w+\\)+files") is Match m && m.Success && fileStorageInfo.Path.Replace(m.Value, "files") is string newp && File.Exists(newp))
-                fileStorageInfo.Path = newp;
-        }
+        //void Modify(FileStorageInfo? fileStorageInfo)
+        //{
+        //    if (fileStorageInfo?.Path is not null && !fileStorageInfo.Exists && Regex.Match(fileStorageInfo.Path, @"\w:(?:\\\w+\\)+files") is Match m && m.Success && fileStorageInfo.Path.Replace(m.Value, "files") is string newp && File.Exists(newp))
+        //        fileStorageInfo.Path = newp;
+        //}
 
-        var orders = db.GetCollection<TransferOrder>().FindAll().ToList();
-        orders.ForEach(o =>
-        {
-            Modify(o.OrderSheet);
-            Modify(o.Contract);
-            Modify(o.RiskDiscloure);
-            Modify(o.RiskPair);
-            Modify(o.Videotape);
-            Modify(o.Review);
-        });
-        db.GetCollection<TransferOrder>().Update(orders);
+        //var orders = db.GetCollection<TransferOrder>().FindAll().ToList();
+        //orders.ForEach(o =>
+        //{
+        //    Modify(o.OrderSheet);
+        //    Modify(o.Contract);
+        //    Modify(o.RiskDiscloure);
+        //    Modify(o.RiskPair);
+        //    Modify(o.Videotape);
+        //    Modify(o.Review);
+        //});
+        //db.GetCollection<TransferOrder>().Update(orders);
     }
 
     private static void RebuildFundShareRecord(BaseDatabase db)

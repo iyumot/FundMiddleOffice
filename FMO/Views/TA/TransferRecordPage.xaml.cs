@@ -396,12 +396,12 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
     }
 
 
-    [RelayCommand]
-    public void OpenFile(FileStorageInfo file)
-    {
-        if (file?.Path is null) return;
-        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(file.Path) { UseShellExecute = true }); } catch { }
-    }
+    //[RelayCommand]
+    //public void OpenFile(FileStorageInfo file)
+    //{
+    //    if (file?.Path is null) return;
+    //    try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(file.Path) { UseShellExecute = true }); } catch { }
+    //}
 
 
 

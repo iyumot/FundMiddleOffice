@@ -1,7 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using DocumentFormat.OpenXml.Wordprocessing;
+using FMO.Logging;
 using FMO.Models;
 using FMO.Shared;
+using System.IO;
 using System.Windows;
 
 namespace FMO;
@@ -44,4 +47,21 @@ partial class TransferOrderViewModel : ITransferViewModel
 
     [RelayCommand]
     public void OpenFund() => WeakReferenceMessenger.Default.Send(new OpenFundMessage(FundId!.Value));
+
+
+    [RelayCommand]
+    public void OpenFile(FileMeta? file)
+    {
+        if (file is null) return;
+        try
+        {
+            Directory.CreateDirectory(@$"temp\{file.Id}");
+            string tmp = @$"temp\{file.Id}\{file.Name}";
+
+            if (!File.Exists(tmp))
+                FileMeta.CreateHardLink(@$"files\hardlink\{file.Id}", tmp);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(tmp) { UseShellExecute = true });
+        }
+        catch (Exception e) { LogEx.Error(e); WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "无法打开文件")); }
+    }
 }

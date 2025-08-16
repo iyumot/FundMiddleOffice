@@ -5,6 +5,7 @@ using FMO.Models;
 using FMO.PDF;
 using FMO.Shared;
 using FMO.Utilities;
+using LiteDB;
 using Serilog;
 using System.ComponentModel;
 using System.IO;
@@ -34,51 +35,97 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
 {
     public AddOrderWindowViewModelBase()
     {
-        Contract = new()
+        Contract = new();
+        Contract.MetaChanged += f =>
         {
-            Label = "基金合同",
-            OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.Contract = b),
-            OnDeleteFile = x => DeleteFile(x),
-            FileChanged = () => Check()
+            using var db = DbHelper.Base();
+            db.GetCollection<TransferOrder>().UpdateMany(BsonMapper.Global.ToDocument(new { Contract = f }).ToString(), $"_id={Id}");
         };
-        RiskDisclosure = new()
+
+        RiskDisclosure = new();
+        RiskDisclosure.MetaChanged += f =>
         {
-            Label = "风险揭示书",
-            OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.RiskDiscloure = b),
-            OnDeleteFile = x => DeleteFile(x),
-            FileChanged = () => Check()
-        };
-        OrderFile = new()
-        {
-            Label = "认申赎单",
-            OnSetFile = (x, y) => SetFile2(x, y, (a, b) => a.OrderSheet = b),
-            OnDeleteFile = x => DeleteFile(x),
-            FileChanged = () => Check()
-        };
-        Video = new()
-        {
-            Label = "双录",
-            OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.Videotape = b),
-            OnDeleteFile = x => DeleteFile(x),
-            FileChanged = () => Check()
+            using var db = DbHelper.Base();
+            db.GetCollection<TransferOrder>().UpdateMany(BsonMapper.Global.ToDocument(new { RiskDisclosure = f }).ToString(), $"_id={Id}");
         };
 
 
-        RiskPair = new()
+        OrderFile = new();
+        OrderFile.MetaChanged += f =>
         {
-            Label = "风险匹配告知书",
-            OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.RiskPair = b),
-            OnDeleteFile = x => DeleteFile(x),
-            FileChanged = () => Check()
+            using var db = DbHelper.Base();
+            db.GetCollection<TransferOrder>().UpdateMany(BsonMapper.Global.ToDocument(new { OrderFile = f }).ToString(), $"_id={Id}");
         };
 
-        Review = new()
+
+        Video = new();
+        Video.MetaChanged += f =>
         {
-            Label = "回访",
-            OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.Review = b),
-            OnDeleteFile = x => DeleteFile(x),
-            FileChanged = () => Check()
+            using var db = DbHelper.Base();
+            db.GetCollection<TransferOrder>().UpdateMany(BsonMapper.Global.ToDocument(new { Video = f }).ToString(), $"_id={Id}");
         };
+
+
+        RiskPair = new();
+        RiskPair.MetaChanged += f =>
+        {
+            using var db = DbHelper.Base();
+            db.GetCollection<TransferOrder>().UpdateMany(BsonMapper.Global.ToDocument(new { RiskPair = f }).ToString(), $"_id={Id}");
+        };
+
+
+        Review = new();
+        Review.MetaChanged += f =>
+        {
+            using var db = DbHelper.Base();
+            db.GetCollection<TransferOrder>().UpdateMany(BsonMapper.Global.ToDocument(new { Review = f }).ToString(), $"_id={Id}");
+        };
+
+        //Contract = new()
+        //{
+        //    Label = "基金合同",
+        //    OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.Contract = b),
+        //    OnDeleteFile = x => DeleteFile(x),
+        //    FileChanged = () => Check()
+        //};
+        //RiskDisclosure = new()
+        //{
+        //    Label = "风险揭示书",
+        //    OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.RiskDiscloure = b),
+        //    OnDeleteFile = x => DeleteFile(x),
+        //    FileChanged = () => Check()
+        //};
+        //OrderFile = new()
+        //{
+        //    Label = "认申赎单",
+        //    OnSetFile = (x, y) => SetFile2(x, y, (a, b) => a.OrderSheet = b),
+        //    OnDeleteFile = x => DeleteFile(x),
+        //    FileChanged = () => Check()
+        //};
+        //Video = new()
+        //{
+        //    Label = "双录",
+        //    OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.Videotape = b),
+        //    OnDeleteFile = x => DeleteFile(x),
+        //    FileChanged = () => Check()
+        //};
+
+
+        //RiskPair = new()
+        //{
+        //    Label = "风险匹配告知书",
+        //    OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.RiskPair = b),
+        //    OnDeleteFile = x => DeleteFile(x),
+        //    FileChanged = () => Check()
+        //};
+
+        //Review = new()
+        //{
+        //    Label = "回访",
+        //    OnSetFile = (x, y) => SetFile(x, y, (a, b) => a.Review = b),
+        //    OnDeleteFile = x => DeleteFile(x),
+        //    FileChanged = () => Check()
+        //};
     }
 
 
@@ -109,21 +156,21 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
 
 
 
-    public SingleFileViewModel Contract { get; }
+    public OrderFileViewModel Contract { get; }
 
-    public SingleFileViewModel RiskDisclosure { get; }
-
-
-    public SingleFileViewModel OrderFile { get; }
+    public OrderFileViewModel RiskDisclosure { get; }
 
 
-    public SingleFileViewModel Video { get; }
+    public OrderFileViewModel OrderFile { get; }
 
 
-    public SingleFileViewModel RiskPair { get; }
+    public OrderFileViewModel Video { get; }
 
 
-    public SingleFileViewModel Review { get; }
+    public OrderFileViewModel RiskPair { get; }
+
+
+    public OrderFileViewModel Review { get; }
 
 
 
@@ -190,30 +237,30 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
     protected abstract void ConfirmOverride();
 
 
-    private void DeleteFile(FileStorageInfo x)
-    {
-        if (Id == 0) //未保存
-            return;
+    //private void DeleteFile(FileStorageInfo x)
+    //{
+    //    if (Id == 0) //未保存
+    //        return;
 
-        using var db = DbHelper.Base();
-        if (db.GetCollection<TransferOrder>().FindById(Id) is TransferOrder o)
-        {
-            if (Contract.File == x)
-                o.Contract = null;
-            else if (RiskDisclosure.File == x)
-                o.RiskDiscloure = null;
-            else if (RiskPair.File == x)
-                o.RiskPair = null;
-            else if (Review.File == x)
-                o.Review = null;
-            else if (Video.File == x)
-                o.Videotape = null;
-            else if (OrderFile.File == x)
-                o.OrderSheet = null;
+    //    using var db = DbHelper.Base();
+    //    if (db.GetCollection<TransferOrder>().FindById(Id) is TransferOrder o)
+    //    {
+    //        if (Contract.File == x)
+    //            o.Contract = null;
+    //        else if (RiskDisclosure.File == x)
+    //            o.RiskDiscloure = null;
+    //        else if (RiskPair.File == x)
+    //            o.RiskPair = null;
+    //        else if (Review.File == x)
+    //            o.Review = null;
+    //        else if (Video.File == x)
+    //            o.Videotape = null;
+    //        else if (OrderFile.File == x)
+    //            o.OrderSheet = null;
 
-            db.GetCollection<TransferOrder>().Update(o);
-        }
-    }
+    //        db.GetCollection<TransferOrder>().Update(o);
+    //    }
+    //}
 
 
     protected FileStorageInfo? SetFile(System.IO.FileInfo fi, string title, Action<TransferOrder, FileStorageInfo> func)
@@ -415,23 +462,23 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
     {
 
         using var db = DbHelper.Base();
-        db.BeginTrans();
+       // db.BeginTrans();
         try
         {
             // 如果是新增加的
-            if (Id == 0)
-            {
-                var obj = new TransferOrder();
-                db.GetCollection<TransferOrder>().Insert(obj);
-                Id = obj.Id;
+            //if (Id == 0)
+            //{
+            //    var obj = new TransferOrder();
+            //    db.GetCollection<TransferOrder>().Insert(obj);
+            //    Id = obj.Id;
 
-                // 移动文件
-                Contract.File = Move(Contract.File);
-                RiskDisclosure.File = Move(RiskDisclosure.File);
-                OrderFile.File = Move(OrderFile.File);
-                Video.File = Move(Video.File);
-                Contract.File = Move(Contract.File);
-            }
+                //// 移动文件
+                //Contract.File = Move(Contract.File);
+                //RiskDisclosure.File = Move(RiskDisclosure.File);
+                //OrderFile.File = Move(OrderFile.File);
+                //Video.File = Move(Video.File);
+                //Contract.File = Move(Contract.File);
+            //}
 
 
             TransferOrder order = new TransferOrder
@@ -446,15 +493,15 @@ public partial class AddOrderWindowViewModel : AddOrderWindowViewModelBase
                 InvestorIdentity = SelectedInvestor.Identity?.Id,
                 Type = SelectedType!.Value,
                 Number = Number ?? 0,
-                Contract = Contract.File,
-                RiskDiscloure = RiskDisclosure.File,
-                OrderSheet = OrderFile.File,
-                Videotape = Video.File,
-                RiskPair = RiskPair.File,
-                Review = Review.File,
+                Contract = Contract.Meta,
+                RiskDiscloure = RiskDisclosure.Meta,
+                OrderSheet = OrderFile.Meta,
+                Videotape = Video.Meta,
+                RiskPair = RiskPair.Meta,
+                Review = Review.Meta,
             };
             db.GetCollection<TransferOrder>().Upsert(order);
-            db.Commit();
+            //db.Commit();
 
             WeakReferenceMessenger.Default.Send(order);
         }
@@ -595,12 +642,12 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
         {
             Id = order.Id;
             Date = new DateTime(order.Date, default);
-            Contract.File = order.Contract;
-            OrderFile.File = order.OrderSheet;
-            RiskDisclosure.File = order.RiskDiscloure;
-            RiskPair.File = order.RiskPair;
-            Video.File = order.Videotape;
-            Review.File = order.Review;
+            Contract.Meta = order.Contract;
+            OrderFile.Meta = order.OrderSheet;
+            RiskDisclosure.Meta = order.RiskDiscloure;
+            RiskPair.Meta = order.RiskPair;
+            Video.Meta = order.Videotape;
+            Review.Meta = order.Review;
 
         }
 
@@ -649,21 +696,21 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
         db.BeginTrans();
         try
         {
-            // 如果是新增加的
-            if (Id == 0)
-            {
-                var obj = new TransferOrder();
-                db.GetCollection<TransferOrder>().Insert(obj);
-                Id = obj.Id;
+            //// 如果是新增加的
+            //if (Id == 0)
+            //{
+            //    var obj = new TransferOrder();
+            //    db.GetCollection<TransferOrder>().Insert(obj);
+            //    Id = obj.Id;
 
-                // 移动文件
-                Contract.File = Move(Contract.File);
-                RiskDisclosure.File = Move(RiskDisclosure.File);
-                OrderFile.File = Move(OrderFile.File);
-                Video.File = Move(Video.File);
-                Review.File = Move(Review.File);
-                RiskPair.File = Move(RiskPair.File);
-            }
+            //    // 移动文件
+            //    Contract.Meta = Move(Contract.File);
+            //    RiskDisclosure.File = Move(RiskDisclosure.File);
+            //    OrderFile.File = Move(OrderFile.File);
+            //    Video.File = Move(Video.File);
+            //    Review.File = Move(Review.File);
+            //    RiskPair.File = Move(RiskPair.File);
+            //}
 
 
             TransferOrder order = new TransferOrder
@@ -678,12 +725,12 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
                 InvestorName = Record.InvestorName,
                 Type = SelectedType!.Value,
                 Number = Number ?? 0,
-                Contract = Contract.File,
-                RiskDiscloure = RiskDisclosure.File,
-                OrderSheet = OrderFile.File,
-                Videotape = Video.File,
-                RiskPair = RiskPair.File,
-                Review = Review.File,
+                Contract = Contract.Meta,
+                RiskDiscloure = RiskDisclosure.Meta,
+                OrderSheet = OrderFile.Meta,
+                Videotape = Video.Meta,
+                RiskPair = RiskPair.Meta,
+                Review = Review.Meta,
             };
             // 同日订单
             if (MergeOrderBySameDay)
@@ -816,4 +863,11 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
         }
     }
 
+}
+
+
+public partial class OrderFileViewModel: FileMetaViewModel
+{
+    [ObservableProperty]
+    public partial bool IsRequired { get; set; }
 }
