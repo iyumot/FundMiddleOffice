@@ -4,7 +4,7 @@ using LiteDB;
 using System.Text.RegularExpressions;
 
 namespace FMO.Utilities;
- 
+
 
 public static partial class DatabaseAssist
 {
@@ -25,9 +25,57 @@ public static partial class DatabaseAssist
         [66] = ChangeAPIAndClearData,
 
         [67] = Customer2Investor,
-        [71] = PlatformTable
+        [71] = PlatformTable,
         //[68] = AddManualLink
+        [72] = MiggrateInstitutionCertifications
     };
+
+    /// <summary>
+    /// 迁移InstitutionCertifications
+    /// </summary>
+    /// <param name="database"></param>
+    /// <exception cref="NotImplementedException"></exception>
+    private static void MiggrateInstitutionCertifications(BaseDatabase db)
+    {
+        var list = db.GetCollection(nameof(InstitutionCertifications)).FindAll().ToList();
+        if (!db.CollectionExists(nameof(InstitutionCertifications) + "_bak"))
+            db.GetCollection(nameof(InstitutionCertifications) + "_bak").InsertBulk(list);
+
+        foreach (var item in list)
+        {
+            foreach (var (k, v) in item)
+            {
+                if (v.Type == BsonType.Array)
+                {
+                    if (v.AsArray.FirstOrDefault() is BsonValue bv && bv.Type == BsonType.Document && bv.AsDocument.Keys.Intersect(["Path", "Time", "Hash"]).Count() == 3)
+                    {
+                        var label = v.AsArray.Select(x => x.AsDocument.TryGetValue("Title", out var t) ? t : null).FirstOrDefault()?.AsString;
+                        var meta = v.AsArray.Select(x => FromStorate(x.AsDocument)).Where(x => x is not null);
+                        item[k] = BsonMapper.Global.ToDocument(new MultiDualFile { Label = label, Files = [.. meta.Select(x => new DualFileMeta { Normal = x })] });
+                    }
+                }
+                else if (v.Type == BsonType.Document && v.AsDocument.Keys.Intersect(["Path", "Time", "Hash"]).Count() == 3)
+                    item[k] = BsonMapper.Global.ToDocument(FromStorate(v.AsDocument));
+            }
+        }
+
+        db.GetCollection(nameof(InstitutionCertifications)).DeleteAll();
+        db.GetCollection(nameof(InstitutionCertifications)).Insert(list);
+    }
+
+    private static FileMeta? FromStorate(BsonDocument? fileStorageInfo)
+    {
+        if (fileStorageInfo is null) return null;
+
+        if (fileStorageInfo.Keys.Intersect(["Path", "Time", "Hash"]).Count() != 3)
+            return null;
+
+        return FileMeta.Create(fileStorageInfo["Path"].AsString, fileStorageInfo["Name"].AsString)
+            with
+        { Time = fileStorageInfo["Time"].AsDateTime, Hash = fileStorageInfo["Hash"].AsString };
+    }
+
+
 
     private static void PlatformTable(BaseDatabase database)
     {

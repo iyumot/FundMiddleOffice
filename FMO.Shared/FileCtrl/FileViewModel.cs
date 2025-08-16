@@ -4,8 +4,9 @@ using CommunityToolkit.Mvvm.Messaging;
 using FMO.Logging;
 using FMO.Models;
 using Microsoft.Win32;
+using System.Collections.ObjectModel;
 using System.IO;
-using System.Windows; 
+using System.Windows;
 
 namespace FMO.Shared;
 
@@ -25,19 +26,28 @@ public partial class ReadOnlyFileMetaViewModel : ObservableObject
     /// "Word Documents|*.doc|Office Files|*.doc;*.xls;*.ppt"
     /// </summary>
 
-     
+    public Guid Guid { get; } = Guid.NewGuid();
+
     public string? Id => Meta?.Id;
-     
-    public   string? Name => Meta?.Name;
+
+    public string? Name => Meta?.Name;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(Exists))]
+    [NotifyPropertyChangedFor(nameof(Deleted))]
+    [NotifyPropertyChangedFor(nameof(CanSet))]
+    [NotifyPropertyChangedFor(nameof(Id))]
+    [NotifyPropertyChangedFor(nameof(Name))]
+    [NotifyPropertyChangedFor(nameof(DisplayName))]
     public partial FileMeta? Meta { get; set; }
 
     public string? DisplayName => GetShort(Name);
 
     public bool Exists => Meta?.Exists ?? false;
 
+    public bool CanSet => Meta is null || !Meta.Exists;
+
+    public bool Deleted => Meta is not null && !Meta.Exists;
 
 
     private string? GetShort(string? name, int cnt = 20)
@@ -60,7 +70,7 @@ public partial class ReadOnlyFileMetaViewModel : ObservableObject
             string tmp = @$"temp\{Id}\{Name}";
 
             if (!File.Exists(tmp))
-                FileMeta.CreateHardLink(@$"hardlink\{Id}", tmp);
+                FileMeta.CreateHardLink(@$"files\hardlink\{Id}", tmp);
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(tmp) { UseShellExecute = true });
         }
         catch (Exception e) { LogEx.Error(e); WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "无法打开文件")); }
@@ -70,14 +80,14 @@ public partial class ReadOnlyFileMetaViewModel : ObservableObject
     [RelayCommand]
     public void Copy()
     {
-        if (Exists) return;
+        if (!Exists) return;
 
         try
         {
             Directory.CreateDirectory(@$"temp\{Id}");
             string tmp = @$"temp\{Id}\{Name}";
             if (!File.Exists(tmp))
-                FileMeta.CreateHardLink(@$"hardlink\{Id}", tmp);
+                FileMeta.CreateHardLink(@$"files\hardlink\{Id}", tmp);
 
             tmp = Path.GetFullPath(tmp);
             var obj = new DataObject(DataFormats.FileDrop, new string[] { tmp });
@@ -91,21 +101,16 @@ public partial class ReadOnlyFileMetaViewModel : ObservableObject
     [RelayCommand]
     public void SaveAs()
     {
-        if (Exists) return;
+        if (!Exists) return;
 
         try
         {
             var d = new SaveFileDialog();
             d.FileName = Name!;
             if (d.ShowDialog() == true)
-                File.Copy(@$"hardlink\{Id}", d.FileName);
+                File.Copy(@$"files\hardlink\{Id}", d.FileName);
         }
         catch (Exception e) { LogEx.Error(e); WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "文件另存为失败")); }
-    }
-
-    internal void Clear()
-    {
-        Meta = null;
     }
 }
 
@@ -124,11 +129,8 @@ public partial class FileMetaViewModel : ReadOnlyFileMetaViewModel
 
     public string? SaveFolder { get; set; }
 
-
-    public delegate void OnSetFileHandle(FileMeta fileMeta);
-    public delegate void OnDeleteFileHandle(string Id);
-    public event OnSetFileHandle? OnSetFile;
-    public event OnDeleteFileHandle? OnDelete;
+    internal delegate void MetaChangedHandler();
+    internal event MetaChangedHandler? MetaChanged;
 
     [RelayCommand]
     public void Choose()
@@ -138,19 +140,23 @@ public partial class FileMetaViewModel : ReadOnlyFileMetaViewModel
         if (fd.ShowDialog() != true) return;
 
         var newf = new FileInfo(fd.FileName);
-        var desire = Path.Combine(SaveFolder ?? "files", SpecificFileName is null ? newf.Name : SpecificFileName(newf.Extension));
+        var desire = SpecificFileName is null ? newf.Name : SpecificFileName(newf.Extension);
 
         Meta = FileMeta.Create(newf, desire);
-        OnSetFile?.Invoke(Meta);
+        OnMetaChanged();
     }
 
     [RelayCommand]
     public void Delete()
     {
-        if (Id is null) return;
-        OnDelete?.Invoke(Id);
-        Clear();
+        if (!string.IsNullOrWhiteSpace(Id))
+            File.Delete($@"files\hardlink\{Id}");
+        Meta = null;
+        OnMetaChanged();
     }
+
+
+    protected virtual void OnMetaChanged() => MetaChanged?.Invoke();
 }
 
 
@@ -159,24 +165,88 @@ public partial class SimpleFileViewModel : FileMetaViewModel
     public SimpleFileViewModel(SimpleFile? file = null)
     {
         Meta = file?.File;
+        Label = file?.Label;
     }
 
     public string? Label { get; set; }
 
 
+    public delegate void FileChangedHandler(SimpleFile? File);
+    public event FileChangedHandler? FileChanged;
+
+
+    protected override void OnMetaChanged()
+    {
+        base.OnMetaChanged();
+        FileChanged?.Invoke(new SimpleFile { Label = Label, File = Meta });
+    }
+
 }
 
 
-public class SealedFileMetaViewModel
+public class DualFileMetaViewModel
 {
-    public FileMetaViewModel Normal { get; init; } = new();
+    public Guid Guid { get; } = Guid.NewGuid();
 
-    public FileMetaViewModel Sealed { get; init; } = new();
+    public FileMetaViewModel Normal { get; } = new();
+
+    public FileMetaViewModel Another { get; } = new();
+
+
+
+    internal delegate void MetaChangedHandler(DualFileMetaViewModel sender);
+    internal event MetaChangedHandler? MetaChanged;
+
+    public DualFileMetaViewModel(DualFileMeta sealedFile)
+    {
+        Normal.Meta = sealedFile.Normal;
+        Another.Meta = sealedFile.Another;
+
+        Normal.MetaChanged += OnMetaChanged;
+        Another.MetaChanged += OnMetaChanged;
+    }
+
+    public DualFileMetaViewModel()
+    {
+        Normal.MetaChanged += OnMetaChanged;
+        Another.MetaChanged += OnMetaChanged;
+    }
+
+    protected virtual void OnMetaChanged() => MetaChanged?.Invoke(this);
+
 }
 
-public partial class SealedFileViewModel : SealedFileMetaViewModel
+public partial class DualFileViewModel : DualFileMetaViewModel
 {
+    public DualFileViewModel()
+    {
+    }
+
+    public DualFileViewModel(DualFile sealedFile)
+    {
+        Label = sealedFile.Label;
+        Normal.Meta = sealedFile.File;
+        Another.Meta = sealedFile.Another;
+    }
+
     public string? Label { get; set; }
+
+    public delegate void FileChangedHandler(DualFile? File);
+    public event FileChangedHandler? FileChanged;
+
+
+    protected override void OnMetaChanged()
+    {
+        base.OnMetaChanged();
+        FileChanged?.Invoke(new DualFile
+        {
+            Label = Label,
+            File = Normal.Meta,
+            Another = Another.Meta
+        });
+    }
+
+
 
 }
 
@@ -184,6 +254,8 @@ public partial class SealedFileViewModel : SealedFileMetaViewModel
 
 public partial class MultiFileViewModel : ObservableObject
 {
+    public Guid Guid { get; } = Guid.NewGuid();
+
     public string? Label { get; set; }
 
 
@@ -192,32 +264,81 @@ public partial class MultiFileViewModel : ObservableObject
 }
 
 
-public partial class MultiSealedFileViewModel : ObservableObject
-{ 
-    public MultiSealedFileViewModel(MultiSealedFile x)
-    { 
-        Label = x.Label;
-        if (x.Files is not null)
-            Files = [.. x.Files.Select(x => new SealedFileMetaViewModel {
-                Normal = new FileMetaViewModel { Meta = x.Normal },
-                Sealed = new FileMetaViewModel{ Meta = x.Sealed }
-            })];
-    }
+public partial class MultiDualFileViewModel : ObservableObject
+{
+    public Guid Guid { get; } = Guid.NewGuid();
 
     public string? Label { get; set; }
 
-
-    public List<SealedFileMetaViewModel> Files { get; init; } = new();
-
+    public string? Filter { get; set; }
 
 
+    //public bool CanAddFile => Files.Any(x => !x.Normal.CanSet && !x.Sealed.CanSet);
 
+    /// <summary>
+    /// Extension -> SpecificFileName
+    /// </summary>
+    public Func<string?, string>? SpecificFileName { get; set; }
+
+
+    public string? SaveFolder { get; set; }
+
+
+    public ObservableCollection<DualFileMetaViewModel> Files { get; }
+
+
+    public delegate void OnFileChangedHandler(MultiDualFile files);
+    public event OnFileChangedHandler? OnFileChanged;
+
+
+
+    public MultiDualFileViewModel(MultiDualFile? multiSealed = null)
+    {
+        Label = multiSealed?.Label;
+
+        if (multiSealed?.Files is not null)
+            Files = [.. multiSealed.Files.Where(x => x.Normal is not null || x.Another is not null).Select(x => new DualFileMetaViewModel(x))];
+        else Files = [];
+
+        foreach (var file in Files)
+            file.MetaChanged += ItemChanged; ;
+
+    }
+
+    private void ItemChanged(DualFileMetaViewModel sender)
+    {
+        if (sender.Normal.Meta is null && sender.Another.Meta is null)
+            Files.Remove(sender);
+        InvokeFileChanged();
+    }
 
     [RelayCommand]
     public void AddFile()
     {
- 
+        var fd = new OpenFileDialog();
+        fd.Filter = Filter;
+        if (fd.ShowDialog() != true) return;
+
+        var newf = new FileInfo(fd.FileName);
+        var desire = SpecificFileName is null ? newf.Name : SpecificFileName(newf.Extension);
+
+        var m = FileMeta.Create(newf, desire);
+        DualFileMetaViewModel newv = new(new DualFileMeta { Normal = m });
+        Files.Add(newv);
+        newv.MetaChanged += ItemChanged;
+        InvokeFileChanged();
+    }
+
+
+    protected virtual void InvokeFileChanged()
+    {
+
+        var files = new MultiDualFile
+        {
+            Label = Label,
+            Files = Files.Select(x => new DualFileMeta { Normal = x.Normal.Meta, Another = x.Another.Meta }).ToList()
+        };
+        OnFileChanged?.Invoke(files);
     }
 }
-
 

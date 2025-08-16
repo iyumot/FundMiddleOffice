@@ -14,11 +14,10 @@ using System.Security.Cryptography;
 public record FileMeta(string Id, string Name, DateTime Time, string Hash)
 {
 
-    public bool Exists => File.Exists(@$"hardlink\{Id}");
+    public bool Exists => File.Exists(@$"files\hardlink\{Id}");
 
 
-
-    public static FileMeta Create(FileInfo fi, string desire)
+    public static FileMeta Create(FileInfo fi)
     {
         string hash;
         using (var md5 = MD5.Create())
@@ -26,22 +25,39 @@ public record FileMeta(string Id, string Name, DateTime Time, string Hash)
             hash = BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
 
         string id = Guid.NewGuid().ToString();
-        var hard = @$"hardlink\{id}";
+        Directory.CreateDirectory("files\\hardlink");
+        var hard = @$"files\hardlink\{id}";
         if (!File.Exists(hard))
             File.Copy(fi.FullName, hard, true);
-
-        // 目录同名
-        var di = new FileInfo(desire).Directory!;
-        if (!di.Exists) di.Create();
-        else desire = GetSafeFileName(di, fi.Name);
-
-
-        FileMeta.CreateHardLink(@$"hardlink\{id}", desire);
 
         return new FileMeta(id, fi.Name, fi.LastWriteTime, hash);
     }
 
-    public static FileMeta Create(string path, string desire) => Create(new FileInfo(path), desire);
+    public static FileMeta Create(FileInfo fi, string desireName)
+    {
+        string hash;
+        using (var md5 = MD5.Create())
+        using (var stream = new FileStream(fi.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
+            hash = BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
+
+        string id = Guid.NewGuid().ToString();
+        Directory.CreateDirectory("files\\hardlink");
+        var hard = @$"files\hardlink\{id}";
+        if (!File.Exists(hard))
+            File.Copy(fi.FullName, hard, true);
+
+        // 目录同名
+        //var di = new FileInfo(desire).Directory!;
+        //if (!di.Exists) di.Create();
+        //else desire = GetSafeFileName(di, fi.Name);
+
+
+        //FileMeta.CreateHardLink(@$"hardlink\{id}", desire);
+
+        return new FileMeta(id, desireName, fi.LastWriteTime, hash);
+    }
+
+    public static FileMeta Create(string path, string desireName) => Create(new FileInfo(path), desireName);
 
 
     public static string GetSafeFileName(DirectoryInfo di, string filename)
@@ -108,11 +124,11 @@ public record FileMeta(string Id, string Name, DateTime Time, string Hash)
 
 
 
-public class SealedFileMeta
+public class DualFileMeta
 {
     public FileMeta? Normal { get; set; }
 
-    public FileMeta? Sealed { get; set; }
+    public FileMeta? Another { get; set; }
 }
 
 public class SimpleFile
@@ -130,16 +146,16 @@ public class MultiFile
 }
 
 
-public class SealedFile : SimpleFile
+public class DualFile : SimpleFile
 {
-    public FileMeta? Sealed { get; set; }
+    public FileMeta? Another { get; set; }
 }
 
 
-public class MultiSealedFile
+public class MultiDualFile
 {
     public string? Label { get; set; }
 
-    public List<SealedFileMeta>? Files { get; set; }
+    public List<DualFileMeta>? Files { get; set; }
 
 }

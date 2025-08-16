@@ -11,25 +11,17 @@ public class InstitutionCertifications
     public required string Id { get; set; }
 
 
-    public List<FileStorageInfo>? BusinessLicense { get; set; }
-
-    public List<FileStorageInfo>? BusinessLicense2 { get; set; }
+    public MultiDualFile BusinessLicense { get; init; } = new MultiDualFile { Label = "营业执照正本" };
 
 
-    /// <summary>
-    /// 开户许可证
-    /// </summary>
-    public List<FileStorageInfo>? AccountOpeningLicense { get; set; }
+    public MultiDualFile BusinessLicense2 { get; init; } = new MultiDualFile { Label = "营业执照副本" };
 
+    public MultiDualFile AccountOpeningLicense { get; init; } = new MultiDualFile { Label = "开户许可证" };
+    
+    public MultiDualFile CharterDocument { get; init; } = new MultiDualFile { Label = "章程" };
 
-    /// <summary>
-    /// 章程
-    /// </summary>
-    public List<FileStorageInfo>? CharterDocument { get; set; }
+    public MultiDualFile LegalPersonIdCard { get; init; } = new MultiDualFile { Label = "法人身份证" };
 
-    /// <summary>
-    /// 法人身份证
-    /// </summary>
-    public List<FileStorageInfo>? LegalPersonIdCard { get; set; }
+ 
 
 }

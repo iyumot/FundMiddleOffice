@@ -95,29 +95,33 @@ public partial class InstitutionWindowViewModel : EditableControlViewModelBase<I
 
 
 
-
-    public MultipleFileViewModel BusinessLicense { get; }
+    [ObservableProperty]
+    public partial MultiDualFileViewModel? BusinessLicense { get; set; }
 
     /// <summary>
     /// 营业执照副本
     /// </summary>
-    public MultipleFileViewModel BusinessLicense2 { get; }
+    [ObservableProperty]
+    public partial MultiDualFileViewModel? BusinessLicense2 { get; set; }
 
     /// <summary>
     /// 开户许可证
     /// </summary>
-    public MultipleFileViewModel AccountOpeningLicense { get; }
+    [ObservableProperty]
+    public partial MultiDualFileViewModel? AccountOpeningLicense { get; set; }
 
 
     /// <summary>
     /// 章程
     /// </summary>
-    public MultipleFileViewModel CharterDocument { get; }
+    [ObservableProperty]
+    public partial MultiDualFileViewModel? CharterDocument { get; set; }
 
     /// <summary>
     /// 法人身份证
     /// </summary>
-    public MultipleFileViewModel LegalPersonIdCard { get; }
+    [ObservableProperty]
+    public partial MultiDualFileViewModel? LegalPersonIdCard { get; set; }
 
 
     [ObservableProperty]
@@ -145,7 +149,7 @@ public partial class InstitutionWindowViewModel : EditableControlViewModelBase<I
         {
             Id = x.Id,
             Holder = entities.FirstOrDefault(y => y.Id == x.HolderId),
-            Institution = entities.Select(x => x as Institution).FirstOrDefault(y => y?.Id == x.InstitutionId),
+            Institution = entities.Select(x => x as Institution).FirstOrDefault(y => y?.Id == x.InstitutionId)!,
             Share = x.Share,
             Ratio = org.RegisterCapital == 0 ? 0 : x.Share / org!.RegisterCapital
         }).ToArray();
@@ -241,7 +245,7 @@ public partial class InstitutionWindowViewModel : EditableControlViewModelBase<I
         {
             Label = "统一信用代码",
             InitFunc = x => x.Identity?.Id,
-            UpdateFunc = (x, y) => x.Identity = new Identity { Id = y, Type = x.Identity?.Type ?? IDType.UnifiedSocialCreditCode, Other = x.Identity?.Other },
+            UpdateFunc = (x, y) => x.Identity = new Identity { Id = y!, Type = x.Identity?.Type ?? IDType.UnifiedSocialCreditCode, Other = x.Identity?.Other },
             ClearFunc = x => x.Identity = new Identity { Id = "", Type = x.Identity?.Type ?? IDType.UnifiedSocialCreditCode, Other = x.Identity?.Other }
         };
         InstitutionCode.Init(org);
@@ -300,45 +304,7 @@ public partial class InstitutionWindowViewModel : EditableControlViewModelBase<I
         };
 
 
-        BusinessLicense = new()
-        {
-            Label = "营业执照正本",
-            OnAddFile = (x, y) => SetFile(x => x.BusinessLicense ??= new(), x),
-            OnDeleteFile = x => DeleleFile(x => x.BusinessLicense, x),
-        };
 
-
-
-        BusinessLicense2 = new()
-        {
-            Label = "营业执照副本",
-            OnAddFile = (x, y) => SetFile(x => x.BusinessLicense2 ??= new(), x),
-            OnDeleteFile = x => DeleleFile(x => x.BusinessLicense2, x),
-        };
-
-
-        AccountOpeningLicense = new()
-        {
-            Label = "开户许可证",
-            OnAddFile = (x, y) => SetFile(x => x.AccountOpeningLicense ??= new(), x),
-            OnDeleteFile = x => DeleleFile(x => x.AccountOpeningLicense, x),
-        };
-
-
-        CharterDocument = new()
-        {
-            Label = "章程/合伙协议",
-            OnAddFile = (x, y) => SetFile(x => x.CharterDocument ??= new(), x),
-            OnDeleteFile = x => DeleleFile(x => x.CharterDocument, x),
-        };
-
-
-        LegalPersonIdCard = new()
-        {
-            Label = "法人/委派代表身份证",
-            OnAddFile = (x, y) => SetFile(x => x.LegalPersonIdCard ??= new(), x),
-            OnDeleteFile = x => DeleleFile(x => x.LegalPersonIdCard, x),
-        };
 
 
         UpdateFiles();
@@ -356,13 +322,36 @@ public partial class InstitutionWindowViewModel : EditableControlViewModelBase<I
             cef = new() { Id = id };
             db.GetCollection<InstitutionCertifications>().Insert(cef);
         }
-        BusinessLicense.Files = [.. (cef.BusinessLicense ?? new())];
-        BusinessLicense2.Files = [.. (cef.BusinessLicense2 ?? new())];
-        AccountOpeningLicense.Files = [.. (cef.AccountOpeningLicense ?? new())];
-        CharterDocument.Files = [.. (cef.CharterDocument ?? new())];
-        LegalPersonIdCard.Files = [.. (cef.LegalPersonIdCard ?? new())];
+
+        BusinessLicense = new(cef.BusinessLicense);
+        BusinessLicense.OnFileChanged += (x) => UpdateCerf(new { BusinessLicense = x }, cef.Id);
+
+        BusinessLicense2 = new(cef.BusinessLicense2);
+        BusinessLicense2.OnFileChanged += (x) => UpdateCerf(new { BusinessLicense2 = x }, cef.Id);
+
+        AccountOpeningLicense = new(cef.AccountOpeningLicense);
+        AccountOpeningLicense.OnFileChanged += (x) => UpdateCerf(new { AccountOpeningLicense = x }, cef.Id);
+
+        CharterDocument = new(cef.CharterDocument);
+        CharterDocument.OnFileChanged += (x) => UpdateCerf(new { CharterDocument = x }, cef.Id);
+
+        LegalPersonIdCard = new(cef.LegalPersonIdCard);
+        LegalPersonIdCard.OnFileChanged += (x) => UpdateCerf(new { LegalPersonIdCard = x }, cef.Id);
+
+        //BusinessLicense.Files = [.. (cef.BusinessLicense ?? new())];
+        //BusinessLicense2.Files = [.. (cef.BusinessLicense2 ?? new())];
+        //AccountOpeningLicense.Files = [.. (cef.AccountOpeningLicense ?? new())];
+        //CharterDocument.Files = [.. (cef.CharterDocument ?? new())];
+        //LegalPersonIdCard.Files = [.. (cef.LegalPersonIdCard ?? new())];
 
     }
+
+    private void UpdateCerf<T1, T2>(T1 doc, T2 id)
+    {
+        using var db = DbHelper.Base();
+        db.GetCollection<InstitutionCertifications>().UpdateMany(BsonMapper.Global.ToDocument(doc).ToString(), $"_id={new BsonValue(id)}");
+    }
+
 
     private FileStorageInfo? SetFile(Func<InstitutionCertifications, List<FileStorageInfo>> func, FileInfo fi)
     {

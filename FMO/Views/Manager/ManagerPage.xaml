@@ -10,121 +10,126 @@
     xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
     xmlns:shared="clr-namespace:FMO.Shared;assembly=FMO.Shared"
     d:DataContext="{d:DesignInstance Type=local:ManagerPageViewModel}"
-    d:DesignHeight="450"
+    d:DesignHeight="950"
     d:DesignWidth="1200"
     Tag="管理人"
     mc:Ignorable="d">
     <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/FMO.Shared;component/Themes/NewFileControl.xaml" />
+            </ResourceDictionary.MergedDictionaries>
 
-        <Style x:Key="RightAlignText" TargetType="TextBlock">
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="TextAlignment" Value="Right" />
-        </Style>
+            <Style x:Key="RightAlignText" TargetType="TextBlock">
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="TextAlignment" Value="Right" />
+            </Style>
 
-        <SolidColorBrush x:Key="LabelBrush">Gray</SolidColorBrush>
+            <SolidColorBrush x:Key="LabelBrush">Gray</SolidColorBrush>
 
-        <Style BasedOn="{StaticResource {x:Type shared:ChangeableControl}}" TargetType="shared:ChangeableControl">
-            <Setter Property="Entity" Value="{Binding RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Path=DataContext}" />
-            <Setter Property="IsReadOnly" Value="{Binding RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Path=DataContext.IsReadOnly}" />
-        </Style>
+            <Style BasedOn="{StaticResource {x:Type shared:ChangeableControl}}" TargetType="shared:ChangeableControl">
+                <Setter Property="Entity" Value="{Binding RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Path=DataContext}" />
+                <Setter Property="IsReadOnly" Value="{Binding RelativeSource={RelativeSource AncestorType=local:ManagerPage}, Path=DataContext.IsReadOnly}" />
+            </Style>
 
-        <DataTemplate x:Key="DT.Text.Cap">
-            <TextBox MinWidth="80" Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-        </DataTemplate>
+            <DataTemplate x:Key="DT.Text.Cap">
+                <TextBox MinWidth="80" Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+            </DataTemplate>
 
-        <DataTemplate x:Key="DT.Person" DataType="local:PersonViewModel">
-            <StackPanel DataContext="{Binding OldValue}">
-                <StackPanel.Resources>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="Width" Value="60" />
-                    </Style>
-                </StackPanel.Resources>
-                <BulletDecorator>
-                    <BulletDecorator.Bullet>
-                        <TextBlock Text="姓名" />
-                    </BulletDecorator.Bullet>
-                    <shared:CopyableTextBlock Text="{Binding Name}" />
-                </BulletDecorator>
-                <BulletDecorator>
-                    <BulletDecorator.Bullet>
-                        <TextBlock Text="证件类型" />
-                    </BulletDecorator.Bullet>
-                    <shared:CopyableTextBlock Text="{Binding IDType}" />
-                </BulletDecorator>
-                <BulletDecorator>
-                    <BulletDecorator.Bullet>
-                        <TextBlock Text="证件号" />
-                    </BulletDecorator.Bullet>
-                    <shared:CopyableTextBlock IsMasked="True" Text="{Binding Id}" />
-                </BulletDecorator>
-                <BulletDecorator>
-                    <BulletDecorator.Bullet>
-                        <TextBlock Text="电话" />
-                    </BulletDecorator.Bullet>
-                    <shared:CopyableTextBlock Text="{Binding Phone}" />
-                </BulletDecorator>
-                <BulletDecorator>
-                    <BulletDecorator.Bullet>
-                        <TextBlock Text="Email" />
-                    </BulletDecorator.Bullet>
-                    <shared:CopyableTextBlock Text="{Binding Email}" />
-                </BulletDecorator>
-                <BulletDecorator>
-                    <BulletDecorator.Bullet>
-                        <TextBlock Text="地址" />
-                    </BulletDecorator.Bullet>
-                    <shared:CopyableTextBlock Text="{Binding Address}" />
-                </BulletDecorator>
-            </StackPanel>
-        </DataTemplate>
+            <DataTemplate x:Key="DT.Person" DataType="local:PersonViewModel">
+                <StackPanel DataContext="{Binding OldValue}">
+                    <StackPanel.Resources>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Width" Value="60" />
+                        </Style>
+                    </StackPanel.Resources>
+                    <BulletDecorator>
+                        <BulletDecorator.Bullet>
+                            <TextBlock Text="姓名" />
+                        </BulletDecorator.Bullet>
+                        <shared:CopyableTextBlock Text="{Binding Name}" />
+                    </BulletDecorator>
+                    <BulletDecorator>
+                        <BulletDecorator.Bullet>
+                            <TextBlock Text="证件类型" />
+                        </BulletDecorator.Bullet>
+                        <shared:CopyableTextBlock Text="{Binding IDType}" />
+                    </BulletDecorator>
+                    <BulletDecorator>
+                        <BulletDecorator.Bullet>
+                            <TextBlock Text="证件号" />
+                        </BulletDecorator.Bullet>
+                        <shared:CopyableTextBlock IsMasked="True" Text="{Binding Id}" />
+                    </BulletDecorator>
+                    <BulletDecorator>
+                        <BulletDecorator.Bullet>
+                            <TextBlock Text="电话" />
+                        </BulletDecorator.Bullet>
+                        <shared:CopyableTextBlock Text="{Binding Phone}" />
+                    </BulletDecorator>
+                    <BulletDecorator>
+                        <BulletDecorator.Bullet>
+                            <TextBlock Text="Email" />
+                        </BulletDecorator.Bullet>
+                        <shared:CopyableTextBlock Text="{Binding Email}" />
+                    </BulletDecorator>
+                    <BulletDecorator>
+                        <BulletDecorator.Bullet>
+                            <TextBlock Text="地址" />
+                        </BulletDecorator.Bullet>
+                        <shared:CopyableTextBlock Text="{Binding Address}" />
+                    </BulletDecorator>
+                </StackPanel>
+            </DataTemplate>
 
-        <DataTemplate x:Key="DT.Person.Edit" DataType="local:PersonViewModel">
-            <StackPanel DataContext="{Binding NewValue}">
-                <StackPanel.Resources>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="Width" Value="50" />
-                    </Style>
-                </StackPanel.Resources>
-                <BulletDecorator>
-                    <BulletDecorator.Bullet>
-                        <TextBlock Text="姓名" />
-                    </BulletDecorator.Bullet>
-                    <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-                </BulletDecorator>
-                <BulletDecorator>
-                    <BulletDecorator.Bullet>
-                        <TextBlock Text="证件类型" />
-                    </BulletDecorator.Bullet>
-                    <TextBox Text="{Binding IDType, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-                </BulletDecorator>
-                <BulletDecorator>
-                    <BulletDecorator.Bullet>
-                        <TextBlock Text="证件号" />
-                    </BulletDecorator.Bullet>
-                    <TextBox Text="{Binding Id, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-                </BulletDecorator>
-                <BulletDecorator>
-                    <BulletDecorator.Bullet>
-                        <TextBlock Text="电话" />
-                    </BulletDecorator.Bullet>
-                    <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-                </BulletDecorator>
+            <DataTemplate x:Key="DT.Person.Edit" DataType="local:PersonViewModel">
+                <StackPanel DataContext="{Binding NewValue}">
+                    <StackPanel.Resources>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Width" Value="50" />
+                        </Style>
+                    </StackPanel.Resources>
+                    <BulletDecorator>
+                        <BulletDecorator.Bullet>
+                            <TextBlock Text="姓名" />
+                        </BulletDecorator.Bullet>
+                        <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                    </BulletDecorator>
+                    <BulletDecorator>
+                        <BulletDecorator.Bullet>
+                            <TextBlock Text="证件类型" />
+                        </BulletDecorator.Bullet>
+                        <TextBox Text="{Binding IDType, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                    </BulletDecorator>
+                    <BulletDecorator>
+                        <BulletDecorator.Bullet>
+                            <TextBlock Text="证件号" />
+                        </BulletDecorator.Bullet>
+                        <TextBox Text="{Binding Id, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                    </BulletDecorator>
+                    <BulletDecorator>
+                        <BulletDecorator.Bullet>
+                            <TextBlock Text="电话" />
+                        </BulletDecorator.Bullet>
+                        <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                    </BulletDecorator>
 
-                <BulletDecorator>
-                    <BulletDecorator.Bullet>
-                        <TextBlock Text="Email" />
-                    </BulletDecorator.Bullet>
-                    <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-                </BulletDecorator>
-                <BulletDecorator>
-                    <BulletDecorator.Bullet>
-                        <TextBlock Text="地址" />
-                    </BulletDecorator.Bullet>
-                    <TextBox Text="{Binding Address, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-                </BulletDecorator>
-            </StackPanel>
-        </DataTemplate>
+                    <BulletDecorator>
+                        <BulletDecorator.Bullet>
+                            <TextBlock Text="Email" />
+                        </BulletDecorator.Bullet>
+                        <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                    </BulletDecorator>
+                    <BulletDecorator>
+                        <BulletDecorator.Bullet>
+                            <TextBlock Text="地址" />
+                        </BulletDecorator.Bullet>
+                        <TextBox Text="{Binding Address, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                    </BulletDecorator>
+                </StackPanel>
+            </DataTemplate>
 
+        </ResourceDictionary>
 
     </UserControl.Resources>
     <UserControl.DataContext>
@@ -251,12 +256,18 @@
                     Header="证件"
                     Style="{StaticResource GroupBoxTab}">
                     <StackPanel>
-                        <shared:MultipleFileView Binding="{Binding BusinessLicense}" Style="{StaticResource CardFileStyle}" />
-                        <shared:MultipleFileView Binding="{Binding BusinessLicense2}" Style="{StaticResource CardFileStyle}" />
-                        <shared:MultipleFileView Binding="{Binding AccountOpeningLicense}" Style="{StaticResource CardFileStyle}" />
-                        <shared:MultipleFileView Binding="{Binding CharterDocument}" Style="{StaticResource CardFileStyle}" />
-                        <!--<shared:MultipleFileView Binding="{Binding LegalPersonIdCard}" Style="{StaticResource CardFileStyle}" />-->
-
+                        <StackPanel.Resources>
+                            <Style TargetType="shared:MultiDualFileView">
+                                <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}" />
+                                <Setter Property="ContentTemplate" Value="{StaticResource MultiDualFile.Flip}" />
+                                <Setter Property="Margin" Value="0,1" />
+                            </Style>
+                        </StackPanel.Resources>
+                        <shared:MultiDualFileView Content="{Binding BusinessLicense}" Header="营业执照正本" />
+                        <shared:MultiDualFileView Content="{Binding BusinessLicense2}" Header="营业执照副本" />
+                        <shared:MultiDualFileView Content="{Binding AccountOpeningLicense}" Header="开户许可证" />
+                        <shared:MultiDualFileView Content="{Binding CharterDocument}" Header="章程/合伙协议" />
+                        <shared:MultiDualFileView Content="{Binding LegalPersonIdCard}" Header="法人身份证" />
                     </StackPanel>
                 </GroupBox>
             </StackPanel>
@@ -552,110 +563,137 @@
                 </DataGrid>
             </StackPanel>
 
-
-            <ListBox ItemsSource="{Binding PolicyDocuments}" Style="{StaticResource ListBoxCustom}">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <shared:MultiSealedFileView Content="{Binding}" Header="{Binding Label}" />
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-
         </StackPanel>
 
 
+        <TabControl Style="{StaticResource TabControlCapsule}">
 
-        <DockPanel>
-            <DockPanel DockPanel.Dock="Top">
-                <Button Command="{Binding AddFlowCommand}" Content="添加工作" />
-            </DockPanel>
-            <ListBox
-                BorderThickness="0"
-                ItemsSource="{Binding Flows}"
-                Style="{StaticResource ListBoxCustom}">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <DockPanel>
-                            <UniformGrid
-                                VerticalAlignment="Top"
-                                Columns="1"
-                                DockPanel.Dock="Right">
-                                <ToggleButton IsChecked="{Binding IsReadOnly}" Style="{StaticResource EditSwitch}" />
-                                <Button
-                                    hc:IconElement.Geometry="{StaticResource f.trash}"
-                                    Command="{Binding RelativeSource={RelativeSource AncestorType=ListBox}, Path=DataContext.DeleteFlowCommand}"
-                                    CommandParameter="{Binding .}"
-                                    Foreground="Red"
-                                    Style="{StaticResource ButtonIcon}"
-                                    Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-                            </UniformGrid>
+            <TabItem
+                Width="100"
+                Header="制度"
+                Style="{StaticResource TabItemCapsuleHorizontalFirst}">
+                <ListBox
+                    BorderThickness="0"
+                    ItemsSource="{Binding PolicyDocuments}"
+                    Style="{StaticResource ListBoxCustom}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <shared:MultiDualFileView
+                                Margin="4,2"
+                                Content="{Binding}"
+                                Header="{Binding Label}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </TabItem>
 
+            <TabItem Width="100" Style="{StaticResource TabItemCapsuleHorizontalLast}">
+                <TabItem.Header>
+                    <DockPanel DockPanel.Dock="Top" LastChildFill="False">
+                        <TextBlock VerticalAlignment="Center" Text="工作" />
+                        <Button
+                            Margin="-2"
+                            hc:IconElement.Geometry="{StaticResource f.circle-plus}"
+                            Command="{Binding AddFlowCommand}"
+                            Foreground="RoyalBlue"
+                            Style="{StaticResource ButtonIcon}" />
+                    </DockPanel>
+                </TabItem.Header>
+                <DockPanel>
 
-                            <shared:ChangeableControl
-                                MinWidth="500"
-                                HorizontalContentAlignment="Stretch"
-                                Binding="{Binding Description, UpdateSourceTrigger=PropertyChanged, Delay=200}"
-                                DockPanel.Dock="Bottom"
-                                Entity="{Binding .}"
-                                IsReadOnly="{Binding IsReadOnly}" />
-
-                            <shared:ChangeableControl
-                                Binding="{Binding Date}"
-                                Entity="{Binding .}"
-                                IsReadOnly="{Binding IsReadOnly}">
-                                <shared:ChangeableControl.EditTemplate>
-                                    <DataTemplate>
-                                        <DatePicker Width="100" SelectedDate="{Binding NewValue, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
-                                    </DataTemplate>
-                                </shared:ChangeableControl.EditTemplate>
-                            </shared:ChangeableControl>
-
-                            <DockPanel
-                                AllowDrop="True"
-                                DockPanel.Dock="Right"
-                                Visibility="{Binding IsTemple, Converter={StaticResource Boolean2VisibilityReConverter}}">
-                                <i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="Drop">
-                                        <i:InvokeCommandAction Command="{Binding AddSealedFileCommand}" PassEventArgsToCommand="True" />
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers>
-                                <TextBlock VerticalAlignment="Center" Text="用印文件" />
-                                <Button
-                                    hc:IconElement.Geometry="{StaticResource f.folder}"
-                                    Command="{Binding OpenSealedCommand}"
-                                    Style="{StaticResource ButtonIcon}" />
-                            </DockPanel>
-
-                            <DockPanel
-                                AllowDrop="True"
-                                DockPanel.Dock="Right"
-                                Visibility="{Binding IsTemple, Converter={StaticResource Boolean2VisibilityReConverter}}">
-                                <i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="Drop">
-                                        <i:InvokeCommandAction Command="{Binding AddNormalFileCommand}" PassEventArgsToCommand="True" />
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers>
-                                <TextBlock VerticalAlignment="Center" Text="原始文件" />
-                                <Button
-                                    hc:IconElement.Geometry="{StaticResource f.folder}"
-                                    Command="{Binding OpenNormalCommand}"
-                                    Style="{StaticResource ButtonIcon}" />
-                            </DockPanel>
+                    <ListBox
+                        BorderThickness="0"
+                        ItemsSource="{Binding Flows}"
+                        Style="{StaticResource ListBoxCustom}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel>
+                                    <UniformGrid
+                                        VerticalAlignment="Top"
+                                        Columns="1"
+                                        DockPanel.Dock="Right">
+                                        <ToggleButton IsChecked="{Binding IsReadOnly}" Style="{StaticResource EditSwitch}" />
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.trash}"
+                                            Command="{Binding RelativeSource={RelativeSource AncestorType=ListBox}, Path=DataContext.DeleteFlowCommand}"
+                                            CommandParameter="{Binding .}"
+                                            Foreground="Red"
+                                            Style="{StaticResource ButtonIcon}"
+                                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                                    </UniformGrid>
 
 
+                                    <shared:ChangeableControl
+                                        MinWidth="500"
+                                        HorizontalContentAlignment="Stretch"
+                                        Binding="{Binding Description, UpdateSourceTrigger=PropertyChanged, Delay=200}"
+                                        DockPanel.Dock="Bottom"
+                                        Entity="{Binding .}"
+                                        IsReadOnly="{Binding IsReadOnly}" />
 
-                            <shared:ChangeableControl
-                                HorizontalContentAlignment="Stretch"
-                                Binding="{Binding Title, UpdateSourceTrigger=PropertyChanged, Delay=200}"
-                                Entity="{Binding .}"
-                                IsReadOnly="{Binding IsReadOnly}" />
+                                    <shared:ChangeableControl
+                                        Binding="{Binding Date}"
+                                        Entity="{Binding .}"
+                                        IsReadOnly="{Binding IsReadOnly}">
+                                        <shared:ChangeableControl.EditTemplate>
+                                            <DataTemplate>
+                                                <DatePicker Width="100" SelectedDate="{Binding NewValue, Converter={StaticResource DataTimeDateOnlySwitchConverter}}" />
+                                            </DataTemplate>
+                                        </shared:ChangeableControl.EditTemplate>
+                                    </shared:ChangeableControl>
+
+                                    <DockPanel
+                                        AllowDrop="True"
+                                        DockPanel.Dock="Right"
+                                        Visibility="{Binding IsTemple, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="Drop">
+                                                <i:InvokeCommandAction Command="{Binding AddSealedFileCommand}" PassEventArgsToCommand="True" />
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                        <TextBlock VerticalAlignment="Center" Text="用印文件" />
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.folder}"
+                                            Command="{Binding OpenSealedCommand}"
+                                            Style="{StaticResource ButtonIcon}" />
+                                    </DockPanel>
+
+                                    <DockPanel
+                                        AllowDrop="True"
+                                        DockPanel.Dock="Right"
+                                        Visibility="{Binding IsTemple, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="Drop">
+                                                <i:InvokeCommandAction Command="{Binding AddNormalFileCommand}" PassEventArgsToCommand="True" />
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                        <TextBlock VerticalAlignment="Center" Text="原始文件" />
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.folder}"
+                                            Command="{Binding OpenNormalCommand}"
+                                            Style="{StaticResource ButtonIcon}" />
+                                    </DockPanel>
 
 
-                        </DockPanel>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-        </DockPanel>
+
+                                    <shared:ChangeableControl
+                                        HorizontalContentAlignment="Stretch"
+                                        Binding="{Binding Title, UpdateSourceTrigger=PropertyChanged, Delay=200}"
+                                        Entity="{Binding .}"
+                                        IsReadOnly="{Binding IsReadOnly}" />
+
+
+                                </DockPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </TabItem>
+        </TabControl>
+
+
+
+
 
     </DockPanel>
 </UserControl>

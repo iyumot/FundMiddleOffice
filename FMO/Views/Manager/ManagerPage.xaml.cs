@@ -5,6 +5,7 @@ using FMO.IO.AMAC;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
+using LiteDB;
 using Microsoft.Win32;
 using Serilog;
 using System.Collections.ObjectModel;
@@ -48,6 +49,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
 
     public string AmacPageUrl { get; set; }
 
+    #region Property
     /// <summary>
     /// 管理人名称
     /// </summary>  
@@ -118,6 +120,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     /// 官网
     /// </summary> 
     public ChangeableViewModel<Manager, string> WebSite { get; }
+    #endregion
 
     [ObservableProperty]
     public partial ImageSource? MainLogo { get; set; }
@@ -130,28 +133,28 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     //public partial ObservableCollection<FileInfo>? BusinessLicense { get; set; }
 
 
-    public MultipleFileViewModel BusinessLicense { get; }
+    public MultiDualFileViewModel BusinessLicense { get; }
 
     /// <summary>
     /// 营业执照副本
     /// </summary>
-    public MultipleFileViewModel BusinessLicense2 { get; }
+    public MultiDualFileViewModel BusinessLicense2 { get; }
 
     /// <summary>
     /// 开户许可证
     /// </summary>
-    public MultipleFileViewModel AccountOpeningLicense { get; }
+    public MultiDualFileViewModel AccountOpeningLicense { get; }
 
 
     /// <summary>
     /// 章程
     /// </summary>
-    public MultipleFileViewModel CharterDocument { get; }
+    public MultiDualFileViewModel CharterDocument { get; }
 
     /// <summary>
     /// 法人身份证
     /// </summary>
-    public MultipleFileViewModel LegalPersonIdCard { get; }
+    public MultiDualFileViewModel LegalPersonIdCard { get; }
 
 
     [ObservableProperty]
@@ -185,8 +188,9 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     public ObservableCollection<ManagerFlowViewModel> Flows { get; }
 
 
-    public ObservableCollection<MultiSealedFileViewModel> PolicyDocuments { get; }
+    public ObservableCollection<MultiDualFileViewModel> PolicyDocuments { get; }
 
+    private Dictionary<Guid, int> PolicyFileMap { get; } = new();
 
     public ManagerPageViewModel()
     {
@@ -396,82 +400,81 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         WebSite.Init(manager);
 
 
+        #endregion
+
+
         var cef = db.GetCollection<InstitutionCertifications>().FindById(manager.Identity!.Id);
         if (cef is null)
         {
             cef = new() { Id = manager.Identity.Id };
             db.GetCollection<InstitutionCertifications>().Insert(cef);
         }
-        BusinessLicense = new()
-        {
-            Label = "营业执照正本",
-            Files = [.. (cef.BusinessLicense ?? new())],
-            OnAddFile = (x, y) => SetFile(x => x.BusinessLicense ??= new(), x),
-            OnDeleteFile = x => DeleleFile(x => x.BusinessLicense, x),
-        };
 
-        BusinessLicense2 = new()
-        {
-            Label = "营业执照副本",
-            Files = [.. (cef.BusinessLicense2 ?? new())],
-            OnAddFile = (x, y) => SetFile(x => x.BusinessLicense2 ??= new(), x),
-            OnDeleteFile = x => DeleleFile(x => x.BusinessLicense2, x),
-        };
+        BusinessLicense = new(cef.BusinessLicense);
+        BusinessLicense.OnFileChanged += (x) => UpdateCerf(new { BusinessLicense = x }, cef.Id);
 
+        BusinessLicense2 = new(cef.BusinessLicense2);
+        BusinessLicense2.OnFileChanged += (x) => UpdateCerf(new { BusinessLicense2 = x }, cef.Id);
 
-        AccountOpeningLicense = new()
-        {
-            Label = "开户许可证",
-            Files = [.. (cef.AccountOpeningLicense ?? new())],
-            OnAddFile = (x, y) => SetFile(x => x.AccountOpeningLicense ??= new(), x),
-            OnDeleteFile = x => DeleleFile(x => x.AccountOpeningLicense, x),
-        };
+        AccountOpeningLicense = new(cef.AccountOpeningLicense);
+        AccountOpeningLicense.OnFileChanged += (x) => UpdateCerf(new { AccountOpeningLicense = x }, cef.Id);
 
+        CharterDocument = new(cef.CharterDocument);
+        CharterDocument.OnFileChanged += (x) => UpdateCerf(new { CharterDocument = x }, cef.Id);
 
-        CharterDocument = new()
-        {
-            Label = "章程/合伙协议",
-            Files = [.. (cef.CharterDocument ?? new())],
-            OnAddFile = (x, y) => SetFile(x => x.CharterDocument ??= new(), x),
-            OnDeleteFile = x => DeleleFile(x => x.CharterDocument, x),
-        };
+        LegalPersonIdCard = new(cef.LegalPersonIdCard);
+        LegalPersonIdCard.OnFileChanged += (x) => UpdateCerf(new { LegalPersonIdCard = x }, cef.Id);
 
-
-        LegalPersonIdCard = new()
-        {
-            Label = "法人/委派代表身份证",
-            Files = [.. (cef.LegalPersonIdCard ?? new())],
-            OnAddFile = (x, y) => SetFile(x => x.LegalPersonIdCard ??= new(), x),
-            OnDeleteFile = x => DeleleFile(x => x.LegalPersonIdCard, x),
-        };
-        #endregion
+        
 
 
         Flows = [.. db.GetCollection<ManagerFlow>().FindAll().Select(x => new ManagerFlowViewModel(x))];
 
 
-        MultiSealedFile[] docs  = [new() { Label = "交易制度", Files = [new() { Normal = new("432urjeowr", "aaa.pdf", DateTime.Now, "fdf") }] }, new() { Label = "管理制度" }];
+        //db.GetCollection<PolicyDocument>().DeleteAll();
+        var docs = db.GetCollection<PolicyDocument>().FindAll().ToList();//[new() { Label = "交易制度", Files = [new() { Normal = new("432urjeowr", "aaa.pdf", DateTime.Now, "fdf") }] }, new() { Label = "管理制度" }];
 
-        PolicyDocuments = [..docs.Select(x=>new MultiSealedFileViewModel(x))];
+        var need = new List<string>
+            {
+                "投资决策制度",          // 规范投资决策流程、权限划分和决策机制
+                "风险管理制度",          // 覆盖风险识别、评估、监控和应对全流程
+                "内部控制制度",          // 构建全业务流程的内控体系，防范舞弊风险
+                "信息披露制度",          // 明确信息披露的内容、频率、方式及对象
+                "合规管理制度",          // 确保基金运作符合法律法规及监管要求
+                "员工管理制度",          // 规范员工聘用、培训、考核及利益冲突防范
+                "档案管理制度",          // 规定各类文件资料的归档、保管及查阅规则
+                "估值核算制度",          // 规范基金资产估值方法、频率及核算流程
+                "应急处理制度",          // 建立突发事件的应对预案和处理流程
+                "资金管理制度",          // 管理基金资金的募集、划付、清算等环节
+                "利益冲突防范制度",      // 识别并管理可能存在的利益冲突情况
+                "产品备案管理制度",      // 规范基金产品的备案流程及材料准备
+                "宣传推介管理制度",      // 规范基金产品的宣传推介行为，防范违规宣传
+                "投资者适当性管理制度",  // 建立投资者风险评估与产品匹配机制
+            };
+        docs.AddRange(need.Except(docs.Select(x => x.Label)).Select(x => new PolicyDocument { Label = x, }));
 
 
-        //BusinessLicense = mfile?.BusinessLicense is null ? new() : new ObservableCollection<FileInfo>(mfile.BusinessLicense.Files.Select(x => new FileInfo(x.Path)));
-        //BusinessLicense.CollectionChanged += BusinessLicense_CollectionChanged;
+        //PolicyDocuments = [.. docs.Select(x => new MultiDualFileViewModel(x))];
+
+        Dictionary<MultiDualFileViewModel, int> PolicyFileMap = docs.Select(x => (x, new MultiDualFileViewModel(x))).ToDictionary(x => x.Item2, x => x.x.Id);
+        PolicyDocuments = [.. PolicyFileMap.Keys];
+
+        foreach (var item in PolicyDocuments)
+        {
+            item.OnFileChanged += (x) =>
+            {
+                using var db = DbHelper.Base();
+                db.GetCollection<PolicyDocument>().Upsert(new PolicyDocument { Label = x.Label, Files = x.Files });
+            };
+        }
+
+    }
 
 
-        //BusinessLicense2 = mfile?.BusinessLicense2 is null ? new() : new ObservableCollection<FileInfo>(mfile.BusinessLicense2.Files.Select(x => new FileInfo(x.Path)));
-        //BusinessLicense2.CollectionChanged += BusinessLicense2_CollectionChanged;
-
-
-        //AccountOpeningLicense = mfile?.AccountOpeningLicense is null ? new() : new ObservableCollection<FileInfo>(mfile.AccountOpeningLicense.Files.Select(x => new FileInfo(x.Path)));
-        //AccountOpeningLicense.CollectionChanged += AccountOpeningLicense_CollectionChanged;
-
-        //CharterDocument = mfile?.CharterDocument is null ? new() : new ObservableCollection<FileInfo>(mfile.CharterDocument.Files.Select(x => new FileInfo(x.Path)));
-        //CharterDocument.CollectionChanged += CharterDocument_CollectionChanged;
-
-
-        //LegalPersonIdCard = mfile?.LegalPersonIdCard is null ? new() : new ObservableCollection<FileInfo>(mfile.LegalPersonIdCard.Files.Select(x => new FileInfo(x.Path)));
-        //LegalPersonIdCard.CollectionChanged += LegalPersonIdCard_CollectionChanged;
+    private void UpdateCerf<T1, T2>(T1 doc, T2 id)
+    {
+        using var db = DbHelper.Base();
+        db.GetCollection<InstitutionCertifications>().UpdateMany(BsonMapper.Global.ToDocument(doc).ToString(), $"_id={new BsonValue(id)}");
     }
 
 

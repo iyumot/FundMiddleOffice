@@ -46,25 +46,25 @@ public class SimpleFileView : FileViewBase
 }
 
 
-public class MultiSealedFileView : FileViewBase
+public class MultiDualFileView : FileViewBase
 {
-    static MultiSealedFileView()
+    static MultiDualFileView()
     {
-        DefaultStyleKeyProperty.OverrideMetadata(typeof(MultiSealedFileView), new FrameworkPropertyMetadata(typeof(MultiSealedFileView)));
+        DefaultStyleKeyProperty.OverrideMetadata(typeof(MultiDualFileView), new FrameworkPropertyMetadata(typeof(MultiDualFileView)));
     }
 
 
 
 
 
-    public MultiSealedFileViewModel Binding
+    public MultiDualFileViewModel Binding
     {
-        get { return (MultiSealedFileViewModel)GetValue(BindingProperty); }
+        get { return (MultiDualFileViewModel)GetValue(BindingProperty); }
         set { SetValue(BindingProperty, value); }
     }
 
     // Using a DependencyProperty as the backing store for Binding.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty BindingProperty =
-        DependencyProperty.Register("Binding", typeof(MultiSealedFileViewModel), typeof(MultiSealedFileView), new PropertyMetadata(null));
+        DependencyProperty.Register("Binding", typeof(MultiDualFileViewModel), typeof(MultiDualFileView), new PropertyMetadata(null));
 
 }

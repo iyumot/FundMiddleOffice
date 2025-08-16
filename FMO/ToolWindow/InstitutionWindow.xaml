@@ -16,34 +16,43 @@
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
     <Window.Resources>
-        <Style x:Key="RightAlignText" TargetType="TextBlock">
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="TextAlignment" Value="Right" />
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/FMO.Shared;component/Themes/NewFileControl.xaml" />
+            </ResourceDictionary.MergedDictionaries>
 
-        <SolidColorBrush x:Key="LabelBrush">Gray</SolidColorBrush>
 
-        <Style BasedOn="{StaticResource {x:Type shared:ChangeableControl}}" TargetType="shared:ChangeableControl">
-            <Setter Property="HeaderTemplate">
-                <Setter.Value>
-                    <DataTemplate>
-                        <TextBlock
-                            Width="80"
-                            VerticalAlignment="Center"
-                            Foreground="{DynamicResource LabelBrush}"
-                            Text="{Binding .}"
-                            TextAlignment="Right" />
-                    </DataTemplate>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="Entity" Value="{Binding RelativeSource={RelativeSource AncestorType=local:InstitutionWindow}, Path=DataContext}" />
-            <Setter Property="IsReadOnly" Value="{Binding RelativeSource={RelativeSource AncestorType=local:InstitutionWindow}, Path=DataContext.IsReadOnly}" />
-        </Style>
+            <Style x:Key="RightAlignText" TargetType="TextBlock">
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="TextAlignment" Value="Right" />
+            </Style>
 
-        <DataTemplate x:Key="DT.Text.Cap">
-            <TextBox MinWidth="80" Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-        </DataTemplate>
+            <SolidColorBrush x:Key="LabelBrush">Gray</SolidColorBrush>
+
+            <Style BasedOn="{StaticResource {x:Type shared:ChangeableControl}}" TargetType="shared:ChangeableControl">
+                <Setter Property="HeaderTemplate">
+                    <Setter.Value>
+                        <DataTemplate>
+                            <TextBlock
+                                Width="80"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource LabelBrush}"
+                                Text="{Binding .}"
+                                TextAlignment="Right" />
+                        </DataTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                <Setter Property="Entity" Value="{Binding RelativeSource={RelativeSource AncestorType=local:InstitutionWindow}, Path=DataContext}" />
+                <Setter Property="IsReadOnly" Value="{Binding RelativeSource={RelativeSource AncestorType=local:InstitutionWindow}, Path=DataContext.IsReadOnly}" />
+            </Style>
+
+            <DataTemplate x:Key="DT.Text.Cap">
+                <TextBox MinWidth="80" Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+            </DataTemplate>
+
+
+        </ResourceDictionary>
 
     </Window.Resources>
     <DockPanel Margin="8">
@@ -159,12 +168,18 @@
             Style="{StaticResource GroupBoxTab}"
             Visibility="{Binding ShowFileList, Converter={StaticResource Boolean2VisibilityConverter}}">
             <StackPanel>
-                <shared:MultipleFileView Binding="{Binding BusinessLicense}" Style="{StaticResource CardFileStyle}" />
-                <shared:MultipleFileView Binding="{Binding BusinessLicense2}" Style="{StaticResource CardFileStyle}" />
-                <shared:MultipleFileView Binding="{Binding AccountOpeningLicense}" Style="{StaticResource CardFileStyle}" />
-                <shared:MultipleFileView Binding="{Binding CharterDocument}" Style="{StaticResource CardFileStyle}" />
-                <!--<shared:MultipleFileView Binding="{Binding LegalPersonIdCard}" Style="{StaticResource CardFileStyle}" />-->
-
+                <StackPanel.Resources>
+                    <Style TargetType="shared:MultiDualFileView">
+                        <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}" />
+                        <Setter Property="ContentTemplate" Value="{StaticResource MultiDualFile.Flip}" />
+                        <Setter Property="Margin" Value="0,1" />
+                    </Style>
+                </StackPanel.Resources>
+                <shared:MultiDualFileView Content="{Binding BusinessLicense}" Header="营业执照正本" />
+                <shared:MultiDualFileView Content="{Binding BusinessLicense2}" Header="营业执照副本" />
+                <shared:MultiDualFileView Content="{Binding AccountOpeningLicense}" Header="开户许可证" />
+                <shared:MultiDualFileView Content="{Binding CharterDocument}" Header="章程/合伙协议" />
+                <shared:MultiDualFileView Content="{Binding LegalPersonIdCard}" Header="法人身份证" />
             </StackPanel>
         </GroupBox>
 
