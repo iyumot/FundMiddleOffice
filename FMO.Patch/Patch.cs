@@ -27,8 +27,23 @@ public static partial class DatabaseAssist
         [67] = Customer2Investor,
         [71] = PlatformTable,
         //[68] = AddManualLink
-        [72] = MiggrateInstitutionCertifications
+        [72] = MiggrateInstitutionCertifications,
+        [73] = MiggigrateFileInInvestor
     };
+
+    /// <summary>
+    /// 迁移投资人中的文件
+    /// </summary>
+    /// <param name="database"></param>
+    /// <exception cref="NotImplementedException"></exception>
+    private static void MiggigrateFileInInvestor(BaseDatabase db)
+    {
+        var cus = db.GetCollection<Investor>().Query().Where(x=>x.IDCards != null).Select(x => new { x.Id, x.IDCards }).ToList().Select(x=> new { x.Id, IDCards= x.IDCards.Select(x => new { x.Name, p = x.Path!, m = Regex.Match(x.Path!, "files.*") }).Select(x => new { x.Name, Path = x.m.Success ? x.m.Value : x.p }) }).ToList();
+        var mig = cus.Select(x => new InvestorCertifications { Id = x.Id, Files = x.IDCards?.Where(x => x.Path?.Length > 5).Select(y => FileMeta.Create(y.Path, y.Name!)).ToList() });
+        db.GetCollection<InvestorCertifications>().DeleteAll();
+        db.GetCollection<InvestorCertifications>().InsertBulk(mig.Where(x => x.Files is not null && x.Files.Count > 0));
+
+    }
 
     /// <summary>
     /// 迁移InstitutionCertifications

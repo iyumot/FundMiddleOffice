@@ -25,7 +25,7 @@ public class Investor
     /// <summary>
     /// 证件文件
     /// </summary>
-    public VersionedFileInfo? Certifications { get; set; }
+    //public VersionedFileInfo? Certifications { get; set; }
 
     public List<FileStorageInfo>? IDCards { get; set; }
 
@@ -50,7 +50,7 @@ public class Investor
 
     public static bool IsNamePair(string? a, string? b)
     {
-        if(a == b) return true;
+        if (a == b) return true;
         if (a is null || b is null) return false;
 
         // 清除符号
@@ -59,7 +59,13 @@ public class Investor
         var bb = regex.Replace(b, "");
         return aa == bb;
     }
-     
+
+}
+
+
+public class InvestorCertifications : MultiFile
+{
+    public int Id { get; set; }
 }
 
 

@@ -68,7 +68,7 @@
                             Foreground="Red"
                             Style="{StaticResource ButtonIcon.Small}"
                             ToolTip="删除"
-                            Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource AncestorType=local:FileViewBase}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                            Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource AncestorType=local:FileView}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
                     </DockPanel>
                 </hc:SimplePanel>
             </hc:SimplePanel>
@@ -160,7 +160,7 @@
                             Foreground="Red"
                             Style="{StaticResource ButtonIcon.Small}"
                             ToolTip="删除"
-                            Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource AncestorType=local:FileViewBase}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                            Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource AncestorType=local:FileView}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
                     </DockPanel>
                 </hc:SimplePanel>
             </hc:SimplePanel>
@@ -249,6 +249,7 @@
                 BorderThickness="0"
                 ItemTemplate="{StaticResource AnotherFile.Flip}"
                 ItemsSource="{Binding Source={StaticResource src}}"
+                ScrollViewer.VerticalScrollBarVisibility="Disabled"
                 Style="{StaticResource ListBoxCustom}">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -288,9 +289,9 @@
         <hc:SimplePanel>
             <hc:SimplePanel.Resources>
                 <CollectionViewSource x:Key="src" Source="{Binding Files}">
-                    <!--<CollectionViewSource.SortDescriptions>
+                    <CollectionViewSource.SortDescriptions>
                         <componentmodel:SortDescription Direction="Descending" PropertyName="Normal.Time" />
-                    </CollectionViewSource.SortDescriptions>-->
+                    </CollectionViewSource.SortDescriptions>
                 </CollectionViewSource>
             </hc:SimplePanel.Resources>
             <ListBox
@@ -299,6 +300,7 @@
                 BorderThickness="0"
                 ItemTemplate="{StaticResource AnotherFile.Wrap}"
                 ItemsSource="{Binding Source={StaticResource src}}"
+                ScrollViewer.VerticalScrollBarVisibility="Disabled"
                 Style="{StaticResource ListBoxCustom}">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -312,17 +314,14 @@
         </hc:SimplePanel>
     </DataTemplate>
 
-
-
-
     <!--  Style for MultipleFileView  -->
-    <Style TargetType="local:MultiDualFileView">
+    <Style x:Key="MultiDualFileStyle" TargetType="local:FileView">
         <Setter Property="AllowDrop" Value="{Binding IsReadOnly, RelativeSource={RelativeSource Self}, Converter={StaticResource Boolean2BooleanReConverter}}" />
 
         <Setter Property="ContentTemplate" Value="{StaticResource MultiDualFile.Wrap}" />
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="local:MultiDualFileView">
+                <ControlTemplate TargetType="local:FileView">
                     <Border
                         MaxHeight="20"
                         Margin="{TemplateBinding Margin}"
@@ -378,6 +377,104 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+
+
+    <DataTemplate x:Key="MultiFile">
+        <hc:SimplePanel>
+            <hc:SimplePanel.Resources>
+                <CollectionViewSource x:Key="src" Source="{Binding Files}">
+                    <CollectionViewSource.SortDescriptions>
+                        <componentmodel:SortDescription Direction="Descending" PropertyName="Time" />
+                    </CollectionViewSource.SortDescriptions>
+                </CollectionViewSource>
+            </hc:SimplePanel.Resources>
+            <ListBox
+                Padding="0"
+                Background="Transparent"
+                BorderThickness="0"
+                ItemTemplate="{StaticResource DT.File}"
+                ItemsSource="{Binding Source={StaticResource src}}"
+                ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                Style="{StaticResource ListBoxCustom}">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <hc:UniformSpacingPanel
+                            IsItemsHost="True"
+                            Orientation="Vertical"
+                            VerticalSpacing="2" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+            </ListBox>
+        </hc:SimplePanel>
+    </DataTemplate>
+
+
+
+    <Style x:Key="MultiFileStyle" TargetType="local:FileView">
+        <Setter Property="AllowDrop" Value="{Binding IsReadOnly, RelativeSource={RelativeSource Self}, Converter={StaticResource Boolean2BooleanReConverter}}" />
+        <Setter Property="ContentTemplate" Value="{StaticResource MultiFile}" />
+        <Setter Property="Header" Value="{Binding Content.Label, RelativeSource={RelativeSource Self}, FallbackValue=文件}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:FileView">
+                    <Border
+                        MaxHeight="20"
+                        Margin="{TemplateBinding Margin}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                        <i:Interaction.Behaviors>
+                            <local:DelayMouseOverExpandBehavior TargetMaxHeight="200" />
+                        </i:Interaction.Behaviors>
+                        <DockPanel Background="Transparent">
+                            <ContentPresenter
+                                VerticalAlignment="Center"
+                                Content="{TemplateBinding Header}"
+                                ContentTemplate="{TemplateBinding HeaderTemplate}" />
+
+                            <hc:SimplePanel>
+                                <Viewbox
+                                    x:Name="arrow"
+                                    Width="14"
+                                    Height="14"
+                                    Margin="2,0,8,0"
+                                    VerticalAlignment="Center">
+                                    <Path
+                                        Data="{StaticResource f.angle-right}"
+                                        Fill="Black"
+                                        Stroke="Black" />
+                                </Viewbox>
+                                <Button
+                                    x:Name="add"
+                                    hc:IconElement.Geometry="{StaticResource f.gear}"
+                                    Command="{Binding Content.AddFileCommand, RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}"
+                                    CommandParameter="{Binding ., RelativeSource={RelativeSource TemplatedParent}}"
+                                    Style="{StaticResource ButtonIcon.Small}"
+                                    ToolTip="设置文件"
+                                    Visibility="Hidden" />
+                            </hc:SimplePanel>
+
+                            <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
+                        </DockPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True" />
+                                <Condition Property="IsReadOnly" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="add" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="arrow" Property="Visibility" Value="Collapsed" />
+                        </MultiTrigger>
+
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
 
 
 </ResourceDictionary>

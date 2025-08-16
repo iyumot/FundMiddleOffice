@@ -118,6 +118,10 @@ public partial class ReadOnlyFileMetaViewModel : ObservableObject
 
 public partial class FileMetaViewModel : ReadOnlyFileMetaViewModel
 {
+    public FileMetaViewModel(FileMeta meta) => Meta = meta;
+
+    public FileMetaViewModel() { }
+
     public string? Filter { get; set; }
 
 
@@ -129,8 +133,10 @@ public partial class FileMetaViewModel : ReadOnlyFileMetaViewModel
 
     public string? SaveFolder { get; set; }
 
-    internal delegate void MetaChangedHandler();
+    internal delegate void MetaChangedHandler(FileMetaViewModel sender);
     internal event MetaChangedHandler? MetaChanged;
+
+
 
     [RelayCommand]
     public void Choose()
@@ -156,7 +162,7 @@ public partial class FileMetaViewModel : ReadOnlyFileMetaViewModel
     }
 
 
-    protected virtual void OnMetaChanged() => MetaChanged?.Invoke();
+    protected virtual void OnMetaChanged() => MetaChanged?.Invoke(this);
 }
 
 
@@ -212,7 +218,7 @@ public class DualFileMetaViewModel
         Another.MetaChanged += OnMetaChanged;
     }
 
-    protected virtual void OnMetaChanged() => MetaChanged?.Invoke(this);
+    protected virtual void OnMetaChanged(FileMetaViewModel sender) => MetaChanged?.Invoke(this);
 
 }
 
@@ -235,9 +241,9 @@ public partial class DualFileViewModel : DualFileMetaViewModel
     public event FileChangedHandler? FileChanged;
 
 
-    protected override void OnMetaChanged()
+    protected override void OnMetaChanged(FileMetaViewModel sender)
     {
-        base.OnMetaChanged();
+        base.OnMetaChanged(sender);
         FileChanged?.Invoke(new DualFile
         {
             Label = Label,
@@ -254,12 +260,80 @@ public partial class DualFileViewModel : DualFileMetaViewModel
 
 public partial class MultiFileViewModel : ObservableObject
 {
+    public MultiFileViewModel()
+    {
+    }
+
+    public MultiFileViewModel(MultiFile? multiSealed)
+    {
+        Label = multiSealed?.Label;
+        if (multiSealed?.Files is not null)
+            Files = [.. multiSealed.Files.Select(x => new FileMetaViewModel { Meta = x })];
+        else Files = [];
+
+        foreach (var file in Files)
+            file.MetaChanged += ItemChanged; ;
+    }
+
     public Guid Guid { get; } = Guid.NewGuid();
 
     public string? Label { get; set; }
 
 
     public List<FileMetaViewModel> Files { get; } = new();
+
+    public string? Filter { get; set; }
+
+
+    //public bool CanAddFile => Files.Any(x => !x.Normal.CanSet && !x.Sealed.CanSet);
+
+    /// <summary>
+    /// Extension -> SpecificFileName
+    /// </summary>
+    public Func<string?, string>? SpecificFileName { get; set; }
+
+
+    public string? SaveFolder { get; set; }
+
+    public delegate void OnFileChangedHandler(MultiFile files);
+    public event OnFileChangedHandler? OnFileChanged;
+
+    private void ItemChanged(FileMetaViewModel sender)
+    {
+        if (sender.Meta is null)
+            Files.Remove(sender);
+        InvokeFileChanged();
+    }
+
+    [RelayCommand]
+    public void AddFile()
+    {
+        var fd = new OpenFileDialog();
+        fd.Filter = Filter;
+        if (fd.ShowDialog() != true) return;
+
+        var newf = new FileInfo(fd.FileName);
+        var desire = SpecificFileName is null ? newf.Name : SpecificFileName(newf.Extension);
+
+        var m = FileMeta.Create(newf, desire);
+        FileMetaViewModel newv = new() { Meta = m };
+        Files.Add(newv);
+        newv.MetaChanged += ItemChanged;
+        InvokeFileChanged();
+    }
+
+
+    protected virtual void InvokeFileChanged()
+    {
+
+        var files = new MultiFile
+        {
+            Label = Label,
+            Files = Files.Where(x => x.Meta is not null).Select(x => x.Meta!).ToList()
+        };
+        OnFileChanged?.Invoke(files);
+    }
+
 
 }
 

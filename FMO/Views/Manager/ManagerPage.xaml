@@ -257,17 +257,17 @@
                     Style="{StaticResource GroupBoxTab}">
                     <StackPanel>
                         <StackPanel.Resources>
-                            <Style TargetType="shared:MultiDualFileView">
+                            <Style BasedOn="{StaticResource MultiDualFileStyle}" TargetType="shared:FileView">
                                 <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}" />
                                 <Setter Property="ContentTemplate" Value="{StaticResource MultiDualFile.Flip}" />
                                 <Setter Property="Margin" Value="0,1" />
                             </Style>
                         </StackPanel.Resources>
-                        <shared:MultiDualFileView Content="{Binding BusinessLicense}" Header="营业执照正本" />
-                        <shared:MultiDualFileView Content="{Binding BusinessLicense2}" Header="营业执照副本" />
-                        <shared:MultiDualFileView Content="{Binding AccountOpeningLicense}" Header="开户许可证" />
-                        <shared:MultiDualFileView Content="{Binding CharterDocument}" Header="章程/合伙协议" />
-                        <shared:MultiDualFileView Content="{Binding LegalPersonIdCard}" Header="法人身份证" />
+                        <shared:FileView Content="{Binding BusinessLicense}" Header="营业执照正本" />
+                        <shared:FileView Content="{Binding BusinessLicense2}" Header="营业执照副本" />
+                        <shared:FileView Content="{Binding AccountOpeningLicense}" Header="开户许可证" />
+                        <shared:FileView Content="{Binding CharterDocument}" Header="章程/合伙协议" />
+                        <shared:FileView Content="{Binding LegalPersonIdCard}" Header="法人身份证" />
                     </StackPanel>
                 </GroupBox>
             </StackPanel>
@@ -578,10 +578,11 @@
                     Style="{StaticResource ListBoxCustom}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <shared:MultiDualFileView
+                            <shared:FileView
                                 Margin="4,2"
                                 Content="{Binding}"
-                                Header="{Binding Label}" />
+                                Header="{Binding Label}"
+                                Style="{StaticResource MultiDualFileStyle}" />
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>

@@ -326,10 +326,17 @@
                     IsReadOnly="{Binding IsReadOnly}" />-->
 
                 <DockPanel LastChildFill="False">
-                    <shared:MultipleFileView
+                    <!--<shared:MultipleFileView
                         Binding="{Binding IDCards}"
                         IsReadOnly="{Binding IsReadOnly}"
-                        Style="{StaticResource CardFileStyle}" />
+                        Style="{StaticResource CardFileStyle}" />-->
+
+                    <shared:FileView
+                        Content="{Binding IDCards}"
+                        Header="身份证明"
+                        IsReadOnly="{Binding IsReadOnly}"
+                        Style="{StaticResource MultiFileStyle}" />
+
 
                     <Button
                         local:HelpService.Placement="Right"

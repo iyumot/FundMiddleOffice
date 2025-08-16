@@ -105,7 +105,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
 
     public ChangeableViewModel<Investor, string> Address { get; } = new() { InitFunc = x => x.Address, UpdateFunc = (x, y) => x.Address = y, ClearFunc = x => x.Address = null, Label = "联系地址" };
 
-    public MultipleFileViewModel IDCards { get; }
+    public MultiFileViewModel IDCards { get; }
 
 
     [ObservableProperty]
@@ -199,6 +199,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
     {
         using var db = DbHelper.Base();
         var investor = db.GetCollection<Investor>().FindById(id);
+        var cards = db.GetCollection<InvestorCertifications>().FindById(id);
         Id = id;
 
         WeakReferenceMessenger.Default.RegisterAll(this);
@@ -238,14 +239,19 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
         Phone.Init(investor);
         Address.Init(investor);
 
-        IDCards = new()
-        {
-            Label = "身份证明",
-            Files = [.. (investor.IDCards ?? new())],
-            OnAddFile = (x, y) => SetFile<Investor>(Id, x => { if (x.IDCards is null) x.IDCards = new(); return x.IDCards; }, x),
-            OnDeleteFile = x => DeleleFile<Investor>(Id, x => x.IDCards, x),
-        };
 
+
+
+        IDCards = new(cards);
+        IDCards.OnFileChanged += (x) =>
+        {
+            using var db = DbHelper.Base();
+            db.GetCollection<InvestorCertifications>().Upsert(new InvestorCertifications
+            {
+                Id = Id,
+                Files = x.Files
+            });
+        };
 
         Efficient.Init(investor);
 
@@ -734,22 +740,22 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
 
             // 保存
             var fi = new FileInfo(path);
-            var hash = fi.ComputeHash();
-            FileStorageInfo fsi = new()
-            {
-                Title = "",
-                Path = path,
-                Hash = hash,
-                Time = DateTime.Now
-            };
-            using var db = DbHelper.Base();
-            var cus = db.GetCollection<Investor>().FindById(Id);
-            if (cus.IDCards is null) cus.IDCards = [fsi];
-            else cus.IDCards.Add(fsi);
-            db.GetCollection<Investor>().Update(cus);
 
-            if (IDCards.Files is null) IDCards.Files = [fsi];
-            else IDCards.Files.Add(fsi);
+            //var hash = fi.ComputeHash();
+            //FileStorageInfo fsi = new()
+            //{
+            //    Title = "",
+            //    Path = path,
+            //    Hash = hash,
+            //    Time = DateTime.Now
+            //};
+            //using var db = DbHelper.Base();
+            //var cus = db.GetCollection<Investor>().FindById(Id);
+            //if (cus.IDCards is null) cus.IDCards = [fsi];
+            //else cus.IDCards.Add(fsi);
+            //db.GetCollection<Investor>().Update(cus);
+
+            IDCards.Files.Add(new FileMetaViewModel(FileMeta.Create(fi, $"{Name}-证件.jpg")));
         }
         catch (Exception ex)
         {

@@ -13,6 +13,7 @@
                 <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml" />
                 <ResourceDictionary Source="/Themes/Generic.xaml" />
                 <ResourceDictionary Source="/HelpTemplates.xaml" />
+                <ResourceDictionary Source="/FMO.Shared;component/Themes/NewFileControl.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
