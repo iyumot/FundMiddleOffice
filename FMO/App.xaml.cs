@@ -145,7 +145,9 @@ public partial class App : Application
     private void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
     {
         Log.Error(e.Exception.Message);
+#if !DEBUG
         e.Handled = true;
+#endif
         //MessageBox.Show("出错了，请查看Log");
     }
 
