@@ -61,13 +61,17 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         FundCode = fund.Code;
         FundStatus = fund.Status;
 
+
+        
+
+
 #pragma warning disable CS8625 // 无法将 null 字面量转换为非 null 的引用类型。
-        RegistrationLetter = new SingleFileViewModel()
-        {
-            Label = "备案函",
-            OnDeleteFile = default,
-            OnSetFile = default,
-        };
+        //RegistrationLetter = new SingleFileViewModel()
+        //{
+        //    Label = "备案函",
+        //    OnDeleteFile = default,
+        //    OnSetFile = default,
+        //};
 #pragma warning restore CS8625 // 无法将 null 字面量转换为非 null 的引用类型。
 
         InitFlows(fund);
@@ -174,21 +178,21 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         var flows = db.GetCollection<FundFlow>().Find(x => x.FundId == fund.Id).OrderBy(x => x.Id).ToList();
         if (!flows.Any(x => x is InitiateFlow))
         {
-            var f = new InitiateFlow { FundId = fund.Id, ElementFiles = new VersionedFileInfo { Name = "基金要素" }, ContractFiles = new VersionedFileInfo { Name = "基金合同" }, CustomFiles = new() };
+            var f = new InitiateFlow { FundId = fund.Id, ElementFiles = new() { Label = "基金要素" }, ContractFiles = new() { Label = "基金合同" }, CustomFiles = new() };
             flows.Insert(0, f);
             db.GetCollection<FundFlow>().Insert(f);
         }
 
         if (!flows.Any(x => x is ContractFinalizeFlow))
         {
-            var f = new ContractFinalizeFlow { FundId = fund.Id, ContractFile = new FileStorageInfo("基金合同"), CustomFiles = new() };
+            var f = new ContractFinalizeFlow { FundId = fund.Id, CustomFiles = new() };
             flows.Insert(1, f);
             db.GetCollection<FundFlow>().Insert(f);
         }
 
         if (fund.Status >= FundStatus.Setup && !flows.Any(x => x is SetupFlow))
         {
-            var f = new SetupFlow { FundId = fund.Id, Date = fund.SetupDate, PaidInCapitalProof = new FileStorageInfo("实缴出资证明"), CustomFiles = new() };
+            var f = new SetupFlow { FundId = fund.Id, Date = fund.SetupDate, CustomFiles = new() };
             flows.Insert(2, f);
             db.GetCollection<FundFlow>().Insert(f);
         }
@@ -224,7 +228,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
                 case ContractModifyFlow d:
                     Flows.Add(new ContractModifyFlowViewModel(d));
                     if (d.RegistrationLetter is not null)
-                        RegistrationLetter?.File = d.RegistrationLetter;
+                        RegistrationLetter.Meta = d.RegistrationLetter.File;
                     break;
 
                 case ContractFinalizeFlow d:
@@ -238,7 +242,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
                 case RegistrationFlow d:
                     Flows.Add(new RegistrationFlowViewModel(d));
                     if (d.RegistrationLetter is not null)
-                        RegistrationLetter?.File = d.RegistrationLetter;
+                        RegistrationLetter.Meta = d.RegistrationLetter.File;
                     break;
 
                 case LiquidationFlow d:
@@ -276,11 +280,11 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
                 switch (flow)
                 {
                     case RegistrationFlowViewModel a:
-                        a.RegistrationLetter!.PropertyChanged += RegistrationLetter_PropertyChanged;
+                        a.RegistrationLetter!.FileChanged += f => RegistrationLetter.Meta = f?.File;
                         break;
 
                     case ContractModifyFlowViewModel a:
-                        a.RegistrationLetter!.PropertyChanged += RegistrationLetter_PropertyChanged;
+                        a.RegistrationLetter!.FileChanged += f => RegistrationLetter.Meta = f?.File;
                         break;
                     default:
                         break;
@@ -294,12 +298,12 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    private void RegistrationLetter_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        if (Flows?.Select(x => x switch { RegistrationFlowViewModel a => a.RegistrationLetter, ContractModifyFlowViewModel b => b.RegistrationLetter, _ => null }).LastOrDefault(x => x is not null && x.File is not null)?.File?.FullName is string s)
-            RegistrationLetter?.File = new FileStorageInfo(s, "", default);
-        //RegistrationLetter = new LatestFileViewModel { Name = "备案函", File = Flows?.Select(x => x switch { RegistrationFlowViewModel a => a.RegistrationLetter, ContractModifyFlowViewModel b => b.RegistrationLetter, _ => null }).Where(x => x is not null && x.File is not null).LastOrDefault()?.File };
-    }
+    //private void RegistrationLetter_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    //{
+    //    if (Flows?.Select(x => x switch { RegistrationFlowViewModel a => a.RegistrationLetter, ContractModifyFlowViewModel b => b.RegistrationLetter, _ => null }).LastOrDefault(x => x is not null && x.File is not null)?.File?.FullName is string s)
+    //        RegistrationLetter?.File = new FileStorageInfo(s, "", default);
+    //    //RegistrationLetter = new LatestFileViewModel { Name = "备案函", File = Flows?.Select(x => x switch { RegistrationFlowViewModel a => a.RegistrationLetter, ContractModifyFlowViewModel b => b.RegistrationLetter, _ => null }).Where(x => x is not null && x.File is not null).LastOrDefault()?.File };
+    //}
 
 
 
@@ -404,8 +408,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     public partial FlowViewModel? SelectedFlowInElements { get; set; }
 
 
-    [ObservableProperty]
-    public partial SingleFileViewModel? RegistrationLetter { get; set; }
+    public SimpleFileViewModel RegistrationLetter { get; } = new();
 
     public ObservableCollection<DailyValue> DailyValues { get; }
 

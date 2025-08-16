@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
+using LiteDB;
 using Microsoft.Win32;
 using Serilog;
 using System.Collections.ObjectModel;
@@ -15,13 +16,25 @@ namespace FMO;
 
 
 
+public class TempFile : IDisposable
+{
+    public string FilePath { get; }
+
+    public TempFile() => FilePath = Path.GetTempFileName();
+
+
+    public void Dispose()
+    {
+        try { File.Delete(FilePath); } catch (Exception e) { Log.Error(e, $"删除临时文件【{FilePath}】失败"); }
+    }
+}
 
 
 
 /// <summary>
 /// 基类
 /// </summary>
-public partial class FlowViewModel : ObservableObject, IFileSetter
+public partial class FlowViewModel : ObservableObject//, IFileSetter
 {
 
     public int FundId { get; set; }
@@ -38,10 +51,13 @@ public partial class FlowViewModel : ObservableObject, IFileSetter
 
 
     /// <summary>
-    /// 要素文件
+    /// 自定义文件
     /// </summary>
-    [ObservableProperty]
-    public partial ObservableCollection<FileViewModelBase>? CustomFiles { get; set; }
+    //[ObservableProperty]
+    //public partial ObservableCollection<SimpleFileBase>? CustomFiles { get; set; }
+
+    //public MultiDualFileViewModel CustomFiles { get;  }
+
 
     public string CustomFileFolder { get; set; } = "Files";
 
@@ -71,11 +87,14 @@ public partial class FlowViewModel : ObservableObject, IFileSetter
 
         Date = flow.Date?.ToDateTime(default) ?? null;
 
-        CustomFiles = flow.CustomFiles is not null ? new(flow.CustomFiles.Select(x => new FileViewModelBase { Label = x.Title, File = x.Path is null ? null : new FileInfo(x.Path) })) : new();
-        foreach (var item in CustomFiles)
-            item.PropertyChanged += CustomFile_PropertyChanged;
+        //CustomFiles = new(flow.CustomFiles);
+        //CustomFiles.FileChanged += f => SaveFileChanged(new { CustomFiles = f });
 
-        CustomFiles.CollectionChanged += CustomFiles_CollectionChanged;
+        //CustomFiles = flow.CustomFiles is not null ? new(flow.CustomFiles.Select(x => new SimpleFileBase { Label = x.Title, File = x.Path is null ? null : new FileInfo(x.Path) })) : new();
+        //foreach (var item in CustomFiles)
+        //    item.PropertyChanged += CustomFile_PropertyChanged;
+
+        //CustomFiles.CollectionChanged += CustomFiles_CollectionChanged;
 
         IsReadOnly = flow.Finished;
 
@@ -104,37 +123,39 @@ public partial class FlowViewModel : ObservableObject, IFileSetter
     [RelayCommand]
     public void AddCustomFile()
     {
-        if (CustomFiles is null)
-            CustomFiles = new();
-
         // 如果存在未设置的，则不增加
-        var last = CustomFiles.LastOrDefault();
-        if (last is not null && (string.IsNullOrWhiteSpace(last.Label) || last.Label == "未命名") && last.File is null)
-            return;
+        //var last = CustomFiles.Files.LastOrDefault();
+        //if (last is not null && (string.IsNullOrWhiteSpace(last.Label) || last.Label == "未命名") && last.File is null)
+        //    return;
 
-        FileViewModelBase item = new();
-        item.PropertyChanged += CustomFile_PropertyChanged;
-        CustomFiles.Add(item);
+        //SimpleFileBase item = new();
+        //item.PropertyChanged += CustomFile_PropertyChanged;
+        //CustomFiles.Add(item);
     }
 
-    [RelayCommand]
-    public void DeleteFile(FileViewModelBase file)
+    //[RelayCommand]
+    //public void DeleteFile(SimpleFileBase file)
+    //{
+    //    CustomFiles?.Remove(file);
+    //}
+
+    protected void SaveFileChanged<T>(T value)
     {
-        CustomFiles?.Remove(file);
+        using var db = DbHelper.Base();
+        db.GetCollection<FundFlow>().UpdateMany(BsonMapper.Global.ToDocument(value).ToString(), $"_id={FlowId}");
     }
-
 
 
     protected void CustomFile_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (sender is not FileViewModelBase cfi) return;
+        //if (sender is not SimpleFileBase cfi) return;
 
         //using var db = DbHelper.Base();
         //var flow = db.GetCollection<FundFlow>().FindById(FlowId);
 
         //var file = flow!.CustomFiles?.FirstOrDefault(x => x.Id == cfi.Id);
         //if (file is null) return;
-        //if (e.PropertyName == nameof(FileViewModelBase.Name) && cfi.Name is not null)
+        //if (e.PropertyName == nameof(SimpleFileBase.Name) && cfi.Name is not null)
         //    file.Name = cfi.Name;
 
         //if (e.PropertyName == nameof(CustomFileInfoViewModel.FileInfo) && cfi.FileInfo is not null)
@@ -151,57 +172,57 @@ public partial class FlowViewModel : ObservableObject, IFileSetter
     }
 
 
-    protected void CustomFiles_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
-        {
-            using var db = DbHelper.Base();
-            var dir = FundHelper.GetFolder(FundId);
-            var flow = db.GetCollection<FundFlow>().FindById(FlowId);
-            if (flow!.CustomFiles is null)
-                flow.CustomFiles = new();
+    //protected void CustomFiles_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    //{
+    //    if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems is not null)
+    //    {
+    //        using var db = DbHelper.Base();
+    //        var dir = FundHelper.GetFolder(FundId);
+    //        var flow = db.GetCollection<FundFlow>().FindById(FlowId);
+    //        if (flow!.CustomFiles is null)
+    //            flow.CustomFiles = new();
 
-            foreach (CustomFileInfoViewModel item in e.NewItems)
-            {
-                if (item.FileInfo is null || !item.FileInfo.Exists)
-                {
-                    //flow!.CustomFiles.Add(new FundFileInfo { Name = item.Name ?? "未命名" });
-                    continue;
-                }
+    //        foreach (CustomFileInfoViewModel item in e.NewItems)
+    //        {
+    //            if (item.FileInfo is null || !item.FileInfo.Exists)
+    //            {
+    //                //flow!.CustomFiles.Add(new FundFileInfo { Name = item.Name ?? "未命名" });
+    //                continue;
+    //            }
 
-                string hash = item.FileInfo.ComputeHash()!;
+    //            string hash = item.FileInfo.ComputeHash()!;
 
-                // 保存副本
-                dir = dir.CreateSubdirectory(CustomFileFolder);
-                var tar = FileHelper.CopyFile(item.FileInfo, dir.FullName);
+    //            // 保存副本
+    //            dir = dir.CreateSubdirectory(CustomFileFolder);
+    //            var tar = FileHelper.CopyFile(item.FileInfo, dir.FullName);
 
-                var fileVersion = new FileStorageInfo(tar.Path, hash, item.FileInfo.LastWriteTime);// { Name = item.Name ?? "未命名", Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.FileInfo.LastWriteTime };
+    //            var fileVersion = new FileStorageInfo(tar.Path, hash, item.FileInfo.LastWriteTime);// { Name = item.Name ?? "未命名", Path = Path.GetRelativePath(Directory.GetCurrentDirectory(), tar.Path), Hash = hash, Time = item.FileInfo.LastWriteTime };
 
-                flow!.CustomFiles.Add(fileVersion);
-            }
-            db.GetCollection<FundFlow>().Update(flow!);
-        }
-        else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
-        {
-            using var db = DbHelper.Base();
-            var flow = db.GetCollection<FundFlow>().FindById(FlowId);
-            if (flow?.CustomFiles is null) return;
+    //            flow!.CustomFiles.Add(fileVersion);
+    //        }
+    //        db.GetCollection<FundFlow>().Update(flow!);
+    //    }
+    //    else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems is not null)
+    //    {
+    //        using var db = DbHelper.Base();
+    //        var flow = db.GetCollection<FundFlow>().FindById(FlowId);
+    //        if (flow?.CustomFiles is null) return;
 
-            foreach (CustomFileInfoViewModel item in e.OldItems)
-            {
-                if (item.FileInfo is null) continue;
+    //        foreach (CustomFileInfoViewModel item in e.OldItems)
+    //        {
+    //            if (item.FileInfo is null) continue;
 
-                var rp = Path.GetRelativePath(Directory.GetCurrentDirectory(), item.FileInfo.FullName);
-                var file = flow!.CustomFiles.FirstOrDefault(x => rp == x.Path || x.Path == item.FileInfo.FullName);
-                if (file is not null)
-                    flow.CustomFiles.Remove(file);
+    //            var rp = Path.GetRelativePath(Directory.GetCurrentDirectory(), item.FileInfo.FullName);
+    //            var file = flow!.CustomFiles.FirstOrDefault(x => rp == x.Path || x.Path == item.FileInfo.FullName);
+    //            if (file is not null)
+    //                flow.CustomFiles.Remove(file);
 
-                item.PropertyChanged -= CustomFile_PropertyChanged;
-            }
+    //            item.PropertyChanged -= CustomFile_PropertyChanged;
+    //        }
 
-            db.GetCollection<FundFlow>().Update(flow!);
-        }
-    }
+    //        db.GetCollection<FundFlow>().Update(flow!);
+    //    }
+    //}
 
 
     protected void SaveFile<T>(FileInfo newValue, string folder, Func<T, FileStorageInfo?> file, Action<T> initFile) where T : FundFlow
@@ -245,71 +266,71 @@ public partial class FlowViewModel : ObservableObject, IFileSetter
 
 
 
-    [RelayCommand]
-    public void ChooseFile(FileViewModel file)
-    {
-        var fd = new OpenFileDialog();
-        fd.Filter = file.Filter;
-        if (fd.ShowDialog() != true)
-            return;
+    //[RelayCommand]
+    //public void ChooseFile(SimpleFile file)
+    //{
+    //    var fd = new OpenFileDialog();
+    //    fd.Filter = file.Filter;
+    //    if (fd.ShowDialog() != true)
+    //        return;
 
-        SetFile(file, fd.FileName);
-    }
-
-
-    public void SetFile(IFileViewModel? file, string path)
-    {
-        if (file is FileViewModel ff)
-        {
-            FileStorageInfo? tar = ff.Build(path);
-            if (tar?.Path is not null)
-                ff.File = new FileInfo(tar.Path);
-
-            using var db = DbHelper.Base();
-            var flow = db.GetCollection<FundFlow>().FindById(FlowId);
-            if (flow is not null)
-            {
-                ff.SetProperty(flow, tar);
-                db.GetCollection<FundFlow>().Update(flow);
-            }
-        }
-    }
+    //    SetFile(file, fd.FileName);
+    //}
 
 
+    //public void SetFile(ISimpleFile? file, string path)
+    //{
+    //    if (file is SimpleFile ff)
+    //    {
+    //        FileStorageInfo? tar = ff.Build(path);
+    //        if (tar?.Path is not null)
+    //            ff.File = new FileInfo(tar.Path);
+
+    //        using var db = DbHelper.Base();
+    //        var flow = db.GetCollection<FundFlow>().FindById(FlowId);
+    //        if (flow is not null)
+    //        {
+    //            ff.SetProperty(flow, tar);
+    //            db.GetCollection<FundFlow>().Update(flow);
+    //        }
+    //    }
+    //}
 
 
-    [RelayCommand]
-    public void Clear(FileViewModel file)
-    {
-        if (file is null) return;
-
-        var r = HandyControl.Controls.MessageBox.Show("是否删除文件", "提示", MessageBoxButton.YesNoCancel);
-        if (r == MessageBoxResult.Cancel) return;
-
-        if (r == MessageBoxResult.Yes)
-        {
-            try
-            {
-                file.File?.Delete();
-            }
-            catch (Exception e)
-            {
-                HandyControl.Controls.Growl.Warning("文件已打开，无法删除，请先关闭文件");
-                return;
-            }
-        }
 
 
-        using var db = DbHelper.Base();
-        var flow = db.GetCollection<FundFlow>().FindById(FlowId);
+    //[RelayCommand]
+    //public void Clear(SimpleFile file)
+    //{
+    //    if (file is null) return;
 
-        if (flow is not null)
-        {
-            file.SetProperty(flow, null);
-            db.GetCollection<FundFlow>().Update(flow);
-            file.File = null;
-        }
-    }
+    //    var r = HandyControl.Controls.MessageBox.Show("是否删除文件", "提示", MessageBoxButton.YesNoCancel);
+    //    if (r == MessageBoxResult.Cancel) return;
+
+    //    if (r == MessageBoxResult.Yes)
+    //    {
+    //        try
+    //        {
+    //            file.File?.Delete();
+    //        }
+    //        catch (Exception e)
+    //        {
+    //            HandyControl.Controls.Growl.Warning("文件已打开，无法删除，请先关闭文件");
+    //            return;
+    //        }
+    //    }
+
+
+    //    using var db = DbHelper.Base();
+    //    var flow = db.GetCollection<FundFlow>().FindById(FlowId);
+
+    //    if (flow is not null)
+    //    {
+    //        file.SetProperty(flow, null);
+    //        db.GetCollection<FundFlow>().Update(flow);
+    //        file.File = null;
+    //    }
+    //}
 
     [RelayCommand]
     public void UpdateFileDate()

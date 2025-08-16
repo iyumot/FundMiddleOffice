@@ -10,7 +10,7 @@ using System.IO;
 
 namespace FMO;
 
-public partial class DividendFlowViewModel : FlowViewModel, IChangeableEntityViewModel, IFileSetter
+public partial class DividendFlowViewModel : FlowViewModel, IChangeableEntityViewModel//, IFileSetter
 {
     public static DividendType[] Types = [DividendType.PerUnitDividend, DividendType.TargetNetValue, DividendType.SpecifiedAmount];
     public static DividendMethod[] Methods = [DividendMethod.Cash, DividendMethod.Reinvestment, DividendMethod.Manual];
@@ -41,10 +41,10 @@ public partial class DividendFlowViewModel : FlowViewModel, IChangeableEntityVie
 
 
     /// <summary>
-    /// 成立公告
+    /// 分红公告
     /// </summary>  
-    public FileViewModel Announcement { get; }
-    public FileViewModel SealedAnnouncement { get; }
+    public DualFileViewModel Announcement { get; }
+    // public SimpleFile SealedAnnouncement { get; }
 
 
 
@@ -84,7 +84,7 @@ public partial class DividendFlowViewModel : FlowViewModel, IChangeableEntityVie
             InitFunc = x => x.DividendReferenceDate == default ? null : new DateTime(x.DividendReferenceDate, default),
             UpdateFunc = (x, y) => x.DividendReferenceDate = y is null ? default : DateOnly.FromDateTime(y.Value),
             ClearFunc = x => x.DividendReferenceDate = default,
-            DisplayFunc = x=>x?.ToString("yyyy-MM-dd")
+            DisplayFunc = x => x?.ToString("yyyy-MM-dd")
         };
         DividendReferenceDate.Init(flow);
 
@@ -122,28 +122,30 @@ public partial class DividendFlowViewModel : FlowViewModel, IChangeableEntityVie
         CashPaymentDate.Init(flow);
 
 
+        Announcement = new() { Label = "分红公告", Filter = "文档|*.docx;*.doc;*.pdf" };
+        Announcement.FileChanged += f => SaveFileChanged(new { Announcement = f });
 
-        Announcement = new()
-        {
-            Label = "分红公告",
-            SaveFolder = FundHelper.GetFolder(FundId, "Announcement"),
-            SetProperty = (x, y) => { if (x is DividendFlow f) f.Announcement = y; },
-            GetProperty = x => x switch { DividendFlow f => f.Announcement, _ => null },
-            Filter = "文档|*.docx;*.doc;*.pdf"
-        };
-        Announcement.Init(flow);
+        //Announcement = new()
+        //{
+        //    Label = "分红公告",
+        //    SaveFolder = FundHelper.GetFolder(FundId, "Announcement"),
+        //    SetProperty = (x, y) => { if (x is DividendFlow f) f.Announcement = y; },
+        //    GetProperty = x => x switch { DividendFlow f => f.Announcement, _ => null },
+        //    Filter = "文档|*.docx;*.doc;*.pdf"
+        //};
+        //Announcement.Init(flow);
 
 
 
-        SealedAnnouncement = new()
-        {
-            Label = "分红公告",
-            SaveFolder = FundHelper.GetFolder(FundId, "Announcement"),
-            SetProperty = (x, y) => { if (x is DividendFlow f) f.SealedAnnouncement = y; },
-            GetProperty = x => x switch { DividendFlow f => f.SealedAnnouncement, _ => null },
-            Filter = "文档|*.pdf"
-        };
-        SealedAnnouncement.Init(flow);
+        //SealedAnnouncement = new()
+        //{
+        //    Label = "分红公告",
+        //    SaveFolder = FundHelper.GetFolder(FundId, "Announcement"),
+        //    SetProperty = (x, y) => { if (x is DividendFlow f) f.SealedAnnouncement = y; },
+        //    GetProperty = x => x switch { DividendFlow f => f.SealedAnnouncement, _ => null },
+        //    Filter = "文档|*.pdf"
+        //};
+        //SealedAnnouncement.Init(flow);
 
         Initialized = true;
     }
@@ -208,20 +210,18 @@ public partial class DividendFlowViewModel : FlowViewModel, IChangeableEntityVie
 
 
     [RelayCommand]
-    public void GenerateFile(FileViewModel v)
+    public void GenerateFile(DualFileViewModel v)
     {
         if (v == Announcement)
         {
             try
             {
+                using var temp = new TempFile();
                 using var db = DbHelper.Base();
                 var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
                 var fund = db.GetCollection<Fund>().FindById(FundId);
-                string path = @$"{v.SaveFolder}\{fund.Name}_分红公告.docx";
-                var fi = new FileInfo(path);
-                if (!fi.Directory!.Exists) fi.Directory.Create();
 
-                var anndate = Date is null ? DateTime.Today : (DateTime.Today < Date ? DateTime.Today : Date); 
+                var anndate = Date is null ? DateTime.Today : (DateTime.Today < Date ? DateTime.Today : Date);
 
                 var data = new
                 {
@@ -238,13 +238,10 @@ public partial class DividendFlowViewModel : FlowViewModel, IChangeableEntityVie
                     AnnouncementDate = $"{anndate:yyyy年MM月dd日}"
                 };
 
-                if (Tpl.GenerateByPredefined(path, "产品分红公告.docx", data))
-                {
-                    if (v.File?.Exists ?? false)
-                        v.File.Delete();
-                    SetFile(v, path);
-                }
-                else HandyControl.Controls.Growl.Error($"生成{v.Label}失败，请查看Log，检查模板是否存在");
+                if (Tpl.GenerateByPredefined(temp.FilePath, "产品分红公告.docx", data))
+                    v.Normal.Meta = FileMeta.Create(temp.FilePath, @$"{fund.Name}_产品分红公告.docx");
+                else 
+                    HandyControl.Controls.Growl.Error($"生成{v.Label}失败，请查看Log，检查模板是否存在");
             }
             catch { }
         }

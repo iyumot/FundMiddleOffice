@@ -5,8 +5,10 @@ using FMO.Logging;
 using FMO.Models;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Windows;
+using System.Windows.Data;
 
 namespace FMO.Shared;
 
@@ -15,7 +17,43 @@ namespace FMO.Shared;
 
 
 
+public class FileExistsToVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        bool show = false;
+        switch (value)
+        {
+            case string s:
+                show = File.Exists(s);
+                break;
+            case FileInfo fi:
+                show = fi.Exists;
+                break;
+            case FileStorageInfo fsi:
+                show = fsi.Exists;
+                break;
+            case FileMeta f:
+                show = f.Exists;
+                break;
+            default:
+                show = false;
+                break;
+        }
 
+        if (parameter switch { bool r => r, string s => s == "true", _ => false })
+            return !show ? Visibility.Visible : Visibility.Collapsed;
+
+        return show ? Visibility.Visible : Visibility.Collapsed;
+
+
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
 
 
 
@@ -202,15 +240,25 @@ public class DualFileMetaViewModel
 
     public FileMetaViewModel Another { get; } = new();
 
+    public string? Filter { get; set; }
 
 
-    internal delegate void MetaChangedHandler(DualFileMetaViewModel sender);
-    internal event MetaChangedHandler? MetaChanged;
+    /// <summary>
+    /// Extension -> SpecificFileName
+    /// </summary>
+    public Func<string?, string>? SpecificFileName { get; set; }
 
-    public DualFileMetaViewModel(DualFileMeta sealedFile)
+
+    public string? SaveFolder { get; set; }
+
+
+    public delegate void MetaChangedHandler(DualFileMetaViewModel sender);
+    public event MetaChangedHandler? MetaChanged;
+
+    public DualFileMetaViewModel(DualFileMeta? sealedFile)
     {
-        Normal.Meta = sealedFile.Normal;
-        Another.Meta = sealedFile.Another;
+        Normal.Meta = sealedFile?.Normal;
+        Another.Meta = sealedFile?.Another;
 
         Normal.MetaChanged += OnMetaChanged;
         Another.MetaChanged += OnMetaChanged;
@@ -232,11 +280,11 @@ public partial class DualFileViewModel : DualFileMetaViewModel
     {
     }
 
-    public DualFileViewModel(DualFile sealedFile)
+    public DualFileViewModel(DualFile? sealedFile)
     {
-        Label = sealedFile.Label;
-        Normal.Meta = sealedFile.File;
-        Another.Meta = sealedFile.Another;
+        Label = sealedFile?.Label;
+        Normal.Meta = sealedFile?.File;
+        Another.Meta = sealedFile?.Another;
     }
 
     public string? Label { get; set; }
@@ -272,7 +320,7 @@ public partial class MultiFileViewModel : ObservableObject
     {
         Label = multiSealed?.Label;
         if (multiSealed?.Files is not null)
-            Files = [.. multiSealed.Files.Select(x => new FileMetaViewModel { Meta = x })];
+            Files = [.. multiSealed.Files.Where(x=>x is not null).Select(x => new FileMetaViewModel { Meta = x })];
         else Files = [];
 
         foreach (var file in Files)
@@ -300,7 +348,7 @@ public partial class MultiFileViewModel : ObservableObject
     public string? SaveFolder { get; set; }
 
     public delegate void OnFileChangedHandler(MultiFile files);
-    public event OnFileChangedHandler? OnFileChanged;
+    public event OnFileChangedHandler? FileChanged;
 
     private void ItemChanged(FileMetaViewModel sender)
     {
@@ -335,7 +383,7 @@ public partial class MultiFileViewModel : ObservableObject
             Label = Label,
             Files = Files.Where(x => x.Meta is not null).Select(x => x.Meta!).ToList()
         };
-        OnFileChanged?.Invoke(files);
+        FileChanged?.Invoke(files);
     }
 
 
@@ -366,7 +414,7 @@ public partial class MultiDualFileViewModel : ObservableObject
 
 
     public delegate void OnFileChangedHandler(MultiDualFile files);
-    public event OnFileChangedHandler? OnFileChanged;
+    public event OnFileChangedHandler? FileChanged;
 
 
 
@@ -416,7 +464,7 @@ public partial class MultiDualFileViewModel : ObservableObject
             Label = Label,
             Files = Files.Select(x => new DualFileMeta { Normal = x.Normal.Meta, Another = x.Another.Meta }).ToList()
         };
-        OnFileChanged?.Invoke(files);
+        FileChanged?.Invoke(files);
     }
 }
 

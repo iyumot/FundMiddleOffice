@@ -55,7 +55,7 @@ public static class FundHelper
 
         using var db = DbHelper.Base();
         db.GetCollection<Fund>().Insert(fund);
-        InitiateFlow flow = new() { FundId = fund.Id, ElementFiles = new VersionedFileInfo { Name = "基金要素" }, ContractFiles = new VersionedFileInfo { Name = "基金合同" }, CustomFiles = new() };
+        InitiateFlow flow = new() { FundId = fund.Id, ElementFiles = new MultiFile { Label = "基金要素" }, ContractFiles = new MultiFile { Label = "基金合同" }, CustomFiles = new() };
         db.GetCollection<FundFlow>().Insert(flow) ;
         db.GetCollection<FundElements>().Insert(FundElements.Create(fund.Id, flow.Id));
 

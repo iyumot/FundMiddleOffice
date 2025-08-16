@@ -54,7 +54,8 @@ public record FileMeta(string Id, string Name, DateTime Time, string Hash)
 
         //FileMeta.CreateHardLink(@$"hardlink\{id}", desire);
 
-        return new FileMeta(id, desireName, fi.LastWriteTime, hash);
+        // 必须有后缀
+        return new FileMeta(id, desireName?.Contains('.') ?? false ? desireName : fi.Name, fi.LastWriteTime, hash);
     }
 
     public static FileMeta Create(Stream stream, string desireName, DateTime time = default)
@@ -140,6 +141,12 @@ public record FileMeta(string Id, string Name, DateTime Time, string Hash)
 
         return CreateSymbolicLink(linkPath, targetPath, SymbolicLinkFlags.File);
     }
+
+    public FileStream? OpenRead()
+    {
+        try { return new FileStream(@$"files\hardlink\{Id}", FileMode.Open, FileAccess.Read, FileShare.Read); }
+        catch { return null; }
+    }
 }
 
 
@@ -153,9 +160,17 @@ public class DualFileMeta
 
 public class SimpleFile
 {
+    public SimpleFile()
+    {
+    }
+
+    public SimpleFile(FileMeta? meta) => File = meta;
+
     public string? Label { get; set; }
 
     public FileMeta? File { get; set; }
+
+
 }
 
 public class MultiFile
@@ -180,4 +195,9 @@ public class MultiDualFile
 
     public List<DualFileMeta>? Files { get; init; } = [];
 
+}
+
+public class MultiCustomFile
+{
+    public List<SimpleFile> Files { get; init; } = [];
 }

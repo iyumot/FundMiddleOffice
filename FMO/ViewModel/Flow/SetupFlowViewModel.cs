@@ -4,6 +4,7 @@ using FMO.Models;
 using FMO.Shared;
 using FMO.TPL;
 using FMO.Utilities;
+using LiteDB;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
@@ -20,7 +21,7 @@ namespace FMO
     }
 
 
-    public partial class SetupFlowViewModel : FlowViewModel, IChangeableEntityViewModel, IFileSetter
+    public partial class SetupFlowViewModel : FlowViewModel, IChangeableEntityViewModel//, IFileSetter
     {
 
         /// <summary>
@@ -48,12 +49,12 @@ namespace FMO
         /// <summary>
         /// 实缴出资
         /// </summary>
-        public FileViewModel PaidInCapitalProof { get; }
+        public SimpleFileViewModel PaidInCapitalProof { get; }
 
         /// <summary>
         /// 成立公告
         /// </summary>  
-        public FileViewModel EstablishmentAnnouncement { get; }
+        public DualFileViewModel EstablishmentAnnouncement { get; }
 
 
 
@@ -111,28 +112,12 @@ namespace FMO
                     InitialAsset.NewValue = ta.Sum(x => x.ConfirmedNetAmount);
             }
 
-            PaidInCapitalProof = new()
-            {
-                Label = "实缴出资证明",
-                SaveFolder = FundHelper.GetFolder(FundId, "Establish"),
-                SetProperty = (x, y) => { if (x is SetupFlow f) f.PaidInCapitalProof = y; },
-                GetProperty = x => x switch { SetupFlow f => f.PaidInCapitalProof, _ => null },
-                Filter = "文档|*.docx;*.doc;*.pdf"
-            };
-            PaidInCapitalProof.Init(flow);
+            PaidInCapitalProof = new(flow.PaidInCapitalProof) { Filter = "文档|*.docx;*.doc;*.pdf" };
+            PaidInCapitalProof.FileChanged += f => SaveFileChanged(new { PaidInCapitalProof = f });
 
 
-            EstablishmentAnnouncement = new()
-            {
-                Label = "成立公告",
-                SaveFolder = FundHelper.GetFolder(FundId, "Announcement"),
-                SetProperty = (x, y) => { if (x is SetupFlow f) f.EstablishmentAnnouncement = y; },
-                GetProperty = x => x switch { SetupFlow f => f.EstablishmentAnnouncement, _ => null }, 
-                Filter = "文档|*.docx;*.doc;*.pdf"
-            };
-            EstablishmentAnnouncement.Init(flow);
-
-
+            EstablishmentAnnouncement = new(flow.EstablishmentAnnouncement) { Filter = "文档|*.docx;*.doc;*.pdf" };
+            EstablishmentAnnouncement.FileChanged += f => SaveFileChanged(new { EstablishmentAnnouncement = f });
 
 
             Initialized = true;
@@ -203,18 +188,16 @@ namespace FMO
 
 
         [RelayCommand]
-        public void GenerateFile(FileViewModel v)
+        public void GenerateFile(DualFileMetaViewModel v)
         {
             if (v == EstablishmentAnnouncement)
             {
+                string path = Path.GetTempFileName();
                 try
                 {
                     using var db = DbHelper.Base();
                     var manager = db.GetCollection<Manager>().FindOne(x => x.IsMaster);
                     var fund = db.GetCollection<Fund>().FindById(FundId);
-                    string path = @$"{v.SaveFolder}\{fund.Name}_产品成立公告.docx";
-                    var fi = new FileInfo(path);
-                    if (!fi.Directory!.Exists) fi.Directory.Create();
 
                     var data = new Dictionary<string, object?>
                         {
@@ -225,15 +208,13 @@ namespace FMO
                             {"Capital", Capital },
                             { "Share", InitialAsset.OldValue }
                         };
+
                     if (Tpl.GenerateByPredefined(path, "产品成立公告.docx", data))
-                    {
-                        if (v.File?.Exists ?? false)
-                            v.File.Delete();
-                        SetFile(v, path);
-                    }
-                    else HandyControl.Controls.Growl.Error($"生成{v.Label}失败，请查看Log，检查模板是否存在");
+                        v.Normal.Meta = FileMeta.Create(path, @$"{fund.Name}_产品成立公告.docx");
+                    else HandyControl.Controls.Growl.Error($"生成【产品成立公告】失败，请查看Log，检查模板是否存在");
                 }
                 catch { }
+                File.Delete(path);
             }
 
         }
@@ -241,7 +222,7 @@ namespace FMO
 
 
         //[RelayCommand]
-        //public void ChooseFile(FileViewModel<SetupFlow> file)
+        //public void ChooseFile(SimpleFile<SetupFlow> file)
         //{
         //    var fd = new OpenFileDialog();
         //    fd.Filter = file.Filter;
@@ -252,9 +233,9 @@ namespace FMO
         //}
 
 
-        //public void SetFile(IFileViewModel? file, string path)
+        //public void SetFile(ISimpleFile? file, string path)
         //{
-        //    if (file is FileViewModel<SetupFlow> ff)
+        //    if (file is SimpleFile<SetupFlow> ff)
         //    {
         //        ff.File = new FileInfo(path);
 
@@ -272,7 +253,7 @@ namespace FMO
 
 
         //[RelayCommand]
-        //public void Clear(FileViewModel<SetupFlow> file)
+        //public void Clear(SimpleFile<SetupFlow> file)
         //{
         //    if (file is null) return;
 

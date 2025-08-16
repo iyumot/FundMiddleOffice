@@ -139,12 +139,12 @@
                     ToolTip="更新文件日期"
                     Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
 
-                <Button
+                <!--<Button
                     hc:IconElement.Geometry="{StaticResource f.file-medical}"
                     BorderThickness="0"
                     Command="{Binding AddCustomFileCommand}"
                     DockPanel.Dock="Right"
-                    Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                    Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />-->
 
 
                 <UserControl Template="{StaticResource FlowHeader}" />
@@ -159,7 +159,7 @@
             <DockPanel LastChildFill="False">
 
 
-                <shared:FileControl Binding="{Binding FileInfo}" />
+                <shared:FileView Content="{Binding FileInfo}" />
 
                 <Grid Visibility="{Binding RelativeSource={RelativeSource AncestorType=ListBox}, Path=DataContext.IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}">
                     <Button
@@ -228,6 +228,18 @@
         </Style>
 
 
+        <Style BasedOn="{StaticResource SimpleFileStyle}" TargetType="shared:FileView">
+            <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}" />
+        </Style>
+
+        <Style
+            x:Key="DualFileStyle2"
+            BasedOn="{StaticResource DualFileStyle}"
+            TargetType="shared:FileView">
+            <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}" />
+        </Style>
+
+
         <DataTemplate x:Key="DT.DateTime">
             <DatePicker SelectedDate="{Binding NewValue}" />
         </DataTemplate>
@@ -235,14 +247,17 @@
         <DataTemplate x:Key="DT.InitiateFlow">
             <UserControl Template="{StaticResource FlowShell}">
                 <StackPanel VerticalAlignment="Center">
-                    <local:MultiFileDisplay Files="{Binding ElementFiles}" Header="基金要素" />
-                    <local:MultiFileDisplay Files="{Binding ContractFiles}" Header="基金合同" />
+                    <shared:FileView
+                        Content="{Binding ElementFiles}"
+                        Header="基金要素"
+                        IsReadOnly="{Binding IsReadOnly}"
+                        Style="{StaticResource MultiFileStyle}" />
+                    <shared:FileView
+                        Content="{Binding ContractFiles}"
+                        Header="基金合同"
+                        IsReadOnly="{Binding IsReadOnly}"
+                        Style="{StaticResource MultiFileStyle}" />
 
-                    <ListBox
-                        BorderThickness="0"
-                        ItemTemplate="{StaticResource DT.CustomFile}"
-                        ItemsSource="{Binding CustomFiles}"
-                        Style="{StaticResource ListBoxCustom}" />
                 </StackPanel>
             </UserControl>
         </DataTemplate>
@@ -253,36 +268,32 @@
                     <StackPanel MinWidth="500" VerticalAlignment="Center">
                         <!--<ContentControl Content="{Binding Contract}" Style="{StaticResource SingleFileStyle}" />-->
 
-                        <shared:FileControl Binding="{Binding Contract}" />
+                        <shared:FileView Content="{Binding Contract}" Header="基金合同" />
 
-                        <shared:FileControl Binding="{Binding RiskDisclosureDocument}" />
+                        <shared:FileView Content="{Binding RiskDisclosureDocument}" Header="风险揭示书" />
 
                         <WrapPanel>
-                            <shared:FileControl Binding="{Binding CollectionAccount}" />
+                            <shared:FileView Content="{Binding CollectionAccount}" Header="募集账户函" />
                             <Button
                                 hc:IconElement.Geometry="{StaticResource f.chart-pie}"
                                 Command="{Binding ParseAccountInfoCommand}"
                                 CommandParameter="{Binding CollectionAccount}"
                                 Foreground="RoyalBlue"
                                 Style="{StaticResource ButtonIcon.Small}"
-                                Visibility="{Binding CollectionAccount.File, Converter={StaticResource FileExistsToVisibilityConverter}}" />
+                                Visibility="{Binding CollectionAccount.Meta, Converter={StaticResource FileExistsToVisibilityConverter}}" />
                         </WrapPanel>
                         <WrapPanel>
-                            <shared:FileControl Binding="{Binding CustodyAccount}" />
+                            <shared:FileView Content="{Binding CustodyAccount}" Header="托管账户函" />
                             <Button
                                 hc:IconElement.Geometry="{StaticResource f.chart-pie}"
                                 Command="{Binding ParseAccountInfoCommand}"
                                 CommandParameter="{Binding CustodyAccount}"
                                 Foreground="RoyalBlue"
                                 Style="{StaticResource ButtonIcon.Small}"
-                                Visibility="{Binding CustodyAccount.File, Converter={StaticResource FileExistsToVisibilityConverter}}" />
+                                Visibility="{Binding CustodyAccount.Meta, Converter={StaticResource FileExistsToVisibilityConverter}}" />
                         </WrapPanel>
 
-                        <ListBox
-                            BorderThickness="0"
-                            ItemTemplate="{StaticResource DT.CustomFile}"
-                            ItemsSource="{Binding CustomFiles}"
-                            Style="{StaticResource ListBoxCustom}" />
+
                     </StackPanel>
 
                 </DockPanel>
@@ -356,16 +367,14 @@
 
                     <DockPanel>
                         <Button CommandParameter="{Binding EstablishmentAnnouncement}" Style="{StaticResource GeneratorButton}" />
-                        <shared:FileControl Binding="{Binding EstablishmentAnnouncement}" />
+                        <shared:FileView
+                            Content="{Binding EstablishmentAnnouncement}"
+                            Header="成立公告"
+                            Style="{StaticResource DualFileStyle2}" />
                     </DockPanel>
 
-                    <shared:FileControl Binding="{Binding PaidInCapitalProof}" />
+                    <shared:FileView Content="{Binding PaidInCapitalProof}" Header="资金到账通知书" />
 
-                    <ListBox
-                        BorderThickness="0"
-                        ItemTemplate="{StaticResource DT.CustomFile}"
-                        ItemsSource="{Binding CustomFiles}"
-                        Style="{StaticResource ListBoxCustom}" />
                 </StackPanel>
             </UserControl>
 
@@ -379,42 +388,42 @@
                     <WrapPanel>
                         <Button CommandParameter="{Binding CommitmentLetter}" Style="{StaticResource GeneratorButton}" />
 
-                        <shared:FileControl Binding="{Binding CommitmentLetter}" />
-                        <shared:FileControl Binding="{Binding SealedCommitmentLetter}" Style="{StaticResource SealedFile}" />
-
+                        <shared:FileView
+                            Content="{Binding CommitmentLetter}"
+                            Header="备案承诺函"
+                            Style="{StaticResource DualFileStyle2}" />
                     </WrapPanel>
 
-                    <WrapPanel>
-                        <shared:FileControl Binding="{Binding Prospectus}" />
-                        <shared:FileControl Binding="{Binding SealedProspectus}" Style="{StaticResource SealedFile}" />
-                    </WrapPanel>
+                    <shared:FileView
+                        Content="{Binding Prospectus}"
+                        Header="招募说明书"
+                        Style="{StaticResource DualFileStyle2}" />
 
 
-                    <shared:FileControl Binding="{Binding SealedContract}" Style="{StaticResource SealedFile2}" />
-                    <shared:FileControl Binding="{Binding SealedAccountOversightProtocol}" Style="{StaticResource SealedFile2}" />
-
-                    <shared:FileControl Binding="{Binding SealedOutsourcingServicesAgreement}" Style="{StaticResource SealedFile2}" />
-
+                    <shared:FileView Content="{Binding SealedContract}" Header="签署的合同" />
+                    <shared:FileView Content="{Binding SealedAccountOversightProtocol}" Header="募集账户监督协议" />
+                    <shared:FileView Content="{Binding SealedOutsourcingServicesAgreement}" Header="外包服务协议" />
 
 
-                    <WrapPanel>
-                        <shared:FileControl Binding="{Binding StructureGraph}" />
-                        <shared:FileControl Binding="{Binding SealedStructureGraph}" Style="{StaticResource SealedFile}" />
-                    </WrapPanel>
 
-                    <WrapPanel>
-                        <shared:FileControl Binding="{Binding NestedCommitmentLetter}" />
-                        <shared:FileControl Binding="{Binding SealedNestedCommitmentLetter}" Style="{StaticResource SealedFile}" />
-                    </WrapPanel>
+                    <shared:FileView
+                        Content="{Binding StructureGraph}"
+                        Header="产品结构图"
+                        Style="{StaticResource DualFileStyle2}" />
 
-                    <ListBox
-                        BorderThickness="0"
-                        ItemTemplate="{StaticResource DT.CustomFile}"
-                        ItemsSource="{Binding CustomFiles}"
-                        Style="{StaticResource ListBoxCustom}" />
+
+                    <shared:FileView
+                        Content="{Binding NestedCommitmentLetter}"
+                        Header="嵌套承诺函"
+                        Style="{StaticResource DualFileStyle2}" />
+
+
 
                     <Separator />
-                    <shared:FileControl Binding="{Binding RegistrationLetter}" />
+                    <shared:FileView
+                        Content="{Binding RegistrationLetter}"
+                        Header="备案函"
+                        Style="{StaticResource DualFileStyle2}" />
                 </StackPanel>
             </UserControl>
 
@@ -461,59 +470,66 @@
                     </DockPanel>
 
                     <StackPanel MinWidth="500" VerticalAlignment="Center">
-                        <local:MultiFileDisplay
-                            Files="{Binding SupplementaryFile}"
+                        <shared:FileView
+                            Content="{Binding SupplementaryFile}"
                             Header="补充协议"
+                            IsReadOnly="{Binding IsReadOnly}"
+                            Style="{StaticResource MultiFileStyle}"
                             Visibility="{Binding ModifyBySupplementary, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
-                        <shared:FileControl Binding="{Binding SignedSupplementary}" Visibility="{Binding ModifyBySupplementary, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                        <shared:FileView
+                            Content="{Binding SignedSupplementary}"
+                            Header="签署的补充协议"
+                            IsReadOnly="{Binding IsReadOnly}"
+                            Style="{StaticResource MultiFileStyle}"
+                            Visibility="{Binding ModifyBySupplementary, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
-                        <shared:FileControl Binding="{Binding Contract}" />
-                        <shared:FileControl Binding="{Binding RiskDisclosureDocument}" />
+                        <shared:FileView Content="{Binding Contract}" Header="基金合同" />
+                        <shared:FileView Content="{Binding RiskDisclosureDocument}" Header="风险揭示书" />
 
                         <WrapPanel Visibility="{Binding ModifyCollectionAccount, Converter={StaticResource Boolean2VisibilityConverter}}">
-                            <shared:FileControl Binding="{Binding CollectionAccount}" />
+                            <shared:FileView Content="{Binding CollectionAccount}" Header="募集账户函" />
                             <Button
                                 hc:IconElement.Geometry="{StaticResource f.chart-pie}"
                                 Command="{Binding ParseAccountInfoCommand}"
                                 CommandParameter="{Binding CollectionAccount}"
                                 Foreground="RoyalBlue"
                                 Style="{StaticResource ButtonIcon.Small}"
-                                Visibility="{Binding CollectionAccount.File, Converter={StaticResource FileExistsToVisibilityConverter}}" />
+                                Visibility="{Binding CollectionAccount.Meta, Converter={StaticResource FileExistsToVisibilityConverter}}" />
                         </WrapPanel>
                         <WrapPanel Visibility="{Binding ModifyCustodyAccount, Converter={StaticResource Boolean2VisibilityConverter}}">
-                            <shared:FileControl Binding="{Binding CustodyAccount}" />
+                            <shared:FileView Content="{Binding CustodyAccount}" Header="托管账户函" />
                             <Button
                                 hc:IconElement.Geometry="{StaticResource f.chart-pie}"
                                 Command="{Binding ParseAccountInfoCommand}"
                                 CommandParameter="{Binding CustodyAccount}"
                                 Foreground="RoyalBlue"
                                 Style="{StaticResource ButtonIcon.Small}"
-                                Visibility="{Binding CustodyAccount.File, Converter={StaticResource FileExistsToVisibilityConverter}}" />
+                                Visibility="{Binding CustodyAccount.Meta, Converter={StaticResource FileExistsToVisibilityConverter}}" />
                         </WrapPanel>
 
 
-                        <ListBox
-                            BorderThickness="0"
-                            ItemTemplate="{StaticResource DT.CustomFile}"
-                            ItemsSource="{Binding CustomFiles}"
-                            Style="{StaticResource ListBoxCustom}" />
 
                         <Separator />
 
-                        <WrapPanel>
-                            <shared:FileControl Binding="{Binding Announcement}" />
-                            <shared:FileControl Binding="{Binding SealedAnnouncement}" Style="{StaticResource SealedFile}" />
-                        </WrapPanel>
+                        <shared:FileView
+                            Content="{Binding Announcement}"
+                            Header="变更公告"
+                            Style="{StaticResource DualFileStyle2}" />
 
                         <WrapPanel>
                             <Button CommandParameter="{Binding CommitmentLetter}" Style="{StaticResource GeneratorButton}" />
-                            <shared:FileControl Binding="{Binding CommitmentLetter}" />
-                            <shared:FileControl Binding="{Binding SealedCommitmentLetter}" Style="{StaticResource SealedFile}" />
+                            <shared:FileView
+                                Content="{Binding CommitmentLetter}"
+                                Header="备案函"
+                                Style="{StaticResource DualFileStyle2}" />
                         </WrapPanel>
 
 
-                        <shared:FileControl Binding="{Binding RegistrationLetter}" Visibility="{Binding ModifyName, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                        <shared:FileView
+                            Content="{Binding RegistrationLetter}"
+                            Style="{StaticResource DualFileStyle2}"
+                            Visibility="{Binding ModifyName, Converter={StaticResource Boolean2VisibilityConverter}}" />
                     </StackPanel>
 
 
@@ -536,17 +552,8 @@
 
                     <StackPanel MinWidth="500" VerticalAlignment="Center">
 
-                        <WrapPanel>
-                            <shared:FileControl Binding="{Binding Announcement}" />
-                            <shared:FileControl Binding="{Binding SealedAnnouncement}" Style="{StaticResource SealedFile}" />
-                        </WrapPanel>
+                        <shared:FileView Content="{Binding Announcement}" Style="{StaticResource DualFileStyle2}" />
 
-
-                        <ListBox
-                            BorderThickness="0"
-                            ItemTemplate="{StaticResource DT.CustomFile}"
-                            ItemsSource="{Binding CustomFiles}"
-                            Style="{StaticResource ListBoxCustom}" />
 
                     </StackPanel>
 
@@ -629,16 +636,9 @@
 
                         <WrapPanel>
                             <Button CommandParameter="{Binding Announcement}" Style="{StaticResource GeneratorButton}" />
-                            <shared:FileControl Binding="{Binding Announcement}" />
-                            <shared:FileControl Binding="{Binding SealedAnnouncement}" Style="{StaticResource SealedFile}" />
+                            <shared:FileView Content="{Binding Announcement}" Style="{StaticResource DualFileStyle2}" />
                         </WrapPanel>
 
-
-                        <ListBox
-                            BorderThickness="0"
-                            ItemTemplate="{StaticResource DT.CustomFile}"
-                            ItemsSource="{Binding CustomFiles}"
-                            Style="{StaticResource ListBoxCustom}" />
 
                     </StackPanel>
 
@@ -658,24 +658,21 @@
 
                     <StackPanel VerticalAlignment="Center">
 
-                        <WrapPanel>
-                            <shared:FileControl Binding="{Binding LiquidationReport}" />
-                            <shared:FileControl Binding="{Binding SealedLiquidationReport}" Style="{StaticResource SealedFile}" />
-                        </WrapPanel>
+                        <shared:FileView
+                            Content="{Binding LiquidationReport}"
+                            Header="清算报告"
+                            Style="{StaticResource DualFileStyle2}" />
 
                         <WrapPanel>
                             <Button CommandParameter="{Binding CommitmentLetter}" Style="{StaticResource GeneratorButton}" />
-                            <shared:FileControl Binding="{Binding CommitmentLetter}" />
-                            <shared:FileControl Binding="{Binding SealedCommitmentLetter}" Style="{StaticResource SealedFile}" />
+                            <shared:FileView
+                                Content="{Binding CommitmentLetter}"
+                                Header="承诺函"
+                                Style="{StaticResource DualFileStyle2}" />
                         </WrapPanel>
-                        <shared:FileControl Binding="{Binding InvestorSheet}" />
-                        <shared:FileControl Binding="{Binding LiquidationSheet}" />
+                        <shared:FileView Content="{Binding InvestorSheet}" Header="投资人表" />
+                        <shared:FileView Content="{Binding LiquidationSheet}" Header="清算运行表" />
 
-                        <ListBox
-                            BorderThickness="0"
-                            ItemTemplate="{StaticResource DT.CustomFile}"
-                            ItemsSource="{Binding CustomFiles}"
-                            Style="{StaticResource ListBoxCustom}" />
                     </StackPanel>
                 </DockPanel>
             </UserControl>

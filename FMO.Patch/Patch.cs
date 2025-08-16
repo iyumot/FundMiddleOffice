@@ -1,6 +1,7 @@
 ﻿using FMO.Models;
 using FMO.Trustee;
 using LiteDB;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace FMO.Utilities;
@@ -31,8 +32,125 @@ public static partial class DatabaseAssist
         [73] = MiggigrateFileInInvestor,
         [74] = MiggrateQualification,
         [75] = MiggrateRisk,
-        //[79] = MiggrateOrderFile,
+        [78] = MiggrateOrderFile,
+        [84] = MiggrateFlow,
+       // [85] = MiggrateFlow2
     };
+
+    //private static void MiggrateFlow2(BaseDatabase db)
+    //{
+    //    var list = db.GetCollection(nameof(FundFlow)).Find("_type=\"FMO.Models.RegistrationFlow, FMO.Models\"").ToList();
+    //    foreach (var item in list)
+    //    {
+    //        item[]
+    //    }
+    //}
+
+    private static void MiggrateFlow(BaseDatabase db)
+    {
+        void move(BsonDocument item, string key, string name)
+        {
+            item[key] = BsonMapper.Global.ToDocument(new SimpleFile { Label = name, File = FromStorate(item[key].AsDocument) });
+        }
+        void single2dual(BsonDocument item, string key, string name)
+        {
+            item[key] = BsonMapper.Global.ToDocument(new DualFile { Label = name, File = FromStorate(item[key].AsDocument), Another = item.ContainsKey("Sealed" + key) ? FromStorate(item["Sealed" + key].AsDocument) : null });
+        }
+
+        void movemul(BsonDocument item, string key, string name)
+        {
+            if (item is null || !item.ContainsKey(key)) return;
+            item[key] = BsonMapper.Global.ToDocument(new MultiFile { Label = name, Files = [.. item[key]["Files"].AsArray.Select(x => FromStorate(x.AsDocument))] });
+        }
+
+        if (!db.CollectionExists(nameof(FundFlow) + "_bak"))
+            db.GetCollection(nameof(FundFlow) + "_bak").InsertBulk(db.GetCollection(nameof(FundFlow)).FindAll().ToList());
+
+        var list = db.GetCollection(nameof(FundFlow) + "_bak").FindAll().ToList();
+
+        foreach (var item in list)
+        {
+            var type = Regex.Match(item["_type"].AsString, @"\.(\w+),").Groups[1].Value;
+
+            switch (type)
+            {
+                case nameof(InitiateFlow):
+                    item[nameof(InitiateFlow.ElementFiles)] = BsonMapper.Global.ToDocument(new MultiFile { Label = "基金要素", Files = [.. item[nameof(InitiateFlow.ElementFiles)]["Files"].AsArray.Select(x => FromStorate(x.AsDocument))] });
+                    item[nameof(InitiateFlow.ContractFiles)] = BsonMapper.Global.ToDocument(new MultiFile { Label = "基金合同", Files = [.. item[nameof(InitiateFlow.ContractFiles)]["Files"].AsArray.Select(x => FromStorate(x.AsDocument))] });
+                    break;
+
+
+                case nameof(ContractFinalizeFlow):
+                    move(item, nameof(ContractFinalizeFlow.ContractFile), "基金合同");
+                    move(item, nameof(ContractFinalizeFlow.RiskDisclosureDocument), "风险揭示书");
+                    move(item, nameof(ContractFinalizeFlow.CollectionAccountFile), "募集账户函");
+                    move(item, nameof(ContractFinalizeFlow.CustodyAccountFile), "托管账户函");
+                    break;
+
+                case nameof(ContractModifyFlow):
+                    move(item, nameof(ContractFinalizeFlow.ContractFile), "基金合同");
+                    move(item, nameof(ContractFinalizeFlow.RiskDisclosureDocument), "风险揭示书");
+                    move(item, nameof(ContractFinalizeFlow.CollectionAccountFile), "募集账户函");
+                    move(item, nameof(ContractFinalizeFlow.CustodyAccountFile), "托管账户函");
+
+                    movemul(item, nameof(ContractModifyFlow.SupplementaryFile), "补充协议");
+                    //item[nameof(ContractModifyFlow.SupplementaryFile)] = BsonMapper.Global.ToDocument(new MultiFile { Label = "补充协议", Files = [.. item[nameof(ContractModifyFlow.SupplementaryFile)]["Files"].AsArray.Select(x => FromStorate(x.AsDocument))] });
+                    single2dual(item, nameof(ContractModifyFlow.RegistrationLetter), "备案函");
+                    single2dual(item, nameof(ContractModifyFlow.Announcement), "变更公告");
+                    single2dual(item, nameof(ContractModifyFlow.CommitmentLetter), "变更承诺函");
+                    item[nameof(ContractModifyFlow.SignedSupplementary)] = BsonMapper.Global.ToDocument(new MultiFile { Label = "签署的协议", Files = [FromStorate(item[nameof(ContractModifyFlow.SignedSupplementary)].AsDocument)] });
+
+                    break;
+
+                case nameof(ModifyByAnnounceFlow):
+                    single2dual(item, nameof(ModifyByAnnounceFlow.Announcement), "变更公告");
+                    break;
+
+                case nameof(SetupFlow):
+
+                    move(item, nameof(SetupFlow.PaidInCapitalProof), "实缴出资证明");
+                    single2dual(item, nameof(SetupFlow.EstablishmentAnnouncement), "成立公告");
+                    break;
+
+                case nameof(RegistrationFlow):
+                    single2dual(item, nameof(RegistrationFlow.CommitmentLetter), "备案承诺函");
+                    single2dual(item, nameof(RegistrationFlow.Prospectus), "招募说明书");
+
+                    move(item, nameof(RegistrationFlow.SealedContract), "用印的基金合同");
+                    move(item, nameof(RegistrationFlow.SealedAccountOversightProtocol), "募集账户监督协议");
+                    move(item, nameof(RegistrationFlow.SealedInvestorList), "投资者明细");
+
+
+                    single2dual(item, nameof(RegistrationFlow.Prospectus), "招募说明书");
+                    single2dual(item, nameof(RegistrationFlow.StructureGraph), "产品结构图");
+
+                    single2dual(item, nameof(RegistrationFlow.NestedCommitmentLetter), "嵌套承诺函");
+
+                    single2dual(item, nameof(RegistrationFlow.RegistrationLetter), "备案函");
+                    break;
+
+
+                case nameof(DividendFlow):
+
+                    single2dual(item, nameof(DividendFlow.Announcement), "分红公告");
+
+
+                    break;
+
+                default:
+                    break;
+            }
+
+            item.Remove("CustomFiles");
+
+        }
+
+
+        db.GetCollection(nameof(FundFlow)).DeleteAll();
+        db.GetCollection(nameof(FundFlow)).InsertBulk(list);
+
+        var nnn = db.GetCollection<FundFlow>().Find(x => x.FundId == 6).ToList();
+    }
 
     private static void MiggrateOrderFile(BaseDatabase db)
     {
@@ -156,12 +274,18 @@ public static partial class DatabaseAssist
     {
         if (fileStorageInfo is null) return null;
 
-        if (fileStorageInfo.Keys.Intersect(["Path", "Time", "Hash"]).Count() != 3)
+        if (fileStorageInfo.Keys.Intersect(["Path", "Time"]).Count() != 2)
             return null;
 
         var path = fileStorageInfo["Path"].AsString;
         var m = Regex.Match(path!, "files.*");
         if (m.Success) path = m.Value;
+
+        if (!File.Exists(path))
+        {
+            Debug.WriteLine(path);
+            return null;
+        }
 
         return FileMeta.Create(path, fileStorageInfo["Name"].AsString)
             with

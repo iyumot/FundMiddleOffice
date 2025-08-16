@@ -245,7 +245,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
 
 
         IDCards = new(cards);
-        IDCards.OnFileChanged += (x) =>
+        IDCards.FileChanged += (x) =>
         {
             using var db = DbHelper.Base();
             db.GetCollection<InvestorCertifications>().Upsert(new InvestorCertifications

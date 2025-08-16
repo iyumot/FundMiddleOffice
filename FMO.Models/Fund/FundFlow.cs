@@ -30,7 +30,7 @@ public abstract class FundFlow
     /// <summary>
     /// 自定义文件
     /// </summary>
-    public List<FileStorageInfo>? CustomFiles { get; set; }
+    public MultiCustomFile? CustomFiles { get; set; }
 
     /// <summary>
     /// 流程结束
@@ -40,13 +40,7 @@ public abstract class FundFlow
 
 }
 
-public class FlowCollection
-{
-    public int FundId { get; set; }
 
-
-    public List<FundFlow> Flows { get; set; } = new();
-}
 
 /// <summary>
 /// 发起工作流
@@ -56,12 +50,12 @@ public class InitiateFlow : FundFlow
     /// <summary>
     /// 要素文件
     /// </summary>
-    public required VersionedFileInfo ElementFiles { get; set; }
+    public required MultiFile ElementFiles { get; set; }
 
     /// <summary>
     /// 定稿前历次合同文件
     /// </summary>
-    public required VersionedFileInfo ContractFiles { get; set; }
+    public required MultiFile ContractFiles { get; set; }
 
     public override string Name { get => "项目发起"; set { } }
 }
@@ -74,23 +68,23 @@ public abstract class ContractFlow : FundFlow
     /// <summary>
     /// 定稿合同文件
     /// </summary>
-    public FileStorageInfo? ContractFile { get; set; }
+    public SimpleFile? ContractFile { get; set; }
 
 
     /// <summary>
     /// 风险揭示书
     /// </summary>
-    public FileStorageInfo? RiskDisclosureDocument { get; set; }
+    public SimpleFile? RiskDisclosureDocument { get; set; }
 
     /// <summary>
     /// 募集账户函
     /// </summary>
-    public FileStorageInfo? CollectionAccountFile { get; set; }
+    public SimpleFile? CollectionAccountFile { get; set; }
 
     /// <summary>
     /// 托管账户函
     /// </summary>
-    public FileStorageInfo? CustodyAccountFile { get; set; }
+    public SimpleFile? CustodyAccountFile { get; set; }
 
 }
 
@@ -170,12 +164,12 @@ public class SetupFlow : FundFlow
     /// <summary>
     /// 实缴出资证明
     /// </summary>
-    public FileStorageInfo? PaidInCapitalProof { get; set; }
+    public SimpleFile? PaidInCapitalProof { get; set; }
 
     /// <summary>
     /// 成立公告
     /// </summary>
-    public FileStorageInfo? EstablishmentAnnouncement { get; set; }
+    public DualFile? EstablishmentAnnouncement { get; set; }
 
 
 
@@ -191,61 +185,61 @@ public class RegistrationFlow : FundFlow
     /// <summary>
     /// 备案承诺函
     /// </summary>
-    public FileStorageInfo? CommitmentLetter { get; set; }
+    public DualFile? CommitmentLetter { get; set; }
 
     /// <summary>
     /// 用印版
     /// </summary>
-    public FileStorageInfo? SealedCommitmentLetter { get; set; }
+    //public SimpleFile? SealedCommitmentLetter { get; set; }
 
 
     /// <summary>
     /// 招募说明书
     /// </summary>
-    public FileStorageInfo? Prospectus { get; set; }
+    public DualFile? Prospectus { get; set; }
 
-    public FileStorageInfo? SealedProspectus { get; set; }
+    //public SimpleFile? SealedProspectus { get; set; }
 
     /// <summary>
     /// 用印的基金合同
     /// </summary>
-    public FileStorageInfo? SealedContract { get; set; }
+    public SimpleFile? SealedContract { get; set; }
 
 
     /// <summary>
     /// 募集账户监督协议
     /// </summary>
-    public FileStorageInfo? SealedAccountOversightProtocol { get; set; }
+    public SimpleFile? SealedAccountOversightProtocol { get; set; }
 
     /// <summary>
     /// 外包服务协议
     /// </summary>
-    public FileStorageInfo? SealedOutsourcingServicesAgreement { get; set; }
+    public SimpleFile? SealedOutsourcingServicesAgreement { get; set; }
 
     /// <summary>
     /// 投资者明细
     /// </summary>
-    public FileStorageInfo? SealedInvestorList { get; set; }
+    public SimpleFile? SealedInvestorList { get; set; }
 
     /// <summary>
     /// 产品结构图
     /// </summary>
-    public FileStorageInfo? StructureGraph { get; set; }
+    public DualFile? StructureGraph { get; set; }
 
 
-    public FileStorageInfo? SealedStructureGraph { get; set; }
+    //public SimpleFile? SealedStructureGraph { get; set; }
 
     /// <summary>
     /// 嵌套承诺函
     /// </summary>
-    public FileStorageInfo? NestedCommitmentLetter { get; set; }
+    public DualFile? NestedCommitmentLetter { get; set; }
 
-    public FileStorageInfo? SealedNestedCommitmentLetter { get; set; }
+    //public SimpleFile? SealedNestedCommitmentLetter { get; set; }
 
     /// <summary>
     /// 备案函
     /// </summary>
-    public FileStorageInfo? RegistrationLetter { get; set; }
+    public DualFile? RegistrationLetter { get; set; }
 
     public override string Name { get => "基金备案"; set { } }
 
@@ -285,28 +279,28 @@ public class ContractModifyFlow : ContractFlow
     /// <summary>
     /// 补充协议
     /// </summary>
-    public VersionedFileInfo? SupplementaryFile { get; set; }
+    public MultiFile? SupplementaryFile { get; set; }
 
     /// <summary>
     /// 备案函
     /// </summary>
-    public FileStorageInfo? RegistrationLetter { get; set; }
+    public DualFile? RegistrationLetter { get; set; }
 
 
     /// <summary>
     /// 成立公告
     /// </summary>
-    public FileStorageInfo? Announcement { get; set; }
+    public DualFile? Announcement { get; set; }
 
-    public FileStorageInfo? SealedAnnouncement { get; set; }
-
-
-    public FileStorageInfo? CommitmentLetter { get; set; }
+    //public SimpleFile? SealedAnnouncement { get; set; }
 
 
-    public FileStorageInfo? SealedCommitmentLetter { get; set; }
+    public DualFile? CommitmentLetter { get; set; }
 
-    public FileStorageInfo? SignedSupplementary { get; set; }
+
+    //public SimpleFile? SealedCommitmentLetter { get; set; }
+
+    public MultiFile? SignedSupplementary { get; set; }
 
     //份额、要素
 
@@ -320,9 +314,9 @@ public class ModifyByAnnounceFlow : FundFlow
     /// <summary>
     /// 公告
     /// </summary>
-    public FileStorageInfo? Announcement { get; set; }
+    public DualFile? Announcement { get; set; }
 
-    public FileStorageInfo? SealedAnnouncement { get; set; }
+    //public SimpleFile? SealedAnnouncement { get; set; }
 
 
     public override string Name { get => "合同变更"; set { } }
@@ -412,9 +406,9 @@ public class DividendFlow : FundFlow
     /// <summary>
     /// 公告
     /// </summary>
-    public FileStorageInfo? Announcement { get; set; }
+    public DualFile? Announcement { get; set; }
 
-    public FileStorageInfo? SealedAnnouncement { get; set; }
+    //public SimpleFile? SealedAnnouncement { get; set; }
 
     public override string Name { get => "基金分红"; set { } }
 }
@@ -428,23 +422,23 @@ public class LiquidationFlow : FundFlow
     /// <summary>
     /// 清算报告
     /// </summary>
-    public FileStorageInfo? LiquidationReport { get; set; }
+    public DualFile? LiquidationReport { get; set; }
 
-    public FileStorageInfo? SealedLiquidationReport { get; set; }
+    public SimpleFile? SealedLiquidationReport { get; set; }
 
-    public FileStorageInfo? CommitmentLetter { get; set; }
+    public DualFile? CommitmentLetter { get; set; }
 
-    public FileStorageInfo? SealedCommitmentLetter { get; set; }
+    public SimpleFile? SealedCommitmentLetter { get; set; }
 
     /// <summary>
     /// 投资者表
     /// </summary>
-    public FileStorageInfo? InvestorSheet { get; set; }
+    public SimpleFile? InvestorSheet { get; set; }
 
     /// <summary>
     /// 清算情况表
     /// </summary>
-    public FileStorageInfo? LiquidationSheet { get; set; }
+    public SimpleFile? LiquidationSheet { get; set; }
 
 
 

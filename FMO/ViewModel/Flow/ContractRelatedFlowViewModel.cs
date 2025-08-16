@@ -1,9 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Threading.Tasks;
-using System.Windows;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
@@ -11,6 +6,8 @@ using FMO.PDF;
 using FMO.Shared;
 using FMO.Utilities;
 using Serilog;
+using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace FMO;
 
@@ -39,27 +36,27 @@ public partial class ShareClassViewModel : ObservableObject
 
 
 
-public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IElementChangable, IFileSetter
+public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IElementChangable//, IFileSetter
 {
     /// <summary>
     /// 定稿合同
     /// </summary>
     //[ObservableProperty]
-    //    public partial FlowFileViewModel? Contract { get; set; }
+    //    public partial FlowSimpleFile? Contract { get; set; }
 
 
-    public FileViewModel Contract { get; }
+    public SimpleFileViewModel Contract { get; }
 
     /// <summary>
     /// 募集账户函
     /// </summary>
-    public FileViewModel CollectionAccount { get; set; }
+    public SimpleFileViewModel CollectionAccount { get; set; }
 
 
     /// <summary>
     /// 托管账户函
     /// </summary>
-    public FileViewModel CustodyAccount { get; set; }
+    public SimpleFileViewModel CustodyAccount { get; set; }
 
 
     [ObservableProperty]
@@ -70,7 +67,7 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
     public partial bool IsDividingShare { get; set; }
 
 
-    public FileViewModel RiskDisclosureDocument { get; set; }
+    public SimpleFileViewModel RiskDisclosureDocument { get; set; }
 
     /// <summary>
     /// 份额分类
@@ -92,73 +89,88 @@ public abstract partial class ContractRelatedFlowViewModel : FlowViewModel, IEle
     {
         //Contract = new(FundId, FlowId, "合同定稿", flow.ContractFile?.Path, "Contract", nameof(ContractFlow.ContractFile));
 
-        Contract = new()
-        {
-            Label = "合同定稿",
-            SaveFolder = FundHelper.GetFolder(FundId, "Contract"),
-            GetProperty = x => x switch { ContractFlow f => f.ContractFile, _ => null },
-            SetProperty = (x, y) => { if (x is ContractFlow f) f.ContractFile = y; },
-            Filter = "文本|*.docx;*.doc;*.pdf"
-        };
-        Contract.Init(flow);
+        Contract = new(flow.ContractFile) { Label = "合同定稿", Filter = "文本|*.docx;*.doc;*.pdf" };
+        Contract.FileChanged += f => SaveFileChanged(new { Contract = f });
 
-        RiskDisclosureDocument = new()
-        {
-            Label = "风险揭示书",
-            SaveFolder = FundHelper.GetFolder(FundId, "Contract"),
-            GetProperty = x => x switch { ContractFlow f => f.RiskDisclosureDocument, _ => null },
-            SetProperty = (x, y) => { if (x is ContractFlow f) f.RiskDisclosureDocument = y; },
-            Filter = "文本|*.docx;*.doc;*.pdf"
-        };
-        RiskDisclosureDocument.Init(flow);
+        RiskDisclosureDocument = new(flow.RiskDisclosureDocument) { Label = "风险揭示书", Filter = "文本|*.docx;*.doc;*.pdf" };
+        RiskDisclosureDocument.FileChanged += f => SaveFileChanged(new { RiskDisclosureDocument = f });
 
-        CollectionAccount = new()
-        {
-            Label = "募集账户函",
-            SaveFolder = FundHelper.GetFolder(FundId, "Account"),
-            GetProperty = x => x switch { ContractFlow f => f.CollectionAccountFile, _ => null },
-            SetProperty = async (x, y) => { if (x is not ContractFlow f) return; f.CollectionAccountFile = y; await UpdateElement(y?.Path is null ? null : new FileInfo(y.Path), x => x.CollectionAccount, FundAccountType.Collection); },
-            Filter = "文本|*.docx;*.doc;*.pdf"
-        };
-        CollectionAccount.Init(flow);
+        CollectionAccount = new(flow.CollectionAccountFile) { Label = "募集账户函", Filter = "文本|*.docx;*.doc;*.pdf" };
+        CollectionAccount.FileChanged += f => SaveFileChanged(new { CollectionAccount = f });
 
-        CustodyAccount = new()
-        {
-            Label = "托管账户函",
-            SaveFolder = FundHelper.GetFolder(FundId, "Account"),
-            GetProperty = x => x switch { ContractFlow f => f.CustodyAccountFile, _ => null },
-            SetProperty = async (x, y) => { if (x is not ContractFlow f) return; f.CustodyAccountFile = y; await UpdateElement(y?.Path is null ? null : new FileInfo(y.Path), x => x.CustodyAccount, FundAccountType.Custody); },
-            Filter = "文本|*.docx;*.doc;*.pdf"
-        };
-        CustodyAccount.Init(flow);
+        CustodyAccount = new(flow.CustodyAccountFile) { Label = "托管账户函", Filter = "文本|*.docx;*.doc;*.pdf" };
+        CustodyAccount.FileChanged += f => SaveFileChanged(new { CustodyAccount = f });
 
- 
+
+
+        //Contract = new()
+        //{
+        //    Label = "合同定稿",
+        //    SaveFolder = FundHelper.GetFolder(FundId, "Contract"),
+        //    GetProperty = x => x switch { ContractFlow f => f.ContractFile, _ => null },
+        //    SetProperty = (x, y) => { if (x is ContractFlow f) f.ContractFile = y; },
+        //    Filter = "文本|*.docx;*.doc;*.pdf"
+        //};
+        //Contract.Init(flow);
+
+        //RiskDisclosureDocument = new()
+        //{
+        //    Label = "风险揭示书",
+        //    SaveFolder = FundHelper.GetFolder(FundId, "Contract"),
+        //    GetProperty = x => x switch { ContractFlow f => f.RiskDisclosureDocument, _ => null },
+        //    SetProperty = (x, y) => { if (x is ContractFlow f) f.RiskDisclosureDocument = y; },
+        //    Filter = "文本|*.docx;*.doc;*.pdf"
+        //};
+        //RiskDisclosureDocument.Init(flow);
+
+        //CollectionAccount = new()
+        //{
+        //    Label = "募集账户函",
+        //    SaveFolder = FundHelper.GetFolder(FundId, "Account"),
+        //    GetProperty = x => x switch { ContractFlow f => f.CollectionAccountFile, _ => null },
+        //    SetProperty = async (x, y) => { if (x is not ContractFlow f) return; f.CollectionAccountFile = y; await UpdateElement(y?.Path is null ? null : new FileInfo(y.Path), x => x.CollectionAccount, FundAccountType.Collection); },
+        //    Filter = "文本|*.docx;*.doc;*.pdf"
+        //};
+        //CollectionAccount.Init(flow);
+
+        //CustodyAccount = new()
+        //{
+        //    Label = "托管账户函",
+        //    SaveFolder = FundHelper.GetFolder(FundId, "Account"),
+        //    GetProperty = x => x switch { ContractFlow f => f.CustodyAccountFile, _ => null },
+        //    SetProperty = async (x, y) => { if (x is not ContractFlow f) return; f.CustodyAccountFile = y; await UpdateElement(y?.Path is null ? null : new FileInfo(y.Path), x => x.CustodyAccount, FundAccountType.Custody); },
+        //    Filter = "文本|*.docx;*.doc;*.pdf"
+        //};
+        //CustodyAccount.Init(flow);
+
+
     }
 
-   
+
 
 
     [RelayCommand]
-    public async Task ParseAccountInfo(FileViewModel f)
+    public async Task ParseAccountInfo(SimpleFileViewModel f)
     {
         if (f == CollectionAccount)
-            await UpdateElement(f.File, x => x.CollectionAccount, FundAccountType.Collection);
+            await UpdateElement(f, x => x.CollectionAccount, FundAccountType.Collection);
         else if (f == CustodyAccount)
-            await UpdateElement(f.File, x => x.CustodyAccount, FundAccountType.Custody);
+            await UpdateElement(f, x => x.CustodyAccount, FundAccountType.Custody);
     }
 
- 
 
 
-    private Task UpdateElement(FileInfo? x, Func<FundElements, Mutable<BankAccount>> property, FundAccountType accountType)
+
+    private Task UpdateElement(SimpleFileViewModel? file, Func<FundElements, Mutable<BankAccount>> property, FundAccountType accountType)
     {
         return Task.Run(() =>
         {
             try
             {
-                if (x?.Exists ?? false)
+                using var fs = file?.Meta?.OpenRead();
+
+                if (fs is not null)
                 {
-                    using var fs = x.OpenRead();
                     var ac = PdfHelper.GetAccountInfo(fs);
 
                     if (ac is not null)

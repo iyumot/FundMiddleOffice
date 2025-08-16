@@ -24,6 +24,8 @@
         <Geometry>M5 15h7.4c.331 0 .603.267.63.597C13.153 17.115 13.78 21 17 21H6a3 3 0 0 1-3-3v-1a2 2 0 0 1 2-2</Geometry>
     </GeometryGroup>
 
+    <local:FileExistsToVisibilityConverter x:Key="FileExistsToVisibilityConverter" />
+
 
     <DataTemplate x:Key="DT.File">
         <DockPanel Background="Transparent" LastChildFill="False">
@@ -36,7 +38,7 @@
                     Margin="0,2"
                     VerticalContentAlignment="Center"
                     local:MaskService.IsMask="True"
-                    Text="{Binding DisplayName}" />
+                    Text="{Binding Name}" />
                 <hc:SimplePanel
                     x:Name="p"
                     HorizontalAlignment="Right"
@@ -105,7 +107,7 @@
                 Command="{Binding ChooseCommand, FallbackValue={x:Null}}"
                 Style="{StaticResource ButtonIcon.Small}"
                 ToolTip="设置文件"
-                Visibility="Collapsed" />
+                Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource AncestorType=local:FileView}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
 
             <hc:SimplePanel Height="20">
                 <DockPanel x:Name="canset" MinWidth="160">
@@ -119,7 +121,7 @@
                         Margin="5,0"
                         VerticalAlignment="Center"
                         local:MaskService.IsMask="True"
-                        Text="{Binding DisplayName}" />
+                        Text="{Binding Name}" />
 
                     <TextBlock
                         Margin="6,0,0,0"
@@ -185,6 +187,90 @@
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
+
+
+    <DataTemplate x:Key="FileItemTemplate.NoDate">
+        <DockPanel Background="Transparent" LastChildFill="False">
+            <DockPanel.Resources>
+                <Style BasedOn="{StaticResource ButtonIcon.Small}" TargetType="Button" />
+            </DockPanel.Resources>
+            <Button
+                x:Name="add"
+                hc:IconElement.Geometry="{StaticResource f.gear}"
+                Command="{Binding ChooseCommand, FallbackValue={x:Null}}"
+                Style="{StaticResource ButtonIcon.Small}"
+                ToolTip="设置文件"
+                Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource AncestorType=local:FileView}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+            <hc:SimplePanel Height="20">
+                <DockPanel x:Name="canset" MinWidth="160">
+
+                    <local:AbbreviationText
+                        x:Name="file"
+                        Margin="5,0"
+                        VerticalAlignment="Center"
+                        local:MaskService.IsMask="True"
+                        Text="{Binding Name}" />
+
+                    <TextBlock
+                        Margin="6,0,0,0"
+                        VerticalAlignment="Center"
+                        FontSize="8"
+                        Foreground="Red"
+                        Text="文件已被删除"
+                        Visibility="{Binding Deleted, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                </DockPanel>
+
+                <hc:SimplePanel
+                    x:Name="p"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Stretch"
+                    Background="White"
+                    Visibility="Collapsed">
+                    <DockPanel Margin="5,0" LastChildFill="False">
+                        <DockPanel LastChildFill="False">
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.book-open-reader}"
+                                Command="{Binding ViewCommand}"
+                                Foreground="Lime"
+                                ToolTip="查看" />
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.clone}"
+                                Command="{Binding CopyCommand}"
+                                Foreground="RoyalBlue"
+                                ToolTip="复制" />
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.file-export}"
+                                Command="{Binding SaveAsCommand}"
+                                ToolTip="另存为" />
+                        </DockPanel>
+                        <Button
+                            hc:IconElement.Geometry="{StaticResource f.xmark}"
+                            Command="{Binding DeleteCommand}"
+                            CommandParameter="{Binding .}"
+                            Foreground="Red"
+                            Style="{StaticResource ButtonIcon.Small}"
+                            ToolTip="删除"
+                            Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource AncestorType=local:FileView}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                    </DockPanel>
+                </hc:SimplePanel>
+            </hc:SimplePanel>
+        </DockPanel>
+        <DataTemplate.Triggers>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding Exists, TargetNullValue=False}" Value="True" />
+                    <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
+                </MultiDataTrigger.Conditions>
+                <Setter TargetName="p" Property="Visibility" Value="Visible" />
+            </MultiDataTrigger>
+
+            <DataTrigger Binding="{Binding Name}" Value="{x:Null}">
+                <Setter TargetName="canset" Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
     <DataTemplate x:Key="DefaultHeader">
         <DockPanel LastChildFill="False">
             <TextBlock
@@ -196,7 +282,7 @@
         </DockPanel>
     </DataTemplate>
 
-    <DataTemplate x:Key="AnotherFile.Flip">
+    <DataTemplate x:Key="DualFile.Flip">
         <DockPanel>
             <ToggleButton
                 x:Name="btn"
@@ -247,7 +333,7 @@
                 Padding="0"
                 Background="Transparent"
                 BorderThickness="0"
-                ItemTemplate="{StaticResource AnotherFile.Flip}"
+                ItemTemplate="{StaticResource DualFile.Flip}"
                 ItemsSource="{Binding Source={StaticResource src}}"
                 ScrollViewer.VerticalScrollBarVisibility="Disabled"
                 Style="{StaticResource ListBoxCustom}">
@@ -264,7 +350,7 @@
     </DataTemplate>
 
 
-    <DataTemplate x:Key="AnotherFile.Wrap">
+    <DataTemplate x:Key="DualFile.Wrap">
         <hc:UniformSpacingPanel ChildWrapping="Wrap" Spacing="5">
 
             <ContentPresenter
@@ -272,7 +358,10 @@
                 Content="{Binding Normal}"
                 ContentTemplate="{StaticResource FileItemTemplate}" />
 
-            <Viewbox Width="16" Height="16">
+            <Viewbox
+                x:Name="stp"
+                Width="16"
+                Height="16">
                 <Path Data="{StaticResource f.stamp}" Fill="Red" />
             </Viewbox>
 
@@ -283,6 +372,49 @@
                     ContentTemplate="{StaticResource FileItemTemplate}" />
             </Border>
         </hc:UniformSpacingPanel>
+        <DataTemplate.Triggers>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding Another.Exists}" Value="False" />
+                    <Condition Binding="{Binding IsReadOnly, RelativeSource={RelativeSource AncestorType=local:FileView}}" Value="True" />
+                </MultiDataTrigger.Conditions>
+                <Setter TargetName="stp" Property="Visibility" Value="Collapsed" />
+            </MultiDataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+
+    <DataTemplate x:Key="DualFile.Wrap.NoDate">
+        <hc:UniformSpacingPanel ChildWrapping="Wrap" Spacing="5">
+
+            <ContentPresenter
+                VerticalAlignment="Center"
+                Content="{Binding Normal}"
+                ContentTemplate="{StaticResource FileItemTemplate.NoDate}" />
+
+            <Viewbox
+                x:Name="stp"
+                Width="16"
+                Height="16">
+                <Path Data="{StaticResource f.stamp}" Fill="Red" />
+            </Viewbox>
+
+            <Border>
+                <ContentPresenter
+                    VerticalAlignment="Center"
+                    Content="{Binding Another}"
+                    ContentTemplate="{StaticResource FileItemTemplate.NoDate}" />
+            </Border>
+        </hc:UniformSpacingPanel>
+        <DataTemplate.Triggers>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding Another.Exists}" Value="False" />
+                    <Condition Binding="{Binding IsReadOnly, RelativeSource={RelativeSource AncestorType=local:FileView}}" Value="True" />
+                </MultiDataTrigger.Conditions>
+                <Setter TargetName="stp" Property="Visibility" Value="Collapsed" />
+            </MultiDataTrigger>
+        </DataTemplate.Triggers>
     </DataTemplate>
 
     <DataTemplate x:Key="MultiDualFile.Wrap">
@@ -298,7 +430,7 @@
                 Padding="0"
                 Background="Transparent"
                 BorderThickness="0"
-                ItemTemplate="{StaticResource AnotherFile.Wrap}"
+                ItemTemplate="{StaticResource DualFile.Wrap}"
                 ItemsSource="{Binding Source={StaticResource src}}"
                 ScrollViewer.VerticalScrollBarVisibility="Disabled"
                 Style="{StaticResource ListBoxCustom}">
@@ -481,12 +613,21 @@
                     <ControlTemplate.Triggers>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
-                                <Condition Property="IsMouseOver" Value="True" />
                                 <Condition Property="IsReadOnly" Value="False" />
+                                <Condition Property="IsMouseOver" Value="True" />
                             </MultiTrigger.Conditions>
                             <Setter TargetName="add" Property="Visibility" Value="Visible" />
                             <Setter TargetName="arrow" Property="Visibility" Value="Collapsed" />
                         </MultiTrigger>
+
+                        <!--<MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsReadOnly, RelativeSource={RelativeSource AncestorType=local:FileView}}" Value="False"/>
+                                <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True"/>
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="add" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="arrow" Property="Visibility" Value="Collapsed" />
+                        </MultiDataTrigger>-->
 
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -562,5 +703,54 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+
+
+    <Style x:Key="DualFileStyle" TargetType="local:FileView">
+        <Setter Property="AllowDrop" Value="{Binding IsReadOnly, RelativeSource={RelativeSource Self}, Converter={StaticResource Boolean2BooleanReConverter}}" />
+        <Setter Property="ContentTemplate" Value="{StaticResource DualFile.Wrap.NoDate}" />
+        <!--<Setter Property="Header" Value="{Binding Content.Label, RelativeSource={RelativeSource Self}, FallbackValue=文件}" />-->
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:FileView">
+                    <Border
+                        MaxHeight="20"
+                        Margin="{TemplateBinding Margin}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                        <i:Interaction.Behaviors>
+                            <local:DelayMouseOverExpandBehavior TargetMaxHeight="200" />
+                        </i:Interaction.Behaviors>
+                        <DockPanel Background="Transparent">
+                            <ContentPresenter
+                                VerticalAlignment="Center"
+                                Content="{TemplateBinding Header}"
+                                ContentTemplate="{TemplateBinding HeaderTemplate}" />
+
+                            <hc:SimplePanel>
+                                <Viewbox
+                                    x:Name="arrow"
+                                    Width="14"
+                                    Height="14"
+                                    Margin="2,0,8,0"
+                                    VerticalAlignment="Center">
+                                    <Path
+                                        Data="{StaticResource f.angle-right}"
+                                        Fill="Black"
+                                        Stroke="Black" />
+                                </Viewbox>
+
+                            </hc:SimplePanel>
+
+                            <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
+                        </DockPanel>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style BasedOn="{StaticResource SimpleFileStyle}" TargetType="local:FileView" />
 
 </ResourceDictionary>

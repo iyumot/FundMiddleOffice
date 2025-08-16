@@ -324,19 +324,19 @@ public partial class InstitutionWindowViewModel : EditableControlViewModelBase<I
         }
 
         BusinessLicense = new(cef.BusinessLicense);
-        BusinessLicense.OnFileChanged += (x) => UpdateCerf(new { BusinessLicense = x }, cef.Id);
+        BusinessLicense.FileChanged += (x) => UpdateCerf(new { BusinessLicense = x }, cef.Id);
 
         BusinessLicense2 = new(cef.BusinessLicense2);
-        BusinessLicense2.OnFileChanged += (x) => UpdateCerf(new { BusinessLicense2 = x }, cef.Id);
+        BusinessLicense2.FileChanged += (x) => UpdateCerf(new { BusinessLicense2 = x }, cef.Id);
 
         AccountOpeningLicense = new(cef.AccountOpeningLicense);
-        AccountOpeningLicense.OnFileChanged += (x) => UpdateCerf(new { AccountOpeningLicense = x }, cef.Id);
+        AccountOpeningLicense.FileChanged += (x) => UpdateCerf(new { AccountOpeningLicense = x }, cef.Id);
 
         CharterDocument = new(cef.CharterDocument);
-        CharterDocument.OnFileChanged += (x) => UpdateCerf(new { CharterDocument = x }, cef.Id);
+        CharterDocument.FileChanged += (x) => UpdateCerf(new { CharterDocument = x }, cef.Id);
 
         LegalPersonIdCard = new(cef.LegalPersonIdCard);
-        LegalPersonIdCard.OnFileChanged += (x) => UpdateCerf(new { LegalPersonIdCard = x }, cef.Id);
+        LegalPersonIdCard.FileChanged += (x) => UpdateCerf(new { LegalPersonIdCard = x }, cef.Id);
 
         //BusinessLicense.Files = [.. (cef.BusinessLicense ?? new())];
         //BusinessLicense2.Files = [.. (cef.BusinessLicense2 ?? new())];

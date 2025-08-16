@@ -236,7 +236,7 @@ public partial class QualificationViewModel : EditableControlViewModelBase<Inves
         };
 
         CertificationFiles = new(obj.CertificationFiles);
-        CertificationFiles.OnFileChanged += (x) =>
+        CertificationFiles.FileChanged += (x) =>
         {
             using var db = DbHelper.Base();
             db.GetCollection<InvestorQualification>().UpdateMany(BsonMapper.Global.ToDocument(new { CertificationFiles = x }).ToString(), $"_id={id}");
