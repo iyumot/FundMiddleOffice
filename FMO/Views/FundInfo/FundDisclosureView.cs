@@ -15,18 +15,18 @@ namespace FMO;
 /// <summary>
 /// FundAnnouncementView.xaml 的交互逻辑
 /// </summary>
-public partial class FundAnnouncementView : UserControl
+public partial class FundDisclosureView : UserControl
 {
-    public FundAnnouncementView()
+    public FundDisclosureView()
     {
         InitializeComponent();
     }
 }
 
 
-public partial class FundAnnouncementViewModel : ObservableObject
+public partial class FundDisclosureViewModel : ObservableObject
 {
-    public FundAnnouncementViewModel(int fid)
+    public FundDisclosureViewModel(int fid)
     {
         FundId = fid;
 
@@ -35,6 +35,10 @@ public partial class FundAnnouncementViewModel : ObservableObject
         var data = db.GetCollection<FundAnnouncement>().Find(x => x.FundId == fid).ToArray();
 
         Announcements = [.. data.Select(x => new AnnouncementViewModel(x))];
+
+        PeriodicDisclosure = [..db.GetCollection<FundPeriodicReport>().Find(x => x.FundId == fid).ToList<IPeriodical>().Union(db.GetCollection<FundQuarterlyUpdate>().Find(x=>x.FundId == fid))];
+
+
     }
 
     public int FundId { get; }
@@ -42,7 +46,7 @@ public partial class FundAnnouncementViewModel : ObservableObject
 
     public ObservableCollection<AnnouncementViewModel> Announcements { get; init; }
 
-
+    public ObservableCollection<IPeriodical> PeriodicDisclosure { get;  }
 
 
     [RelayCommand]

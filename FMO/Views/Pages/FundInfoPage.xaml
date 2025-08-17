@@ -260,7 +260,7 @@
                         <TextBlock Text="信披" />
                     </DockPanel>
                 </TabItem.Header>
-                <local:FundAnnouncementView DataContext="{Binding AnnouncementContext}" />
+                <local:FundDisclosureView DataContext="{Binding AnnouncementContext}" />
             </TabItem>
         </TabControl>
 

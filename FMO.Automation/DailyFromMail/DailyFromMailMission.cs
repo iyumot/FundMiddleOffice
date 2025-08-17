@@ -76,7 +76,7 @@ public class DailyFromMailMission : MailMission
 
     private bool WorkOne(FileInfo file, string log)
     {
-        using MimeMessage msg = MimeMessage.Load(file.FullName);
+        using MimeMessage msg = LoadMail(file.FullName);
 
         DetermineCategory(msg);
 

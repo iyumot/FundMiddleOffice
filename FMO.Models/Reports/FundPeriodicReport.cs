@@ -1,32 +1,39 @@
-﻿namespace FMO.Models;
+﻿using System.ComponentModel;
+
+namespace FMO.Models;
 
 
 /// <summary>
 /// 最多16种基金定期报告类型
 /// 不然FundPeriodicReport的ID会溢出
 /// </summary>
+[TypeConverter(typeof(EnumDescriptionTypeConverter))]
 public enum PeriodicReportType
 {
     /// <summary>
     /// 每月报告
     /// </summary>
+    [Description("月报")]
     MonthlyReport,
     /// <summary>
     /// 每季度报告
     /// </summary>
+    [Description("季报")]
     QuarterlyReport,
     /// <summary>
     /// 半年报告
     /// </summary>
+    [Description("半年报")]
     SemiAnnualReport,
     /// <summary>
     /// 年度报告
     /// </summary>
+    [Description("年报")]
     AnnualReport,
-
     /// <summary>
     /// 季度更新
     /// </summary>
+    [Description("季度更新")]
     QuarterlyUpdate,
 }
 
@@ -34,6 +41,7 @@ public interface IPeriodical
 {
     int FundId { get; }
     PeriodicReportType Type { get; }
+    DateOnly PeriodEnd { get; set; }
 }
 
 /// <summary>

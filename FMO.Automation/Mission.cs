@@ -184,6 +184,15 @@ public static class MissionTemplateManager
             CreateViewModel = x => new TAFromMailViewModel((x as TAFromMailMission)!)
         });
 
+        Register(typeof(DisclosureFromMailMission), new MissionTemplate
+        {
+            Title = "信披更新",
+            CreateMission = () => new DisclosureFromMailMission(),
+            CreateView = () => new DisclosureFromMailView(),
+            CreateViewModel = x => new DisclosureFromMailViewModel((x as DisclosureFromMailMission)!)
+        });
+
+
 
         CacheMailMissionTemplate = Templates[typeof(MailCacheMission)];
 

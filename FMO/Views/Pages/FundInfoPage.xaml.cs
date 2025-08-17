@@ -439,7 +439,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
 
     [ObservableProperty]
-    public partial FundAnnouncementViewModel AnnouncementContext { get; set; }
+    public partial FundDisclosureViewModel AnnouncementContext { get; set; }
 
     #endregion
 
