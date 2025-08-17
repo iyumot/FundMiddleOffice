@@ -27,7 +27,7 @@ public class Investor
     /// </summary>
     //public VersionedFileInfo? Certifications { get; set; }
 
-    public List<FileStorageInfo>? IDCards { get; set; }
+    //public List<FileStorageInfo>? IDCards { get; set; }
 
     /// <summary>
     /// 法人类型

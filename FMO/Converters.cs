@@ -22,9 +22,9 @@ public class FileExistsToVisibilityConverter : IValueConverter
             case FileInfo fi:
                 show = fi.Exists;
                 break;
-            case FileStorageInfo fsi:
-                show = fsi.Exists;
-                break;
+            //case FileStorageInfo fsi:
+            //    show = fsi.Exists;
+            //    break;
             case FileMeta f:
                 show = f.Exists;
                 break;

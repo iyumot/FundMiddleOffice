@@ -7,8 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="FileStorageInfo.cs" />
     <Compile Remove="Investor\Customer.cs" />
     <Compile Remove="LegalEntity\LegalEntity.cs" />
+    <Compile Remove="Manager\InstitutionFiles.cs" />
   </ItemGroup>
 
   <ItemGroup> 

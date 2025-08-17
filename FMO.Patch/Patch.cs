@@ -256,10 +256,28 @@ public static partial class DatabaseAssist
     /// <exception cref="NotImplementedException"></exception>
     private static void MiggigrateFileInInvestor(BaseDatabase db)
     {
-        var cus = db.GetCollection<Investor>().Query().Where(x => x.IDCards != null).Select(x => new { x.Id, x.IDCards }).ToList().Select(x => new { x.Id, IDCards = x.IDCards.Select(x => new { x.Name, p = x.Path!, m = Regex.Match(x.Path!, "files.*") }).Select(x => new { x.Name, Path = x.m.Success ? x.m.Value : x.p }) }).ToList();
-        var mig = cus.Select(x => new InvestorCertifications { Id = x.Id, Files = x.IDCards?.Where(x => x.Path?.Length > 5).Select(y => FileMeta.Create(y.Path, y.Name!)).ToList() });
-        db.GetCollection<InvestorCertifications>().DeleteAll();
-        db.GetCollection<InvestorCertifications>().InsertBulk(mig.Where(x => x.Files is not null && x.Files.Count > 0));
+        var list = db.GetCollection(nameof(Investor)).Find("IDCards != null").ToList().Select(x => (Id: x["_id"], IDCards: x["IDCards"].AsArray)).ToList();
+        foreach (var (c, cards) in list)
+        {
+            List<FileMeta> fileMetas = [];
+            foreach (var fsi in cards)
+            {
+                var path = fsi["Path"].AsString;
+                var m = Regex.Match(path!, "files.*");
+                if (m.Success) path = m.Value;
+
+                if(File.Exists(path))
+                    fileMetas.Add(FileMeta.Create(path) with { Time = fsi["Time"].AsDateTime });
+            }
+            db.GetCollection<InvestorCertifications>().Upsert(new InvestorCertifications { Id = c, Files = fileMetas });
+        }
+
+
+        //var cus = db.GetCollection<Investor>().Query().Where(x => x.IDCards != null).Select(x => new { x.Id, x.IDCards }).ToList().
+        //    Select(x => new { x.Id, IDCards = x.IDCards.Select(x => new { x.Name, p = x.Path!, m = Regex.Match(x.Path!, "files.*") }).Select(x => new { x.Name, Path = x.m.Success ? x.m.Value : x.p }) }).ToList();
+        //var mig = cus.Select(x => new InvestorCertifications { Id = x.Id, Files = x.IDCards?.Where(x => x.Path?.Length > 5).Select(y => FileMeta.Create(y.Path, y.Name!)).ToList() });
+        //db.GetCollection<InvestorCertifications>().DeleteAll();
+        //db.GetCollection<InvestorCertifications>().InsertBulk(mig.Where(x => x.Files is not null && x.Files.Count > 0));
 
     }
 
