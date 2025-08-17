@@ -25,7 +25,9 @@ public enum MailCategory
     /// <summary>
     /// 结算单
     /// </summary>
-    Statement = 0x4
+    Statement = 0x4,
+
+    Disclosure = 0x8,
 }
 
 public record MailCategoryInfo(string Id, string Subject, MailCategory Category);

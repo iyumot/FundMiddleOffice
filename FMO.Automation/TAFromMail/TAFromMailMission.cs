@@ -83,7 +83,7 @@ public class TAFromMailMission : MailMission
 
     private void WorkOne(FileInfo f, string log)
     {
-        using MimeMessage mime = MimeMessage.Load(f.FullName);
+        using MimeMessage mime = LoadMail(f.FullName);
 
         if (DetermineCategory(mime) switch { MailCategory.Unk or MailCategory.TA => false, _ => true })
             return;

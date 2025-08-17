@@ -30,15 +30,20 @@ public enum PeriodicReportType
     QuarterlyUpdate,
 }
 
+public interface IPeriodical
+{
+    int FundId { get; }
+    PeriodicReportType Type { get; }
+}
 
 /// <summary>
 /// 定期报告
 /// </summary>
-public class FundPeriodicReport
+public class FundPeriodicReport : IPeriodical
 {
     public int Id => (PeriodEnd.DayNumber - 719162) << 16 | FundId << 4 | (int)Type;//1970-01-01是公历的第719162天
 
-    public int FundId { get; set; }
+    public required int FundId { get; set; }
 
     /// <summary>
     /// 定期报告的最后一天
@@ -55,4 +60,33 @@ public class FundPeriodicReport
     public SimpleFile? Xbrl { get; set; }
 
     public SimpleFile? Pdf { get; set; }
+}
+
+
+/// <summary>
+/// 季度更新
+/// </summary>
+public class FundQuarterlyUpdate : IPeriodical
+{
+    public int Id => (PeriodEnd.DayNumber - 719162) << 16 | FundId;
+
+    public required int FundId { get; set; }
+
+    public PeriodicReportType Type => PeriodicReportType.QuarterlyReport;
+
+
+    /// <summary>
+    /// 定期报告的最后一天
+    /// </summary>
+    public DateOnly PeriodEnd { get; set; }
+
+    /// <summary>
+    /// 投资者
+    /// </summary>
+    public SimpleFile? Investor { get; set; }
+
+    /// <summary>
+    /// 运行信息
+    /// </summary>
+    public SimpleFile? Operation { get; set; }
 }
