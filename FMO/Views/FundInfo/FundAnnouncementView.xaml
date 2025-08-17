@@ -18,7 +18,7 @@
             TargetType="ListBoxItem">
             <Setter Property="Margin" Value="0,1" />
         </Style>
-     
+
         <DataTemplate x:Key="DT.Announcement">
             <Border Margin="0,1" Background="WhiteSmoke">
                 <DockPanel>
@@ -26,6 +26,9 @@
                         DockPanel.Dock="Right"
                         IsChecked="{Binding IsReadOnly}"
                         Style="{StaticResource EditSwitch.Small}" />
+
+
+
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="auto" />
@@ -59,7 +62,8 @@
                         <shared:FileView
                             Grid.Column="1"
                             Content="{Binding File}"
-                            IsReadOnly="{Binding IsReadOnly}" /> 
+                            IsReadOnly="{Binding IsReadOnly}"
+                            Style="{StaticResource DualFileStyle}" />
                     </Grid>
                 </DockPanel>
             </Border>

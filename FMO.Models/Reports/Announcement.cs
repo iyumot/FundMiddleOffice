@@ -1,6 +1,8 @@
 ﻿namespace FMO.Models;
 
-
+/// <summary>
+/// 基金公告
+/// </summary>
 public class FundAnnouncement
 {
 
@@ -13,5 +15,5 @@ public class FundAnnouncement
     public string? Title { get; set; }
 
     public DualFile? File { get; set; }
-     
+
 }

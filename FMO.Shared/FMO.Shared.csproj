@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <Page Remove="ChangeableContainer.xaml" />
+    <Page Remove="Themes\FileControls.xaml" />
   </ItemGroup>
 
   <ItemGroup>

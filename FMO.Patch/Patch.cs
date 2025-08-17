@@ -34,8 +34,27 @@ public static partial class DatabaseAssist
         [75] = MiggrateRisk,
         [78] = MiggrateOrderFile,
         [84] = MiggrateFlow,
-        [85] = MiggrateTradeAccount
+        [85] = MiggrateTradeAccount,
+        [86] = MiggrateAnnounce,
     };
+
+    private static void MiggrateAnnounce(BaseDatabase db)
+    {
+        var list = db.GetCollection(nameof(FundAnnouncement)).FindAll().ToList();
+        foreach (var item in list)
+        {
+            var normal = FromStorate(item["File"].AsDocument);
+            var seal = FromStorate(item["Sealed"].AsDocument);
+
+            item["File"] = BsonMapper.Global.ToDocument(new DualFile
+            {
+                Label = item["Title"].AsString,
+                File = normal,
+                Another = seal
+            });
+        }
+        db.GetCollection(nameof(FundAnnouncement)).Update(list);
+    }
 
     private static void MiggrateTradeAccount(BaseDatabase db)
     {
