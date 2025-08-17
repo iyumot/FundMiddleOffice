@@ -13,8 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Remove="ChangeableContainer.xaml" />
-    <Page Remove="Themes\FileControls.xaml" />
+    <Page Remove="ChangeableContainer.xaml" /> 
   </ItemGroup>
 
   <ItemGroup>
