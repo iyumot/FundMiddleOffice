@@ -253,48 +253,72 @@
         </Setter>
     </Style>
 
-    <Style
-        x:Key="EditSwitch"
-        BasedOn="{StaticResource ToggleButtonFlip}"
-        TargetType="ToggleButton">
-        <Setter Property="BorderThickness" Value="0" />
+    <Style x:Key="EditSwitch" TargetType="ToggleButton">
+        <Setter Property="Width" Value="28" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Content">
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Template">
             <Setter.Value>
-                <Viewbox Width="20" Height="18">
-                    <Path Data="{StaticResource f.eye}" Fill="Black" />
-                </Viewbox>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="hc:StatusSwitchElement.CheckedElement">
-            <Setter.Value>
-                <Viewbox Width="16" Height="16">
-                    <Path Data="{StaticResource f.pen}" Fill="Green" />
-                </Viewbox>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                        <Viewbox Width="22" Height="22">
+                            <Path
+                                x:Name="ico"
+                                Data="{StaticResource f.eye}"
+                                Fill="Black" />
+                        </Viewbox>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="ico" Property="Data" Value="{StaticResource f.pen}" />
+                            <Setter TargetName="ico" Property="Fill" Value="Green" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
-    <Style
-        x:Key="EditSwitch.Small"
-        BasedOn="{StaticResource ToggleButtonFlip.Small}"
-        TargetType="ToggleButton">
-        <Setter Property="BorderThickness" Value="0" />
+
+    <Style x:Key="EditSwitch.Small" TargetType="ToggleButton">
+        <Setter Property="Width" Value="20" />
+        <Setter Property="Height" Value="20" />
+        <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Content">
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Template">
             <Setter.Value>
-                <Viewbox Width="20" Height="18">
-                    <Path Data="{StaticResource f.eye}" Fill="Black" />
-                </Viewbox>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="hc:StatusSwitchElement.CheckedElement">
-            <Setter.Value>
-                <Viewbox Width="16" Height="16">
-                    <Path Data="{StaticResource f.pen}" Fill="Green" />
-                </Viewbox>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                        <Viewbox
+                            Width="16"
+                            Height="16"
+                            Margin="2">
+                            <Path
+                                x:Name="ico"
+                                Data="{StaticResource f.eye}"
+                                Fill="Black" />
+                        </Viewbox>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="ico" Property="Data" Value="{StaticResource f.pen}" />
+                            <Setter TargetName="ico" Property="Fill" Value="Green" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
+
+
 
     <Style x:Key="ToggleEditable" TargetType="ToggleButton">
         <Setter Property="Width" Value="22" />
@@ -512,7 +536,7 @@
 
 
 
- 
+
 
 
 

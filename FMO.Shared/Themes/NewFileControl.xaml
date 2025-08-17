@@ -709,7 +709,7 @@
     <Style x:Key="DualFileStyle" TargetType="local:FileView">
         <Setter Property="AllowDrop" Value="{Binding IsReadOnly, RelativeSource={RelativeSource Self}, Converter={StaticResource Boolean2BooleanReConverter}}" />
         <Setter Property="ContentTemplate" Value="{StaticResource DualFile.Wrap.NoDate}" />
-        <!--<Setter Property="Header" Value="{Binding Content.Label, RelativeSource={RelativeSource Self}, FallbackValue=文件}" />-->
+        <Setter Property="Header" Value="{Binding Content.Label, RelativeSource={RelativeSource Self}, FallbackValue=文件}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:FileView">
