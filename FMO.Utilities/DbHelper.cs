@@ -1,6 +1,5 @@
 ﻿using FMO.Models;
 using LiteDB;
-using Serilog;
 using System.Configuration;
 using System.Security.Cryptography;
 using System.Text;
@@ -89,6 +88,8 @@ public static class DbHelper
 
     static DbHelper()
     {
+        Directory.CreateDirectory("data");
+
         _password = ConfigurationManager.AppSettings["dbpw"] ?? "fjd32890f5djflds";
         _password += "jgkfld9024039284jrwe";
 
@@ -115,7 +116,41 @@ public static class DbHelper
     public static LiteDatabase Platform() => new LiteDatabase(@$"FileName=data\platform.db;Password={_password};Connection=Shared");
 
 
+    public static string[] ListAllFileId()
+    {
+        List<string> ids = [];
+        using (var db = Base())
+        {
+            foreach (var tn in db.GetCollectionNames())
+            {
+                foreach (var doc in db.GetCollection(tn).FindAll().ToList())
+                {
+                    if (doc.IsDocument)
+                        FindFileInDocument(doc, ids);
+                }
+            }
+        }
+        return ids.Distinct().ToArray();
+    }
 
+    private static void FindFileInDocument(BsonDocument doc, List<string> ids)
+    {
+        if (doc.ContainsKey("_id") && doc["_id"].IsString && doc.ContainsKey("Hash"))
+        {
+            ids.Add(doc["_id"].AsString);
+            return;
+        }
+
+        foreach (var (k, v) in doc)
+        {
+            if (v.IsDocument)
+                FindFileInDocument(v.AsDocument, ids);
+            else if (v.IsArray)
+                foreach (var item in v.AsArray)
+                    if (item.IsDocument)
+                        FindFileInDocument(item.AsDocument, ids);
+        }
+    }
 
     //public static bool RebuildFundShareRecord(this ILiteDatabase db, int fundid)
     //{
