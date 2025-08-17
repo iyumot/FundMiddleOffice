@@ -1,5 +1,5 @@
-﻿using LiteDB;
-using Serilog;
+﻿using FMO.Logging;
+using LiteDB;
 
 namespace FMO.Schedule;
 
@@ -17,7 +17,7 @@ public static class MissionSchedule
     private static System.Timers.Timer _secondTimer { get; } = new System.Timers.Timer(1000);
 
 
-    static HashSet<Mission> missions = new HashSet<Mission>();
+    static HashSet<Mission> missions = [];// new HashSet<Mission>();
 
     public static Mission[] Missions => missions.ToArray();
 
@@ -25,36 +25,23 @@ public static class MissionSchedule
     public static void Init()
     {
         using var db = new MissionDatabase();
-        var ms = db.GetCollection<BsonDocument>("Mission").FindAll().ToArray();// db.GetCollection<Mission>().FindAll().ToArray();
+        var ms = db.GetCollection<BsonDocument>("Mission").FindAll().ToList();// db.GetCollection<Mission>().FindAll().ToArray();
 
-
-        foreach (var doc in ms)
+        missions = [.. ms.Select(x =>
         {
             try
             {
-                var mission = BsonMapper.Global.ToObject<Mission>(doc);
+                var mission = BsonMapper.Global.ToObject<Mission>(x);
                 mission.Init();
-                missions.Add(mission);
+                return mission;
             }
-            catch (Exception ex)
-            {
-                // 记录日志或跳过无法转换的文档
-                Log.Error($"无法转换文档: {ex.Message}");
-            }
-        }
+            catch { LogEx.Error($"无法加载mission{x["_id"]}"); return null; }
+        }).Where(x => x is not null && x is not FillFundDailyMission).OrderBy(x => x!.GetType().Name switch { nameof(MailCacheMission) => 0, _ => x.Id })];
 
-
-        /// 如果没有，新建一个
-        //if (!missions.Any(x => x is FillFundDailyMission))
-        //{
-        //    var fm = new FillFundDailyMission();
-        //    db.GetCollection<Mission>().Insert(fm);
-        //    fm.Init();
-        //    missions.Add(fm);
-        //}
 
         // 不再使用
-        missions.RemoveWhere(x => x is FillFundDailyMission);
+        //missions.RemoveWhere(x => x is FillFundDailyMission);
+
 
 #if DEBUG
         foreach (var m in missions)
