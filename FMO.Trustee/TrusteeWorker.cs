@@ -145,6 +145,10 @@ public partial class TrusteeWorker : ObservableObject
 
         }
 
+        foreach (var item in _workRange.Values)
+            if (item.End < StartOfAny) item.End = StartOfAny;
+
+
         Trustees = trustees;
         foreach (var t in trustees)
             t.Prepare();
@@ -298,10 +302,7 @@ public partial class TrusteeWorker : ObservableObject
                     }
 
                     // 更新进度
-                    range.Merge(begin, end);
-                    using var pdb = DbHelper.Platform();
-                    pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
-
+                    UpdateWorkedRange(tr.Identifier, begin, end);
                 }
                 catch (Exception e)
                 {
@@ -374,9 +375,7 @@ public partial class TrusteeWorker : ObservableObject
                         break;
 
                     // 更新进度
-                    range.Merge(begin, end);
-                    using var pdb = DbHelper.Platform();
-                    pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
+                    UpdateWorkedRange(tr.Identifier, begin, end);
 
                     // 合并记录
                     ret.Add(new(tr.Title, rc.Code, rc.Data));
@@ -458,9 +457,7 @@ public partial class TrusteeWorker : ObservableObject
                     }
 
                     // 更新进度
-                    range.Merge(begin, end);
-                    using var pdb = DbHelper.Platform();
-                    pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
+                    UpdateWorkedRange(tr.Identifier, begin, end);
 
                     // 合并记录
                     ret.Add(new(tr.Title, rc.Code, rc.Data));
@@ -521,7 +518,7 @@ public partial class TrusteeWorker : ObservableObject
                 ///
                 // 保存数据库 
                 if (rc.Data is not null)
-                { 
+                {
                     DataTracker.OnRaisingBankTransaction(rc.Data);
                 }
 
@@ -530,9 +527,7 @@ public partial class TrusteeWorker : ObservableObject
 
 
                 // 更新进度
-                range.Merge(begin, end);
-                using var pdb = DbHelper.Platform();
-                pdb.GetCollection<TrusteeMethodShotRange>().Upsert(range);
+                UpdateWorkedRange(tr.Identifier, begin, end);
             }
             catch (Exception e)
             {
@@ -651,6 +646,15 @@ public partial class TrusteeWorker : ObservableObject
     {
         string key = $"{idf}.{method}";
         return _workRange.TryGetValue(key, out var range) ? range : new(key, StartOfAny, StartOfAny);
+    }
+
+    private void UpdateWorkedRange(string idf, DateOnly begin, DateOnly end)
+    {
+        var r = _workRange.TryGetValue(idf, out var range) ? range : new(idf, StartOfAny, StartOfAny);
+        r.Merge(begin, end);
+        _workRange[idf] = r;
+        using var pdb = DbHelper.Platform();
+        pdb.GetCollection<TrusteeMethodShotRange>().Upsert(r);
     }
 
 
