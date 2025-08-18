@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DocumentFormat.OpenXml.Office2010.Excel;
+using FMO.Models;
 using FMO.Trustee;
 using FMO.Utilities;
 using System.Windows.Controls;
@@ -39,7 +41,7 @@ public partial class TrusteeWorkerSettingViewModel : ObservableObject
     //public TrusteeWorker.WorkConfig[] WorkConfigs { get; set; }
 
     //public TrusteeWorker.WorkConfig? QueryTransferRequestsConfig { get; set; }
-    
+
     //public TrusteeWorkerUniViewModel RaisingBalanceConfig { get; private set; }
 
     public TrusteeWorkerSettingViewModel()
@@ -79,7 +81,7 @@ public partial class TrusteeWorkerSettingViewModel : ObservableObject
         return vm;
     }
 
- 
+
     public TrusteeMethodConfigViewModel Create(TrusteeMethodShotRange[] ranges, string identifier, string method)
     {
         var range = ranges.FirstOrDefault(x => x.Id == $"{identifier}.{method}");
@@ -112,14 +114,30 @@ public partial class TrusteeMethodConfigViewModel : ObservableObject
     {
         using var pdb = DbHelper.Platform();
 
-        if (DateBegin is not null && DateEnd is not null)
-        {
-            var ran = new TrusteeMethodShotRange(Identifier + Method, DateBegin.Value, DateEnd.Value);
+        var start = StartDate();
+        DateBegin ??= start;
+        DateEnd ??= start;
+        if(DateBegin > DateEnd)
+            DateBegin = DateEnd;
 
-            var ranges = pdb.GetCollection<TrusteeMethodShotRange>().Upsert(ran);
-        }
-        
+        var ran = new TrusteeMethodShotRange($"{Identifier}.{Method}", DateBegin.Value, DateEnd.Value);
+
+        var ranges = pdb.GetCollection<TrusteeMethodShotRange>().Upsert(ran);
+
         v.CommitEdit();
+    }
+
+
+    private DateOnly StartDate()
+    {
+        using var db = DbHelper.Base();
+        var StartOfAny = db.GetCollection<Manager>().Query().First().SetupDate;
+
+        var fda = db.GetCollection<Fund>().Query().Select(x => x.SetupDate).ToArray().Where(x => x.Year > 1970).ToArray();
+        if (fda.Length > 0 && fda.Min() is DateOnly d && d < StartOfAny)
+            StartOfAny = d;
+
+        return StartOfAny;
     }
 }
 
@@ -137,7 +155,7 @@ public partial class TrusteeWorkingConfigViewModel : ObservableObject
     public TrusteeMethodConfigViewModel? QueryRaisingBalance { get; internal set; }
     public TrusteeMethodConfigViewModel? QueryFundDailyFee { get; internal set; }
 
- 
+
 }
 
 

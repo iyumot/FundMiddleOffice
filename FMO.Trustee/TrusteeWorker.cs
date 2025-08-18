@@ -493,7 +493,7 @@ public partial class TrusteeWorker : ObservableObject
 
         List<WorkReturn> ret = new();
         // ±£´æÊý¾Ý¿â 
-        var method = nameof(QueryRaisingAccountTransctionOnce);
+        var method = nameof(ITrustee.QueryRaisingAccountTransction);
 
         foreach (var tr in trustees)
         {
@@ -643,7 +643,7 @@ public partial class TrusteeWorker : ObservableObject
     {
         string key = $"{idf}.{method}";
         using var db = DbHelper.Platform();
-        var r = db.GetCollection<TrusteeMethodShotRange>().FindById(idf);
+        var r = db.GetCollection<TrusteeMethodShotRange>().FindById(key);
         if (r is not null && r.End < StartOfAny) r.End = StartOfAny;
         return r ?? new(key, StartOfAny, StartOfAny);
     }
