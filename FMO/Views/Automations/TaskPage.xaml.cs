@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
 using FMO.Schedule;
+using FMO.Utilities;
 using Serilog;
 using System.Collections.ObjectModel;
 using System.Windows.Controls;
@@ -88,6 +89,8 @@ public partial class TaskPageViewModel : ObservableObject, IRecipient<RemoveMiss
     public void AddTask(MissionTemplate template)
     { 
         var m = template.CreateMission();
+        using var db = new MissionDatabase();
+        db.GetCollection<Mission>().Insert(m);
 
         if (m is DailyFromMailMission || m is TAFromMailMission)
             if (!Tasks.Any(x => x.MissionType == typeof(MailCacheMission)))
