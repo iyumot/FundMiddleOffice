@@ -39,8 +39,14 @@ public enum PeriodicReportType
 
 public interface IPeriodical
 {
+    int Id { get; }
+
     int FundId { get; }
+    
     PeriodicReportType Type { get; }
+
+    string? FundCode { get; }
+
     DateOnly PeriodEnd { get; set; }
 }
 
@@ -53,6 +59,8 @@ public class FundPeriodicReport : IPeriodical
 
     public required int FundId { get; set; }
 
+    public string? FundCode { get; set; }
+
     /// <summary>
     /// 定期报告的最后一天
     /// </summary>
@@ -60,7 +68,7 @@ public class FundPeriodicReport : IPeriodical
 
     public PeriodicReportType Type { get; set; }
 
-  
+
 
     public SimpleFile? Word { get; set; }
 
@@ -77,9 +85,11 @@ public class FundPeriodicReport : IPeriodical
 /// </summary>
 public class FundQuarterlyUpdate : IPeriodical
 {
-    public int Id => (PeriodEnd.DayNumber - 719162) << 16 | FundId;
+    public int Id => (PeriodEnd.DayNumber - 719162) << 16 | FundId <<4 | (int)Type;
 
     public required int FundId { get; set; }
+
+    public string? FundCode { get; set; }
 
     public PeriodicReportType Type => PeriodicReportType.QuarterlyUpdate;
 

@@ -145,12 +145,3 @@ public class DirectTest
     }
 }
 
-// 响应模型
-public class DirectFileResponse
-{
-    [JsonPropertyName("processCode")]
-    public string? ProcessCode { get; set; }
-
-    [JsonPropertyName("handle")]
-    public string? Handle { get; set; }
-}

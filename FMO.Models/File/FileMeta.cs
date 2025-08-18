@@ -65,6 +65,7 @@ public record FileMeta(string Id, string Name, DateTime Time, string Hash)
         var hard = @$"files\hardlink\{id}";
 
         using var fs = new FileStream(hard, FileMode.Create);
+        if (stream.CanSeek) stream.Seek(0, SeekOrigin.Begin);
         stream.CopyTo(fs);
         fs.Flush();
         fs.Seek(0, SeekOrigin.Begin);

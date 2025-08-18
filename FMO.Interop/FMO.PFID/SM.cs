@@ -7,7 +7,9 @@ using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities.Encoders;
 using System.Text;
 
-namespace FMO.PFID;
+
+
+namespace FMO.AMAC.Direct;
 
 public static class Sm3Utils
 {

@@ -36,7 +36,17 @@ public static partial class DatabaseAssist
         [84] = MiggrateFlow,
         [85] = MiggrateTradeAccount,
         [86] = MiggrateAnnounce,
+        [87] = ChangeQuaterlyId
     };
+
+    private static void ChangeQuaterlyId(BaseDatabase database)
+    {
+        database.BeginTrans();
+        var dd = database.GetCollection<FundQuarterlyUpdate>().FindAll().ToArray();
+        database.GetCollection<FundQuarterlyUpdate>().DeleteAll();
+        database.GetCollection<FundQuarterlyUpdate>().InsertBulk(dd);
+        database.Commit();
+    }
 
     private static void MiggrateAnnounce(BaseDatabase db)
     {

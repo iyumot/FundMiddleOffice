@@ -54,7 +54,8 @@ public class DisclosureFromMailMission : MailMission
         using (var mdb = DbHelper.Base())
             fundmap = mdb.GetCollection<Fund>().Query().Select(x => new { x.Id, x.Code }).ToArray().DistinctBy(x => x.Code).ToDictionary(x => x.Code!, x => x.Id);
 
-        foreach (var f in work)
+        Parallel.ForEach(work, f => //)
+        //foreach (var f in work.AsEnumerable().Reverse())
         {
             try
             {
@@ -69,6 +70,8 @@ public class DisclosureFromMailMission : MailMission
             progress += unit;
             WeakReferenceMessenger.Default.Send(new MissionProgressMessage { Id = Id, Progress = progress });
         }
+        );
+
 
         log += $"完成";
 
@@ -124,7 +127,7 @@ public class DisclosureFromMailMission : MailMission
                     // 只处理周期报告
                     if (type.Key >= PeriodicReportType.MonthlyReport && type.Key <= PeriodicReportType.AnnualReport)
                     {
-                        FundPeriodicReport fp = new FundPeriodicReport { FundId = fundId, Type = type.Key, PeriodEnd = r.Key };
+                        FundPeriodicReport fp = new FundPeriodicReport { FundId = fundId, FundCode = fund.Key, Type = type.Key, PeriodEnd = r.Key };
 
                         foreach (var item in r)
                         {
@@ -154,7 +157,7 @@ public class DisclosureFromMailMission : MailMission
                     }
                     else if (type.Key == PeriodicReportType.QuarterlyUpdate)
                     {
-                        FundQuarterlyUpdate fp = new() { FundId = fundId, PeriodEnd = r.Key };
+                        FundQuarterlyUpdate fp = new() { FundId = fundId, FundCode = fund.Key, PeriodEnd = r.Key };
                         foreach (var item in r)
                         {
                             if (Regex.IsMatch(item.FileName, "投资[者人]"))
