@@ -108,7 +108,6 @@ public partial class TrusteeWorker : ObservableObject
         {
             cfg = db.GetCollection<WorkConfig>().FindAll().ToArray();
             maps = db.GetCollection<TrusteeApiMap>().FindAll().ToArray();
-            _workRange = db.GetCollection<TrusteeMethodShotRange>().FindAll().ToDictionary(x => x.Id);
         }
         RaisingBalanceConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryRaisingBalance)) ?? new(nameof(ITrustee.QueryRaisingBalance));
         TransferRecordConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryTransferRecords)) ?? new(nameof(ITrustee.QueryTransferRecords)) { Interval = 60 }; // 每6个小时
@@ -145,8 +144,6 @@ public partial class TrusteeWorker : ObservableObject
 
         }
 
-        foreach (var item in _workRange.Values)
-            if (item.End < StartOfAny) item.End = StartOfAny;
 
 
         Trustees = trustees;
@@ -302,7 +299,7 @@ public partial class TrusteeWorker : ObservableObject
                     }
 
                     // 更新进度
-                    UpdateWorkedRange(tr.Identifier, begin, end);
+                    UpdateWorkedRange(range, begin, end);
                 }
                 catch (Exception e)
                 {
@@ -375,7 +372,7 @@ public partial class TrusteeWorker : ObservableObject
                         break;
 
                     // 更新进度
-                    UpdateWorkedRange(tr.Identifier, begin, end);
+                    UpdateWorkedRange(range, begin, end);
 
                     // 合并记录
                     ret.Add(new(tr.Title, rc.Code, rc.Data));
@@ -457,7 +454,7 @@ public partial class TrusteeWorker : ObservableObject
                     }
 
                     // 更新进度
-                    UpdateWorkedRange(tr.Identifier, begin, end);
+                    UpdateWorkedRange(range, begin, end);
 
                     // 合并记录
                     ret.Add(new(tr.Title, rc.Code, rc.Data));
@@ -527,7 +524,7 @@ public partial class TrusteeWorker : ObservableObject
 
 
                 // 更新进度
-                UpdateWorkedRange(tr.Identifier, begin, end);
+                UpdateWorkedRange(range, begin, end);
             }
             catch (Exception e)
             {
@@ -645,14 +642,15 @@ public partial class TrusteeWorker : ObservableObject
     private TrusteeMethodShotRange GetWorkedRange(string idf, string method)
     {
         string key = $"{idf}.{method}";
-        return _workRange.TryGetValue(key, out var range) ? range : new(key, StartOfAny, StartOfAny);
+        using var db = DbHelper.Platform();
+        var r = db.GetCollection<TrusteeMethodShotRange>().FindById(idf);
+        if (r is not null && r.End < StartOfAny) r.End = StartOfAny;
+        return r ?? new(key, StartOfAny, StartOfAny);
     }
 
-    private void UpdateWorkedRange(string idf, DateOnly begin, DateOnly end)
+    private void UpdateWorkedRange(TrusteeMethodShotRange r, DateOnly begin, DateOnly end)
     {
-        var r = _workRange.TryGetValue(idf, out var range) ? range : new(idf, StartOfAny, StartOfAny);
         r.Merge(begin, end);
-        _workRange[idf] = r;
         using var pdb = DbHelper.Platform();
         pdb.GetCollection<TrusteeMethodShotRange>().Upsert(r);
     }
