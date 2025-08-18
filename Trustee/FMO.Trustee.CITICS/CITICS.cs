@@ -641,6 +641,7 @@ public partial class CITICS : TrusteeApiBase
         CustomerAuth = c.CustomerAuth;
         Token = c.Token;
         TokenTime = c.TokenTime;
+        IsValid = c.IsValid;
         return true;
     }
 
@@ -652,7 +653,7 @@ public partial class CITICS : TrusteeApiBase
 
     protected override IAPIConfig SaveConfigOverride()
     {
-        return new APIConfig { CustomerAuth = CustomerAuth, Token = Token, TokenTime = TokenTime };
+        return new APIConfig { CustomerAuth = CustomerAuth, Token = Token, TokenTime = TokenTime, IsValid = IsValid };
     }
 
 
@@ -728,14 +729,17 @@ public partial class CITICS : TrusteeApiBase
 
         if (string.IsNullOrWhiteSpace(CustomerAuth) /*|| string.IsNullOrWhiteSpace(Token)*/)
         {
-            SetDisabled();
+            SetStatus();
             return ReturnCode.ConfigInvalid;
         }
 
         return ReturnCode.Success;
     }
 
-
+    protected override async Task<bool> VerifyConfigOverride()
+    {
+        return (await GetToken())?.Length > 0;
+    }
 }
 
 public class APIConfig : IAPIConfig
@@ -748,5 +752,6 @@ public class APIConfig : IAPIConfig
 
     public DateTime? TokenTime { get; set; }
 
+    public bool IsValid { get; set; }
 }
 

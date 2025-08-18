@@ -257,7 +257,7 @@ public partial class CSC : TrusteeApiBase
 
         if (string.IsNullOrWhiteSpace(APIKey) || string.IsNullOrWhiteSpace(APISecret) || Encoder is null || Decoder is null)
         {
-            SetDisabled();
+            SetStatus();
             return ReturnCode.ConfigInvalid;
         }
 
@@ -274,6 +274,7 @@ public partial class CSC : TrusteeApiBase
         APIKey = c.APIKey;
         APISecret = c.APISecret;
         EncryptKey = c.EncryptKey;
+        IsValid = c.IsValid;
         return true;
     }
 
@@ -297,7 +298,7 @@ public partial class CSC : TrusteeApiBase
 
     protected override IAPIConfig SaveConfigOverride()
     {
-        return new APIConfig { EncryptKey = EncryptKey, APIKey = APIKey, APISecret = APISecret };
+        return new APIConfig { EncryptKey = EncryptKey, APIKey = APIKey, APISecret = APISecret, IsValid = IsValid };
     }
 
 
@@ -570,10 +571,14 @@ public partial class CSC : TrusteeApiBase
             return sb.ToString();
         }
     }
+
     #endregion
 
 
-
+    protected override async Task<bool> VerifyConfigOverride()
+    {
+        try { return (await QuerySubjectFundMappings()).Code == ReturnCode.Success; } catch { return false; }
+    }
 }
 internal class APIConfig : IAPIConfig
 {
@@ -585,4 +590,5 @@ internal class APIConfig : IAPIConfig
 
     public string? EncryptKey { get; set; }
 
+    public bool IsValid { get; set; }
 }

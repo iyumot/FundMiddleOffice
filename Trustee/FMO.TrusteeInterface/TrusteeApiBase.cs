@@ -12,6 +12,8 @@ namespace FMO.Trustee;
 public interface IAPIConfig
 {
     public string Id { get; }
+
+    public bool IsValid { get; set; }
 }
 
 public abstract class TrusteeApiBase : ITrustee
@@ -28,7 +30,7 @@ public abstract class TrusteeApiBase : ITrustee
     public abstract string Domain { get; }
 
 
-    public bool IsValid { get; private set; } = true;
+    public bool IsValid { get; protected set; }
 
 
     /// <summary>
@@ -44,6 +46,16 @@ public abstract class TrusteeApiBase : ITrustee
     protected static HttpClient _client { get; private set; } = new();
 
     private static ILiteDatabase _db { get; } = new LiteDatabase(@$"FileName=data\platformlog.db;Connection=Shared");
+
+
+    public async Task<bool> VerifyConfig()
+    {
+        var r = await VerifyConfigOverride();
+        SetStatus(r); 
+        return r;
+    }
+
+    protected abstract Task<bool> VerifyConfigOverride();
 
 
     public abstract Task<ReturnWrap<Investor>> QueryInvestors();
@@ -191,7 +203,7 @@ public abstract class TrusteeApiBase : ITrustee
     {
         ++ConsecutiveErrorCount;
         if (ConsecutiveErrorCount > 5)
-            SetDisabled();
+            SetStatus();
     }
 
 
@@ -286,10 +298,13 @@ public abstract class TrusteeApiBase : ITrustee
     /// <summary>
     /// 设置不可用
     /// </summary>
-    protected void SetDisabled()
+    protected void SetStatus(bool status = false)
     {
-        IsValid = false;
-        WeakReferenceMessenger.Default.Send(new TrusteeStatus(Identifier, false));
+        IsValid = status;
+        var config = SaveConfigOverride();
+        using var db = DbHelper.Platform();
+        db.GetCollection<IAPIConfig>().Upsert(config);
+        WeakReferenceMessenger.Default.Send(new TrusteeStatus(Identifier, status));
     }
 
 

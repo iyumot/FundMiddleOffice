@@ -31,13 +31,15 @@ public class XYZQ : TrusteeApiBase
     public string? AToken { get; private set; }
     public string? FToken { get; private set; }
 
+    private DateTime TokenTime { get; set; }
+
     public override bool IsSuit(string? company) => string.IsNullOrWhiteSpace(company) ? false : Regex.IsMatch(company, $"兴业证券|兴业证券股份有限公司|{_Identifier}");
 
 
     public override bool Prepare()
     {
         if (string.IsNullOrWhiteSpace(ClientId) || string.IsNullOrWhiteSpace(UserName) || string.IsNullOrWhiteSpace(Password) || ClientSecret is null)
-            SetDisabled();
+            SetStatus();
 
         return true;
     }
@@ -96,6 +98,7 @@ public class XYZQ : TrusteeApiBase
         }
         AToken = tnode.GetValue<string>();
         FToken = rnode.GetValue<string>();
+        TokenTime = DateTime.Now;
 
         return true;
     }
@@ -125,6 +128,7 @@ public class XYZQ : TrusteeApiBase
         }
         AToken = tnode.GetValue<string>();
         FToken = rnode.GetValue<string>();
+        TokenTime = DateTime.Now;
         return true;
     }
 
@@ -178,18 +182,19 @@ public class XYZQ : TrusteeApiBase
         //request.Headers.Add("Authorization", "");
         //request.Headers.Add("client_id", ClientId);
 
-        var caller = nameof(QueryTransferRequests);
+        var caller = nameof(QuerySubjectFundMappings);
 
         for (int i = 0; i < 19; i++) // 防止无限循环 
         {
-            var response = await _client.SendAsync(request);
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            var response = await _client.SendAsync(request, cts.Token);
             var json = await response.Content.ReadAsStringAsync();
             var root = JsonSerializer.Deserialize<JsonRoot>(json);
             if (root?.returnCode == "-3") // token失效
             {
                 if (!await GetToken())
                 {
-                    SetDisabled();
+                    SetStatus();
                     return new(ReturnCode.IdentitifyFailed, []);
                 }
                 continue;
@@ -202,8 +207,9 @@ public class XYZQ : TrusteeApiBase
                 return new(ReturnCode.Unknown, []);
             }
 
-
-
+            if (root.currentPage >= root.totalPage) break;
+            
+            url = GetUrl($"/pposapi?servername=productList&access_token={AToken}&version=V1.0&currentpage={++pageId}&y=5000");
         }
 
         return new(ReturnCode.Success, []);
@@ -214,7 +220,7 @@ public class XYZQ : TrusteeApiBase
     {
         if (string.IsNullOrWhiteSpace(AToken) && !await GetToken())
         {
-            SetDisabled();
+            SetStatus();
             return false;
         }
         return true;
@@ -248,6 +254,11 @@ public class XYZQ : TrusteeApiBase
         c.CloneFrom(this);
         return c;
     }
+
+    protected override async Task<bool> VerifyConfigOverride()
+    {
+        try { return (await QuerySubjectFundMappings()).Code == ReturnCode.Success; } catch { return false; }
+    }
 }
 
 
@@ -266,4 +277,7 @@ internal class APIConfig : IAPIConfig
     public string? ClientSecret { get; set; }
 
     public string? Token { get; set; }
+
+
+    public bool IsValid { get; set; }
 }

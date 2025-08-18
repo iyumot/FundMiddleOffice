@@ -92,6 +92,7 @@ public interface ITrustee
 
     Task<ReturnWrap<DailyValue>> QueryNetValue(DateOnly begin, DateOnly end, string? fundCode = null);
 
+    Task<bool> VerifyConfig();
 
     public bool IsSuit(string? comapny);
 }

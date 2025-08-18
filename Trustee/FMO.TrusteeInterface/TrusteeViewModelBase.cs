@@ -1,11 +1,17 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using FMO.Models;
 
 namespace FMO.Trustee;
 
-public abstract partial class TrusteeViewModelBase : ObservableObject,IRecipient<TrusteeStatus>
+public abstract partial class TrusteeViewModelBase : ObservableObject, IRecipient<TrusteeStatus>
 {
+    protected TrusteeViewModelBase()
+    {
+        WeakReferenceMessenger.Default.RegisterAll(this);
+    }
+
     public string Idenitifier { get; set; } = "";
 
     public string? Title { get; protected set; }
@@ -16,7 +22,7 @@ public abstract partial class TrusteeViewModelBase : ObservableObject,IRecipient
 
     [ObservableProperty]
     public partial bool ShowConfigSetting { get; set; }
-     
+
 
 
     public bool CanSave
@@ -73,5 +79,7 @@ public abstract partial class TrusteeViewModelBase<T> : TrusteeViewModelBase, IT
         SaveConfigOverride();
         ShowConfigSetting = false;
         Assist.Renew();
+
+        Task.Run(async () => { var r = await Assist.VerifyConfig(); WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Info, $"{Assist.Title}配置校验{(r ? "成功" : "失败")}")); });
     }
 }

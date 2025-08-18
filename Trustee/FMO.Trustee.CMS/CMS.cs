@@ -230,7 +230,7 @@ public partial class CMS : TrusteeApiBase
         InitCertificate();
 
         if (string.IsNullOrWhiteSpace(CompanyId) || string.IsNullOrWhiteSpace(LicenceKey) || string.IsNullOrWhiteSpace(UserNo) || ServerType is null || Certificate is null)
-            SetDisabled();
+            SetStatus();
 
         return true;
     }
@@ -246,13 +246,14 @@ public partial class CMS : TrusteeApiBase
         UserNo = c.UserNo;
         PFX = c.PFX;
         Password = c.Password;
+        IsValid = c.IsValid;
 
         return true;
     }
 
     protected override IAPIConfig SaveConfigOverride()
     {
-        return new APIConfig { CompanyId = CompanyId, LicenceKey = LicenceKey, ServerType = ServerType, UserNo = UserNo, PFX = PFX, Password = Password };
+        return new APIConfig { CompanyId = CompanyId, LicenceKey = LicenceKey, ServerType = ServerType, UserNo = UserNo, PFX = PFX, Password = Password, IsValid = IsValid };
     }
 
 
@@ -413,7 +414,7 @@ public partial class CMS : TrusteeApiBase
 
         if (string.IsNullOrWhiteSpace(LicenceKey) || string.IsNullOrWhiteSpace(UserNo) || Certificate is null || ServerType is null)
         {
-            SetDisabled();
+            SetStatus();
             return ReturnCode.ConfigInvalid;
         }
 
@@ -464,6 +465,10 @@ public partial class CMS : TrusteeApiBase
         return param;
     }
 
+    protected override async Task<bool> VerifyConfigOverride()
+    {
+        try { return (await QuerySubjectFundMappings()).Code == ReturnCode.Success; } catch { return false; }
+    }
 }
 internal class APIConfig : IAPIConfig
 {
@@ -481,6 +486,8 @@ internal class APIConfig : IAPIConfig
     public byte[]? PFX { get; set; }
 
     public string? Password { get; set; }
+
+    public bool IsValid { get; set; }
 }
 
 
