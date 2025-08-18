@@ -89,7 +89,7 @@ public partial class ReadOnlyFileMetaViewModel : ObservableObject
 
     public bool CanSet => Meta is null || !Meta.Exists;
 
-    public bool Deleted => Meta is not null && !Meta.Exists;
+    public bool Deleted => Meta is not null && !string.IsNullOrWhiteSpace(Meta.Id) && !Meta.Exists;
 
 
     private string? GetShort(string? name, int cnt = 20)

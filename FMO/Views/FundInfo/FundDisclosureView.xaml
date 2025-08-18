@@ -96,6 +96,104 @@
         </StackPanel>
 
         <StackPanel Margin="1,0,0,0" Background="WhiteSmoke">
+            <StackPanel.Resources>
+
+
+                <Style
+                    x:Key="Report"
+                    BasedOn="{StaticResource ListBoxCustom}"
+                    TargetType="ListBox">
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="Padding" Value="5" />
+                    <Setter Property="ItemTemplate">
+                        <Setter.Value>
+                            <DataTemplate>
+                                <hc:UniformSpacingPanel
+                                    ChildWrapping="Wrap"
+                                    Spacing="5"
+                                    VerticalSpacing="5">
+                                    <TextBlock
+                                        Width="40"
+                                        Height="15"
+                                        VerticalAlignment="Center"
+                                        FontWeight="Black"
+                                        Text="{Binding Title}"
+                                        TextAlignment="Center" />
+
+                                    <shared:FileView Content="{Binding Word}" Style="{StaticResource SimpleViewOnlyFileStyle}">
+                                        <shared:FileView.Header>
+                                            <Viewbox Width="14" Height="14">
+                                                <Path Data="{StaticResource f.file-word}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Control}}}" />
+                                            </Viewbox>
+                                        </shared:FileView.Header>
+                                    </shared:FileView>
+
+                                    <shared:FileView Content="{Binding Excel}" Style="{StaticResource SimpleViewOnlyFileStyle}">
+                                        <shared:FileView.Header>
+                                            <Viewbox Width="14" Height="14">
+                                                <Path Data="{StaticResource f.file-excel}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Control}}}" />
+                                            </Viewbox>
+                                        </shared:FileView.Header>
+                                    </shared:FileView>
+
+                                    <shared:FileView Content="{Binding Pdf}" Style="{StaticResource SimpleViewOnlyFileStyle}">
+                                        <shared:FileView.Header>
+                                            <Viewbox Width="14" Height="14">
+                                                <Path Data="{StaticResource f.file-pdf}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Control}}}" />
+                                            </Viewbox>
+                                        </shared:FileView.Header>
+                                    </shared:FileView>
+
+                                    <shared:FileView Content="{Binding Xbrl}" Style="{StaticResource SimpleViewOnlyFileStyle}">
+                                        <shared:FileView.Header>
+                                            <Viewbox Width="14" Height="14">
+                                                <Path Data="{StaticResource f.file-code}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Control}}}" />
+                                            </Viewbox>
+                                        </shared:FileView.Header>
+                                    </shared:FileView>
+                                </hc:UniformSpacingPanel>
+                            </DataTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+                <Style
+                    x:Key="Update"
+                    BasedOn="{StaticResource ListBoxCustom}"
+                    TargetType="ListBox">
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="Padding" Value="5" />
+                    <Setter Property="ItemTemplate">
+                        <Setter.Value>
+                            <DataTemplate>
+                                <hc:UniformSpacingPanel
+                                    Margin="0,1"
+                                    ChildWrapping="Wrap"
+                                    Spacing="5"
+                                    VerticalSpacing="5">
+                                    <TextBlock
+                                        Width="40"
+                                        VerticalAlignment="Center"
+                                        FontWeight="Black"
+                                        Text="{Binding Title}"
+                                        TextAlignment="Center" />
+
+                                    <shared:FileView
+                                        Content="{Binding Investor}"
+                                        Header="投资人信息表"
+                                        Style="{StaticResource SimpleViewOnlyFileStyle}" />
+                                    <shared:FileView
+                                        Margin="10,0,0,0"
+                                        Content="{Binding Operation}"
+                                        Header="运行信息表"
+                                        Style="{StaticResource SimpleViewOnlyFileStyle}" />
+
+                                </hc:UniformSpacingPanel>
+                            </DataTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+
+            </StackPanel.Resources>
             <Border Background="Green">
                 <TextBlock
                     Margin="0,5"
@@ -103,7 +201,39 @@
                     Foreground="White"
                     Text="定期报告" />
             </Border>
-            <ListBox
+
+
+            <Expander Header="月报">
+                <ListBox
+                    shared:MaskService.IsMask="True"
+                    ItemsSource="{Binding Monthly.View}"
+                    Style="{StaticResource Report}" />
+            </Expander>
+            <Expander Header="季报" IsExpanded="True">
+                <ListBox
+                    shared:MaskService.IsMask="True"
+                    ItemsSource="{Binding Quarterly.View}"
+                    Style="{StaticResource Report}" />
+            </Expander>
+            <Expander Header="半年报">
+                <ListBox
+                    shared:MaskService.IsMask="True"
+                    ItemsSource="{Binding SemiAnnually.View}"
+                    Style="{StaticResource Report}" />
+            </Expander>
+            <Expander Header="年报" IsExpanded="True">
+                <ListBox
+                    shared:MaskService.IsMask="True"
+                    ItemsSource="{Binding Annually.View}"
+                    Style="{StaticResource Report}" />
+            </Expander>
+            <Expander Header="季度更新" IsExpanded="True">
+                <ListBox
+                    shared:MaskService.IsMask="True"
+                    ItemsSource="{Binding QuarterlyUpdate.View}"
+                    Style="{StaticResource Update}" />
+            </Expander>
+            <!--<ListBox
                 shared:MaskService.IsMask="True"
                 ItemsSource="{Binding PeriodicDisclosure}"
                 Style="{StaticResource ListBoxCustom}">
@@ -115,7 +245,7 @@
                         </DockPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
-            </ListBox>
+            </ListBox>-->
         </StackPanel>
     </UniformGrid>
 </UserControl>

@@ -60,6 +60,7 @@ public class FundPeriodicReport : IPeriodical
 
     public PeriodicReportType Type { get; set; }
 
+  
 
     public SimpleFile? Word { get; set; }
 
@@ -80,7 +81,8 @@ public class FundQuarterlyUpdate : IPeriodical
 
     public required int FundId { get; set; }
 
-    public PeriodicReportType Type => PeriodicReportType.QuarterlyReport;
+    public PeriodicReportType Type => PeriodicReportType.QuarterlyUpdate;
+
 
 
     /// <summary>

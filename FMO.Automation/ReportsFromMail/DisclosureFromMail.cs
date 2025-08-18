@@ -157,7 +157,7 @@ public class DisclosureFromMailMission : MailMission
                         FundQuarterlyUpdate fp = new() { FundId = fundId, PeriodEnd = r.Key };
                         foreach (var item in r)
                         {
-                            if (item.FileName.Contains("投资人"))
+                            if (Regex.IsMatch(item.FileName, "投资[者人]"))
                                 fp.Investor = new SimpleFile { File = FileMeta.Create(item.Stream, item.FileName) };
                             else if (item.FileName.Contains("运行"))
                                 fp.Operation = new SimpleFile { File = FileMeta.Create(item.Stream, item.FileName) };
