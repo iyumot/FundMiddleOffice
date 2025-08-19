@@ -227,7 +227,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
                 case ContractModifyFlow d:
                     Flows.Add(new ContractModifyFlowViewModel(d));
-                    if (d.RegistrationLetter is not null)
+                    if (d.RegistrationLetter?.File?.Exists??false)
                         RegistrationLetter.Meta = d.RegistrationLetter.File;
                     break;
 

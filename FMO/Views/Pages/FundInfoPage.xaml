@@ -391,6 +391,7 @@
             <shared:FileView
                 AllowDrop="False"
                 Content="{Binding RegistrationLetter}"
+                Header="备案函"
                 IsReadOnly="True" />
 
 
