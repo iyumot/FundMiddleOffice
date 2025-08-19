@@ -256,7 +256,7 @@
                 Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource AncestorType=local:FileView}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
 
             <hc:SimplePanel Height="20">
-                <DockPanel x:Name="canset" MinWidth="160">
+                <DockPanel x:Name="canset" MinWidth="100">
 
                     <local:AbbreviationText
                         x:Name="file"

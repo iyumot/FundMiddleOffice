@@ -173,9 +173,9 @@
             </DockPanel>
         </DataTemplate>
 
-   
 
-  
+
+
 
         <Style BasedOn="{StaticResource SimpleFileStyle}" TargetType="shared:FileView">
             <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}" />
@@ -470,13 +470,14 @@
                             <Button CommandParameter="{Binding CommitmentLetter}" Style="{StaticResource GeneratorButton}" />
                             <shared:FileView
                                 Content="{Binding CommitmentLetter}"
-                                Header="备案函"
+                                Header="承诺函"
                                 Style="{StaticResource DualFileStyle2}" />
                         </WrapPanel>
 
 
                         <shared:FileView
                             Content="{Binding RegistrationLetter}"
+                            Header="备案函"
                             Style="{StaticResource DualFileStyle2}"
                             Visibility="{Binding ModifyName, Converter={StaticResource Boolean2VisibilityConverter}}" />
                     </StackPanel>
