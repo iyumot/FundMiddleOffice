@@ -26,6 +26,7 @@
 
     <local:FileExistsToVisibilityConverter x:Key="FileExistsToVisibilityConverter" />
 
+    <SolidColorBrush x:Key="LabelBrush">Gray</SolidColorBrush>
 
     <DataTemplate x:Key="DT.File">
         <DockPanel Background="Transparent" LastChildFill="False">
@@ -323,16 +324,6 @@
         </DataTemplate.Triggers>
     </DataTemplate>
 
-    <DataTemplate x:Key="DefaultHeader">
-        <DockPanel LastChildFill="False">
-            <TextBlock
-                x:Name="lb"
-                VerticalAlignment="Center"
-                Foreground="{DynamicResource LabelBrush}"
-                Text="{Binding Binding.Label, RelativeSource={RelativeSource TemplatedParent}}" />
-
-        </DockPanel>
-    </DataTemplate>
 
     <DataTemplate x:Key="DualFile.Flip">
         <DockPanel>
@@ -438,7 +429,6 @@
 
     <DataTemplate x:Key="DualFile.Wrap.NoDate">
         <hc:UniformSpacingPanel ChildWrapping="Wrap" Spacing="5">
-
             <ContentPresenter
                 VerticalAlignment="Center"
                 Content="{Binding Normal}"
@@ -447,11 +437,12 @@
             <Viewbox
                 x:Name="stp"
                 Width="16"
-                Height="16">
+                Height="16"
+                Margin="5,0,0,0">
                 <Path Data="{StaticResource f.stamp}" Fill="Red" />
             </Viewbox>
 
-            <Border>
+            <Border Margin="5,0,0,0">
                 <ContentPresenter
                     VerticalAlignment="Center"
                     Content="{Binding Another}"
@@ -615,10 +606,16 @@
         </hc:SimplePanel>
     </DataTemplate>
 
+    <DataTemplate x:Key="DefaultHeader">
+        <TextBlock Text="{Binding}" TextElement.Foreground="{StaticResource LabelBrush}" />
+    </DataTemplate>
+
+
     <Style x:Key="MultiFileStyle" TargetType="local:FileView">
         <Setter Property="AllowDrop" Value="{Binding IsReadOnly, RelativeSource={RelativeSource Self}, Converter={StaticResource Boolean2BooleanReConverter}}" />
         <Setter Property="ContentTemplate" Value="{StaticResource MultiFile}" />
         <Setter Property="Header" Value="{Binding Content.Label, RelativeSource={RelativeSource Self}, FallbackValue=文件}" />
+        <Setter Property="HeaderTemplate" Value="{StaticResource DefaultHeader}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:FileView">
@@ -693,6 +690,7 @@
     <Style x:Key="SimpleFileStyle" TargetType="local:FileView">
         <Setter Property="AllowDrop" Value="{Binding IsReadOnly, RelativeSource={RelativeSource Self}, Converter={StaticResource Boolean2BooleanReConverter}}" />
         <Setter Property="ContentTemplate" Value="{StaticResource DT.File}" />
+        <Setter Property="HeaderTemplate" Value="{StaticResource DefaultHeader}" />
         <!--<Setter Property="Header" Value="{Binding Content.Label, RelativeSource={RelativeSource Self}, FallbackValue=文件}" />-->
         <Setter Property="Template">
             <Setter.Value>
@@ -761,19 +759,16 @@
     <Style x:Key="DualFileStyle" TargetType="local:FileView">
         <Setter Property="AllowDrop" Value="{Binding IsReadOnly, RelativeSource={RelativeSource Self}, Converter={StaticResource Boolean2BooleanReConverter}}" />
         <Setter Property="ContentTemplate" Value="{StaticResource DualFile.Wrap.NoDate}" />
+        <Setter Property="HeaderTemplate" Value="{StaticResource DefaultHeader}" />
         <Setter Property="Header" Value="{Binding Content.Label, RelativeSource={RelativeSource Self}, FallbackValue=文件}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:FileView">
                     <Border
-                        MaxHeight="20"
                         Margin="{TemplateBinding Margin}"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}">
-                        <i:Interaction.Behaviors>
-                            <local:DelayMouseOverExpandBehavior TargetMaxHeight="200" />
-                        </i:Interaction.Behaviors>
                         <DockPanel Background="Transparent">
                             <ContentPresenter
                                 VerticalAlignment="Center"
@@ -806,6 +801,7 @@
 
     <Style x:Key="SimpleViewOnlyFileStyle" TargetType="local:FileView">
         <Setter Property="ContentTemplate" Value="{StaticResource ViewOnlyFileTemplate}" />
+        <Setter Property="HeaderTemplate" Value="{StaticResource DefaultHeader}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:FileView">
