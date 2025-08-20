@@ -1,6 +1,4 @@
 ﻿using Serilog;
-using Serilog.Core;
-using Serilog.Events;
 using System.Runtime.CompilerServices;
 
 namespace FMO.Logging;
@@ -222,12 +220,12 @@ public static class LogEx
         Here(filePath, memberName, lineNumber).Error(message, propertyValues);
     }
 
-    public static void Error(Exception exception, string message="",
+    public static void Error(Exception exception,
         [CallerFilePath] string filePath = "",
         [CallerMemberName] string memberName = "",
         [CallerLineNumber] int lineNumber = 0)
     {
-        Here(filePath, memberName, lineNumber).Error(exception, message);
+        Here(filePath, memberName, lineNumber).Error($"{exception.Message}\n{exception.StackTrace}");
     }
 
     public static void Error<T>(Exception exception, string message, T propertyValue,
