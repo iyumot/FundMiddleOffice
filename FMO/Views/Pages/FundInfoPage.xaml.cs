@@ -63,8 +63,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         FundStatus = fund.Status;
 
 
-        _api = TrusteeGallay.Find(fund.Id);
-
+        _api = TrusteeGallay.Find(fund.Id); 
 
 #pragma warning disable CS8625 // 无法将 null 字面量转换为非 null 的引用类型。
         //RegistrationLetter = new SingleFileViewModel()
@@ -134,7 +133,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
         StrategyDataContext = new(FundId, fund.SetupDate);
         AccountsDataContext = new(FundId, FundCode!, names);
-        TADataContext = new(FundId);
+        TADataContext = new(FundId) { IsTrusteeApiAvaliable = _api?.IsValid ?? false };
         AnnouncementContext = new(FundId);
 
         IsActive = true;

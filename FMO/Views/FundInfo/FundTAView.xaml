@@ -134,52 +134,47 @@
     <DockPanel Margin="10">
 
         <!--  认购份额  -->
-        <StackPanel DockPanel.Dock="Top">
+        <DockPanel DockPanel.Dock="Top">
 
-            <DockPanel>
-                <Border
-                    VerticalAlignment="Top"
-                    Background="Green"
-                    CornerRadius="4">
-                    <TextBlock
-                        Margin="10,4"
-                        VerticalAlignment="Center"
-                        FontSize="16"
-                        Foreground="White"
-                        Text="初始份额"
-                        TextAlignment="Center"
-                        TextWrapping="Wrap" />
-                </Border>
-                <TextBlock Margin="5,0" Text="{Binding InitialShares.Count, StringFormat=持有人数 {0}}" />
-                <TextBlock Margin="5,0" Text="{Binding InitialTotalShare, StringFormat=总份额 {0:N2}}" />
-            </DockPanel>
+            <Separator Margin="0,5" DockPanel.Dock="Bottom" />
 
-            <!--<DataGrid
-                Margin="0,5"
-                AutoGenerateColumns="False"
-                IsReadOnly="True"
-                ItemsSource="{Binding InitialShares}"
-                RowStyle="{StaticResource DataGridRowStyle}"
-                Style="{StaticResource DataGrid.Small}">
-                <DataGrid.Columns>
-                    <DataGridTemplateColumn CellTemplate="{StaticResource DT.NameCell}" Header="投资人" />
-                    <DataGridTemplateColumn CellTemplate="{StaticResource DT.ShareCell}" Header="份额" />
-                </DataGrid.Columns>
+            <Button
+                hc:IconElement.Geometry="{StaticResource f.cloud-arrow-down}"
+                DockPanel.Dock="Right"
+                Foreground="RoyalBlue"
+                Style="{StaticResource ButtonIcon}"
+                Visibility="{Binding IsTrusteeApiAvaliable, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
-            </DataGrid>-->
+            <StackPanel DockPanel.Dock="Top">
 
-            <ListBox
-                Margin="0,10,0,0"
-                BorderThickness="0"
-                ItemContainerStyle="{StaticResource ListBoxInitial}"
-                ItemsPanel="{StaticResource Wrap}"
-                ItemsSource="{Binding InitialShares}"
-                Style="{StaticResource ListBoxCustom}" />
+                <DockPanel>
+                    <Border
+                        VerticalAlignment="Top"
+                        Background="Green"
+                        CornerRadius="4">
+                        <TextBlock
+                            Margin="10,4"
+                            VerticalAlignment="Center"
+                            FontSize="16"
+                            Foreground="White"
+                            Text="初始份额"
+                            TextAlignment="Center"
+                            TextWrapping="Wrap" />
+                    </Border>
+                    <TextBlock Margin="5,0" Text="{Binding InitialShares.Count, StringFormat=持有人数 {0}}" />
+                    <TextBlock Margin="5,0" Text="{Binding InitialTotalShare, StringFormat=总份额 {0:N2}}" />
+                </DockPanel>
 
+                <ListBox
+                    Margin="0,10,0,0"
+                    BorderThickness="0"
+                    ItemContainerStyle="{StaticResource ListBoxInitial}"
+                    ItemsPanel="{StaticResource Wrap}"
+                    ItemsSource="{Binding InitialShares}"
+                    Style="{StaticResource ListBoxCustom}" />
 
-            <Separator Margin="0,5" />
-
-        </StackPanel>
+            </StackPanel>
+        </DockPanel>
 
 
 

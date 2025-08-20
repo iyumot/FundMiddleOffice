@@ -143,6 +143,10 @@ public partial class FundTAViewModel : ObservableObject
     [ObservableProperty]
     public partial IEnumerable<TransferRecord>? InvestorDetail { get; set; }
 
+    [ObservableProperty]
+    public partial bool IsTrusteeApiAvaliable { get; set; }
+
+
 
     [RelayCommand]
     public void ShowInvestorDetail(InvestorShareViewModel v)
