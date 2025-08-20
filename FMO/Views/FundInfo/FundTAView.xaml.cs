@@ -1,12 +1,15 @@
-﻿using System.IO;
-using System.Windows.Controls;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using FMO.Logging;
 using FMO.Models;
 using FMO.TPL;
+using FMO.Trustee;
 using FMO.Utilities;
 using Microsoft.Win32;
+using System.IO;
+using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace FMO;
 
@@ -27,6 +30,7 @@ public partial class FundTAViewModel : ObservableObject
 {
     public FundTAViewModel(int fundId)
     {
+
         FundId = fundId;
 
         using var db = DbHelper.Base();
@@ -39,7 +43,7 @@ public partial class FundTAViewModel : ObservableObject
         Records = ta;
 
         // customeid = 0
-        foreach (var item in ta.Where(x=>x.InvestorId == 0)) 
+        foreach (var item in ta.Where(x => x.InvestorId == 0))
             item.InvestorId = item.InvestorIdentity.GetHashCode();
 
         // 对齐开放日净值
@@ -158,7 +162,7 @@ public partial class FundTAViewModel : ObservableObject
 
     [RelayCommand]
     public void ViewInvestor(InvestorShareViewModel v)
-    { 
+    {
         InvestorViewIsOpen = true;
         InvestorViewModel = new CustomerViewModel(v.Id);
     }
@@ -192,7 +196,7 @@ public partial class FundTAViewModel : ObservableObject
             using var db = DbHelper.Base();
             var customers = db.GetCollection<Investor>().FindAll().ToArray();
 
-            var gend= CurrentShares.OrderByDescending(x=> x.Share).Take(10).Join(customers, x => x.Id, x => x.Id, (x, y) => new
+            var gend = CurrentShares.OrderByDescending(x => x.Share).Take(10).Join(customers, x => x.Id, x => x.Id, (x, y) => new
             {
                 Name = x.Name,
                 ID = y.Identity?.Id,
@@ -217,6 +221,37 @@ public partial class FundTAViewModel : ObservableObject
     {
         WeakReferenceMessenger.Default.Send(new OpenPageMessage("TA"));
         WeakReferenceMessenger.Default.Send(new PageTAMessage(2, FundName));
+    }
+
+    [RelayCommand]
+    public async Task UpdateTAByApi()
+    {
+        // check
+        var api = TrusteeGallay.Find(FundId);
+        if (!(api?.IsValid ?? false))
+        {
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "API 不可用"));
+            return;
+        }
+        try
+        {
+
+            using var db = DbHelper.Base();
+            var fund = db.GetCollection<Fund>().FindById(FundId);
+
+            var result = await api.QueryTransferRequests(fund.SetupDate.AddMonths(-3), DateOnly.FromDateTime(DateTime.Now), fund.Code);
+            if (result.Code == ReturnCode.Success && result.Data?.Count > 0)
+                DataTracker.OnBatchTransferRequest(result.Data);
+
+            var records = await api.QueryTransferRecords(fund.SetupDate.AddMonths(-3), DateOnly.FromDateTime(DateTime.Now), fund.Code);
+            if (records.Code == ReturnCode.Success && records.Data?.Count > 0)
+                DataTracker.OnBatchTransferRecord(records.Data);
+        }
+        catch (Exception e)
+        {
+            LogEx.Error(e);
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "更新失败"));
+        }
     }
 }
 

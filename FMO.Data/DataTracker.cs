@@ -6,7 +6,6 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using System.Threading.Channels;
 
 namespace FMO.Utilities;
 
@@ -635,7 +634,7 @@ public static partial class DataTracker
 
 
         WeakReferenceMessenger.Default.Send(data);
- 
+
     }
 
 
@@ -649,8 +648,7 @@ public static partial class DataTracker
         // 通知UI
         try
         {
-            foreach (var item in records)
-                WeakReferenceMessenger.Default.Send(item);
+            WeakReferenceMessenger.Default.Send(records);
         }
         catch { }
 

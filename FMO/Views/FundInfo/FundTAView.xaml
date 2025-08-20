@@ -140,6 +140,7 @@
 
             <Button
                 hc:IconElement.Geometry="{StaticResource f.cloud-arrow-down}"
+                Command="{Binding UpdateTAByApiCommand}"
                 DockPanel.Dock="Right"
                 Foreground="RoyalBlue"
                 Style="{StaticResource ButtonIcon}"

@@ -1,5 +1,6 @@
 ﻿using FMO.Logging;
 using FMO.Models;
+using FMO.Utilities;
 using Microsoft.CodeAnalysis;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -218,6 +219,23 @@ public class XYZQ : TrusteeApiBase
 
 
         var result = await SyncWork<TransferRecord, RecordJson>("TaDataConfirmQuery", new { scdate = begin.ToString("yyyyMMdd"), ecdate = end.ToString("yyyyMMdd"), fundcode = fundCode }, x => x.ToObject());
+
+        // code 
+        if (result.Data is not null)
+        {
+            using var db = DbHelper.Base();
+            var dic = db.GetCollection<Fund>().Query().Select(x => new { x.Code, x.Id }).ToList().ToDictionary(x => x.Code!, x => x.Id);
+            foreach (var item in result.Data.GroupBy(x => x.FundCode))
+            {
+                var code = FundMappings?.FirstOrDefault(x => x.FundCode == item.Key)?.AmacCode;
+                dic.TryGetValue(code!, out var id);
+                foreach (var g in item)
+                {
+                    g.FundCode = code;
+                    g.FundId = id;
+                }
+            }
+        }
 
         return result;
     }

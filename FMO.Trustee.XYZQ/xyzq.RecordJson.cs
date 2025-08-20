@@ -161,8 +161,8 @@ internal class RecordJson:JsonBase
         var r = new TransferRecord
         {
             FundCode = fundcode,
-            ConfirmedDate = DateOnly.ParseExact(cdate, "yyyyMMdd"),
-            RequestDate = DateOnly.ParseExact(date, "yyyyMMdd"),
+            ConfirmedDate = DateOnly.ParseExact(cdate, "yyyy-MM-dd"),
+            RequestDate = DateOnly.ParseExact(date, "yyyy-MM-dd"),
             FundName = fundname,
             Agency = agencyname,
             InvestorName = custname,
@@ -190,98 +190,88 @@ internal class RecordJson:JsonBase
     {
         return type switch
         {
-            // -----------------------------
-            // 常见交易类
-            // -----------------------------
-            "01" => TransferRecordType.Subscription,         // 认购
-            "02" => TransferRecordType.Purchase,             // 申购
-            "03" => TransferRecordType.Redemption,           // 赎回
-            "05" => TransferRecordType.TransferIn,           // 托管转入
-            "06" => TransferRecordType.TransferOut,          // 托管转出
-            "07" => TransferRecordType.BonusType,            // 修改分红方式
-            "13" => TransferRecordType.SwitchOut,            // 基金转换(出)
-            "15" => TransferRecordType.TransferOut,          // 非交易过户出
-            "16" => TransferRecordType.SwitchIn,             // 基金转换入
-            "14" => TransferRecordType.TransferIn,           // 非交易过户入
-           // "17" => TransferRecordType.Abort,                // 撤单
-            "20" => TransferRecordType.TransferOut,          // 内部转托管
-            "21" => TransferRecordType.TransferIn,           // 内部转托管入
-            "22" => TransferRecordType.TransferOut,          // 内部转托管出
-            "25" => TransferRecordType.Redemption,           // 预约赎回
-            "39" => TransferRecordType.Purchase,             // 定期定额申购
-            "50" => TransferRecordType.InitialOffer,         // 基金成立 → 视为认购
-            "53" => TransferRecordType.ForceRedemption,      // 强制赎回
-            "70" => TransferRecordType.Increase,             // 强制调增
-            "71" => TransferRecordType.Decrease,             // 强制调减
-            "74" => TransferRecordType.Distribution,         // 红利发放（分红）
-            "95" => TransferRecordType.Redemption,           // 定期定额赎回
+            "认购" => TransferRecordType.InitialOffer,
+            "申购" => TransferRecordType.Purchase,
+            "赎回" => TransferRecordType.Redemption,
+            "转托管" => TransferRecordType.TransferOut,
+            "托管转入" => TransferRecordType.TransferIn,
+            "托管转出" => TransferRecordType.TransferOut,
+            "修改分红方式" => TransferRecordType.BonusType,
+            "份额冻结" => TransferRecordType.Frozen,
+            "份额解冻" => TransferRecordType.Thawed,
+            "非交易过户" => TransferRecordType.TransferIn,
+            "基金转换(出)" => TransferRecordType.SwitchOut,
+            "非交易过户出" => TransferRecordType.TransferOut,
+            "非交易过户入" => TransferRecordType.TransferIn,
+            "基金转换入" => TransferRecordType.SwitchIn,
+            "撤单" => TransferRecordType.UNK,
+            "内部转托管" => TransferRecordType.TransferOut,
+            "内部转托管入" => TransferRecordType.MoveIn,
+            "内部转托管出" => TransferRecordType.MoveOut,
+            "预约赎回" => TransferRecordType.Redemption,
+            "定期定额申购" => TransferRecordType.Purchase,
+            "基金成立" => TransferRecordType.Subscription,
+            "基金终止" => TransferRecordType.RaisingFailed,
+            "基金清盘" => TransferRecordType.RaisingFailed,
+            "强制赎回" => TransferRecordType.ForceRedemption,
+            "发行失败" => TransferRecordType.RaisingFailed,
+            "统一" => TransferRecordType.UNK,
+            "联名卡开通" => TransferRecordType.UNK,
+            "联名卡撤销" => TransferRecordType.UNK,
+            "强制调增" => TransferRecordType.Increase,
+            "强制调减" => TransferRecordType.Decrease,
+            "红利发放" => TransferRecordType.Distribution,
+            "定期定额赎回" => TransferRecordType.Redemption,
+            "盘后合并入" => TransferRecordType.Increase,
+            "盘后分拆入" => TransferRecordType.Increase,
+            "盘后分拆出" => TransferRecordType.Decrease,
+            "盘后合并出" => TransferRecordType.Decrease,
+            "赎回保底强增" => TransferRecordType.Increase,
+            "赎回保底强减" => TransferRecordType.Decrease,
+            "统一保底保本强增" => TransferRecordType.Increase,
+            "统一保底保本强减" => TransferRecordType.Decrease,
+            "保本转期换算强增" => TransferRecordType.Increase,
+            "保本转期换算强减" => TransferRecordType.Decrease,
+            "跨TA基金转换" => TransferRecordType.SwitchIn,
+            "跨TA基金转换出" => TransferRecordType.SwitchOut,
+            "跨TA基金转换入" => TransferRecordType.SwitchIn,
+            "网点变更入" => TransferRecordType.TransferIn,
+            "网点变更出" => TransferRecordType.TransferOut,
+            "基金拆分强减" => TransferRecordType.Decrease,
+            "基金拆分强增" => TransferRecordType.Increase,
+            "正收益支付" => TransferRecordType.Distribution,
+            "基金分级入" => TransferRecordType.SwitchIn,
+            "负收益支付" => TransferRecordType.Distribution,
+            "基金分级出" => TransferRecordType.SwitchOut,
+            "统一业绩提成强增" => TransferRecordType.Increase,
+            "统一业绩提成强减" => TransferRecordType.Decrease,
+            "分红业绩提成强增" => TransferRecordType.Increase,
+            "分红业绩提成强减" => TransferRecordType.Decrease,
+            "定期兑付赎回" => TransferRecordType.Redemption,
+            "买入待交收恢复交收" => TransferRecordType.Purchase,
+            "解押" => TransferRecordType.TransferIn,
+            "快速过户出" => TransferRecordType.TransferOut,
+            "快速过户" => TransferRecordType.TransferOut,
+            "快速过户入" => TransferRecordType.TransferIn,
+            "管理人强增" => TransferRecordType.Increase,
+            "管理人强减" => TransferRecordType.Decrease,
+            "恢复交收强增" => TransferRecordType.Increase,
+            "二级账户收益强增" => TransferRecordType.Increase,
+            "一级账户收益强减" => TransferRecordType.Decrease,
+            "卖出" => TransferRecordType.Redemption,
+            "买入" => TransferRecordType.Purchase,
+            "合同生效" => TransferRecordType.Subscription,
+            "开放日参与" => TransferRecordType.Purchase,
+            "开放日退出" => TransferRecordType.Redemption,
+            "违约退出" => TransferRecordType.Redemption,
+            "合同终止" => TransferRecordType.RaisingFailed,
+            "募集失败" => TransferRecordType.RaisingFailed,
+            "转指定出" => TransferRecordType.TransferOut,
+            "转指定入" => TransferRecordType.TransferIn,
+            "定期转换协议" => TransferRecordType.SwitchIn,
+            "质押" => TransferRecordType.TransferIn,
 
-            // -----------------------------
-            // 特殊操作 & 扩展
-            // -----------------------------
-            "A1" => TransferRecordType.Increase,             // 盘后合并入
-            "A2" => TransferRecordType.Increase,             // 盘后分拆入
-            "A3" => TransferRecordType.Decrease,             // 盘后分拆出
-            "A4" => TransferRecordType.Increase,             // 盘后合并出 → 实际是调减？但逻辑上合并出是减少，这里可能需业务确认
-            "A5" => TransferRecordType.Increase,             // 赎回保底强增
-            "A6" => TransferRecordType.Decrease,             // 赎回保底强减
-            "A7" => TransferRecordType.Increase,             // 统一保底保本强增
-            "A8" => TransferRecordType.Decrease,             // 统一保底保本强减
-            "A9" => TransferRecordType.Increase,             // 保本转期换算强增
-            "AA" => TransferRecordType.Decrease,             // 保本转期换算强减
-            "B0" => TransferRecordType.SwitchIn,             // 跨TA基金转换（整体）
-            "B1" => TransferRecordType.SwitchOut,            // 跨TA基金转换出
-            "B2" => TransferRecordType.SwitchIn,             // 跨TA基金转换入
-            "C1" => TransferRecordType.TransferIn,           // 网点变更入
-            "C2" => TransferRecordType.TransferOut,          // 网点变更出
-            "C3" => TransferRecordType.Decrease,             // 基金拆分强减
-            "F1" => TransferRecordType.Increase,             // 基金拆分强增
-            "F2" => TransferRecordType.Distribution,         // 正收益支付 → 分红
-            "F3" => TransferRecordType.SwitchIn,             // 基金分级入
-            "F4" => TransferRecordType.Distribution,         // 负收益支付 → 分红
-            "F5" => TransferRecordType.SwitchOut,            // 基金分级出
-            "F6" => TransferRecordType.Increase,             // 统一业绩提成强增
-            "F7" => TransferRecordType.Decrease,             // 统一业绩提成强减
-            "F8" => TransferRecordType.Increase,             // 分红业绩提成强增
-            "F9" => TransferRecordType.Decrease,             // 分红业绩提成强减
-            "G1" => TransferRecordType.Redemption,           // 定期兑付赎回
-            "JS" => TransferRecordType.Purchase,             // 买入待交收恢复交收 → 买入
-            "JY" => TransferRecordType.TransferIn,           // 解押 → 视为转入
-            "KC" => TransferRecordType.TransferOut,          // 快速过户出
-            "KH" => TransferRecordType.TransferOut,          // 快速过户（默认视为出）
-            "KR" => TransferRecordType.TransferIn,           // 快速过户入
-            "M2" => TransferRecordType.Increase,             // 管理人强增
-            "M3" => TransferRecordType.Decrease,             // 管理人强减
-            "M4" => TransferRecordType.Increase,             // 恢复交收强增
-            "M5" => TransferRecordType.Increase,             // 二级账户收益强增
-            "M6" => TransferRecordType.Decrease,             // 一级账户收益强减
-            "mc" => TransferRecordType.Redemption,           // 卖出
-            "mr" => TransferRecordType.Purchase,             // 买入
-            "Z2" => TransferRecordType.Subscription,         // 合同生效 → 认购
-            "Z3" => TransferRecordType.Purchase,             // 开放日参与 → 申购
-            "Z4" => TransferRecordType.Redemption,           // 开放日退出 → 赎回
-            "Z5" => TransferRecordType.Redemption,           // 违约退出 → 赎回
-           // "Z6" => TransferRecordType.Abort,                // 合同终止 → 撤单/取消
-           // "Z7" => TransferRecordType.Abort,                // 募集失败 → 取消
-            "ZC" => TransferRecordType.TransferOut,          // 转指定出
-            "ZR" => TransferRecordType.TransferIn,           // 转指定入
-            "ZT" => TransferRecordType.SwitchIn,             // 定期转换协议 → 转入
-            "ZY" => TransferRecordType.TransferIn,           // 质押 → 视为转入（或可单独处理）
-
-            // -----------------------------
-            // 其他未明确映射（可选：返回 UNK 或按需扩展）
-            // -----------------------------
-            "04" => TransferRecordType.TransferOut,          // 转托管 → 视为转出
-            "10" => TransferRecordType.UNK,                  // 份额冻结（无对应）
-            "11" => TransferRecordType.UNK,                  // 份额解冻（无对应）
-            "12" => TransferRecordType.TransferOut,          // 非交易过户 → 视为转出
-            "51" => TransferRecordType.UNK,                  // 基金终止（无直接对应）
-            "52" => TransferRecordType.UNK,                  // 基金清盘
-           // "54" => TransferRecordType.Abort,                // 发行失败 → 取消
-            "58" => TransferRecordType.UNK,                  // 统一（含义模糊）
-            "67" => TransferRecordType.UNK,                  // 联名卡开通（非交易类）
-            "68" => TransferRecordType.UNK,                  // 联名卡撤销
-            _ => TransferRecordType.UNK                      // 默认未知
+            _ => TransferRecordType.UNK
         };
     }
 }

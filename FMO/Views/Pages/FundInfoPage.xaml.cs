@@ -31,7 +31,7 @@ public partial class FundInfoPage : UserControl
 
 public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<FundDailyUpdateMessage>,
     IRecipient<FundStrategyChangedMessage>, IRecipient<FundAccountChangedMessage>, IRecipient<EntityChangedMessage<Fund, DateOnly>>,
-    IRecipient<EntityChangedMessage<Fund, FundStatus>>
+    IRecipient<EntityChangedMessage<Fund, FundStatus>>, IRecipient<TrusteeStatus>
 {
     public Fund Fund { get; init; }
 
@@ -63,7 +63,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         FundStatus = fund.Status;
 
 
-        _api = TrusteeGallay.Find(fund.Id); 
+        _api = TrusteeGallay.Find(fund.Id);
 
 #pragma warning disable CS8625 // 无法将 null 字面量转换为非 null 的引用类型。
         //RegistrationLetter = new SingleFileViewModel()
@@ -867,6 +867,12 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
     public void Receive(EntityChangedMessage<Fund, FundStatus> message)
     {
         FundStatus = message.Value;
+    }
+
+    public void Receive(TrusteeStatus message)
+    {
+        if (message.Id == _api?.Identifier)
+            TADataContext.IsTrusteeApiAvaliable = message.Status;
     }
 }
 
