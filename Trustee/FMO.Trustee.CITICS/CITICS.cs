@@ -653,7 +653,6 @@ public partial class CITICS : TrusteeApiBase
         CustomerAuth = c.CustomerAuth;
         Token = c.Token;
         TokenTime = c.TokenTime;
-        IsValid = c.IsValid;
         return true;
     }
 
@@ -665,7 +664,7 @@ public partial class CITICS : TrusteeApiBase
 
     protected override IAPIConfig SaveConfigOverride()
     {
-        return new APIConfig { CustomerAuth = CustomerAuth, Token = Token, TokenTime = TokenTime, IsValid = IsValid };
+        return new APIConfig { CustomerAuth = CustomerAuth, Token = Token, TokenTime = TokenTime };
     }
 
 
@@ -764,6 +763,5 @@ public class APIConfig : IAPIConfig
 
     public DateTime? TokenTime { get; set; }
 
-    public bool IsValid { get; set; }
 }
 

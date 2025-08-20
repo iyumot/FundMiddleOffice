@@ -43,12 +43,12 @@ public abstract partial class TrusteeViewModelBase : ObservableObject, IRecipien
 
     public void Receive(TrusteeStatus message)
     {
-        if (message.Identifier == Idenitifier)
+        if (message.Id == Idenitifier)
             IsAvaliable = message.Status;
     }
 }
 
-public record TrusteeStatus(string Identifier, bool Status);
+public record TrusteeStatus(string Id, bool Status);
 
 public interface ITrusteeViewModel
 {
@@ -78,7 +78,6 @@ public abstract partial class TrusteeViewModelBase<T> : TrusteeViewModelBase, IT
     {
         SaveConfigOverride();
         ShowConfigSetting = false;
-        Assist.Renew();
 
         Task.Run(async () => { var r = await Assist.VerifyConfig(); WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Info, $"{Assist.Title}配置校验{(r ? "成功" : "失败")}")); });
     }

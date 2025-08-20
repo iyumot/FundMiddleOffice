@@ -279,5 +279,4 @@ internal class APIConfig : IAPIConfig
     public string? Token { get; set; }
 
 
-    public bool IsValid { get; set; }
 }

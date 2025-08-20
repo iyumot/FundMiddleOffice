@@ -246,14 +246,13 @@ public partial class CMS : TrusteeApiBase
         UserNo = c.UserNo;
         PFX = c.PFX;
         Password = c.Password;
-        IsValid = c.IsValid;
 
         return true;
     }
 
     protected override IAPIConfig SaveConfigOverride()
     {
-        return new APIConfig { CompanyId = CompanyId, LicenceKey = LicenceKey, ServerType = ServerType, UserNo = UserNo, PFX = PFX, Password = Password, IsValid = IsValid };
+        return new APIConfig { CompanyId = CompanyId, LicenceKey = LicenceKey, ServerType = ServerType, UserNo = UserNo, PFX = PFX, Password = Password };
     }
 
 
@@ -487,7 +486,6 @@ internal class APIConfig : IAPIConfig
 
     public string? Password { get; set; }
 
-    public bool IsValid { get; set; }
 }
 
 

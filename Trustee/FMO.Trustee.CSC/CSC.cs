@@ -274,7 +274,6 @@ public partial class CSC : TrusteeApiBase
         APIKey = c.APIKey;
         APISecret = c.APISecret;
         EncryptKey = c.EncryptKey;
-        IsValid = c.IsValid;
         return true;
     }
 
@@ -298,7 +297,7 @@ public partial class CSC : TrusteeApiBase
 
     protected override IAPIConfig SaveConfigOverride()
     {
-        return new APIConfig { EncryptKey = EncryptKey, APIKey = APIKey, APISecret = APISecret, IsValid = IsValid };
+        return new APIConfig { EncryptKey = EncryptKey, APIKey = APIKey, APISecret = APISecret };
     }
 
 
@@ -590,5 +589,4 @@ internal class APIConfig : IAPIConfig
 
     public string? EncryptKey { get; set; }
 
-    public bool IsValid { get; set; }
 }

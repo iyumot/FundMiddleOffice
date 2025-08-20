@@ -13,7 +13,6 @@ public interface IAPIConfig
 {
     public string Id { get; }
 
-    public bool IsValid { get; set; }
 }
 
 public abstract class TrusteeApiBase : ITrustee
@@ -30,7 +29,7 @@ public abstract class TrusteeApiBase : ITrustee
     public abstract string Domain { get; }
 
 
-    public bool IsValid { get; protected set; }
+    public bool IsValid { get; private set; }
 
 
     /// <summary>
@@ -119,8 +118,17 @@ public abstract class TrusteeApiBase : ITrustee
     public bool LoadConfig()
     {
         using var db = DbHelper.Platform();
-        try { if (db.GetCollection<IAPIConfig>().FindById(Identifier) is IAPIConfig config) return LoadConfigOverride(config); }
+        try
+        {
+            IsValid = db.GetCollection<TrusteeStatus>().FindById(Identifier)?.Status ?? false;
+
+            if (db.GetCollection<IAPIConfig>().FindById(Identifier) is IAPIConfig config) 
+                return LoadConfigOverride(config);
+        }
         catch/*(Exception e) */{ WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Error, $"加载{Title}的配置文件出错")); }
+
+
+        IsValid = db.GetCollection<TrusteeStatus>().FindById(Identifier)?.Status ?? false;
         return false;
     }
 
@@ -304,10 +312,11 @@ public abstract class TrusteeApiBase : ITrustee
     /// </summary>
     protected void SetStatus(bool status = false)
     {
+        if (status == IsValid) return;
+
         IsValid = status;
-        var config = SaveConfigOverride();
         using var db = DbHelper.Platform();
-        db.GetCollection<IAPIConfig>().Upsert(config);
+        db.GetCollection<TrusteeStatus>().Upsert(new TrusteeStatus(Identifier, status));
         WeakReferenceMessenger.Default.Send(new TrusteeStatus(Identifier, status));
     }
 
