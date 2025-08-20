@@ -37,7 +37,7 @@ public interface ITrustee
 
     string Identifier { get; }
 
-    Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end);
+    Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end, string? fundCode = null);
 
     /// <summary>
     /// 获取交易确认记录
@@ -45,7 +45,7 @@ public interface ITrustee
     /// <param name="begin"></param>
     /// <param name="end"></param>
     /// <returns></returns>
-    Task<ReturnWrap<TransferRecord>> QueryTransferRecords(DateOnly begin, DateOnly end);
+    Task<ReturnWrap<TransferRecord>> QueryTransferRecords(DateOnly begin, DateOnly end, string? fundCode = null);
 
     /// <summary>
     /// 获取基金固定费用
@@ -62,7 +62,7 @@ public interface ITrustee
     /// <param name="begin"></param>
     /// <param name="end"></param>
     /// <returns></returns>
-    Task<ReturnWrap<BankTransaction>> QueryCustodialAccountTransction(DateOnly begin, DateOnly end = default);
+    Task<ReturnWrap<BankTransaction>> QueryCustodialAccountTransction(DateOnly begin, DateOnly end, string? fundCode = null);
 
 
     /// <summary>
@@ -71,7 +71,7 @@ public interface ITrustee
     /// <param name="begin"></param>
     /// <param name="end"></param>
     /// <returns></returns>
-    Task<ReturnWrap<RaisingBankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end);
+    Task<ReturnWrap<RaisingBankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end, string? fundCode = null);
 
 
 

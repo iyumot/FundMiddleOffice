@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using System.Transactions;
 using System.Web;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -87,10 +88,10 @@ public partial class CITICS : TrusteeApiBase
     }
 
 
-    public override async Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end)
+    public override async Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end, string? fundCode = null)
     {
         var part = "/v2/ta/queryTradeApplyForApi";
-        var result = await SyncWork<TransferRequest, TransferRequestJson>(part, new { ackBeginDate = $"{begin:yyyyMMdd}", ackEndDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
+        var result = await SyncWork<TransferRequest, TransferRequestJson>(part, new { ackBeginDate = $"{begin:yyyyMMdd}", ackEndDate = $"{end:yyyyMMdd}", fundCode = fundCode }, x => x.ToObject());
         return result;
 
         // 后处理 不处理，统一在DataTracker中
@@ -108,10 +109,10 @@ public partial class CITICS : TrusteeApiBase
 
 
 
-    public override async Task<ReturnWrap<TransferRecord>> QueryTransferRecords(DateOnly begin, DateOnly end)
+    public override async Task<ReturnWrap<TransferRecord>> QueryTransferRecords(DateOnly begin, DateOnly end, string? fundCode = null)
     {
         var part = "/v1/ta/TradeConfirmationForApi";
-        var result = await SyncWork<TransferRecordJson, TransferRecordJson>(part, new { ackBeginDate = $"{begin:yyyyMMdd}", ackEndDate = $"{end:yyyyMMdd}" }, x => x);
+        var result = await SyncWork<TransferRecordJson, TransferRecordJson>(part, new { ackBeginDate = $"{begin:yyyyMMdd}", ackEndDate = $"{end:yyyyMMdd}", fundCode = fundCode }, x => x);
 
         List<TransferRecord> list = new();
         // 后处理
@@ -163,7 +164,7 @@ public partial class CITICS : TrusteeApiBase
 
         // 排除失败的 特殊情况
         // 如果有失败，会一条替代， 且reqid和id一样，
-        foreach(var failed in list.Where(x=>x.IsFailed).ToList())
+        foreach (var failed in list.Where(x => x.IsFailed).ToList())
         {
             if (list.FirstOrDefault(x => !x.IsFailed && x.FundCode == failed.FundCode && x.InvestorIdentity == failed.InvestorIdentity && x.ConfirmedDate == failed.ConfirmedDate && x.ExternalRequestId == x.ExternalId) is TransferRecord repl)
             {
@@ -202,7 +203,7 @@ public partial class CITICS : TrusteeApiBase
         return r;
     }
 
-    public override async Task<ReturnWrap<RaisingBankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end)
+    public override async Task<ReturnWrap<RaisingBankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end, string? fundCode = null)
     {
         var part = "/v1/fs/queryRaiseAccFlowForApi";
 
@@ -210,7 +211,7 @@ public partial class CITICS : TrusteeApiBase
         List<RaisingBankTransaction> transactions = new();
         foreach (var (b, e) in ts)
         {
-            var result = await SyncWork<RaisingBankTransaction, BankTransactionJson>(part, new { beginDate = $"{b:yyyyMMdd}", endDate = $"{e:yyyyMMdd}" }, x => x.ToObject());
+            var result = await SyncWork<RaisingBankTransaction, BankTransactionJson>(part, new { beginDate = $"{b:yyyyMMdd}", endDate = $"{e:yyyyMMdd}", fundCode = fundCode }, x => x.ToObject());
             if (result.Code != ReturnCode.Success) return result;
 
             if (result.Data is not null)
@@ -228,7 +229,7 @@ public partial class CITICS : TrusteeApiBase
         return new(ReturnCode.Success, transactions.ToArray());
     }
 
-    public override async Task<ReturnWrap<BankTransaction>> QueryCustodialAccountTransction(DateOnly begin, DateOnly end = default)
+    public override async Task<ReturnWrap<BankTransaction>> QueryCustodialAccountTransction(DateOnly begin, DateOnly end, string? fundCode = null)
     {
         if (end == default) end = begin;
 
@@ -242,9 +243,20 @@ public partial class CITICS : TrusteeApiBase
         else
         {
             //历史 
-            var part = "/v1/cs/queryTgAccountHistoryFlowForApi";
-            var result = await SyncWork<BankTransaction, CustodialTransactionJson2>(part, null, x => x.ToObject());
-            return result;
+            var ts = Split(begin, end, 3000);
+
+            List<BankTransaction> data = [];
+            foreach (var item in ts)
+            {
+                var part = "/v1/cs/queryTgAccountHistoryFlowForApi";
+                var result = await SyncWork<BankTransaction, CustodialTransactionJson2>(part, new { beginDate = item.b, endDate = item.e, pdCode = fundCode }, x => x.ToObject());
+                if (result.Code != ReturnCode.Success)
+                    return result;
+
+                if (result.Data?.Count > 0)
+                    data.AddRange(result.Data);
+            }
+            return new(ReturnCode.Success, data.ToArray()); 
         }
     }
     public async Task<ReturnWrap<BankTransaction>> QueryCustodialAccountTransction(string code, DateOnly begin, DateOnly end = default)

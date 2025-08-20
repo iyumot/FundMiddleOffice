@@ -58,9 +58,9 @@ public partial class CMS : TrusteeApiBase
 
 
 
-    public override async Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end)
+    public override async Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end, string? fundCode = null)
     {
-        var data = await SyncWork<TransferRequest, TransferRequestJson>(1007, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
+        var data = await SyncWork<TransferRequest, TransferRequestJson>(1007, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}", fundCode = fundCode }, x => x.ToObject());
 
         // 无数据返回
         if (data.Data?.Count == 0) return data;
@@ -87,9 +87,9 @@ public partial class CMS : TrusteeApiBase
 
 
 
-    public override async Task<ReturnWrap<TransferRecord>> QueryTransferRecords(DateOnly begin, DateOnly end)
+    public override async Task<ReturnWrap<TransferRecord>> QueryTransferRecords(DateOnly begin, DateOnly end, string? fundCode = null)
     {
-        var data = await SyncWork<TransferRecord, TransferRecordJson>(1006, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}" }, x => x.ToObject());
+        var data = await SyncWork<TransferRecord, TransferRecordJson>(1006, new { beginDate = $"{begin:yyyyMMdd}", endDate = $"{end:yyyyMMdd}", fundCode = fundCode }, x => x.ToObject());
 
         // 子产品 映射
         if (FundsInfo is null)
@@ -133,7 +133,7 @@ public partial class CMS : TrusteeApiBase
 
 
 
-    public override Task<ReturnWrap<BankTransaction>> QueryCustodialAccountTransction(DateOnly begin, DateOnly end)
+    public override Task<ReturnWrap<BankTransaction>> QueryCustodialAccountTransction(DateOnly begin, DateOnly end, string? fundCode = null)
     {
         throw new NotImplementedException();
     }
@@ -146,7 +146,7 @@ public partial class CMS : TrusteeApiBase
     }
 
 
-    public override async Task<ReturnWrap<RaisingBankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end)
+    public override async Task<ReturnWrap<RaisingBankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end, string? fundCode = null)
     {
         // 查询区间大于1个月，需要多次查询 
         var ts = Split(begin, end, 30);
@@ -155,7 +155,7 @@ public partial class CMS : TrusteeApiBase
 
         foreach (var (b, e) in ts)
         {
-            var data = await SyncWork<RaisingBankTransaction, RaisingBankTransactionJson>(1002, new { ksrq = $"{b:yyyyMMdd}", jsrq = $"{e:yyyyMMdd}" }, x => x.ToObject());
+            var data = await SyncWork<RaisingBankTransaction, RaisingBankTransactionJson>(1002, new { ksrq = $"{b:yyyyMMdd}", jsrq = $"{e:yyyyMMdd}", cpdm = fundCode }, x => x.ToObject());
             if (data.Code != ReturnCode.Success)
                 return data;
 
@@ -186,7 +186,7 @@ public partial class CMS : TrusteeApiBase
     public override async Task<ReturnWrap<DailyValue>> QueryNetValue(DateOnly begin, DateOnly end, string? fundCode = null)
     {
         var b = begin; var e = end;
-        object param = fundCode?.Length > 0 ? new { beginDate = $"{b:yyyyMMdd}", endDate = $"{e:yyyyMMdd}", fundCode = fundCode } : new { beginDate = $"{b:yyyyMMdd}", endDate = $"{e:yyyyMMdd}" };
+        object param = new { beginDate = $"{b:yyyyMMdd}", endDate = $"{e:yyyyMMdd}", fundCode = fundCode };
 
         var data = await SyncWork<NetValueJson, NetValueJson>(1005, param, x => x);
 

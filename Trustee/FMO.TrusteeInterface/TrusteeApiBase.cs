@@ -51,7 +51,7 @@ public abstract class TrusteeApiBase : ITrustee
     public async Task<bool> VerifyConfig()
     {
         var r = await VerifyConfigOverride();
-        SetStatus(r); 
+        SetStatus(r);
         return r;
     }
 
@@ -62,7 +62,7 @@ public abstract class TrusteeApiBase : ITrustee
 
 
 
-    public abstract Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end);
+    public abstract Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end, string? fundCode = null);
 
 
 
@@ -78,7 +78,7 @@ public abstract class TrusteeApiBase : ITrustee
     /// <param name="begin"></param>
     /// <param name="end"></param>
     /// <returns></returns>
-    public abstract Task<ReturnWrap<TransferRecord>> QueryTransferRecords(DateOnly begin, DateOnly end);
+    public abstract Task<ReturnWrap<TransferRecord>> QueryTransferRecords(DateOnly begin, DateOnly end, string? fundCode = null);
 
 
 
@@ -90,10 +90,10 @@ public abstract class TrusteeApiBase : ITrustee
 
 
 
-    public abstract Task<ReturnWrap<BankTransaction>> QueryCustodialAccountTransction(DateOnly begin, DateOnly end = default);
+    public abstract Task<ReturnWrap<BankTransaction>> QueryCustodialAccountTransction(DateOnly begin, DateOnly end, string? fundCode = null);
 
 
-    public abstract Task<ReturnWrap<RaisingBankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end);
+    public abstract Task<ReturnWrap<RaisingBankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end, string? fundCode = null);
 
 
 
@@ -192,7 +192,11 @@ public abstract class TrusteeApiBase : ITrustee
         {
             var ps = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanRead);
             foreach (var item in ps)
-                dic.Add(item.Name, item.GetValue(obj)!);
+            {
+                var value = item.GetValue(obj);
+                if (value is not null)
+                    dic.Add(item.Name, value);
+            }
         }
         return dic;
     }
@@ -249,7 +253,7 @@ public abstract class TrusteeApiBase : ITrustee
     protected static void SetCache(string Identifier, string Method, object Params, string json)
     {
         _db.GetCollection<APIDebugCache>().Insert(new APIDebugCache(Identifier, Method, Params, json));
-    } 
+    }
 #endif
 
 

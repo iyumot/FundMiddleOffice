@@ -140,7 +140,7 @@ public class XYZQ : TrusteeApiBase
         return ReturnCode.Success;
     }
 
-    public override Task<ReturnWrap<BankTransaction>> QueryCustodialAccountTransction(DateOnly begin, DateOnly end = default)
+    public override Task<ReturnWrap<BankTransaction>> QueryCustodialAccountTransction(DateOnly begin, DateOnly end, string? fundCode = null)
     {
         throw new NotImplementedException();
     }
@@ -160,7 +160,7 @@ public class XYZQ : TrusteeApiBase
         throw new NotImplementedException();
     }
 
-    public override Task<ReturnWrap<RaisingBankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end)
+    public override Task<ReturnWrap<RaisingBankTransaction>> QueryRaisingAccountTransction(DateOnly begin, DateOnly end, string? fundCode = null)
     {
         throw new NotImplementedException();
     }
@@ -227,12 +227,12 @@ public class XYZQ : TrusteeApiBase
     }
 
 
-    public override Task<ReturnWrap<TransferRecord>> QueryTransferRecords(DateOnly begin, DateOnly end)
+    public override Task<ReturnWrap<TransferRecord>> QueryTransferRecords(DateOnly begin, DateOnly end, string? fundCode = null)
     {
         throw new NotImplementedException();
     }
 
-    public override async Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end)
+    public override async Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end, string? fundCode = null)
     {
 
         throw new NotImplementedException();
