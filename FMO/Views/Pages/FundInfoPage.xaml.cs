@@ -39,6 +39,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
     private bool _initialized;
 
+    private ITrustee? _api;
 
     //FileSystemWatcher sheetFolderWatcher;
 
@@ -62,7 +63,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
         FundStatus = fund.Status;
 
 
-        
+        _api = TrusteeGallay.Find(fund.Id);
 
 
 #pragma warning disable CS8625 // 无法将 null 字面量转换为非 null 的引用类型。
@@ -227,7 +228,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
                 case ContractModifyFlow d:
                     Flows.Add(new ContractModifyFlowViewModel(d));
-                    if (d.RegistrationLetter?.File?.Exists??false)
+                    if (d.RegistrationLetter?.File?.Exists ?? false)
                         RegistrationLetter.Meta = d.RegistrationLetter.File;
                     break;
 

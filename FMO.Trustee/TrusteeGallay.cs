@@ -32,6 +32,7 @@ public static class TrusteeGallay
         Worker = new TrusteeWorker(Trustees);
     }
 
+    public static ITrustee? Find(int id) => Worker.Find(id);
 
     /// <summary>
     /// 放到首页中

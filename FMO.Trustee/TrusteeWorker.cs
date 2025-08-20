@@ -181,6 +181,9 @@ public partial class TrusteeWorker : ObservableObject
              ];
     }
 
+
+    public ITrustee? Find(int fundId) => Maps.FirstOrDefault(x => x.FundId == fundId)?.Trustee;
+
     #region Impl
 
     /// <summary>
