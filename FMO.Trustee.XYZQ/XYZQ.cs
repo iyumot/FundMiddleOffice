@@ -1,9 +1,12 @@
 ﻿using FMO.Logging;
 using FMO.Models;
+using Microsoft.CodeAnalysis;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using System.Web;
 
 namespace FMO.Trustee;
 
@@ -32,6 +35,8 @@ public class XYZQ : TrusteeApiBase
     public string? FToken { get; private set; }
 
     private DateTime TokenTime { get; set; }
+
+    private IList<SubjectFundMapping>? FundMappings { get; set; }
 
     public override bool IsSuit(string? company) => string.IsNullOrWhiteSpace(company) ? false : Regex.IsMatch(company, $"兴业证券|兴业证券股份有限公司|{_Identifier}");
 
@@ -179,39 +184,10 @@ public class XYZQ : TrusteeApiBase
         var url = GetUrl($"/pposapi?servername=productList&access_token={AToken}&version=V1.0&currentpage={pageId}&y=5000");
 
         HttpRequestMessage request = new(new HttpMethod("GET"), url);
-        //request.Headers.Add("Authorization", "");
-        //request.Headers.Add("client_id", ClientId);
 
-        var caller = nameof(QuerySubjectFundMappings);
+        var map = await SyncWork<SubjectFundMapping, SubjectFundMappingJson>("productList", null, x => x.ToObject());
 
-        for (int i = 0; i < 19; i++) // 防止无限循环 
-        {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            var response = await _client.SendAsync(request, cts.Token);
-            var json = await response.Content.ReadAsStringAsync();
-            var root = JsonSerializer.Deserialize<JsonRoot>(json);
-            if (root?.returnCode == "-3") // token失效
-            {
-                if (!await GetToken())
-                {
-                    SetStatus();
-                    return new(ReturnCode.IdentitifyFailed, []);
-                }
-                continue;
-            }
-
-            // 其它原因失败
-            if (root?.returnCode != "1")
-            {
-                LogEx.Error($"{caller} {root?.msg}");
-                return new(ReturnCode.Unknown, []);
-            }
-
-            if (root.currentPage >= root.totalPage) break;
-            
-            url = GetUrl($"/pposapi?servername=productList&access_token={AToken}&version=V1.0&currentpage={++pageId}&y=5000");
-        }
-
+        FundMappings = map.Data ?? [];
         return new(ReturnCode.Success, []);
     }
 
@@ -227,15 +203,158 @@ public class XYZQ : TrusteeApiBase
     }
 
 
-    public override Task<ReturnWrap<TransferRecord>> QueryTransferRecords(DateOnly begin, DateOnly end, string? fundCode = null)
+    public override async Task<ReturnWrap<TransferRecord>> QueryTransferRecords(DateOnly begin, DateOnly end, string? fundCode = null)
     {
-        throw new NotImplementedException();
+        if (fundCode is not null)
+        {
+            if (FundMappings is null)
+                await QuerySubjectFundMappings();
+
+            if (FundMappings is null || FundMappings.Count == 0)
+                return new(ReturnCode.XYZQ_FundCode, []);
+
+            fundCode = FundMappings.FirstOrDefault(x => x.AmacCode == fundCode)?.FundCode;
+        }
+
+
+        var result = await SyncWork<TransferRecord, RecordJson>("TaDataConfirmQuery", new { scdate = begin.ToString("yyyyMMdd"), ecdate = end.ToString("yyyyMMdd"), fundcode = fundCode }, x => x.ToObject());
+
+        return result;
     }
 
     public override async Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end, string? fundCode = null)
     {
+        if (FundMappings is null)
+            await QuerySubjectFundMappings();
 
-        throw new NotImplementedException();
+        if (FundMappings is null || FundMappings.Count == 0)
+            return new(ReturnCode.XYZQ_NoFundIssued, []);
+
+        if (fundCode is null)
+            fundCode = string.Join(',', FundMappings.Select(x => x.FundCode));
+        else fundCode = FundMappings.FirstOrDefault(x => x.AmacCode == fundCode)?.FundCode;
+
+        if (fundCode is null)
+            return new(ReturnCode.XYZQ_FundCode, []);
+
+        var result = await SyncWork<TransferRequest, RequestJson>("QueryTradeApplication", new { startdate = begin.ToString("yyyyMMdd"), enddate = end.ToString("yyyyMMdd"), fundcode = fundCode }, x => x.ToObject());
+
+        return result;
+    }
+
+
+    protected override Dictionary<string, object> GenerateParams(object? obj)
+    {
+        var param = base.GenerateParams(obj);
+        param.Add("currentpage", 1);
+        param.Add("rows", 5000);
+
+        return param;
+    }
+    protected async Task<string> Query(string server, Dictionary<string, object> parameters)
+    {
+        // 创建request
+        //parameters["servername"] = server;
+
+        var part = string.Join('&', [$"servername={server}&access_token={AToken}&version=V1.0", .. parameters.Select(x => $"{x.Key}={HttpUtility.UrlEncode(x.Value.ToString())}")]);
+
+        var url = GetUrl($"/pposapi?{part}");
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+        var response = await _client.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+
+        return content;
+    }
+
+
+    protected async Task<ReturnWrap<TEntity>> SyncWork<TEntity, TJSON>(string server, object? param, Func<TJSON, TEntity> transfer, [CallerMemberName] string caller = "")
+    {
+        // 校验
+        if (CheckBreforeSync() is ReturnCode rc && rc != ReturnCode.Success) return new(rc, null);
+
+        if (!await EnsureToken()) return new(ReturnCode.XYZQ_CanNotGetToken, []);
+
+        // 非dict 转成dict 方便修改page
+        Dictionary<string, object> formatedParams;
+        if (param is null) formatedParams = new();
+        if (param is Dictionary<string, object> pp) formatedParams = pp;
+        else formatedParams = GenerateParams(param);
+
+        List<TJSON> list = new();
+
+        try
+        {
+            for (int i = 0; i < 19; i++)
+            {
+#if DEBUG
+                string? json = TrusteeApiBase.GetCache(Identifier, caller, formatedParams);
+                if (json is null) { json = await Query(server, formatedParams); SetCache(Identifier, caller, formatedParams, json!); }
+                else Debug.WriteLine($"{Identifier},{caller} Load From Cache");
+#else
+                var json = await Query(server, formatedParams);
+#endif
+
+                // 解析返回json 
+                try
+                {
+                    var root = JsonSerializer.Deserialize<JsonRoot>(json);
+                    if (root!.returnCode == "-3") // token失效
+                    {
+                        if (!await GetToken())
+                        {
+                            SetStatus();
+                            return new(ReturnCode.IdentitifyFailed, []);
+                        }
+                        --i;
+                        continue;
+                    }
+
+                    // 其它原因失败
+                    if (root.returnCode != "1")
+                    {
+                        LogEx.Error($"{caller} {root.msg}");
+                        return new(ReturnCode.Unknown, []);
+                    }
+
+                    if (root.resultDataSet is not null && root.resultDataSet.GetValueKind() == JsonValueKind.Array)
+                        list.AddRange(root.resultDataSet.AsArray().Select(x =>
+                        {
+                            try { return x.Deserialize<TJSON>()!; }
+                            catch (Exception ex)
+                            {
+                                // 记录具体哪个元素反序列化失败
+                                JsonBase.ReportJsonUnexpected(Identifier, caller!, $"Failed to deserialize item Error: {ex.Message}: {x}.");
+                                throw;
+                            }
+                        }));
+
+                    if (root.resultPage.currentPage >= root.resultPage.totalPage) break;
+
+                    // 下一页
+                    var page = (int)formatedParams["currentpage"];
+                    formatedParams["currentpage"] = page + 1;
+
+                }
+                catch (Exception e)
+                {
+                    LogEx.Error(e);
+                    return new(ReturnCode.JsonNotPairToEntity, []);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Log(caller, null, e.Message);
+            return new(ReturnCode.Unknown, []);
+        }
+
+        if (list.Count > 0)
+            CacheJson(caller, list);
+        Log(caller, null, list.Count == 0 ? "OK [Empty]" : $"OK [{list.Count}]");
+
+        try { var dd = list.Select(x => transfer(x)).ToArray(); return new(ReturnCode.Success, dd); }
+        catch (Exception e) { Log(e.Message); return new(ReturnCode.ObjectTransformError, []); }
     }
 
 

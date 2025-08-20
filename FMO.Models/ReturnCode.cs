@@ -198,4 +198,6 @@ public enum ReturnCode
 
 
     XYZQ_CanNotGetToken,
+    XYZQ_NoFundIssued,
+    XYZQ_FundCode,
 }
