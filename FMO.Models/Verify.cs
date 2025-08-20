@@ -22,6 +22,9 @@ public class VerifyMessage
 
     public string? Code { get; set; }
 
+    public int TimeOut { get; set; }
+
+
     public AutoResetEvent Waiter { get; } = new(false);
 }
 

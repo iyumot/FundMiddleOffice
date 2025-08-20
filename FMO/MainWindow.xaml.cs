@@ -39,7 +39,7 @@ public partial class MainWindow : HandyControl.Controls.Window
 
     private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
     {
-        if(e.Key == Key.F7)
+        if (e.Key == Key.F7)
         {
             Window window = new Window
             {

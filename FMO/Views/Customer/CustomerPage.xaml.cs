@@ -224,9 +224,12 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
             if (pfmap.Count() == 0)
             {
-                var acc = db.GetCollection<AmacAccount>().FindById("xinpi");
-                var ad = await PfidAssist.QueryInvestorAccounts(acc);
-                pfmap.Upsert(ad);
+                if (MessageBoxResult.Yes == HandyControl.Controls.MessageBox.Show("是否从pfid系统下载已知账户，如选择否，生成的账号会与系统中已有的账号冲突（同一投资人有不同的账号）", button: MessageBoxButton.YesNo))
+                {
+                    var acc = db.GetCollection<AmacAccount>().FindById("xinpi");
+                    var ad = await PfidAssist.QueryInvestorAccounts(acc);
+                    pfmap.Upsert(ad);
+                }
             }
 
 

@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DocumentFormat.OpenXml.Bibliography;
 using FMO.Models;
 using System.IO;
 using System.Windows;
@@ -23,6 +22,17 @@ public partial class VerifyWindow : Window
     {
         base.OnClosed(e);
         if (DataContext is VerifyWindowViewModel v) v.Release();
+    }
+
+    private void Window_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (DataContext is VerifyWindowViewModel v && v.TimeOut > 0)
+            Task.Run(async () =>
+            {
+                await Task.Delay(v.TimeOut);
+                await App.Current.Dispatcher.InvokeAsync(() => this.Close());
+            });
+
     }
 }
 
@@ -49,16 +59,23 @@ public partial class VerifyWindowViewModel : ObservableObject
     public partial string? Code { get; set; }
 
     private VerifyMessage Verify { get; }
+
     public string? Title { get; private set; }
+
+    /// <summary>
+    /// millseconds
+    /// </summary>
+    public int TimeOut { get; set; }
 
     public VerifyWindowViewModel(VerifyMessage verify)
     {
         Title = verify.Title;
+        TimeOut = verify.TimeOut;
 
         if (verify.Type == VerifyType.Captcha)
             ShowCaptcha = true;
 
-        if(verify.Image is not null)
+        if (verify.Image is not null)
         {
             var img = new BitmapImage();
             img.BeginInit();
