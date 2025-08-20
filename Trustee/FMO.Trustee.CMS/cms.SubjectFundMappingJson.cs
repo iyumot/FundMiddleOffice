@@ -30,7 +30,7 @@ internal class SubjectFundMappingJson : JsonBase
     public SubjectFundMapping ToObject()
     {
         var sc = IsGrade == "1" ? GradeName.Replace(ProductName, "") : "";
-        return new SubjectFundMapping { FundCode = GradeNo, FundName = GradeName, MasterCode = ProductNo, MasterName = ProductName, ShareClass = sc };
+        return new SubjectFundMapping { FundCode = GradeNo, FundName = GradeName, MasterCode = ProductNo, AmacCode = ProductNo, MasterName = ProductName, ShareClass = sc };
     }
 }
 

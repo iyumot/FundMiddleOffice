@@ -22,6 +22,11 @@ public class SubjectFundMapping
     public string? MasterCode { get; set; }
 
     /// <summary>
+    /// 协会
+    /// </summary>
+    public string? AmacCode { get; set; }
+
+    /// <summary>
     /// 份额名
     /// </summary>
     public string? ShareClass { get; set; }

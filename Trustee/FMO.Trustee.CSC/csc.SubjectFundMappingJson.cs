@@ -70,6 +70,7 @@ public class SubjectFundMappingJson : JsonBase
         {
             FundCode = ProductNo,
             FundName = ProductName,
+            AmacCode = ParentProductNo,
             MasterCode = ParentProductNo,
             MasterName = ParentProductName,
             ShareClass = sc,
