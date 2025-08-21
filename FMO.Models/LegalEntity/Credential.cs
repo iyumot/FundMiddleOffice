@@ -102,6 +102,9 @@ public enum IDType
     [Description("证券业务许可证")]
     SecuritiesBusinessLicense,
 
+    [Description("批文")]
+    Approval,
+
 
     [Description("产品登记编码")]
     ProductRegistrationCode,
