@@ -117,6 +117,9 @@ public partial class FundTAViewModel : ObservableObject
     public partial List<InvestorShareViewModel>? CurrentShares { get; set; }
 
     [ObservableProperty]
+    public partial InvestorShareViewModel? SelectedInvestor { get; set; }
+
+    [ObservableProperty]
     public partial bool CurrentShareNotPair { get; set; }
 
     [ObservableProperty]
@@ -150,6 +153,11 @@ public partial class FundTAViewModel : ObservableObject
     [ObservableProperty]
     public partial bool IsTrusteeApiAvaliable { get; set; }
 
+
+    partial void OnSelectedInvestorChanged(InvestorShareViewModel? value)
+    {
+        InvestorDetail = Records.Where(x => x.InvestorId == value?.Id);
+    }
 
 
     [RelayCommand]

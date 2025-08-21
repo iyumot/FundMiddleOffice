@@ -228,7 +228,55 @@
                     ItemsSource="{Binding CurrentShares}"
                     RowStyle="{StaticResource DataGridRowStyle}"
                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                    SelectedItem="{Binding SelectedInvestor}"
                     Style="{StaticResource DataGrid.Small}">
+                    <DataGrid.RowDetailsTemplate>
+                        <DataTemplate>
+                            <Border MaxHeight="500" DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=DataGrid}}">
+                                <DataGrid
+                                    Padding="5"
+                                    AutoGenerateColumns="False"
+                                    BorderThickness="0"
+                                    IsReadOnly="True"
+                                    ItemsSource="{Binding InvestorDetail}"
+                                    RowStyle="{StaticResource DataGridRowStyle}"
+                                    Style="{StaticResource DataGrid.Small}">
+                                    <DataGrid.Columns>
+                                        <DataGridTemplateColumn>
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Border
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Background="Black"
+                                                        CornerRadius="8"
+                                                        Visibility="{Binding IsLiquidating, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                                        <TextBlock
+                                                            Margin="3,1"
+                                                            FontSize="11"
+                                                            Foreground="White"
+                                                            Text="清" />
+                                                    </Border>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+
+                                        <DataGridTextColumn Binding="{Binding ConfirmedDate, StringFormat=yyyy-MM-dd}" Header="日期" />
+
+                                        <DataGridTextColumn Binding="{Binding ShareClass}" Header="分级" />
+                                        <DataGridTextColumn Binding="{Binding Type}" Header="类型" />
+                                        <DataGridTextColumn Binding="{Binding RequestShare, Converter={StaticResource ZeroToBlankConverter}}" Header="申请份额" />
+                                        <DataGridTextColumn Binding="{Binding RequestAmount, Converter={StaticResource ZeroToBlankConverter}}" Header="申请金额" />
+                                        <DataGridTextColumn Binding="{Binding ConfirmedShare, Converter={StaticResource ZeroToBlankConverter}}" Header="确认份额" />
+                                        <DataGridTextColumn Binding="{Binding ConfirmedAmount, Converter={StaticResource ZeroToBlankConverter}}" Header="确认金额" />
+                                        <DataGridTextColumn Binding="{Binding ConfirmedNetAmount, Converter={StaticResource ZeroToBlankConverter}}" Header="确认净额" />
+                                        <DataGridTextColumn Binding="{Binding PerformanceFee, Converter={StaticResource ZeroToBlankConverter}}" Header="业绩报酬" />
+                                        <DataGridTextColumn Binding="{Binding ExternalId}" Header="流水号" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Border>
+                        </DataTemplate>
+                    </DataGrid.RowDetailsTemplate>
                     <DataGrid.Columns>
                         <!--<DataGridTemplateColumn CellTemplate="{StaticResource DT.NameCell}" />-->
                         <DataGridTemplateColumn Header="投资人">
@@ -289,7 +337,7 @@
 
 
 
-                        <DataGridTemplateColumn>
+                        <!--<DataGridTemplateColumn>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Button
@@ -299,7 +347,7 @@
                                         Style="{StaticResource ButtonIconCircular.Small}" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
+                        </DataGridTemplateColumn>-->
                     </DataGrid.Columns>
 
                 </DataGrid>
