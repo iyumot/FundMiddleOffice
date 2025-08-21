@@ -84,6 +84,10 @@ public class BankAccount
     /// </summary>
     public string? BankAddress { get; set; }
 
+    /// <summary>
+    /// 注销
+    /// </summary>
+    public bool IsClosed { get; set; }
 
 
     private void SetDeposit(string? str)
