@@ -26,6 +26,7 @@ public partial class HomeValidationViewModel : ObservableObject
         ShareNotPair.View.Filter = (o) => o switch { IDataTip d => d.Tags.Contains(nameof(FundSharePairRule)), _ => false };
         FundOverdue.View.Filter = (o) => o switch { IDataTip d => d.Tags.Contains(nameof(FundOverdueRule)), _ => false };
         FundClearNotFinished.View.Filter = (o) => o switch { IDataTip d => d.Tags.Contains(nameof(FundClearNotFinishedRule)), _ => false };
+        FundScaleWarn.View.Filter = (o) => o switch { IDataTip d => d.Tags.Contains(nameof(FundScaleWarnRule)), _ => false };
     }
 
     /// <summary>
@@ -53,4 +54,10 @@ public partial class HomeValidationViewModel : ObservableObject
     ///  
     /// </summary>
     public CollectionViewSource FundClearNotFinished { get; } = new() { Source = DataObserver.Instance.Tips };
+
+    /// <summary>
+    /// 连续交易日低于500万
+    /// </summary>
+    public CollectionViewSource FundScaleWarn { get; } = new() { Source = DataObserver.Instance.Tips };
+
 }

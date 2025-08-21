@@ -45,5 +45,9 @@
             Header="基金清算长期未完成"
             TipTemplate="{StaticResource FundClearNotFinished}" />
 
+        <local:ValidationItemView
+            DataContext="{Binding FundScaleWarn.View}"
+            Header="连续交易日低于500万"
+            TipTemplate="{StaticResource FundScaleWarn}" />
     </hc:UniformSpacingPanel>
 </UserControl>

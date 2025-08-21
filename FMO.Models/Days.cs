@@ -79,14 +79,16 @@ public static class Days
     /// </summary>
     /// <param name="date"></param>
     /// <returns></returns>
-    public static DateOnly NextTradingDay(DateOnly date)
+    public static DateOnly NextTradingDay(DateOnly date, int skip = 1)
     {
         int s = Dates.BinarySearch(date);
         s = s < 0 ? ~s : s + 1;
 
-        for (int i = s; i < Dates.Count; i++)
+        for (int i = s, j = 0; i < Dates.Count; i++)
         {
             if (Data[i].Flag.HasFlag(DayFlag.Trade))
+                ++j;
+            if (j >= skip)
                 return Dates[i];
         }
         return default;
@@ -149,6 +151,20 @@ public static class Days
         return Data[s..e].Where(x => x.Flag.HasFlag(DayFlag.Trade)).Select(x => x.Date).ToList();
     }
 
+    public static int TradingDayCountFrom(DateOnly start)
+    {
+        var end = PrevTradingDay(DateOnly.FromDateTime(DateTime.Now));
+
+        if (start > end) return 0;
+
+        int s = Dates.BinarySearch(start);
+        int e = Dates.BinarySearch(end);
+
+        s = s < 0 ? ~s : s;
+        e = e < 0 ? ~e : e;
+
+        return Data[s..e].Where(x => x.Flag.HasFlag(DayFlag.Trade)).Count();
+    }
 
 
     static Days() => Init();

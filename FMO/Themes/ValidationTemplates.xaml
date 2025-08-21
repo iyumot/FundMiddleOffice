@@ -8,11 +8,13 @@
     <Style x:Key="LeftText" TargetType="TextBlock">
         <Setter Property="shared:MaskService.IsMask" Value="True" />
     </Style>
-    <Style x:Key="CenterText" TargetType="TextBlock">
+    <Style x:Key="CenterText.Mask" TargetType="TextBlock">
         <Setter Property="TextAlignment" Value="Center" />
         <Setter Property="shared:MaskService.IsMask" Value="True" />
     </Style>
-
+    <Style x:Key="CenterText" TargetType="TextBlock">
+        <Setter Property="TextAlignment" Value="Center" />
+    </Style>
     <Style x:Key="DateText" TargetType="TextBlock">
         <Setter Property="TextAlignment" Value="Center" />
     </Style>
@@ -40,7 +42,7 @@
                 <DataGridTextColumn
                     Width="100"
                     Binding="{Binding Context.Code}"
-                    ElementStyle="{StaticResource CenterText}"
+                    ElementStyle="{StaticResource CenterText.Mask}"
                     Header="代码" />
                 <DataGridTextColumn
                     Width="100"
@@ -182,7 +184,7 @@
                 <!--<DataGridTextColumn
                     Width="100"
                     Binding="{Binding Context.Code}"
-                    ElementStyle="{StaticResource CenterText}"
+                    ElementStyle="{StaticResource CenterText.Mask}"
                     Header="代码" />-->
                 <DataGridTextColumn
                     Width="100"
@@ -218,10 +220,59 @@
                 <!--<DataGridTextColumn
                     Width="100"
                     Binding="{Binding Context.Code}"
-                    ElementStyle="{StaticResource CenterText}"
+                    ElementStyle="{StaticResource CenterText.Mask}"
                     Header="代码" />-->
 
             </DataGrid.Columns>
         </DataGrid>
     </DataTemplate>
+
+
+
+    <DataTemplate x:Key="FundScaleWarn">
+        <DataGrid
+            AutoGenerateColumns="False"
+            ColumnHeaderStyle="{StaticResource CenterColumnHeader}"
+            IsReadOnly="False"
+            ItemsSource="{Binding .}"
+            Style="{StaticResource DataGrid.NoSelect}">
+            <DataGrid.Columns>
+                <DataGridTextColumn
+                    Binding="{Binding Context.FundName}"
+                    ElementStyle="{StaticResource LeftText}"
+                    Header="基金" />
+                <DataGridTextColumn
+                    Width="100"
+                    Binding="{Binding Context.Count}"
+                    ElementStyle="{StaticResource CenterText}"
+                    Header="天数" />
+
+                <DataGridTextColumn
+                    Binding="{Binding Context.Date, StringFormat=yyyy/MM/dd}"
+                    ElementStyle="{StaticResource CenterText}"
+                    Header="起始" />
+
+                <DataGridTextColumn
+                    Width="100"
+                    Binding="{Binding Context.LimitedDate, StringFormat=yyyy/MM/dd}"
+                    ElementStyle="{StaticResource CenterText}"
+                    Header="停止申购" />
+
+                <DataGridTextColumn
+                    Width="100"
+                    Binding="{Binding Context.ClearDate, StringFormat=yyyy/MM/dd}"
+                    ElementStyle="{StaticResource CenterText}"
+                    Header="预估清盘" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DataTemplate>
+
+
+
+
+
+
+
+
+
 </ResourceDictionary>

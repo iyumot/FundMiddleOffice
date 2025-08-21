@@ -17,6 +17,7 @@ public static partial class VerifyRules
 
     public static FundClearNotFinishedRule FundClearNotFinishedRule { get; } = new();
 
+    public static FundScaleWarnRule FundScaleWarnRule { get; } = new();
 }
 
 ////生成结果如下 
