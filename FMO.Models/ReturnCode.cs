@@ -18,6 +18,9 @@ public enum ReturnCode
     FailedBegin,
 
     Unknown,
+
+    NoFund,
+
     /// <summary>
     /// ·µ»ØÊÇ¿Õ°×µÄ
     /// </summary>

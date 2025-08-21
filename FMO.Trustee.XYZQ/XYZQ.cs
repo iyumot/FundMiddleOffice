@@ -39,6 +39,9 @@ public class XYZQ : TrusteeApiBase
 
     private IList<SubjectFundMapping>? FundMappings { get; set; }
 
+
+    private IList<BankAccount>? RaisingAccount { get; set; }
+
     public override bool IsSuit(string? company) => string.IsNullOrWhiteSpace(company) ? false : Regex.IsMatch(company, $"兴业证券|兴业证券股份有限公司|{_Identifier}");
 
 
@@ -156,9 +159,12 @@ public class XYZQ : TrusteeApiBase
         throw new NotImplementedException();
     }
 
-    public override Task<ReturnWrap<Investor>> QueryInvestors()
+    public override async Task<ReturnWrap<Investor>> QueryInvestors()
     {
-        throw new NotImplementedException();
+        var server = "TaInverstorQuery";
+
+        var result = await SyncWork<Investor, InvestorJson>(server, null, x => x.ToObject());
+        return result;
     }
 
     public override Task<ReturnWrap<DailyValue>> QueryNetValue(DateOnly begin, DateOnly end, string? fundCode = null)
@@ -171,9 +177,32 @@ public class XYZQ : TrusteeApiBase
         throw new NotImplementedException();
     }
 
-    public override Task<ReturnWrap<FundBankBalance>> QueryRaisingBalance()
+
+    public async Task<ReturnWrap<BankAccount>> QueryRaisingAccount()
     {
-        throw new NotImplementedException();
+        var server = "QueryAccountInfo";
+        var result = await SyncWork<BankAccount, AccountInfoJson>(server, new { accounttype = "2" }, x => x.ToBank());
+        if (result.Code == ReturnCode.Success && result.Data?.Count > 0)
+            RaisingAccount = result.Data;
+        return result;
+    }
+
+    /// <summary>
+    /// 纯SB设计
+    /// </summary>
+    /// <returns></returns>
+    public override async Task<ReturnWrap<FundBankBalance>> QueryRaisingBalance()
+    {
+        //if (RaisingAccount is null)
+        //    await QueryRaisingAccount();
+
+        //if (RaisingAccount is [])
+        //    return new(ReturnCode.NoFund, []);
+
+        var server = "GetRecruitmentHistoryBalance";
+        var param = new { date = $"{DateTime.Now:yyyy-MM-dd}", fundcode = "", account = "" };
+        var result = await SyncWork<FundBankBalance, FundBankBalanceJson>(server, param, x => x.ToObject());
+        return result;
     }
 
     public override async Task<ReturnWrap<SubjectFundMapping>> QuerySubjectFundMappings()

@@ -53,7 +53,20 @@ public class SubjectFundMappingJson
     public SubjectFundMapping ToObject()
     {
         var sc = ifgrading == "1" ? fundname.Replace(parentfundname, "") : "";
-        return new SubjectFundMapping { AmacCode = xhbadm, FundCode = fundcode, FundName = fundname, MasterCode = parenttacode, MasterName = parentfundname, ShareClass = sc };
+        return new SubjectFundMapping { AmacCode = xhbadm, FundCode = fundcode, FundName = fundname, MasterCode = parenttacode, MasterName = parentfundname, ShareClass = sc, Status = ParseStauts(pdtstatus) };
+    }
+
+    private FundStatus ParseStauts(string pdtstatus)
+    {
+        switch (pdtstatus)
+        {
+            case "1": return FundStatus.Setup;
+            case "2": return FundStatus.Normal;
+            case "3":
+            case "4":
+                return FundStatus.Liquidation;
+            default: return FundStatus.Unk;
+        }
     }
 }
 
