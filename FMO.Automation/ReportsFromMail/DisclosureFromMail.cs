@@ -11,19 +11,16 @@ namespace FMO.Schedule;
 
 public class DisclosureFromMailMission : MailMission
 {
-    public int Interval { get; set; } = 15;
-
-    public bool IgnoreHistory { get; set; }
-
+    public int Interval { get; set; } = 6;
 
     protected override void SetNextRun()
     {
-        NextRun = (LastRun ?? DateTime.Now).AddMinutes(Interval);
-        if (NextRun < DateTime.Now) NextRun = DateTime.Now.AddMinutes(Interval);
+        NextRun = (LastRun ?? DateTime.Now).AddHours(Interval);
+        if (NextRun < DateTime.Now) NextRun = DateTime.Now.AddHours(Interval);
     }
 
-    public void Test() => WorkOverride();
-
+    //public void Test() => WorkOverride();
+   
     protected override bool WorkOverride()
     {
         // 获取所有缓存  
@@ -38,14 +35,15 @@ public class DisclosureFromMailMission : MailMission
         // 获取所有文件
         var files = di.GetFiles();
         using var db = new MissionDatabase();
-        var cat = db.GetCollection<MailCategoryInfo>(_collection).FindAll().Where(x => x.Category.HasFlag(MailCategory.Disclosure)).Select(x => x.Id).ToArray();
+        // 排除估值表，加快效率
+        var cat = db.GetCollection<MailCategoryInfo>().Query().Where(x => x.Category == MailCategory.ValueSheet && x.IsSealed).Select(x => x.Id).ToList();//.FindAll().Where(x => x.Category.HasFlag(MailCategory.Disclosure)).Select(x => x.Id).ToArray();
 
         var coll = db.GetCollection<MailMissionRecord>($"dfm_{Id}");
-        var worked = coll.FindAll()/*.ExceptBy(cat, x => x.Id)*/.ToArray();
+        var worked = coll.FindAll().ExceptBy(cat, x => x.Id).ToArray();
 
         var work = IgnoreHistory ? files : files.ExceptBy(worked.Select(x => x.Id), x => x.Name).ToArray();
 
-        var log = $"待处理邮件 {work.Length} 个";
+        var log = $"{(IgnoreHistory ? "全部重解析" : $"已解析{worked.Length}个")}\n待处理邮件 {work.Length} 个";
 
         double unit = 100.0 / work.Length;
         double progress = 0;

@@ -39,7 +39,7 @@
 
         <TextBlock Margin="10,0,0,0" Text="运行时间间隔" />
         <hc:NumericUpDown Margin="4,0" Value="{Binding Interval}" />
-        <TextBlock Text="分" />
+        <TextBlock Text="小时" />
 
         <Button
             Margin="10,0"

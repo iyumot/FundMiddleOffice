@@ -13,8 +13,7 @@ namespace FMO.Schedule;
 public class DailyFromMailMission : MailMission
 {
     public int Interval { get; set; } = 15;
-
-    public bool IgnoreHistory { get; set; }
+     
 
 
     protected override void SetNextRun()
@@ -43,7 +42,7 @@ public class DailyFromMailMission : MailMission
         var files = di.GetFiles();
         using var db = new MissionDatabase();
         LiteDB.ILiteCollection<MailMissionRecord> coll = db.GetCollection<MailMissionRecord>($"mm_{Id}");
-        var cat = db.GetCollection<MailCategoryInfo>(_collection).FindAll().Where(x => x.Category != MailCategory.Unk && x.Category.HasFlag(MailCategory.ValueSheet)).Select(x => x.Id).ToArray();
+        var cat = db.GetCollection<MailCategoryInfo>().FindAll().Where(x => x.Category != MailCategory.Unk && x.Category.HasFlag(MailCategory.ValueSheet)).Select(x => x.Id).ToArray();
 
         var worked = coll.FindAll().ExceptBy(cat, x => x.Id).ToArray();
 
@@ -86,8 +85,11 @@ public class DailyFromMailMission : MailMission
 
         // 有附件
         if (msg.Attachments.Any())
-            Extract(msg, funds, ref haserror, ref log);
-
+        {
+            var dy = Extract(msg, funds, ref haserror, ref log);
+            if (msg.Attachments.Count() == 1 && dy?.Count > 0)
+                db.GetCollection<MailCategoryInfo>().Upsert(new MailCategoryInfo(msg.MessageId, msg.Subject, MailCategory.ValueSheet, true));
+        }
         return haserror;
     }
 

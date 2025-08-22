@@ -30,7 +30,7 @@ public enum MailCategory
     Disclosure = 0x8,
 }
 
-public record MailCategoryInfo(string Id, string Subject, MailCategory Category);
+public record MailCategoryInfo(string Id, string Subject, MailCategory Category, bool IsSealed = false);
 
 
 

@@ -12,8 +12,16 @@ public class MailMission : Mission
 
     public string? MailName { get => field; set { field = value; _collection = value is null ? null : BitConverter.ToString(SHA256.HashData(Encoding.Default.GetBytes(value))).Replace("-", "").ToLowerInvariant(); } }
 
+    public bool IgnoreHistory { get; set; }
+
 
     protected string? _collection { get; set; }
+
+    public override void Init()
+    {
+        base.Init();
+        IgnoreHistory = false;
+    }
 
     public virtual MailCategory DetermineCategory(MimeMessage? message)
     {
@@ -34,7 +42,7 @@ public class MailMission : Mission
             category |= MailCategory.Disclosure;
 
         using var db = new MissionDatabase();
-        db.GetCollection<MailCategoryInfo>(_collection).Upsert(new MailCategoryInfo(message.MessageId, message.Subject, MailCategory.ValueSheet));
+        db.GetCollection<MailCategoryInfo>().Upsert(new MailCategoryInfo(message.MessageId, message.Subject, MailCategory.ValueSheet));
         return category;
     }
 
