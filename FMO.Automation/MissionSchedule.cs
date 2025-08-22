@@ -35,7 +35,7 @@ public static class MissionSchedule
                 mission.Init();
                 return mission;
             }
-            catch { LogEx.Error($"无法加载mission{x["_id"]}"); return null; }
+            catch(Exception e) { LogEx.Error($"无法加载mission{x["_id"]}\n{x.ToString()}\n{e.Message}\n{e.StackTrace}"); return null; }
         }).Where(x => x is not null && x is not FillFundDailyMission).OrderBy(x => x!.GetType().Name switch { nameof(MailCacheMission) => 0, _ => x.Id })];
 
 
