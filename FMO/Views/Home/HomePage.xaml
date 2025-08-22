@@ -151,9 +151,20 @@
 
                 <oxy:PlotView
                     Height="300"
+                    local:HelpService.Placement="Center"
                     shared:MaskService.BlurRadius="40"
                     shared:MaskService.IsMask="True"
                     Model="{Binding ManageScaleContext}">
+                    <local:HelpService.Help>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="单击左键查看" />
+                                <TextBlock Text="按住右键拖动" />
+                                <TextBlock Text="滚轮缩放" />
+                                <TextBlock Text="双击滚轮还原" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </local:HelpService.Help>
                     <oxy:PlotView.TrackerDefinitions>
                         <oxy:TrackerDefinition TrackerKey="CustomTracker" TrackerTemplate="{StaticResource CustomTrackerTemplate}" />
                     </oxy:PlotView.TrackerDefinitions>
