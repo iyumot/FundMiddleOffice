@@ -49,6 +49,7 @@ public abstract class TrusteeApiBase : ITrustee
 
     public async Task<bool> VerifyConfig()
     {
+        IsValid = true;
         var r = await VerifyConfigOverride();
         SetStatus(r);
         return r;
@@ -312,7 +313,7 @@ public abstract class TrusteeApiBase : ITrustee
     /// </summary>
     protected void SetStatus(bool status = false)
     {
-        if (status == IsValid) return;
+        //if (status == IsValid) return;
 
         IsValid = status;
         using var db = DbHelper.Platform();
