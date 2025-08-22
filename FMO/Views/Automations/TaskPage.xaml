@@ -21,7 +21,11 @@
                 Style="{StaticResource ListBoxCustom}">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <WrapPanel IsItemsHost="True" />
+                        <hc:UniformSpacingPanel
+                            ChildWrapping="Wrap"
+                            IsItemsHost="True"
+                            Spacing="8"
+                            VerticalSpacing="8" />
                     </ItemsPanelTemplate>
                 </ListBox.ItemsPanel>
                 <ListBox.ItemTemplate>
