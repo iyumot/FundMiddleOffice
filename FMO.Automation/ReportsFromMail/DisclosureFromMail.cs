@@ -75,6 +75,8 @@ public class DisclosureFromMailMission : MailMission
 
         log += $"完成";
 
+        using (var mdb = new MissionDatabase())
+            mdb.GetCollection<MissionRecord>().Insert(new MissionRecord { MissionId = Id, Time = DateTime.Now, Record = log });
 
         return true;
     }
