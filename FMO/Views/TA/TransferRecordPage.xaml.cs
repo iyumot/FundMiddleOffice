@@ -27,7 +27,8 @@ public partial class TransferRecordPage : UserControl
 }
 
 
-public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<IList<TransferRequest>>, IRecipient<TransferRecord>, IRecipient<PageTAMessage>, IRecipient<TransferOrder>, IRecipient<TipChangeMessage>, IRecipient<IEnumerable<LinkOrderMessage>>
+public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<IList<TransferRequest>>, IRecipient<TransferRecord>,
+    IRecipient<PageTAMessage>, IRecipient<TransferOrder>, IRecipient<TipChangeMessage>, IRecipient<List<ManualLinkOrder>>
 {
     [ObservableProperty]
     public partial ObservableCollection<TransferRecordViewModel>? Records { get; set; }
@@ -674,12 +675,12 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
         CheckDataError();
     }
 
-    public void Receive(IEnumerable<LinkOrderMessage> message)
+    public void Receive(List<ManualLinkOrder> message)
     {
         try
         {
             if (Records is not null)
-                foreach (var (confirm, link) in Records.Join(message, x => x.Id, x => x.RecordId, (confirm, link) => (confirm, link)))
+                foreach (var (confirm, link) in Records.Join(message, x => x.Id, x => x.Id, (confirm, link) => (confirm, link)))
                 {
                     confirm.OrderId = link.OrderId;
                     confirm.OnPropertyChanged(nameof(confirm.HasOrder));
@@ -687,7 +688,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
                 }
 
             if (Requests is not null)
-                foreach (var (request, link) in Requests.Join(message, x => x.Id, x => x.RequestId, (request, link) => (request, link)))
+                foreach (var (request, link) in Requests.Join(message, x => x.ExternalId, x => x.ExternalRequestId, (request, link) => (request, link)))
                 {
                     request.OrderId = link.OrderId;
                     request.OnPropertyChanged(nameof(request.HasOrder));

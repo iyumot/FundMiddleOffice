@@ -634,6 +634,13 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
                 RiskPair = new SimpleFile { File = RiskPair.Meta },
                 Review = new SimpleFile { File = Review.Meta },
             };
+
+
+            db.GetCollection<TransferOrder>().Upsert(order);
+            Id = order.Id;
+
+            List<ManualLinkOrder> link = [];
+
             // 同日订单
             if (MergeOrderBySameDay)
             {
@@ -642,22 +649,24 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
                     item.OrderId = Id;
 
                 db.GetCollection<TransferRecord>().Update(same);
-                DataTracker.LinkOrder(same);
+                foreach (var item in same)
+                   link.Add(new ManualLinkOrder(item.Id, Id, item.ExternalId!, item.ExternalRequestId!));
+                //DataTracker.LinkOrder(same);
             }
             else
             {
                 var rec = db.GetCollection<TransferRecord>().FindById(Record.Id);
                 rec.OrderId = Id;
                 db.GetCollection<TransferRecord>().Update(rec);
-                db.GetCollection<ManualLinkOrder>().Upsert(new ManualLinkOrder(Record.Id, Id, Record.ExternalId!, Record.ExternalRequestId!));
-                DataTracker.LinkOrder(rec);
+                link.Add(new ManualLinkOrder(Record.Id, Id, Record.ExternalId!, Record.ExternalRequestId!));
+                //DataTracker.LinkOrder(rec);
             }
 
 
-            db.GetCollection<TransferOrder>().Upsert(order);
             db.Commit();
 
             WeakReferenceMessenger.Default.Send(order);
+            WeakReferenceMessenger.Default.Send(link);
         }
         catch (Exception e)
         {
