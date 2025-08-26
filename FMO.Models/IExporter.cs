@@ -47,7 +47,10 @@ public enum ExportTypeFlag
 
     MultiFundSummary = 4,
 
-
+    /// <summary>
+    /// 持有人名册
+    /// </summary>
+    SingleFundHolderSheet = 8,
 
 
     Custom = 99999,
