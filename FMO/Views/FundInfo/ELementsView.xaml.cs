@@ -113,6 +113,7 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 "上海农村商业银行股份有限公司",
 ];
 
+    public static SecurityFundType[] SecurityFundTypes = Enum.GetValues<SecurityFundType>();
 
     /// <summary>
     /// 
@@ -148,6 +149,11 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
 
     [ObservableProperty]
     public partial ChangeableViewModel<FundElements, string>? ShortName { get; set; }
+
+
+    [ObservableProperty]
+    public partial ChangeableViewModel<FundElements, SecurityFundType>? SecurityFundType { get; set; }
+
 
 
     [ObservableProperty]
@@ -343,6 +349,15 @@ public partial class ElementsViewModel : EditableControlViewModelBase<FundElemen
         };
         ShortName.Init(elements);
 
+        SecurityFundType = new()
+        {
+            Label = "基金类型",
+            InitFunc = x => x.SecurityFundType.GetValue(newValue).Value,
+            InheritedFunc = x => x.SecurityFundType.GetValue(newValue).FlowId switch { -1 => false, int i => i < newValue },
+            UpdateFunc = (x, y) => x.SecurityFundType.SetValue(y!, newValue),
+            ClearFunc = x => x.SecurityFundType.RemoveValue(newValue)
+        };
+        SecurityFundType.Init(elements);
 
         if (isori)
         {

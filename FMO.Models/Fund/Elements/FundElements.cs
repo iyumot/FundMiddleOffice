@@ -20,7 +20,7 @@ public class FundElements
     /// </summary>
     public Mutable<string> ShortName { get; set; } = new Mutable<string>(nameof(ShortName));
 
-
+    public Mutable<SecurityFundType> SecurityFundType { get; set; } = new(nameof(SecurityFundType));
 
     /// <summary>
     /// 运作方式

@@ -481,6 +481,18 @@
             <TextBox HorizontalContentAlignment="Center" Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
         </DataTemplate>
 
+        <DataTemplate x:Key="DT.SecurityFundType">
+            <ComboBox
+                Width="120"
+                ItemsSource="{Binding Source={x:Static local:ElementsViewModel.SecurityFundTypes}}"
+                SelectedItem="{Binding NewValue}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </DataTemplate>
 
         <ControlTemplate x:Key="CT.Fee" TargetType="shared:ChangeableContainer">
             <DockPanel
@@ -1139,11 +1151,15 @@
                                 ContentTemplate="{StaticResource DT.Text.Center}" />
 
 
-                            <shared:ChangeableContainer
-                                HorizontalContentAlignment="Stretch"
-                                Binding="{Binding ShortName}"
-                                ContentTemplate="{StaticResource DT.Text.Center}" />
+                            <DockPanel>
+                                <shared:ChangeableContainer
+                                    HorizontalContentAlignment="Stretch"
+                                    Binding="{Binding ShortName}"
+                                    ContentTemplate="{StaticResource DT.Text.Center}" />
 
+
+                                <shared:ChangeableContainer Binding="{Binding SecurityFundType}" ContentTemplate="{StaticResource DT.SecurityFundType}" />
+                            </DockPanel>
 
 
                             <!--  风险等级 止损预警  -->

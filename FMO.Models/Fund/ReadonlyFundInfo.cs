@@ -103,6 +103,8 @@ public class ReadonlyFundInfo
     public ManageType ManageType { get; set; }
 
     // 新增属性（来自 FundElements）
+    public SecurityFundType SecurityFundType { get; set; }
+
     public DataExtra<FundMode>? FundModeInfo { get; set; }
     public SealingRule? SealingRule { get; set; }
     public RiskLevel? RiskLevel { get; set; }
@@ -174,8 +176,7 @@ public class ReadonlyFundInfo
         v = elements.ShortName.Value;
         if (!string.IsNullOrWhiteSpace(v)) ShortName = v;
 
-
-        FundModeInfo = elements.FundModeInfo;
+        SecurityFundType = elements.SecurityFundType.Value;
         FundModeInfo = elements.FundModeInfo?.Value;
         SealingRule = elements.SealingRule?.Value;
         RiskLevel = elements.RiskLevel?.Value;
