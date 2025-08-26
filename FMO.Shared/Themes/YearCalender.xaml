@@ -4,6 +4,12 @@
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:FMO.Shared">
 
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+
 
     <!--  Styles for Calendar Controls  -->
     <Style x:Key="ListBoxItem.Calender" TargetType="ListBoxItem">

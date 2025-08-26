@@ -76,16 +76,16 @@ public class OpenRule
         if (DayOrder == SequenceOrder.Ascend)
         {
             if (TradeOrNatural)
-                return $"第{string.Join('、', days!.Select(x => x))}个交易日开放";
+                return $"第{string.Join('、', days!.Select(x => x))}个交易日";
             else
-                return $"周{string.Join('、', days!.Select(x => weekhead[x - 1]))}开放";
+                return $"{string.Join('、', days!.Select(x => weekhead[x - 1]))}";
         }
         else
         {
             if (TradeOrNatural)
-                return $"倒数第{string.Join('、', days!.Select(x => x))}个交易日开放";
+                return $"倒数第{string.Join('、', days!.Select(x => x))}个交易日";
             else
-                return $"倒数第{string.Join('、', days!.Select(x => x))}个自然日开放";
+                return $"倒数第{string.Join('、', days!.Select(x => x))}个自然日";
         }
     }
 
@@ -139,7 +139,7 @@ public class OpenRule
 
                 return "每周" + WeekStr() + (Postpone ? "，非交易日顺延" : "");
             case FundOpenType.Daily:
-                return "每日开放";
+                return "每日";
             default:
                 return "-";
         }
