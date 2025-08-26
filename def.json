@@ -1,0 +1,15 @@
+{
+  "Id": "A176D642-C22E-4D46-81DF-56F09D71266B",
+  "Name": "\u5355\u57FA\u91D1\u51C0\u503C\u8868",
+  "Description": "\u751F\u6210\u5355\u4E00\u57FA\u91D1\u7684\u51C0\u503C\u5217\u8868",
+  "Type": "SingleFundNetValueList.Exporter",
+  "Suit": 1,
+  "Meta": [
+    {
+      "Type": "Fund",
+      "Multiple": false,
+      "Direction": 0
+    }
+  ],
+  "Entry": "SingleFundNetValueList.dll"
+}

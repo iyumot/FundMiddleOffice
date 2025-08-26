@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using ExcelDataReader;
+using FMO.Logging;
 using FMO.Models;
 using FMO.TPL;
 using FMO.Utilities;
@@ -45,7 +46,7 @@ public partial class ExporterWindowViewModel : ObservableObject
     {
         using var db = DbHelper.Base();
         // 排除不存在的模板
-        Templates = db.GetCollection<TemplateInfo>().FindAll().Where(x => (x.Suit & flag) != 0).Where(x => Directory.Exists(x.Path)).ToArray();//Find(x => ((int)x.Suit & (int)flag) != 0).ToArray();
+        Templates = db.GetCollection<TemplateInfo>().FindAll().Where(x => (x.Suit & flag) != 0).Where(x => Directory.Exists(@$"files\tpl\{x.Id}")).ToArray();//Find(x => ((int)x.Suit & (int)flag) != 0).ToArray();
 
         if (Templates.Length == 0)
             return;
@@ -103,7 +104,7 @@ public partial class ExporterWindowViewModel : ObservableObject
         {
             Process.Start(new ProcessStartInfo
             {
-                FileName = Path.Combine(SelectedTemplate.Path, $"{SelectedFileName}.xlsx"),
+                FileName = Path.Combine(@$"files\tpl\{SelectedTemplate.Id}", $"{SelectedFileName}.xlsx"),
                 UseShellExecute = true
             });
         }
@@ -117,7 +118,7 @@ public partial class ExporterWindowViewModel : ObservableObject
         if (SelectedTemplate is null || SelectedFileName is null)
             return;
 
-        var filePath = Path.Combine(SelectedTemplate.Path, $"{SelectedFileName}.xlsx");
+        var filePath = Path.Combine(@$"files\tpl\{SelectedTemplate.Id}", $"{SelectedFileName}.xlsx");
         if (!File.Exists(filePath))
             return;
 
@@ -130,7 +131,7 @@ public partial class ExporterWindowViewModel : ObservableObject
         AssemblyLoadContext context = new AssemblyLoadContext(Guid.NewGuid().ToString(), true);
         try
         {
-            var assembly = context.LoadFromAssemblyPath(Path.Combine(SelectedTemplate.Path, "tpl.dll"));
+            var assembly = context.LoadFromAssemblyPath(Path.GetFullPath(Path.Combine(@$"files\tpl\{SelectedTemplate.Id}", SelectedTemplate.Entry)));
             var type = assembly.GetType(SelectedTemplate.Type);
             if (type is null)
                 return;
@@ -154,7 +155,8 @@ public partial class ExporterWindowViewModel : ObservableObject
         }
         catch (Exception e)
         {
-            Log.Error(e, "导出数据失败");
+            LogEx.Error(e);
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "导出失败，请查看Log"));
         }
         finally
         {
@@ -206,7 +208,7 @@ public partial class ExporterWindowViewModel : ObservableObject
 
         try
         {
-            TplFiles = new DirectoryInfo(value.Path).GetFiles("*.xlsx").Select(x => x.Name[0..^5]);
+            TplFiles = new DirectoryInfo(@$"files\tpl\{value.Id}").GetFiles("*.xlsx").Select(x => x.Name[0..^5]);
             SelectedFileName = TplFiles.FirstOrDefault();
 
             var meta = value.Meta?.FirstOrDefault(x => x.Type == nameof(Fund));
@@ -238,7 +240,7 @@ public partial class ExporterWindowViewModel : ObservableObject
             return;
         }
 
-        using var fs = new FileStream(Path.Combine(SelectedTemplate.Path, $"{value}.xlsx"), FileMode.Open);
+        using var fs = new FileStream(Path.Combine($@"files\tpl\{SelectedTemplate.Id}", $"{value}.xlsx"), FileMode.Open);
         using var reader = ExcelDataReader.ExcelReaderFactory.CreateReader(fs);
         Sample = reader.AsDataSet().Tables[0];
     }

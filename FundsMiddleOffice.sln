@@ -116,6 +116,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MissionTest", "Tests\Missio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AMACTest", "Tests\AMACTest\AMACTest.csproj", "{6A814F4C-332B-4457-BC0E-CBEC8C116108}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.TemplateBuilder", "FMO.TemplateBuilder\FMO.TemplateBuilder.csproj", "{0B4E9883-9C74-4CD5-A4FC-0293664D3F5A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -306,6 +308,10 @@ Global
 		{6A814F4C-332B-4457-BC0E-CBEC8C116108}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A814F4C-332B-4457-BC0E-CBEC8C116108}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A814F4C-332B-4457-BC0E-CBEC8C116108}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B4E9883-9C74-4CD5-A4FC-0293664D3F5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B4E9883-9C74-4CD5-A4FC-0293664D3F5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B4E9883-9C74-4CD5-A4FC-0293664D3F5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B4E9883-9C74-4CD5-A4FC-0293664D3F5A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -38,7 +38,7 @@ public class Exporter : IExporter
         ExportInfo ExportInfo = new ExportInfo { FileName = $"要素汇总表-{DateTime.Now:yyyy.MM.dd}.xlsx" };
         ExportInfo.Filter = "Excel|*.xlsx";
         var obj = ObjectExtension.ExpandToDictionary(new { f = data });
-        obj.ReplaceNullsWithPlaceholder();
+        ObjectExtension.ReplaceNullsWithPlaceholder(obj);//.ReplaceNullsWithPlaceholder();
         ExportInfo.Data = obj;
 
         return ExportInfo;
