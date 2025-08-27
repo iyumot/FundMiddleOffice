@@ -500,7 +500,7 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
                 item.OrderId = 0;
             db.GetCollection<TransferRecord>().Update(rr);
 
-            DataTracker.LinkOrder(rr);
+            //DataTracker.LinkOrder(rr);
             Orders!.Remove(order);
         }
     }

@@ -605,6 +605,8 @@ public static partial class DataTracker
     /// <param name="same"></param>
     public static void LinkOrder(params TransferRecord[] same)
     {
+        if (same.Length == 0) return;
+
         using var db = DbHelper.Base();
         db.BeginTrans();
         foreach (var item in same)
