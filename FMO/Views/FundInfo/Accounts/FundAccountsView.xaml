@@ -266,243 +266,245 @@
                             Style="{StaticResource TextBlockDefaultBold}"
                             Text="{Binding Company}" />
                     </DockPanel>
-                    <!--  基本户  -->
-                    <DockPanel DataContext="{Binding Common}">
-                        <Border Background="Orange">
-                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <hc:UniformSpacingPanel Spacing="6">
+                        <!--  基本户  -->
+                        <DockPanel DataContext="{Binding Common}">
+                            <Border Background="Orange">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
 
-                                <TextBlock
-                                    Width="40"
-                                    Margin="3,0"
-                                    Padding="4"
-                                    VerticalAlignment="Center"
-                                    FontSize="14"
-                                    Text="{Binding Name}"
-                                    TextWrapping="Wrap" />
-                                <StackPanel HorizontalAlignment="Center">
-                                    <ToggleButton
-                                        DockPanel.Dock="Bottom"
-                                        IsChecked="{Binding IsReadOnly, Converter={StaticResource Boolean2BooleanReConverter}}"
-                                        Style="{StaticResource ToggleEditable}" />
-                                    <Button
-                                        hc:IconElement.Geometry="{StaticResource f.floppy-disk}"
-                                        Command="{Binding SaveCommand}"
-                                        Style="{StaticResource ButtonIcon.Small}"
-                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                                    <TextBlock
+                                        Width="40"
+                                        Margin="3,0"
+                                        Padding="4"
+                                        VerticalAlignment="Center"
+                                        FontSize="14"
+                                        Text="{Binding Name}"
+                                        TextWrapping="Wrap" />
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <ToggleButton
+                                            DockPanel.Dock="Bottom"
+                                            IsChecked="{Binding IsReadOnly, Converter={StaticResource Boolean2BooleanReConverter}}"
+                                            Style="{StaticResource ToggleEditable}" />
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.floppy-disk}"
+                                            Command="{Binding SaveCommand}"
+                                            Style="{StaticResource ButtonIcon.Small}"
+                                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                                    </StackPanel>
+
                                 </StackPanel>
+                            </Border>
 
+                            <StackPanel Margin="2,0">
+                                <UniformGrid Rows="1">
+                                    <DockPanel>
+                                        <TextBlock FontSize="14" Text="原始材料" />
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.folder}"
+                                            Command="{Binding OpenRawFolderCommand}"
+                                            Style="{StaticResource ButtonIcon.Small}" />
+                                    </DockPanel>
+
+
+                                    <DockPanel>
+                                        <TextBlock FontSize="14" Text="用印文件" />
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.folder}"
+                                            Command="{Binding OpenSealFolderCommand}"
+                                            Style="{StaticResource ButtonIcon.Small}" />
+                                    </DockPanel>
+                                </UniformGrid>
+
+                                <shared:FileView
+                                    Content="{Binding BankLetter}"
+                                    Header="银行关联函"
+                                    IsReadOnly="{Binding IsReadOnly}" />
+
+                                <shared:FileView
+                                    Content="{Binding ServiceAgreement}"
+                                    Header="经服协议"
+                                    IsReadOnly="{Binding IsReadOnly}" />
+
+
+
+                                <BulletDecorator>
+                                    <BulletDecorator.Bullet>
+                                        <TextBlock Text="资金账号" />
+                                    </BulletDecorator.Bullet>
+
+                                    <hc:SimplePanel>
+                                        <shared:CopyableTextBlock
+                                            Margin="15,0,0,0"
+                                            Text="{Binding Account}"
+                                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                                        <TextBox
+                                            Margin="4,0"
+                                            Style="{StaticResource TextBox.Small}"
+                                            Text="{Binding Account, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                                    </hc:SimplePanel>
+
+                                </BulletDecorator>
+
+
+                                <BulletDecorator>
+                                    <BulletDecorator.Bullet>
+                                        <TextBlock Text="交易密码" />
+                                    </BulletDecorator.Bullet>
+                                    <hc:SimplePanel>
+                                        <shared:CopyableTextBlock
+                                            Margin="15,0,0,0"
+                                            IsMasked="True"
+                                            Text="{Binding TradePassword}"
+                                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                                        <TextBox
+                                            Margin="4,0"
+                                            Style="{StaticResource TextBox.Small}"
+                                            Text="{Binding TradePassword, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                                    </hc:SimplePanel>
+                                </BulletDecorator>
+
+
+                                <BulletDecorator>
+                                    <BulletDecorator.Bullet>
+                                        <TextBlock Text="资金密码" />
+                                    </BulletDecorator.Bullet>
+                                    <hc:SimplePanel>
+                                        <shared:CopyableTextBlock
+                                            Margin="15,0,0,0"
+                                            IsMasked="True"
+                                            Text="{Binding CapitalPassword}"
+                                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                                        <TextBox
+                                            Margin="4,0"
+                                            Style="{StaticResource TextBox.Small}"
+                                            Text="{Binding CapitalPassword, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                                    </hc:SimplePanel>
+                                </BulletDecorator>
                             </StackPanel>
-                        </Border>
+                        </DockPanel>
 
-                        <StackPanel Margin="2,0">
-                            <UniformGrid Rows="1">
-                                <DockPanel>
-                                    <TextBlock FontSize="14" Text="原始材料" />
-                                    <Button
-                                        hc:IconElement.Geometry="{StaticResource f.folder}"
-                                        Command="{Binding OpenRawFolderCommand}"
-                                        Style="{StaticResource ButtonIcon.Small}" />
-                                </DockPanel>
+                        <!--  信用户  -->
 
+                        <DockPanel Margin="0,4" DataContext="{Binding Credit}">
+                            <Border Background="Orange">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
 
-                                <DockPanel>
-                                    <TextBlock FontSize="14" Text="用印文件" />
-                                    <Button
-                                        hc:IconElement.Geometry="{StaticResource f.folder}"
-                                        Command="{Binding OpenSealFolderCommand}"
-                                        Style="{StaticResource ButtonIcon.Small}" />
-                                </DockPanel>
-                            </UniformGrid>
+                                    <TextBlock
+                                        Width="40"
+                                        Margin="3,0"
+                                        Padding="4"
+                                        VerticalAlignment="Center"
+                                        FontSize="14"
+                                        Text="{Binding Name}"
+                                        TextWrapping="Wrap" />
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <ToggleButton
+                                            hc:IconElement.Geometry="{StaticResource f.pen}"
+                                            DockPanel.Dock="Bottom"
+                                            IsChecked="{Binding IsReadOnly}"
+                                            Style="{StaticResource EditSwitch.Small}" />
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.floppy-disk}"
+                                            Command="{Binding SaveCommand}"
+                                            Style="{StaticResource ButtonIcon.Small}"
+                                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                                    </StackPanel>
 
-                            <shared:FileView
-                                Content="{Binding BankLetter}"
-                                Header="银行关联函"
-                                IsReadOnly="{Binding IsReadOnly}" />
-
-                            <shared:FileView
-                                Content="{Binding ServiceAgreement}"
-                                Header="经服协议"
-                                IsReadOnly="{Binding IsReadOnly}" />
-
-
-
-                            <BulletDecorator>
-                                <BulletDecorator.Bullet>
-                                    <TextBlock Text="资金账号" />
-                                </BulletDecorator.Bullet>
-
-                                <hc:SimplePanel>
-                                    <shared:CopyableTextBlock
-                                        Margin="15,0,0,0"
-                                        Text="{Binding Account}"
-                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
-
-                                    <TextBox
-                                        Margin="4,0"
-                                        Style="{StaticResource TextBox.Small}"
-                                        Text="{Binding Account, UpdateSourceTrigger=PropertyChanged, Delay=300}"
-                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-
-                                </hc:SimplePanel>
-
-                            </BulletDecorator>
-
-
-                            <BulletDecorator>
-                                <BulletDecorator.Bullet>
-                                    <TextBlock Text="交易密码" />
-                                </BulletDecorator.Bullet>
-                                <hc:SimplePanel>
-                                    <shared:CopyableTextBlock
-                                        Margin="15,0,0,0"
-                                        IsMasked="True"
-                                        Text="{Binding TradePassword}"
-                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
-
-                                    <TextBox
-                                        Margin="4,0"
-                                        Style="{StaticResource TextBox.Small}"
-                                        Text="{Binding TradePassword, UpdateSourceTrigger=PropertyChanged, Delay=300}"
-                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-
-                                </hc:SimplePanel>
-                            </BulletDecorator>
-
-
-                            <BulletDecorator>
-                                <BulletDecorator.Bullet>
-                                    <TextBlock Text="资金密码" />
-                                </BulletDecorator.Bullet>
-                                <hc:SimplePanel>
-                                    <shared:CopyableTextBlock
-                                        Margin="15,0,0,0"
-                                        IsMasked="True"
-                                        Text="{Binding CapitalPassword}"
-                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
-
-                                    <TextBox
-                                        Margin="4,0"
-                                        Style="{StaticResource TextBox.Small}"
-                                        Text="{Binding CapitalPassword, UpdateSourceTrigger=PropertyChanged, Delay=300}"
-                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-
-                                </hc:SimplePanel>
-                            </BulletDecorator>
-                        </StackPanel>
-                    </DockPanel>
-
-                    <!--  信用户  -->
-
-                    <DockPanel Margin="0,4" DataContext="{Binding Credit}">
-                        <Border Background="Orange">
-                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-
-                                <TextBlock
-                                    Width="40"
-                                    Margin="3,0"
-                                    Padding="4"
-                                    VerticalAlignment="Center"
-                                    FontSize="14"
-                                    Text="{Binding Name}"
-                                    TextWrapping="Wrap" />
-                                <StackPanel HorizontalAlignment="Center">
-                                    <ToggleButton
-                                        hc:IconElement.Geometry="{StaticResource f.pen}"
-                                        DockPanel.Dock="Bottom"
-                                        IsChecked="{Binding IsReadOnly}"
-                                        Style="{StaticResource EditSwitch.Small}" />
-                                    <Button
-                                        hc:IconElement.Geometry="{StaticResource f.floppy-disk}"
-                                        Command="{Binding SaveCommand}"
-                                        Style="{StaticResource ButtonIcon.Small}"
-                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
                                 </StackPanel>
+                            </Border>
 
+
+                            <StackPanel Margin="2,0">
+                                <UniformGrid Rows="1">
+                                    <DockPanel>
+                                        <TextBlock FontSize="14" Text="原始材料" />
+                                        <Button hc:IconElement.Geometry="{StaticResource f.folder}" Style="{StaticResource ButtonIcon.Small}" />
+                                    </DockPanel>
+
+
+                                    <DockPanel>
+                                        <TextBlock FontSize="14" Text="用印文件" />
+                                        <Button hc:IconElement.Geometry="{StaticResource f.folder}" Style="{StaticResource ButtonIcon.Small}" />
+                                    </DockPanel>
+                                </UniformGrid>
+
+
+
+
+                                <BulletDecorator>
+                                    <BulletDecorator.Bullet>
+                                        <TextBlock Text="资金账号" />
+                                    </BulletDecorator.Bullet>
+
+                                    <hc:SimplePanel>
+                                        <shared:CopyableTextBlock
+                                            Margin="15,0,0,0"
+                                            Text="{Binding Account}"
+                                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                                        <TextBox
+                                            Margin="4,0"
+                                            Style="{StaticResource TextBox.Small}"
+                                            Text="{Binding Account, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                                    </hc:SimplePanel>
+
+                                </BulletDecorator>
+
+
+                                <BulletDecorator>
+                                    <BulletDecorator.Bullet>
+                                        <TextBlock Text="交易密码" />
+                                    </BulletDecorator.Bullet>
+                                    <hc:SimplePanel>
+                                        <shared:CopyableTextBlock
+                                            Margin="15,0,0,0"
+                                            IsMasked="True"
+                                            Text="{Binding TradePassword}"
+                                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                                        <TextBox
+                                            Margin="4,0"
+                                            Style="{StaticResource TextBox.Small}"
+                                            Text="{Binding TradePassword, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                                    </hc:SimplePanel>
+                                </BulletDecorator>
+
+
+                                <BulletDecorator>
+                                    <BulletDecorator.Bullet>
+                                        <TextBlock Text="资金密码" />
+                                    </BulletDecorator.Bullet>
+                                    <hc:SimplePanel>
+                                        <shared:CopyableTextBlock
+                                            Margin="15,0,0,0"
+                                            IsMasked="True"
+                                            Text="{Binding CapitalPassword}"
+                                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                                        <TextBox
+                                            Margin="4,0"
+                                            Style="{StaticResource TextBox.Small}"
+                                            Text="{Binding CapitalPassword, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                                            Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                                    </hc:SimplePanel>
+                                </BulletDecorator>
                             </StackPanel>
-                        </Border>
-
-
-                        <StackPanel Margin="2,0">
-                            <UniformGrid Rows="1">
-                                <DockPanel>
-                                    <TextBlock FontSize="14" Text="原始材料" />
-                                    <Button hc:IconElement.Geometry="{StaticResource f.folder}" Style="{StaticResource ButtonIcon.Small}" />
-                                </DockPanel>
-
-
-                                <DockPanel>
-                                    <TextBlock FontSize="14" Text="用印文件" />
-                                    <Button hc:IconElement.Geometry="{StaticResource f.folder}" Style="{StaticResource ButtonIcon.Small}" />
-                                </DockPanel>
-                            </UniformGrid>
-
-
-
-
-                            <BulletDecorator>
-                                <BulletDecorator.Bullet>
-                                    <TextBlock Text="资金账号" />
-                                </BulletDecorator.Bullet>
-
-                                <hc:SimplePanel>
-                                    <shared:CopyableTextBlock
-                                        Margin="15,0,0,0"
-                                        Text="{Binding Account}"
-                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
-
-                                    <TextBox
-                                        Margin="4,0"
-                                        Style="{StaticResource TextBox.Small}"
-                                        Text="{Binding Account, UpdateSourceTrigger=PropertyChanged, Delay=300}"
-                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-
-                                </hc:SimplePanel>
-
-                            </BulletDecorator>
-
-
-                            <BulletDecorator>
-                                <BulletDecorator.Bullet>
-                                    <TextBlock Text="交易密码" />
-                                </BulletDecorator.Bullet>
-                                <hc:SimplePanel>
-                                    <shared:CopyableTextBlock
-                                        Margin="15,0,0,0"
-                                        IsMasked="True"
-                                        Text="{Binding TradePassword}"
-                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
-
-                                    <TextBox
-                                        Margin="4,0"
-                                        Style="{StaticResource TextBox.Small}"
-                                        Text="{Binding TradePassword, UpdateSourceTrigger=PropertyChanged, Delay=300}"
-                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-
-                                </hc:SimplePanel>
-                            </BulletDecorator>
-
-
-                            <BulletDecorator>
-                                <BulletDecorator.Bullet>
-                                    <TextBlock Text="资金密码" />
-                                </BulletDecorator.Bullet>
-                                <hc:SimplePanel>
-                                    <shared:CopyableTextBlock
-                                        Margin="15,0,0,0"
-                                        IsMasked="True"
-                                        Text="{Binding CapitalPassword}"
-                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
-
-                                    <TextBox
-                                        Margin="4,0"
-                                        Style="{StaticResource TextBox.Small}"
-                                        Text="{Binding CapitalPassword, UpdateSourceTrigger=PropertyChanged, Delay=300}"
-                                        Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
-
-                                </hc:SimplePanel>
-                            </BulletDecorator>
-                        </StackPanel>
-                    </DockPanel>
+                        </DockPanel>
+                    </hc:UniformSpacingPanel>
 
                 </StackPanel>
             </Border>
@@ -688,7 +690,7 @@
 
 
         <ItemsPanelTemplate x:Key="StockAccountPanel">
-            <UniformGrid Columns="3" IsItemsHost="True" />
+            <WrapPanel IsItemsHost="True" />
         </ItemsPanelTemplate>
 
     </UserControl.Resources>
