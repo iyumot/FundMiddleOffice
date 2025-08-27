@@ -801,7 +801,7 @@
 
     <Style x:Key="SimpleViewOnlyFileStyle" TargetType="local:FileView">
         <Setter Property="ContentTemplate" Value="{StaticResource ViewOnlyFileTemplate}" />
-        <Setter Property="HeaderTemplate" Value="{StaticResource DefaultHeader}" />
+        <Setter Property="HeaderTemplate" Value="{x:Null}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:FileView">

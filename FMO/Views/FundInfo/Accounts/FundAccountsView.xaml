@@ -356,7 +356,7 @@
                                     <hc:SimplePanel>
                                         <shared:CopyableTextBlock
                                             Margin="15,0,0,0"
-                                            IsMasked="True"
+                                            IsPasswordLike="True"
                                             Text="{Binding TradePassword}"
                                             Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
@@ -377,7 +377,7 @@
                                     <hc:SimplePanel>
                                         <shared:CopyableTextBlock
                                             Margin="15,0,0,0"
-                                            IsMasked="True"
+                                            IsPasswordLike="True"
                                             Text="{Binding CapitalPassword}"
                                             Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
@@ -469,7 +469,7 @@
                                     <hc:SimplePanel>
                                         <shared:CopyableTextBlock
                                             Margin="15,0,0,0"
-                                            IsMasked="True"
+                                            IsPasswordLike="True"
                                             Text="{Binding TradePassword}"
                                             Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
@@ -490,7 +490,7 @@
                                     <hc:SimplePanel>
                                         <shared:CopyableTextBlock
                                             Margin="15,0,0,0"
-                                            IsMasked="True"
+                                            IsPasswordLike="True"
                                             Text="{Binding CapitalPassword}"
                                             Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
@@ -638,7 +638,7 @@
                                 <hc:SimplePanel>
                                     <shared:CopyableTextBlock
                                         Margin="15,0,0,0"
-                                        IsMasked="True"
+                                        IsPasswordLike="True"
                                         Text="{Binding TradePassword}"
                                         Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
 
@@ -659,7 +659,7 @@
                                 <hc:SimplePanel>
                                     <shared:CopyableTextBlock
                                         Margin="15,0,0,0"
-                                        IsMasked="True"
+                                        IsPasswordLike="True"
                                         Text="{Binding CapitalPassword}"
                                         Visibility="{Binding IsReadOnly, Converter={StaticResource Boolean2VisibilityConverter}}" />
 

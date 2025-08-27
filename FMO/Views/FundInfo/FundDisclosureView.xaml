@@ -128,7 +128,7 @@
                                         </shared:FileView.Header>
                                     </shared:FileView>
 
-                                    <shared:FileView Content="{Binding Excel}" Style="{StaticResource SimpleViewOnlyFileStyle}">
+                                    <shared:FileView Content="{Binding Excel}" Style="{StaticResource SimpleViewOnlyFileStyle}" HeaderTemplate="{x:Null}">
                                         <shared:FileView.Header>
                                             <Viewbox Width="14" Height="14">
                                                 <Path Data="{StaticResource f.file-excel}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Control}}}" />
