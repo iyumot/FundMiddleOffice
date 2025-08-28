@@ -230,11 +230,22 @@
             </MultiDataTrigger>
             <DataTrigger Binding="{Binding Exists, TargetNullValue=False}" Value="False">
                 <Setter TargetName="file" Property="Foreground" Value="Gray" />
-                <Setter TargetName="add" Property="Visibility" Value="Visible" />
+                <!--<Setter TargetName="add" Property="Visibility" Value="Visible" />-->
             </DataTrigger>
-            <DataTrigger Binding="{Binding Deleted, TargetNullValue=True}" Value="True">
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding Exists, TargetNullValue=False}" Value="False" />
+                    <Condition Binding="{Binding IsReadOnly, RelativeSource={RelativeSource AncestorType=local:FileView}}" Value="False" />
+                </MultiDataTrigger.Conditions>
                 <Setter TargetName="add" Property="Visibility" Value="Visible" />
-            </DataTrigger>
+            </MultiDataTrigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding Deleted, TargetNullValue=True}" Value="True" />
+                    <Condition Binding="{Binding IsReadOnly, RelativeSource={RelativeSource AncestorType=local:FileView}}" Value="False" />
+                </MultiDataTrigger.Conditions>
+                <Setter TargetName="add" Property="Visibility" Value="Visible" />
+            </MultiDataTrigger>
             <DataTrigger Binding="{Binding Name}" Value="{x:Null}">
                 <Setter TargetName="canset" Property="Visibility" Value="Collapsed" />
             </DataTrigger>
