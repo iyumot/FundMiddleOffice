@@ -94,4 +94,7 @@ public class DailyValue
 /// </summary>
 /// <param name="Date"></param>
 /// <param name="Scale"></param>
-public record DailyManageSacle(DateOnly Date, decimal Scale);
+public record DailyManageSacle(DateOnly Date, decimal Scale)
+{
+    public int Id => Date.DayNumber;
+}

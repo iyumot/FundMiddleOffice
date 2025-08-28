@@ -36,8 +36,32 @@ public static partial class DatabaseAssist
         [84] = MiggrateFlow,
         [85] = MiggrateTradeAccount,
         [86] = MiggrateAnnounce,
-        [87] = ChangeQuaterlyId
+        [87] = ChangeQuaterlyId,
+        [88] = UpdateManageScale
     };
+
+    private static void UpdateManageScale(BaseDatabase db)
+    {
+        db.DropCollection(nameof(DailyManageSacle));
+        // 获取所有名称包含"fv_开关"的集合（表）名称
+        var fvCollections = db.GetCollectionNames().Where(c => Regex.IsMatch(c, @"fv_\d+$")).ToList();
+
+        Dictionary<DateOnly, decimal> assets = new();
+        List<DailyManageSacle> dys = new();
+
+        // 遍历每个符合条件的集合，执行查询并转换结果
+        foreach (var collectionName in fvCollections)
+        {
+            var collection = db.GetCollection<DailyValue>(collectionName);
+
+            dys.AddRange(collection.FindAll().Select(x => new DailyManageSacle(x.Date, x.NetAsset)));
+
+        }
+
+        var result = dys.GroupBy(x => x.Date).Select(x => new DailyManageSacle(x.Key, x.Sum(y => y.Scale)));
+
+        db.GetCollection<DailyManageSacle>().Upsert(result);
+    }
 
     private static void ChangeQuaterlyId(BaseDatabase database)
     {
@@ -295,7 +319,7 @@ public static partial class DatabaseAssist
                 var m = Regex.Match(path!, "files.*");
                 if (m.Success) path = m.Value;
 
-                if(File.Exists(path))
+                if (File.Exists(path))
                     fileMetas.Add(FileMeta.Create(path) with { Time = fsi["Time"].AsDateTime });
             }
             db.GetCollection<InvestorCertifications>().Upsert(new InvestorCertifications { Id = c, Files = fileMetas });
