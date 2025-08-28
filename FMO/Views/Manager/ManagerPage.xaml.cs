@@ -126,6 +126,9 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     public partial ImageSource? MainLogo { get; set; }
 
 
+    [ObservableProperty]
+    public partial bool IsPolicyReadOnly { get; set; } = true;
+
     /// <summary>
     /// 营业执照正本
     /// </summary>

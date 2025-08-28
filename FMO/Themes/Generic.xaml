@@ -264,10 +264,15 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ToggleButton">
                     <Border
+                        Margin="{TemplateBinding Padding}"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}">
-                        <Viewbox Width="22" Height="22">
+                        <!--  使用 Grid 让 Viewbox 自动填满  -->
+                        <Viewbox
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Stretch="Uniform">
                             <Path
                                 x:Name="ico"
                                 Data="{StaticResource f.eye}"
@@ -285,38 +290,12 @@
         </Setter>
     </Style>
 
-    <Style x:Key="EditSwitch.Small" TargetType="ToggleButton">
+    <Style
+        x:Key="EditSwitch.Small"
+        BasedOn="{StaticResource EditSwitch}"
+        TargetType="ToggleButton">
         <Setter Property="Width" Value="20" />
         <Setter Property="Height" Value="20" />
-        <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="ToggleButton">
-                    <Border
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}">
-                        <Viewbox
-                            Width="16"
-                            Height="16"
-                            Margin="2">
-                            <Path
-                                x:Name="ico"
-                                Data="{StaticResource f.eye}"
-                                Fill="Black" />
-                        </Viewbox>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="ico" Property="Data" Value="{StaticResource f.pen}" />
-                            <Setter TargetName="ico" Property="Fill" Value="Green" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
     </Style>
 
 
