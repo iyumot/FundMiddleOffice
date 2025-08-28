@@ -129,6 +129,16 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     [ObservableProperty]
     public partial bool IsPolicyReadOnly { get; set; } = true;
 
+    [ObservableProperty]
+    public partial bool IsAddingNewPolicy { get; set; }
+
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AddPolicyDocCommand))]
+    public partial string? NewPolicyName { get; set; }
+
+    public bool CanAddPolicy => !string.IsNullOrWhiteSpace(NewPolicyName) && PolicyDocuments.All(x => x.Label != NewPolicyName);
+
     /// <summary>
     /// 营业执照正本
     /// </summary>
@@ -193,7 +203,6 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
 
     public ObservableCollection<MultiDualFileViewModel> PolicyDocuments { get; }
 
-    private Dictionary<Guid, int> PolicyFileMap { get; } = new();
 
     public ManagerPageViewModel()
     {
@@ -428,7 +437,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         LegalPersonIdCard = new(cef.LegalPersonIdCard);
         LegalPersonIdCard.FileChanged += (x) => UpdateCerf(new { LegalPersonIdCard = x }, cef.Id);
 
-        
+
 
 
         Flows = [.. db.GetCollection<ManagerFlow>().FindAll().Select(x => new ManagerFlowViewModel(x))];
@@ -439,20 +448,15 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
 
         var need = new List<string>
             {
-                "投资决策制度",          // 规范投资决策流程、权限划分和决策机制
-                "风险管理制度",          // 覆盖风险识别、评估、监控和应对全流程
-                "内部控制制度",          // 构建全业务流程的内控体系，防范舞弊风险
-                "信息披露制度",          // 明确信息披露的内容、频率、方式及对象
-                "合规管理制度",          // 确保基金运作符合法律法规及监管要求
-                "员工管理制度",          // 规范员工聘用、培训、考核及利益冲突防范
-                "档案管理制度",          // 规定各类文件资料的归档、保管及查阅规则
-                "估值核算制度",          // 规范基金资产估值方法、频率及核算流程
-                "应急处理制度",          // 建立突发事件的应对预案和处理流程
-                "资金管理制度",          // 管理基金资金的募集、划付、清算等环节
-                "利益冲突防范制度",      // 识别并管理可能存在的利益冲突情况
-                "产品备案管理制度",      // 规范基金产品的备案流程及材料准备
-                "宣传推介管理制度",      // 规范基金产品的宣传推介行为，防范违规宣传
-                "投资者适当性管理制度",  // 建立投资者风险评估与产品匹配机制
+                "运营风险控制制度",
+                "信息披露制度",
+                "机构内部交易记录制度",
+                "防范内幕交易、利益冲突的投资交易制度",
+                "合格投资者风险揭示制度",
+                "合格投资者内部审核流程及相关制度",
+                "募集相关规范制度",
+                "公平交易制度",
+                "从业人员买卖证券申报制度",
             };
         docs.AddRange(need.Except(docs.Select(x => x.Label)).Select(x => new PolicyDocument { Label = x, }));
 
@@ -714,6 +718,19 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         Flows.Remove(v);
     }
 
+
+    [RelayCommand(CanExecute = nameof(CanAddPolicy))]
+    public void AddPolicyDoc()
+    {
+        MultiDualFileViewModel item = new() { Label = NewPolicyName };
+        item.FileChanged += (x) =>
+        {
+            using var db = DbHelper.Base();
+            db.GetCollection<PolicyDocument>().Upsert(new PolicyDocument { Label = x.Label, Files = x.Files });
+        };
+
+        PolicyDocuments.Add(item);
+    }
 
     private OwnershipItem Parse(int institutionId, IList<IEntity> per, IEnumerable<Ownership> os, OwnershipItem oi)
     {

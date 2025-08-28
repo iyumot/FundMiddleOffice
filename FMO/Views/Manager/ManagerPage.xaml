@@ -566,19 +566,50 @@
         </StackPanel>
 
 
-        <TabControl Style="{StaticResource TabControlCapsule}">
+        <TabControl BorderThickness="0" Style="{StaticResource TabControlCapsule}">
 
             <TabItem Width="100" Style="{StaticResource TabItemCapsuleHorizontalFirst}">
                 <TabItem.Header>
                     <DockPanel DockPanel.Dock="Top" LastChildFill="False">
                         <TextBlock VerticalAlignment="Center" Text="制度" />
                         <ToggleButton
-                            Width="14"
-                            Height="14"
+                            Width="16"
+                            Height="16"
                             Margin="8,0"
                             Padding="1"
                             IsChecked="{Binding IsPolicyReadOnly}"
                             Style="{StaticResource EditSwitch.Small}" />
+                        <ToggleButton
+                            Margin="-4"
+                            hc:IconElement.Geometry="{StaticResource f.circle-plus}"
+                            BorderThickness="0"
+                            Foreground="RoyalBlue"
+                            IsChecked="{Binding IsAddingNewPolicy}"
+                            Style="{StaticResource ToggleButtonIcon.Small}"
+                            Visibility="{Binding IsPolicyReadOnly, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                        <Popup
+                            AllowsTransparency="True"
+                            HorizontalOffset="-100"
+                            IsOpen="{Binding IsAddingNewPolicy}"
+                            Placement="Bottom"
+                            PlacementTarget="{Binding RelativeSource={RelativeSource AncestorType=TabItem}}"
+                            StaysOpen="False">
+                            <Border Background="WhiteSmoke">
+                                <DockPanel Margin="10">
+                                    <Button
+                                        Command="{Binding AddPolicyDocCommand}"
+                                        Content="确认"
+                                        DockPanel.Dock="Right"
+                                        Style="{StaticResource ButtonPrimary}" />
+                                    <TextBlock VerticalAlignment="Center" Text="制度名" />
+                                    <TextBox
+                                        Width="220"
+                                        Margin="10,0"
+                                        Text="{Binding NewPolicyName, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                                </DockPanel>
+                            </Border>
+                        </Popup>
                     </DockPanel>
                 </TabItem.Header>
                 <ListBox

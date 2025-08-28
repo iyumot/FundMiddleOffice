@@ -37,8 +37,14 @@ public static partial class DatabaseAssist
         [85] = MiggrateTradeAccount,
         [86] = MiggrateAnnounce,
         [87] = ChangeQuaterlyId,
-        [88] = UpdateManageScale
+        [88] = UpdateManageScale,
+        [89] = UpdatePolicy,
     };
+
+    private static void UpdatePolicy(BaseDatabase database)
+    {
+        database.DropCollection(nameof(PolicyDocument));
+    }
 
     private static void UpdateManageScale(BaseDatabase db)
     {
