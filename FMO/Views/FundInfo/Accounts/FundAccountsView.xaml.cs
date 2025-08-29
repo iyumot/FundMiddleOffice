@@ -97,15 +97,6 @@ public partial class FundAccountsViewModel : ObservableObject
 
 
 
-
-
-
-
-
-
-
-
-
         var sa = db.GetCollection<StockAccount>().Find(x => x.FundId == fundId).ToArray();
         if (sa is not null)
             StockAccounts = new(sa.Select(x => new StockAccountViewModel(x)));

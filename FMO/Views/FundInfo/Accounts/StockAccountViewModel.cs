@@ -4,8 +4,6 @@ using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
 using LiteDB;
-using Microsoft.Win32;
-using Serilog;
 using System.IO;
 using System.Windows.Media;
 
@@ -21,6 +19,19 @@ public partial class StockAccountViewModel : ObservableObject
         Company = v.Company;
         Id = v.Id;
         Group = v.Group;
+
+        using var db = DbHelper.Base();
+        var cars = db.GetCollection<SecurityCardLink>().Find(x => x.Account == Id).ToArray();
+
+        var sh = cars.LastOrDefault(x => x.Type == SecurityCardType.ShangHai);
+        if (!sh?.Detatch ?? true)
+            SHCard = sh?.Card;
+        SHCardConnected = !sh?.Detatch ?? false;
+
+        var sz = cars.LastOrDefault(x => x.Type == SecurityCardType.ShenZhen);
+        if (!sz?.Detatch ?? true)
+            SZCard = sz?.Card;
+        SZCardConnected = !sz?.Detatch ?? false; 
 
         Common = new(v.Id, v.Common);
         Credit = new(v.Id, v.Credit);
@@ -45,13 +56,29 @@ public partial class StockAccountViewModel : ObservableObject
     [ObservableProperty]
     public partial SolidColorBrush? GroupBrush { get; set; }
 
+    [ObservableProperty]
+    public partial string? SHCard { get; set; }
+
+    [ObservableProperty]
+    public partial bool SHCardConnected { get; set; }
+
+    [ObservableProperty]
+    public partial string? SZCard { get; set; }
+
+    [ObservableProperty]
+    public partial bool SZCardConnected { get; set; }
+
+
+    public SecurityCardViewModel? NewSHCard { get; set; }
+    public SecurityCardViewModel? NewSZCard { get; set; }
+
 
     public partial class BasicAccountViewModel : ObservableObject
     {
         public BasicAccountViewModel(int id, OpenAccountEvent? common)
         {
             Id = id;
-            
+
             if (common is not null)
             {
                 IsReadOnly = true;
@@ -67,7 +94,7 @@ public partial class StockAccountViewModel : ObservableObject
 
                 ServiceAgreement = new(common.ServiceAgreement);
                 ServiceAgreement.FileChanged += f => UpdateFile(new { ServiceAgreement = f });
-                 
+
             }
 
         }
@@ -111,7 +138,7 @@ public partial class StockAccountViewModel : ObservableObject
 
 
         public SimpleFileViewModel? ServiceAgreement { get; }
-         
+
 
         public int Id { get; }
 
@@ -185,5 +212,49 @@ public partial class StockAccountViewModel : ObservableObject
     public void SetGroup()
     {
         ShowGroupPop = true;
+    }
+
+    [RelayCommand]
+    public void ConfirmSHCard()
+    {
+        if (NewSHCard is not null)
+        {
+            SHCard = NewSHCard.CardNo;
+            SHCardConnected = true;
+
+            using var db = DbHelper.Base();
+            db.GetCollection<SecurityCardLink>().Insert(new SecurityCardLink(0, SecurityCardType.ShangHai, SHCard!, Id));
+        }
+    }
+
+    [RelayCommand]
+    public void DisconnectSH()
+    {
+        using var db = DbHelper.Base();
+        db.GetCollection<SecurityCardLink>().Insert(new SecurityCardLink(0, SecurityCardType.ShangHai, SHCard!, Id, true));
+        SHCard = null;
+        SHCardConnected = false;
+    }
+
+    [RelayCommand]
+    public void ConfirmSZCard()
+    {
+        if (NewSZCard is not null)
+        {
+            SZCard = NewSZCard.CardNo;
+            SZCardConnected = true;
+
+            using var db = DbHelper.Base();
+            db.GetCollection<SecurityCardLink>().Insert(new SecurityCardLink(0, SecurityCardType.ShenZhen, SZCard!, Id));
+        }
+    }
+
+    [RelayCommand]
+    public void DisconnectSZ()
+    {
+        using var db = DbHelper.Base();
+        db.GetCollection<SecurityCardLink>().Insert(new SecurityCardLink(0, SecurityCardType.ShenZhen, SZCard!, Id, true));
+        SZCard = null;
+        SZCardConnected = false;
     }
 }

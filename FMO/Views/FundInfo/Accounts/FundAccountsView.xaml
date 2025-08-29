@@ -201,9 +201,30 @@
 
 
         <DataTemplate x:Key="StockItem" DataType="local:StockAccountViewModel">
-            <Border Margin="2,0" Background="WhiteSmoke">
-                <StackPanel MinWidth="300">
-                    <DockPanel>
+            <Border
+                Margin="2,0"
+                Background="WhiteSmoke"
+                CornerRadius="8">
+                <DockPanel MinWidth="300">
+                    <DockPanel DockPanel.Dock="Top" LastChildFill="False">
+
+                        <Border
+                            Width="150"
+                            Background="RoyalBlue"
+                            CornerRadius="8,0,0,0">
+                            <TextBlock
+                                Margin="10,4"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="White"
+                                Style="{StaticResource TextBlockDefaultBold}"
+                                Text="{Binding Company}" />
+                        </Border>
+
+
+
+
                         <Button
                             x:Name="del"
                             hc:IconElement.Geometry="{StaticResource f.trash}"
@@ -215,7 +236,111 @@
                             Visibility="Collapsed" />
 
 
-                        <hc:SimplePanel>
+                        <DockPanel>
+                            <TextBlock
+                                Margin="10,0,0,0"
+                                VerticalAlignment="Center"
+                                Text="上证股卡" />
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.disconnect}"
+                                Command="{Binding DisconnectSHCommand}"
+                                Foreground="Red"
+                                Style="{StaticResource ButtonIcon.Small}"
+                                Visibility="{Binding SHCardConnected, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                            <shared:CopyableTextBlock
+                                Margin="8,0,2,0"
+                                VerticalAlignment="Center"
+                                FontWeight="Black"
+                                Text="{Binding SHCard}" />
+
+                            <ToggleButton
+                                x:Name="sh"
+                                Padding="2"
+                                hc:IconElement.Geometry="{StaticResource f.connect}"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Style="{StaticResource ToggleButtonIcon}"
+                                Visibility="{Binding SHCardConnected, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                            <Popup
+                                AllowsTransparency="True"
+                                IsOpen="{Binding IsChecked, ElementName=sh}"
+                                Placement="Right"
+                                PlacementTarget="{Binding ElementName=sh}"
+                                StaysOpen="False">
+                                <Border>
+                                    <DockPanel>
+                                        <ListBox
+                                            DisplayMemberPath="CardNo"
+                                            ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
+                                            ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=local:FundAccountsView}, Path=DataContext.SHSecurityCardSource.View}"
+                                            SelectedItem="{Binding NewSHCard}"
+                                            Style="{StaticResource ListBox.Small}" />
+
+                                        <Button
+                                            Margin="4,0"
+                                            Command="{Binding ConfirmSHCardCommand}"
+                                            Content="确认"
+                                            Style="{StaticResource ButtonPrimary}" />
+                                    </DockPanel>
+                                </Border>
+                            </Popup>
+                        </DockPanel>
+
+                        <DockPanel>
+                            <TextBlock
+                                Margin="10,0,0,0"
+                                VerticalAlignment="Center"
+                                Text="深证股卡" />
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.disconnect}"
+                                Command="{Binding DisconnectSZCommand}"
+                                Foreground="Red"
+                                Style="{StaticResource ButtonIcon.Small}"
+                                Visibility="{Binding SZCardConnected, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                            <shared:CopyableTextBlock
+                                Margin="8,0,2,0"
+                                VerticalAlignment="Center"
+                                FontWeight="Black"
+                                Text="{Binding SZCard}" />
+
+                            <ToggleButton
+                                x:Name="sz"
+                                Padding="2"
+                                hc:IconElement.Geometry="{StaticResource f.connect}"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Style="{StaticResource ToggleButtonIcon}"
+                                Visibility="{Binding SZCardConnected, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                            <Popup
+                                AllowsTransparency="True"
+                                IsOpen="{Binding IsChecked, ElementName=sz}"
+                                Placement="Right"
+                                PlacementTarget="{Binding ElementName=sz}"
+                                StaysOpen="False">
+                                <Border>
+                                    <DockPanel>
+                                        <ListBox
+                                            DisplayMemberPath="CardNo"
+                                            ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
+                                            ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=local:FundAccountsView}, Path=DataContext.SZSecurityCardSource.View}"
+                                            SelectedItem="{Binding NewSZCard}"
+                                            Style="{StaticResource ListBox.Small}" />
+
+                                        <Button
+                                            Margin="4,0"
+                                            Command="{Binding ConfirmSZCardCommand}"
+                                            Content="确认"
+                                            Style="{StaticResource ButtonPrimary}" />
+                                    </DockPanel>
+                                </Border>
+                            </Popup>
+                        </DockPanel>
+
+                        <!--<hc:SimplePanel>
                             <Button
                                 Name="group"
                                 hc:IconElement.Geometry="{StaticResource f.flag}"
@@ -247,20 +372,12 @@
                                     </ListBox>
                                 </Border>
                             </Popup>
-                        </hc:SimplePanel>
+                        </hc:SimplePanel>-->
 
-                        <TextBlock
-                            Margin="4"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            FontSize="16"
-                            FontWeight="Bold"
-                            Style="{StaticResource TextBlockDefaultBold}"
-                            Text="{Binding Company}" />
                     </DockPanel>
                     <!--  基本户  -->
-                    <DockPanel DataContext="{Binding Common}">
-                        <Border Background="Orange">
+                    <DockPanel Width="400" DataContext="{Binding Common}">
+                        <Border Background="Orange" CornerRadius="0,0,0,8">
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
 
                                 <TextBlock
@@ -496,15 +613,15 @@
                         </StackPanel>
                     </DockPanel>
 
-                </StackPanel>
+                </DockPanel>
             </Border>
             <DataTemplate.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter TargetName="del" Property="Visibility" Value="Visible" />
                 </Trigger>
-                <DataTrigger Binding="{Binding Group}" Value="0">
+                <!--<DataTrigger Binding="{Binding Group}" Value="0">
                     <Setter TargetName="group" Property="Foreground" Value="Black" />
-                </DataTrigger>
+                </DataTrigger>-->
             </DataTemplate.Triggers>
         </DataTemplate>
 
@@ -817,34 +934,65 @@
                 </hc:UniformSpacingPanel>
             </TabItem>
 
-            <TabItem Header="股票账户">
-
-                <DockPanel>
-                    <Border
+            <TabItem>
+                <TabItem.Header>
+                    <DockPanel
                         Name="stocktag"
-                        Width="60"
-                        Background="Green"
-                        CornerRadius="5"
-                        Visibility="Collapsed">
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock
-                                Width="40"
-                                Margin="5,10"
-                                HorizontalAlignment="Center"
-                                FontSize="16"
-                                Foreground="White"
-                                Text="股票账户"
-                                TextAlignment="Center"
-                                TextWrapping="Wrap" />
-
-                            <Button
-                                hc:IconElement.Geometry="{StaticResource f.circle-plus}"
-                                Command="{Binding AddStockCommand}"
-                                Foreground="White"
-                                Style="{StaticResource ButtonIcon}" />
-                        </StackPanel>
-
-                    </Border>
+                        HorizontalAlignment="Center"
+                        LastChildFill="False">
+                        <TextBlock VerticalAlignment="Center" Text="股票账户" />
+                        <Button
+                            Margin="-4,-2"
+                            hc:IconElement.Geometry="{StaticResource f.circle-plus}"
+                            Command="{Binding AddStockCommand}"
+                            Foreground="Green"
+                            Style="{StaticResource ButtonIcon}"
+                            Visibility="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=IsSelected, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                        <Popup
+                            HorizontalOffset="-50"
+                            IsOpen="{Binding ShowChooseStockCompany}"
+                            Placement="Bottom"
+                            PlacementTarget="{Binding ElementName=stocktag}"
+                            StaysOpen="False"
+                            VerticalOffset="10">
+                            <Border Background="WhiteSmoke">
+                                <StackPanel Margin="0,10,0,0">
+                                    <!--  搜索  -->
+                                    <hc:SimplePanel Height="30" Margin="10,0">
+                                        <TextBox
+                                            MinWidth="180"
+                                            Padding="4"
+                                            HorizontalContentAlignment="Center"
+                                            Style="{StaticResource TextBox.Small}"
+                                            Text="{Binding SecurityCompanyKeyword, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                                        <Viewbox
+                                            Width="24"
+                                            Margin="5,0"
+                                            HorizontalAlignment="Right">
+                                            <Path Data="{StaticResource f.magnifying-glass}" Fill="Black" />
+                                        </Viewbox>
+                                    </hc:SimplePanel>
+                                    <ListBox
+                                        Width="260"
+                                        Height="300"
+                                        Margin="8"
+                                        ItemsSource="{Binding SecurityCompanies.View}"
+                                        SelectedItem="{Binding SelectedSecurityCompany}">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock
+                                                    Height="15"
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding .}" />
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </StackPanel>
+                            </Border>
+                        </Popup>
+                    </DockPanel>
+                </TabItem.Header>
+                <hc:SimplePanel>
 
                     <ListBox
                         d:ItemsSource="{d:SampleData}"
@@ -854,47 +1002,8 @@
                         ItemsSource="{Binding StockAccounts}"
                         Style="{StaticResource ListBoxCustom}" />
 
-                    <Popup
-                        IsOpen="{Binding ShowChooseStockCompany}"
-                        Placement="Right"
-                        PlacementTarget="{Binding ElementName=stocktag}"
-                        StaysOpen="False">
-                        <Border Background="WhiteSmoke">
-                            <StackPanel Margin="0,10,0,0">
-                                <!--  搜索  -->
-                                <hc:SimplePanel Height="30" Margin="10,0">
-                                    <TextBox
-                                        MinWidth="180"
-                                        Padding="4"
-                                        HorizontalContentAlignment="Center"
-                                        Style="{StaticResource TextBox.Small}"
-                                        Text="{Binding SecurityCompanyKeyword, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-                                    <Viewbox
-                                        Width="24"
-                                        Margin="5,0"
-                                        HorizontalAlignment="Right">
-                                        <Path Data="{StaticResource f.magnifying-glass}" Fill="Black" />
-                                    </Viewbox>
-                                </hc:SimplePanel>
-                                <ListBox
-                                    Width="260"
-                                    Height="300"
-                                    Margin="8"
-                                    ItemsSource="{Binding SecurityCompanies.View}"
-                                    SelectedItem="{Binding SelectedSecurityCompany}">
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock
-                                                Height="15"
-                                                VerticalAlignment="Center"
-                                                Text="{Binding .}" />
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>
-                            </StackPanel>
-                        </Border>
-                    </Popup>
-                </DockPanel>
+
+                </hc:SimplePanel>
 
             </TabItem>
 

@@ -48,6 +48,11 @@ public class OpenAccountEvent : AccountEvent
 }
 
 
+public record SecurityCardInfo(string? Card, bool Connected);
+
+public record SecurityCardLink(int Id, SecurityCardType Type, string Card, int Account, bool Detatch = false);
+
+
 /// <summary>
 /// 股票账户
 /// </summary>
@@ -63,6 +68,16 @@ public class StockAccount
     public int Group { get; set; }
 
     public string? Company { get; set; }
+
+    /// <summary>
+    /// 上海股东卡
+    /// </summary>
+    //public SecurityCardInfo? SHCard { get; set; }
+
+    /// <summary>
+    /// 深圳股东卡
+    /// </summary>
+    //public SecurityCardInfo? SZCard { get; set; }
 
     /// <summary>
     /// 基本户
