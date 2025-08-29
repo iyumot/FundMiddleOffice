@@ -105,5 +105,7 @@ public enum TransferRecordType
     /// 募集失败
     /// </summary>
     [Description("募集失败")] RaisingFailed,
+
+    [Description("撤单")] Abort
 }
 

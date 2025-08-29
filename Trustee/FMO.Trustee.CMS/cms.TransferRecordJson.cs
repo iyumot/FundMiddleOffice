@@ -169,6 +169,7 @@ internal class TransferRecordJson : JsonBase
             "143" => TransferRecordType.Distribution,     //"分红确认",
             "144" => TransferRecordType.Increase,     //"强行调增",
             "145" => TransferRecordType.Decrease,     //"强行调减",
+            //"152" => TransferRecordType. // 撤单
             _ => TransferRecordType.UNK,              //"未知业务类型"
         };
     }
