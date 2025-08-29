@@ -91,7 +91,7 @@ public partial class CITICS : TrusteeApiBase
     public override async Task<ReturnWrap<TransferRequest>> QueryTransferRequests(DateOnly begin, DateOnly end, string? fundCode = null)
     {
         var part = "/v2/ta/queryTradeApplyForApi";
-        var result = await SyncWork<TransferRequest, TransferRequestJson>(part, new { ackBeginDate = $"{begin:yyyyMMdd}", ackEndDate = $"{end:yyyyMMdd}", fundCode = fundCode }, x => x.ToObject());
+        var result = await SyncWork<TransferRequest, TransferRequestJson>(part, new { requestBeginDate = $"{begin:yyyyMMdd}", requestEndDate = $"{end:yyyyMMdd}", fundCode = fundCode }, x => x.ToObject());
         return result;
 
         // 后处理 不处理，统一在DataTracker中

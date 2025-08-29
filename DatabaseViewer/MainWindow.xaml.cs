@@ -77,7 +77,7 @@ public partial class MainWindowViewModel : ObservableObject
         }
 
         using var db = SelectedDatabase.GetDatabase();
-        var doc = db.GetCollection(value).FindAll();
+        var doc = db.GetCollection(value).Query().OrderByDescending("_id").Limit(1000).ToList();
 
         if (doc is null)
         {
@@ -88,7 +88,7 @@ public partial class MainWindowViewModel : ObservableObject
 
         if (value?.StartsWith("fv_") ?? false)
         {
-            Data = doc!.Select(x => BsonMapper.Global.ToObject<DailyValue>(x)).Reverse();
+            Data = doc!.Select(x => BsonMapper.Global.ToObject<DailyValue>(x));
             return;
         }
 
@@ -102,8 +102,8 @@ public partial class MainWindowViewModel : ObservableObject
         var types = AssemblyLoadContext.Default.Assemblies.Where(x => x.FullName!.Contains("FMO")).SelectMany(x => x.GetTypes());
 
         if (types.FirstOrDefault(x => x.Name == value) is Type type)
-            Data = doc.Select(x => BsonMapper.Global.ToObject(type, x)).Reverse();
-        else Data = doc.Reverse();
+            Data = doc.Select(x => BsonMapper.Global.ToObject(type, x));
+        else Data = doc;
 
     }
 }
