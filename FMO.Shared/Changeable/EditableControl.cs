@@ -9,6 +9,11 @@ namespace FMO.Shared;
 
 public class EditableControl : HeaderedContentControl
 {
+    static EditableControl()
+    {
+        DefaultStyleKeyProperty.OverrideMetadata(typeof(EditableControl), new FrameworkPropertyMetadata(typeof(EditableControl)));
+    }
+
     public bool IsReadOnly
     {
         get { return (bool)GetValue(IsReadOnlyProperty); }

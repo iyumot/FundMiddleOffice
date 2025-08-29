@@ -10,10 +10,9 @@
 
 
 
-    <Style x:Key="SimpleFileStyle" TargetType="local:EditableControl">
+    <Style TargetType="local:EditableControl">
         <Setter Property="AllowDrop" Value="{Binding IsReadOnly, RelativeSource={RelativeSource Self}, Converter={StaticResource Boolean2BooleanReConverter}}" />
-        <Setter Property="ContentTemplate" Value="{StaticResource DT.File}" />
-        <Setter Property="HeaderTemplate" Value="{StaticResource DefaultHeader}" />
+
         <!--<Setter Property="Header" Value="{Binding Content.Label, RelativeSource={RelativeSource Self}, FallbackValue=文件}" />-->
         <Setter Property="Template">
             <Setter.Value>
@@ -25,6 +24,7 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}">
                         <DockPanel Background="Transparent">
+                            <local:ChangeableControlButtons DataContext="{Binding ., RelativeSource={RelativeSource Mode=TemplatedParent}}" DockPanel.Dock="Right" />
                             <ContentPresenter
                                 VerticalAlignment="Center"
                                 Content="{TemplateBinding Header}"

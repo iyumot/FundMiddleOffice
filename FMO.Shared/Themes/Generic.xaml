@@ -5,6 +5,7 @@
     xmlns:local="clr-namespace:FMO.Shared">
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/FMO.Shared;component/Themes/ChangeableControls.xaml" />
+        <ResourceDictionary Source="/FMO.Shared;component/Themes/Editable.xaml" />
         <ResourceDictionary Source="/FMO.Shared;component/Themes/Copyable.xaml" />
         <ResourceDictionary Source="/FMO.Shared;component/Themes/NewFileControl.xaml" />
         <ResourceDictionary Source="/FMO.Shared;component/Themes/YearCalender.xaml" />
