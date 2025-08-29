@@ -1,10 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.IO;
-using System.Text.RegularExpressions;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FMO.Logging;
 using FMO.Models;
@@ -13,6 +7,13 @@ using FMO.Shared;
 using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
+using System.Text.RegularExpressions;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace FMO;
 
@@ -36,16 +37,74 @@ public partial class FundAccountsViewModel : ObservableObject
         Code = code;
         Names = names;
 
-        List<ISecurityCard> ls = new();
+        /// 统一账户
         using var db = DbHelper.Base();
+        var fa = db.GetCollection<FundSingletonAccounts>().FindById(FundId);
+        Singleton = new(fa ?? new() { Id = fundId });
+        UniversalNo = fa?.UniversalNo;
+        FutureNo = fa?.FutureNo;
+        CCDCBondAccount = fa?.CCDCBondAccount;
+        SHCBondAccount = fa?.SHCBondAccount;
+
+
+        // 股卡 
         var sas = db.GetCollection<SecurityCard>().Find(x => x.FundId == fundId).ToArray();
-        if (sas is not null)
-            ls.AddRange(sas.Select(x => new SecurityCardViewModel(x)));
+        SecurityCards = [.. sas.Select(x => new SecurityCardViewModel(x))];
+        SHSecurityCardSource.Source = SecurityCards;
+        SZSecurityCardSource.Source = SecurityCards;
+        SHSecurityCardSource.SortDescriptions.Add(new SortDescription(nameof(SecurityCardViewModel.Date), ListSortDirection.Descending));
+        SZSecurityCardSource.SortDescriptions.Add(new SortDescription(nameof(SecurityCardViewModel.Date), ListSortDirection.Descending));
+        SHSecurityCardSource.Filter += (s, e) => e.Accepted = e.Item switch { SecurityCardViewModel v => v.Type == SecurityCardType.ShangHai, _ => false };
+        SZSecurityCardSource.Filter += (s, e) => e.Accepted = e.Item switch { SecurityCardViewModel v => v.Type == SecurityCardType.ShenZhen, _ => false };
 
         var sac = db.GetCollection<SecurityCardChange>().Find(x => x.FundId == fundId).ToArray();
-        if (sac is not null)
-            ls.AddRange(sac.Select(x => new SecurityCardChangeViewModel(x)));
-        SecurityCards = [.. ls];
+        SecurityCardChanges = [.. sac.Select(x => new SecurityCardChangeViewModel(x))];//ls.AddRange(sac.Select(x => new SecurityCardChangeViewModel(x)));
+
+        SecurityCardChangeSource.Source = SecurityCardChanges;
+        SecurityCardChangeSource.SortDescriptions.Add(new SortDescription(nameof(SecurityCardChangeViewModel.Date), ListSortDirection.Descending));
+
+        foreach (var item in SecurityCardChanges)
+        {
+            if (string.IsNullOrWhiteSpace(item.UniversalNo) && item.File.Exists)
+            {
+                using var fs = item.File.OpenRead();
+
+                var result = PdfHelper.GetSecurityAccounts(fs);
+                if (result is null) continue;
+
+                var m = Regex.Match(result[0].text, @"一码通\w*号码\s*[:：]\s*([a-z0-9]+)");
+                item.UniversalNo = m.Success ? m.Groups[1].Value : "";
+            }
+        }
+
+
+        // 检验
+        if (!string.IsNullOrWhiteSpace(UniversalNo))
+        {
+            foreach (var item in SecurityCards)
+            {
+                if (item.UniversalNo != UniversalNo)
+                    item.MaybeError = true;
+            }
+            foreach (var item in SecurityCardChanges)
+            {
+                if (item.UniversalNo != UniversalNo)
+                    item.MaybeError = true;
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         var sa = db.GetCollection<StockAccount>().Find(x => x.FundId == fundId).ToArray();
         if (sa is not null)
@@ -55,12 +114,6 @@ public partial class FundAccountsViewModel : ObservableObject
         if (fas is not null)
             FutureAccounts = new(fas.Select(x => new FutureAccountViewModel(x)));
 
-        var fa = db.GetCollection<FundSingletonAccounts>().FindById(FundId);
-        Singleton = new(fa ?? new() { Id = fundId });
-        UniversalNo = fa?.UniversalNo;
-        FutureNo = fa?.FutureNo;
-        CCDCBondAccount = fa?.CCDCBondAccount;
-        SHCBondAccount = fa?.SHCBondAccount;
 
         if (UniversalNo is null && sas?.Select(x => x.UniversalNo).Distinct().Where(x => !string.IsNullOrWhiteSpace(x)) is IEnumerable<string> s)
         {
@@ -144,8 +197,14 @@ public partial class FundAccountsViewModel : ObservableObject
     public string Code { get; }
     public string[] Names { get; }
 
-    [ObservableProperty]
-    public partial ObservableCollection<ISecurityCard>? SecurityCards { get; set; }
+    public ObservableCollection<SecurityCardViewModel> SecurityCards { get; }
+
+
+    public ObservableCollection<SecurityCardChangeViewModel> SecurityCardChanges { get; }
+
+    public CollectionViewSource SecurityCardChangeSource { get; } = new();
+    public CollectionViewSource SHSecurityCardSource { get; } = new();
+    public CollectionViewSource SZSecurityCardSource { get; } = new();
 
 
     #region Stock
@@ -234,7 +293,8 @@ public partial class FundAccountsViewModel : ObservableObject
         var dr = fd.ShowDialog();
         if (dr is null || !dr.Value) return;
 
-        List<ISecurityCard> list = new();
+        List<SecurityCard> list = new();
+        List<SecurityCardChange> cl = [];
         int cnt = 0;
         int failed = 0;
         foreach (var f in fd.FileNames)
@@ -243,7 +303,7 @@ public partial class FundAccountsViewModel : ObservableObject
             {
                 using var fs = new FileStream(f, FileMode.Open);
 
-                var result = PdfHelper.GetSecurityAccounts(fs); 
+                var result = PdfHelper.GetSecurityAccounts(fs);
                 if (result is null) continue;
 
                 // 解析
@@ -266,7 +326,7 @@ public partial class FundAccountsViewModel : ObservableObject
 
 
 
-                    if (c.text.Contains("变更") && a is not null && d is not null) // 股卡变更
+                    if (c.text.Contains("变更") && a is not null && d is not null && b is not null) // 股卡变更
                     {
                         m = Regex.Match(c.text, @"(\d{4})\s*年\s*(\d{2})\s*月\s*(\d{2})\s*日", RegexOptions.Singleline);
                         if (m.Success)
@@ -276,6 +336,7 @@ public partial class FundAccountsViewModel : ObservableObject
                                 FundId = FundId,
                                 Name = d,
                                 SerialNo = a,
+                                UniversalNo = b,
                                 Date = DateOnly.ParseExact($"{m.Groups[1].Value}{m.Groups[2].Value}{m.Groups[3].Value}", "yyyyMMdd")
                             };
                             // 保存文件
@@ -283,17 +344,15 @@ public partial class FundAccountsViewModel : ObservableObject
                             file.Write(c.page);
                             file.Flush();
 
-                            if (FindFund(change))
-                            {
-                                using var db = DbHelper.Base();
-                                db.GetCollection<SecurityCardChange>().EnsureIndex(x => x.SerialNo, true);
-                                var old = db.GetCollection<SecurityCardChange>().FindOne(x => x.SerialNo == change.SerialNo);
-                                if (old is not null) change.Id = old.Id;
-                                db.GetCollection<SecurityCardChange>().Upsert(change);
+                            using var db = DbHelper.Base();
+                            var name = change.Name.Split('-', '－');
+                            var (fund, _) = db.FindByName(name.Last());
+                            change.FundId = fund?.Id ?? 0;
+                            db.GetCollection<SecurityCardChange>().Upsert(change);
+                            if (fund is null) LogEx.Error($"股卡变更 {change.Id} 的基金 {change.Name} 不在库中");
 
-                                if (change.FundId == FundId)
-                                    list.Add(change);
-                            }
+                            if (fund?.Id == FundId)
+                                cl.Add(change);
                             continue;
                         }
                         else ++failed;
@@ -301,6 +360,8 @@ public partial class FundAccountsViewModel : ObservableObject
 
                     if (a is null || b is null || d is null || e is null || g is null || DateTimeHelper.TryFindDate(g) is not DateOnly date)
                     {
+                        if (c.text.Contains("申请日期")) continue;
+
                         ++failed;
                         Log.Error($"解析股卡失败:\n {c.text}");
                         continue;
@@ -329,20 +390,21 @@ public partial class FundAccountsViewModel : ObservableObject
                     outf.Write(c.page);
                     outf.Flush();
 
-                    if (FindFund(sa))
+
+                    using (var db = DbHelper.Base())
                     {
-                        using var db = DbHelper.Base();
-                        db.GetCollection<SecurityCard>().EnsureIndex(x => x.CardNo, true);
-                        var old = db.GetCollection<SecurityCard>().FindOne(x => x.CardNo == sa.CardNo);
-                        if (old is not null) sa.Id = old.Id;
+                        var name = sa.Name.Split('-', '－');
+                        var (fund, _) = db.FindByName(name.Last());
+                        sa.FundId = fund?.Id ?? 0;
+                        sa.FundCode = fund?.Code;
                         db.GetCollection<SecurityCard>().Upsert(sa);
 
-                        ++cnt;
+                        if (fund is null) LogEx.Error($"股卡 {sa.CardNo} 的基金 {sa.Name} 不在库中");
                     }
-
+                    ++cnt;
+                     
                     if (sa.FundId == FundId)
-                        list.Add(sa);
-
+                        list.Add(sa); 
                 }
 
             }
@@ -351,88 +413,32 @@ public partial class FundAccountsViewModel : ObservableObject
 
             }
         }
-        if (list.Count > 0)
-        {
-            if (SecurityCards is null)
-                SecurityCards = new(list.Select(x => (ISecurityCard)(x switch { SecurityCard c => new SecurityCardViewModel(c), SecurityCardChange cc => new SecurityCardChangeViewModel(cc), _ => throw new Exception() })));
-            else
-                foreach (var x in list)
-                    SecurityCards.Add(x switch { SecurityCard c => new SecurityCardViewModel(c), SecurityCardChange cc => new SecurityCardChangeViewModel(cc), _ => throw new Exception() });
-        }
 
-        HandyControl.Controls.Growl.Info($"已解析{cnt}个股卡{(list.Count < cnt ? $"，失败{failed}个，{cnt - list.Count}个不属于本产品" : "")}");
+        foreach (var x in list.ExceptBy(SecurityCards.Select(x => x.Id), x => x.Id))
+            SecurityCards.Add(new SecurityCardViewModel(x));
+        foreach (var x in cl.ExceptBy(SecurityCardChanges.Select(x => x.Id), x => x.Id))
+            SecurityCardChanges.Add(new SecurityCardChangeViewModel(x));
+
+        var cuc = list.Count + cl.Count;
+        HandyControl.Controls.Growl.Info($"已解析{cnt}个股卡{(cuc < cnt ? $"，失败{failed}个，{cnt - cuc}个不属于本产品" : "")}");
     }
 
-    bool FindFund(SecurityCard sa)
-    {
-        // 解析对应的基金 
-        if (sa.FundCode?.Length > 0)
-        {
-            if (Code == sa.FundCode)
-            {
-                sa.FundId = FundId;
-                return true;
-            }
-            else
-            {
-                using var db = DbHelper.Base();
-                var fund = db.GetCollection<Fund>().FindOne(x => x.Code == sa.FundCode);
-                if (fund is not null)
-                {
-                    sa.FundId = fund.Id;
-                    return true;
-                }
-            }
-        }
 
-        if (sa.Name?.Length > 10)
-        {
-            if (Names.Any(x => sa.Name.Contains(x)))
-            {
-                sa.FundId = FundId;
-                return true;
-            }
-            else
-            {
-                using var db = DbHelper.Base();
-                var fund = db.GetCollection<Fund>().FindOne(x => sa.Name.Contains(x.Name));
-                if (fund is not null)
-                {
-                    sa.FundId = fund.Id;
-                    return true;
-                }
-            }
-        }
+    //private void FindFundAndAdd(SecurityCard sa)
+    //{
+    //    using (var db = DbHelper.Base())
+    //    {
+    //        var name = sa.Name.Split('-', '－').Last();
+    //        var (fund, _) = db.FindByName(name);
+    //        sa.FundId = fund?.Id ?? 0;
+    //        sa.FundCode = fund?.Code;
+    //        db.GetCollection<SecurityCard>().Upsert(sa);
 
-        Log.Error($"股卡{sa.SerialNo}-{sa.CardNo}未找到对应的基金");
-        return false;
-    }
+    //        if (fund is null) LogEx.Error($"股卡 {sa.CardNo} 的基金 {sa.Name} 不在库中");
+    //    }
+    //}
 
-    bool FindFund(SecurityCardChange sa)
-    {
-        // 解析对应的基金  
-        if (sa.Name?.Length > 10)
-        {
-            if (Names.Any(x => sa.Name.Contains(x)))
-            {
-                sa.FundId = FundId;
-                return true;
-            }
-            else
-            {
-                using var db = DbHelper.Base();
-                var fund = db.GetCollection<Fund>().FindOne(x => sa.Name.Contains(x.Name));
-                if (fund is not null)
-                {
-                    sa.FundId = fund.Id;
-                    return true;
-                }
-            }
-        }
 
-        Log.Error($"股卡{sa.SerialNo} 未找到对应的基金");
-        return false;
-    }
 
 
     [RelayCommand]

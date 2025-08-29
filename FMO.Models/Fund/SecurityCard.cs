@@ -15,9 +15,9 @@ public enum SecurityCardType
 /// <summary>
 /// 股东卡
 /// </summary>
-public class SecurityCard : ISecurityCard
+public class SecurityCard  
 {
-    public int Id { get; set; }
+    public string Id => CardNo;
 
     public int FundId { get; set; }
 
@@ -62,11 +62,12 @@ public class SecurityCard : ISecurityCard
 }
 
 
-public class SecurityCardChange : ISecurityCard
+public class SecurityCardChange
 {
-    public DateOnly Date { get; set; }
+    public string Id => SerialNo;
 
-    public int Id { get; set; }
+    public DateOnly Date { get; set; }
+     
 
     public int FundId { get; set; }
 
@@ -76,13 +77,7 @@ public class SecurityCardChange : ISecurityCard
     public required string SerialNo { get; set; }
 
     public required string Name { get; set; }
+
+    public required string UniversalNo { get; set; }
 }
 
-public interface ISecurityCard
-{
-    DateOnly Date { get;  }
-    int Id { get;  }
-    int FundId { get;  }
-    string SerialNo { get;  }
-    string Name { get;  }
-}

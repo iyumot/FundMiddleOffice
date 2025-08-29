@@ -1,20 +1,20 @@
-﻿using System.IO;
-using System.Text.RegularExpressions;
-using System.Windows;
-using System.Windows.Media;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using FMO.Utilities;
 using Microsoft.Win32;
 using Serilog;
+using System.IO;
+using System.Text.RegularExpressions;
+using System.Windows;
+using System.Windows.Media;
 
 namespace FMO;
 
 /// <summary>
 /// 股卡
 /// </summary>
-public partial class SecurityCardViewModel : ObservableObject, ISecurityCard
+public partial class SecurityCardViewModel : ObservableObject
 {
     public SecurityCardViewModel(SecurityCard x)
     {
@@ -29,11 +29,12 @@ public partial class SecurityCardViewModel : ObservableObject, ISecurityCard
         FundCode = x.FundCode;
         IsDeregistered = x.IsDeregistered;
         Date = x.Date;
+        Type = x.Type;
         Tag = x.Type switch { SecurityCardType.ShangHai => "沪", SecurityCardType.ShenZhen => "深", _ => x.CardNo.StartsWith('B') ? "沪" : "深" };
         File = new FileInfo(@$"files\accounts\security\{SerialNo}-{CardNo}.pdf");
     }
 
-    public int Id { get; set; }
+    public string Id { get; }
 
     public int FundId { get; set; }
 
@@ -63,6 +64,12 @@ public partial class SecurityCardViewModel : ObservableObject, ISecurityCard
 
     [ObservableProperty] public partial int Group { get; set; }
 
+    /// <summary>
+    /// 可能有错，一码通和其它不一样
+    /// </summary>
+    [ObservableProperty] public partial bool MaybeError { get; set; }
+
+
     [ObservableProperty]
     public partial SolidColorBrush? GroupBrush { get; set; }
 
@@ -75,7 +82,7 @@ public partial class SecurityCardViewModel : ObservableObject, ISecurityCard
     /// 申请日期
     /// </summary>
     public DateOnly Date { get; set; }
-
+    public SecurityCardType Type { get; }
     public string Tag { get; set; }
 
     public FileInfo File { get; set; }
@@ -156,7 +163,7 @@ public partial class SecurityCardViewModel : ObservableObject, ISecurityCard
 
 
 
-public partial class SecurityCardChangeViewModel : ObservableObject, ISecurityCard
+public partial class SecurityCardChangeViewModel : ObservableObject
 {
     public SecurityCardChangeViewModel(SecurityCardChange x)
     {
@@ -165,6 +172,7 @@ public partial class SecurityCardChangeViewModel : ObservableObject, ISecurityCa
         Name = x.Name;
         SerialNo = x.SerialNo;
         Date = x.Date;
+        UniversalNo = x.UniversalNo;
         File = new FileInfo(@$"files\accounts\security\G-{SerialNo}.pdf");
     }
 
@@ -178,7 +186,7 @@ public partial class SecurityCardChangeViewModel : ObservableObject, ISecurityCa
 
     public FileInfo File { get; set; }
 
-    public int Id { get; set; }
+    public string Id { get; }
 
     public int FundId { get; set; }
 
@@ -190,8 +198,15 @@ public partial class SecurityCardChangeViewModel : ObservableObject, ISecurityCa
     public string SerialNo { get; set; }
 
     public DateOnly Date { get; }
+    public string UniversalNo { get; set; }
 
     [ObservableProperty] public partial bool IsDeregistered { get; set; }
+
+    /// <summary>
+    /// 可能有错，一码通和其它不一样
+    /// </summary>
+    [ObservableProperty] public partial bool MaybeError { get; set; }
+
 
     [RelayCommand]
     public void View()

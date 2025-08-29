@@ -1,5 +1,4 @@
 ﻿using FMO.Models;
-using FMO.Utilities;
 using LiteDB;
 using PDFiumSharp;
 using PDFiumSharp.Enums;
@@ -53,6 +52,13 @@ public static class PdfHelper
                 var str = PDFium.FPDFText_GetText(textpage, 0, charcnt);
 
                 str = Regex.Replace(str, @"(客户名称：.*?)\r\n(.*?)客户类型", "$1$2\n客户类型", RegexOptions.Singleline);
+                str = Regex.Replace(str, @"(客户名称)(.*?)(客户)", match =>
+                 {
+                     string middle = match.Groups[2].Value;
+                     string cleaned = Regex.Replace(middle, @"\s+", "");
+                     return $"{ match.Groups[1].Value}{ cleaned}\n{ match.Groups[3].Value}";
+                 });
+
 
 
                 PDFium.FPDFText_ClosePage(textpage);
@@ -456,8 +462,8 @@ public static class PdfHelper
     public static DateOnly? GetSignDate(Stream? fs)
     {
         if (fs is null) return null;
-       
-        if(!fs.CanSeek)
+
+        if (!fs.CanSeek)
         {
             using var ms = new MemoryStream();
             fs.CopyTo(ms);
@@ -467,7 +473,7 @@ public static class PdfHelper
 
 
         fs.Seek(0, SeekOrigin.Begin);
-        byte[] buf = new byte[fs.Length]; 
+        byte[] buf = new byte[fs.Length];
         fs.ReadExactly(buf);
         var d = PDFium.FPDF_LoadDocument(buf);
 

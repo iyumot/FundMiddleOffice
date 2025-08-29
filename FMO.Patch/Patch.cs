@@ -39,7 +39,30 @@ public static partial class DatabaseAssist
         [87] = ChangeQuaterlyId,
         [88] = UpdateManageScale,
         [89] = UpdatePolicy,
+        [92] = UpdateSecurityCard,
     };
+
+    /// <summary>
+    /// 变更股卡结构
+    /// </summary>
+    /// <param name="database"></param>
+    /// <exception cref="NotImplementedException"></exception>
+    private static void UpdateSecurityCard(BaseDatabase db)
+    {
+        var a = db.GetCollection(nameof(SecurityCard)).FindAll().ToArray();
+        foreach (var item in a)
+            item["_id"] = item[nameof(SecurityCard.CardNo)];
+        db.GetCollection(nameof(SecurityCard)).DeleteAll();
+        db.GetCollection(nameof(SecurityCard)).DropIndex(nameof(SecurityCard.CardNo));
+        db.GetCollection(nameof(SecurityCard)).Insert(a.DistinctBy(x => x["_id"]));
+
+        var b = db.GetCollection(nameof(SecurityCardChange)).FindAll().ToArray();
+        foreach (var item in b)
+            item["_id"] = item[nameof(SecurityCardChange.SerialNo)];
+        db.GetCollection(nameof(SecurityCardChange)).DeleteAll();
+        db.GetCollection(nameof(SecurityCardChange)).DropIndex(nameof(SecurityCard.CardNo));
+        db.GetCollection(nameof(SecurityCardChange)).Insert(b.DistinctBy(x => x["_id"]));
+    }
 
     private static void UpdatePolicy(BaseDatabase database)
     {
