@@ -74,7 +74,7 @@ public class CopyableTextBlock : Control
 
     // Using a DependencyProperty as the backing store for CanCopy.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty CanCopyProperty =
-        DependencyProperty.Register("CanCopy", typeof(bool), typeof(CopyableTextBlock), new PropertyMetadata(true));
+        DependencyProperty.Register("CanCopy", typeof(bool), typeof(CopyableTextBlock), new PropertyMetadata(false));
 
 
 
