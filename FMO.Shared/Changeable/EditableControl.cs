@@ -79,6 +79,11 @@ public partial class EditableViewModel<TProperty> : ObservableObject
     }
 
 
+    public void Init(TProperty? property)
+    {
+        OldValue = property;
+        NewValue = property;
+    }
 
     public virtual void Apply()
     {
