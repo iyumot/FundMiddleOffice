@@ -1,4 +1,5 @@
 ﻿using FMO.Models;
+using System.Collections;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -364,5 +365,18 @@ public class ScaleNumberConverter : IValueConverter
         else if (d < 1e9) return $"{d / 1e8:N2}亿";
         else if (d < 1e10) return $"{d / 1e8:N1}亿";
         return $"{d / 1e8:N0}亿";
+    }
+}
+
+public class ListIsNotEmpty2VisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value switch { IEnumerable e => e.GetEnumerator().MoveNext(), _=> false } ? Visibility.Visible : Visibility.Collapsed ;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
     }
 }
