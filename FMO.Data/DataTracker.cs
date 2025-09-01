@@ -614,7 +614,7 @@ public static partial class DataTracker
             db.GetCollection<ManualLinkOrder>().Upsert(new ManualLinkOrder(item.Id, item.OrderId, item.ExternalId!, item.ExternalRequestId!));
 
             // 更新request
-            db.GetCollection<TransferRequest>().UpdateMany($"{{OrderId:{item.OrderId}}}", $"RequestId={item.RequestId}");
+            db.GetCollection<TransferRequest>().UpdateMany($"{{\"OrderId\":{item.OrderId}}}", $"RequestId={item.RequestId}");
         }
         db.Commit();
 
@@ -917,7 +917,7 @@ public static partial class DataTracker
             }
         }
         var liq = db.GetCollection<TransferRecord>().Find(x => x.IsLiquidating).Select(x => x.RequestId).Distinct().ToList();
-        db.GetCollection<TransferRequest>().UpdateMany("{IsLiquidating : true}", BsonExpression.Create("_id IN @ids", new BsonDocument { ["ids"] = new BsonArray(liq.Select(x => new BsonValue(x))) }));
+        db.GetCollection<TransferRequest>().UpdateMany("{\"IsLiquidating\" : true}", BsonExpression.Create("_id IN @ids", new BsonDocument { ["ids"] = new BsonArray(liq.Select(x => new BsonValue(x))) }));
 
 
         //var eq = db.Execute("UPDATE TransferRequest SET IsLiquidating = true WHERE Id IN (  SELECT RequestId FROM TransferRecord WHERE IsLiquidating = true );");

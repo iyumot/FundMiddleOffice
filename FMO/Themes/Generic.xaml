@@ -294,15 +294,15 @@
         x:Key="EditSwitch.Small"
         BasedOn="{StaticResource EditSwitch}"
         TargetType="ToggleButton">
-        <Setter Property="Width" Value="20" />
-        <Setter Property="Height" Value="20" />
+        <Setter Property="Width" Value="18" />
+        <Setter Property="Height" Value="18" />
     </Style>
 
 
 
     <Style x:Key="ToggleEditable" TargetType="ToggleButton">
-        <Setter Property="Width" Value="22" />
-        <Setter Property="Height" Value="22" />
+        <Setter Property="Width" Value="18" />
+        <Setter Property="Height" Value="18" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="hc:IconElement.Geometry" Value="{StaticResource f.pen}" />

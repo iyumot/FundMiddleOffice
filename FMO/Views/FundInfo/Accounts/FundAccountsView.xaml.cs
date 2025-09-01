@@ -456,6 +456,9 @@ public partial class FundAccountsViewModel : ObservableObject
     [RelayCommand]
     public void DeleteStock(StockAccountViewModel v)
     {
+        if (HandyControl.Controls.MessageBox.Ask($"确认删除{v.Company}吗") == MessageBoxResult.Cancel)
+            return;
+
         using var db = DbHelper.Base();
         db.GetCollection<StockAccount>().Delete(v.Id);
         StockAccounts?.Remove(v);
@@ -473,7 +476,7 @@ public partial class FundAccountsViewModel : ObservableObject
                 FundId = FundId,
                 Company = selectedSecurityCompany,
                 Common = new OpenAccountEvent { Name = "基本账户" },
-                Credit = new OpenAccountEvent { Name = "信用账户" }
+               // Credit = new OpenAccountEvent { Name = "信用账户" }
             };
 
             using var db = DbHelper.Base();

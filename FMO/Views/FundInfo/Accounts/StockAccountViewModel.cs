@@ -5,6 +5,7 @@ using FMO.Shared;
 using FMO.Utilities;
 using LiteDB;
 using System.IO;
+using System.Windows;
 using System.Windows.Media;
 
 namespace FMO;
@@ -31,10 +32,11 @@ public partial class StockAccountViewModel : ObservableObject
         var sz = cars.LastOrDefault(x => x.Type == SecurityCardType.ShenZhen);
         if (!sz?.Detatch ?? true)
             SZCard = sz?.Card;
-        SZCardConnected = !sz?.Detatch ?? false; 
+        SZCardConnected = !sz?.Detatch ?? false;
 
         Common = new(v.Id, v.Common);
-        Credit = new(v.Id, v.Credit);
+        if (v.Credit is not null)
+            Credit = new(v.Id, v.Credit);
     }
 
     public int Id { get; set; }
@@ -44,8 +46,8 @@ public partial class StockAccountViewModel : ObservableObject
 
     public BasicAccountViewModel Common { get; set; }
 
-
-    public BasicAccountViewModel Credit { get; set; }
+    [ObservableProperty]
+    public partial BasicAccountViewModel? Credit { get; set; }
 
 
 
@@ -183,11 +185,14 @@ public partial class StockAccountViewModel : ObservableObject
 
                 db.GetCollection<StockAccount>().Update(obj);
             }
-            else if (Name == obj.Credit?.Name)
+            else if (Name == "信用账户")
             {
-                obj.Credit!.Account = Account;
-                obj.Credit!.TradePassword = TradePassword;
-                obj.Credit!.CapitalPassword = CapitalPassword;
+                if (obj.Credit is null)
+                    obj.Credit = new OpenAccountEvent { Name = "信用账户" };
+
+                obj.Credit.Account = Account;
+                obj.Credit.TradePassword = TradePassword;
+                obj.Credit.CapitalPassword = CapitalPassword;
 
                 db.GetCollection<StockAccount>().Update(obj);
             }
@@ -257,4 +262,23 @@ public partial class StockAccountViewModel : ObservableObject
         SZCard = null;
         SZCardConnected = false;
     }
+
+    [RelayCommand]
+    public void AddCredit()
+    {
+        Credit = new(Id, new OpenAccountEvent { Name = "信用账户" });
+    }
+
+    [RelayCommand]
+    public void DeleteCredit()
+    {
+        if (HandyControl.Controls.MessageBox.Ask($"确认删除 信用账户 吗") == MessageBoxResult.Cancel)
+            return;
+
+        using var db = DbHelper.Base();
+        var dd = BsonMapper.Global.ToDocument(new StockAccount { Credit = null }).ToString();
+        db.GetCollection<StockAccount>().UpdateMany("{\"Credit\":null}", $"_id={Id}");
+        Credit = null;
+    }
+
 }
