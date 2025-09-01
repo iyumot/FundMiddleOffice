@@ -10,6 +10,21 @@ public class AccountEvent
 }
 
 
+public class AccountCredentialEvent : AccountEvent
+{
+    /// <summary>
+    /// 资金账号
+    /// </summary>
+    public string? Account { get; set; }
+
+    /// <summary>
+    /// 交易密码
+    /// </summary>
+    public string? Password { get; set; }
+
+
+}
+
 /// <summary>
 /// 开户事件
 /// </summary>
@@ -90,7 +105,7 @@ public class StockAccount
     public OpenAccountEvent? Credit { get; set; }
 
 
-    public List<AccountEvent>? Events { get; set; }
+    public List<AccountEvent> Events { get; set; } = [];
 
 }
 
