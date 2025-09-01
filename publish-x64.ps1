@@ -1,13 +1,13 @@
 clear
-Write-Host ¡°¿ªÊ¼´ò°ü"
+Write-Host â€œå¼€å§‹æ‰“åŒ…"
 # publish.ps1
-# ¾²Ä¬·¢²¼£ºÖ»Êä³ö³É¹¦»òÊ§°Ü
-# ·¢²¼ÏîÄ¿µ½ E:\nexus\x64 ºÍ E:\nexus\x86
+# é™é»˜å‘å¸ƒï¼šåªè¾“å‡ºæˆåŠŸæˆ–å¤±è´¥
+# å‘å¸ƒé¡¹ç›®åˆ° E:\nexus\x64 å’Œ E:\nexus\x86
 
 $SolutionRoot = Get-Location
 $NexusRoot = "E:\nexus"
 
-# Òª·¢²¼µÄÏîÄ¿ÁĞ±í
+# è¦å‘å¸ƒçš„é¡¹ç›®åˆ—è¡¨
 $ProjectsToPublish = @(
 
     "FMO.PeiXunAssist",
@@ -17,12 +17,12 @@ $ProjectsToPublish = @(
    "FundMiddleOffice"
 )
 
-# Ä¿±êÆ½Ì¨Ó³Éä
+# ç›®æ ‡å¹³å°æ˜ å°„
 $Runtimes = @(
     @{ Runtime = "win-x64"; Folder = "x64" }    #@{ Runtime = "win-x86"; Folder = "x86" }
 )
 
-# ´´½¨Êä³öÄ¿Â¼
+# åˆ›å»ºè¾“å‡ºç›®å½•
 $OutputDirs = $Runtimes | ForEach-Object { Join-Path $NexusRoot $_.Folder }
 foreach ($dir in $OutputDirs) {
     if (-not (Test-Path $dir)) {
@@ -30,15 +30,15 @@ foreach ($dir in $OutputDirs) {
     }
 }
 
-# ²éÕÒËùÓĞÏîÄ¿ÎÄ¼ş
+# æŸ¥æ‰¾æ‰€æœ‰é¡¹ç›®æ–‡ä»¶
 $AllProjects = Get-ChildItem -Path $SolutionRoot -Recurse -Include *.csproj, *.vbproj
 
-# ±éÀúÃ¿¸öÏîÄ¿
+# éå†æ¯ä¸ªé¡¹ç›®
 foreach ($projectName in $ProjectsToPublish) {
     $projectFile = $AllProjects | Where-Object { $_.BaseName -eq $projectName }
 
     if (-not $projectFile) {
-        Write-Host "?? Î´ÕÒµ½ÏîÄ¿: $projectName" -ForegroundColor Yellow
+        Write-Host "?? æœªæ‰¾åˆ°é¡¹ç›®: $projectName" -ForegroundColor Yellow
         continue
     }
 
@@ -50,7 +50,7 @@ foreach ($projectName in $ProjectsToPublish) {
         $publishPath = Join-Path $NexusRoot $rt.Folder
         Write-Host " $projectName ($runtime) ... " -NoNewline
 
-        # ¹¹ÔìÃüÁîĞĞ²ÎÊı
+        # æ„é€ å‘½ä»¤è¡Œå‚æ•°
         $args = @(
             "publish", $projectPath,
             "--framework", "net9.0-windows",
@@ -68,7 +68,7 @@ foreach ($projectName in $ProjectsToPublish) {
         )
 
         try {
-            # Ê¹ÓÃ Start-Process ÍêÈ«¸ôÀë½ø³Ì£¬³¹µ×ÆÁ±ÎÊä³ö
+            # ä½¿ç”¨ Start-Process å®Œå…¨éš”ç¦»è¿›ç¨‹ï¼Œå½»åº•å±è”½è¾“å‡º
             $process = Start-Process -FilePath "dotnet" -ArgumentList $args `
                 -WorkingDirectory $projectDir `
                 -Wait `
@@ -76,18 +76,18 @@ foreach ($projectName in $ProjectsToPublish) {
                 -PassThru
 
             if ($process.ExitCode -eq 0) {
-                Write-Host " ³É¹¦" -ForegroundColor Green
+                Write-Host " æˆåŠŸ" -ForegroundColor Green
             } else {
-                Write-Host " Ê§°Ü" -ForegroundColor Red
+                Write-Host " å¤±è´¥" -ForegroundColor Red
             }
         } catch {
-            Write-Host "? Òì³£" -ForegroundColor Red
+            Write-Host "? å¼‚å¸¸" -ForegroundColor Red
         }
     }
 }
 
-# ========== ·¢²¼È«²¿Íê³Éºó£¬Í³Ò»ÇåÀí¿ÕÓïÑÔÎÄ¼ş¼Ğ ==========
-Write-Host "?? ÕıÔÚÇåÀí x64 ºÍ x86 ÖĞµÄ¿ÕÓïÑÔÎÄ¼ş¼Ğ..." -ForegroundColor Cyan
+# ========== å‘å¸ƒå…¨éƒ¨å®Œæˆåï¼Œç»Ÿä¸€æ¸…ç†ç©ºè¯­è¨€æ–‡ä»¶å¤¹ ==========
+Write-Host "?? æ­£åœ¨æ¸…ç† x64 å’Œ x86 ä¸­çš„ç©ºè¯­è¨€æ–‡ä»¶å¤¹..." -ForegroundColor Cyan
 
 $languageFolders = @("zh-Hans", "zh-CN", "en", "fr", "de", "ja", "ko", "ru", "es", "it", "pt", "tr", "cs", "pl", "pt-BR")
 $outputSubDirs = @("x64", "x86")
@@ -103,14 +103,14 @@ foreach ($subDir in $outputSubDirs) {
                 $items = Get-ChildItem $folder -ErrorAction SilentlyContinue
                 if ($items.Count -eq 0) {
                     Remove-Item $folder -Recurse -Force
-                    Write-Host "? ÒÑÉ¾³ı¿ÕÎÄ¼ş¼Ğ: $subDir\$lang" -ForegroundColor Gray
+                    Write-Host "? å·²åˆ é™¤ç©ºæ–‡ä»¶å¤¹: $subDir\$lang" -ForegroundColor Gray
                 }
             } catch {
-                Write-Host "?? ÎŞ·¨´¦ÀíÎÄ¼ş¼Ğ: $folder" -ForegroundColor Yellow
+                Write-Host "?? æ— æ³•å¤„ç†æ–‡ä»¶å¤¹: $folder" -ForegroundColor Yellow
             }
         }
     }
 }
 
-Write-Host " ·¢²¼Íê³É£¡" -ForegroundColor Yellow
+Write-Host " å‘å¸ƒå®Œæˆï¼" -ForegroundColor Yellow
  
