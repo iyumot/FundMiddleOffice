@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace FMO.AMAC.Direct;
 
 // 响应模型
-public class DirectFileResponse
+public class ProcessResponse
 {
     [JsonPropertyName("processCode")]
     public string? ProcessCode { get; set; }

@@ -1,5 +1,5 @@
 ﻿
-#define TEST_PFID
+//#define TEST_PFID
 
 using FMO.Logging;
 using FMO.Models;
@@ -90,10 +90,10 @@ public class DirectReporter
 
 #endif
 
-    public static async Task<(bool Success, string? Error)> UploadReport(FundPeriodicReport report, AmacReportAccount acc) => await UploadReport(report, x => x.Excel?.File, acc);
-    public static async Task<(bool Success, string? Error)> UploadReport(FundQuarterlyUpdate report, AmacReportAccount acc) => await UploadReport(report, x => x.Operation?.File, acc);
+    public static async Task<AmacProcessResult> UploadReport(FundPeriodicReport report, AmacReportAccount acc) => await UploadReport(report, x => x.Excel?.File, acc);
+    public static async Task<AmacProcessResult> UploadReport(FundQuarterlyUpdate report, AmacReportAccount acc) => await UploadReport(report, x => x.Operation?.File, acc);
 
-    public static async Task<(bool Success, string? Error)> UploadReport<T>(T report, Func<T, FileMeta?> file, AmacReportAccount acc) where T : IPeriodical
+    public static async Task<AmacProcessResult> UploadReport<T>(T report, Func<T, FileMeta?> file, AmacReportAccount acc) where T : IPeriodical
     {
         var type = report.Type switch
         {
@@ -105,21 +105,21 @@ public class DirectReporter
             _ => DirectFileType.Unk
         };
 
-        if (report.FundCode is null) return (false, "基金备案编码为空");
-        if (type == DirectFileType.Unk) return (false, "未知的报告类型");
-        if (file(report) is not FileMeta fm || !fm.Exists) return (false, "文件不存在");
+        if (report.FundCode is null) return new AmacProcessResult { Id = report.Id, FileType = type, UploadError = "基金备案编码为空" };
+        if (type == DirectFileType.Unk) return new AmacProcessResult { Id = report.Id, FileType = type, UploadError = "未知的报告类型" };
+        if (file(report) is not FileMeta fm || !fm.Exists) return new AmacProcessResult { Id = report.Id, FileType = type, UploadError = "文件不存在" };
 
-
+        var date = new DateOnly(report.PeriodEnd.Year, report.PeriodEnd.Month, 1).AddMonths(1).AddDays(-1);
         // 生成zip
         var path = Path.GetTempFileName();
         try
         {
             using (var archive = new ZipArchive(File.Create(path), ZipArchiveMode.Create))
             {
-                var entry = archive.CreateEntry($"CN_{report.FundCode}_{type}_{report.PeriodEnd:yyyy-MM-dd}.xlsx");
+                var entry = archive.CreateEntry($"CN_{report.FundCode}_{type}_{date:yyyy-MM-dd}.xlsx");
                 using var entryStream = entry.Open();
                 using var fs = fm.OpenRead();
-                if (fs is null) return (false, "无法读取文件");
+                if (fs is null) return new AmacProcessResult { Id = report.Id, FileType = type, UploadError = "无法读取文件" };
 
                 fs.CopyTo(entryStream);
                 entryStream.Flush();
@@ -127,17 +127,10 @@ public class DirectReporter
 
             using var db = DbHelper.Base();
             var manager = db.GetCollection<Manager>().Query().First();
-            var result = await UploadFile(type, path, report.PeriodEnd, acc, manager.Name, report.FundCode);
-
-            // 关联
-            if (result?.ProcessCode switch { "00" or "100" => true, _ => false })
-            {
-                db.GetCollection<AmacDirectHandle>().Upsert(new AmacDirectHandle(report.Id, type, result!.Handle!));
-                return (true, "");
-            }
-            return (false, result?.ProcessMessage);
+            var result = await UploadFile(type, path, date, acc, manager.Name, report.FundCode);
+            return new AmacProcessResult { Id = report.Id, FileType = type, Handle = result!.Handle, UploadCode = result.ProcessCode switch { "00" or "100" => 0, var n => int.Parse(n!) }, UploadError = result.ProcessCode switch { "00" or "100" => "Success", var n => n } };
         }
-        catch (Exception ex) { LogEx.Error(ex); return (false, "上报失败"); }
+        catch (Exception ex) { LogEx.Error(ex); return new AmacProcessResult { Id = report.Id, FileType = type, UploadError = ex.Message }; }
         finally { File.Delete(path); }
     }
 
@@ -152,14 +145,11 @@ public class DirectReporter
     /// <param name="managerName"></param>
     /// <param name="entityCode"></param>
     /// <returns></returns>
-    public static async Task<DirectFileResponse?> UploadFile(DirectFileType fileType, string filePath, DateOnly reportEndDate, AmacReportAccount acc, string managerName, string entityCode)
+    public static async Task<ProcessResponse?> UploadFile(DirectFileType fileType, string filePath, DateOnly reportEndDate, AmacReportAccount acc, string managerName, string entityCode)
     {
         string UserName = acc.Name;
         string DirectPwd = acc.Password;
         string PublicKey = acc.Key;
-
-        //"02b794148d8f48b1d174a7df482e7fe31794c36427ec922c54015785e25aeeb436"; //pmg
-        //"02ca905207424c8a03a733458cf079230c55f25cc1ef14750a2b24a36ffe1f1744";// acc.Key;
 
 
         using var httpClient = new HttpClient();
@@ -218,21 +208,21 @@ public class DirectReporter
         Debug.WriteLine(responseContent);
 
         // 解析响应
-        var result = JsonSerializer.Deserialize<DirectFileResponse>(responseContent);
+        var result = JsonSerializer.Deserialize<ProcessResponse>(responseContent);
         return result;
     }
 
 
-    public static async Task<IList<ValidationInfo>> QueryResult(IPeriodical periodical, AmacReportAccount acc)
-    {
-        using var db = DbHelper.Base();
-        var id = db.GetCollection<AmacDirectHandle>().FindById(periodical.Id);
-        var results = await QueryResult(id, acc);
-        db.GetCollection<AmacDirectHandle>().Update(id with { ResultInfo = results });
-        return results;
-    }
+    //public static async Task<IList<ValidationInfo>> QueryResult(IPeriodical periodical, AmacReportAccount acc)
+    //{
+    //    using var db = DbHelper.Base();
+    //    var id = db.GetCollection<AmacDirectHandle>().FindById(periodical.Id);
+    //    var results = await QueryResult(id, acc);
+    //    db.GetCollection<AmacDirectHandle>().Update(id with { ResultInfo = results });
+    //    return results;
+    //}
 
-    private static async Task<IList<ValidationInfo>> QueryResult(AmacDirectHandle handle, AmacReportAccount acc)
+    public static async Task QueryResult(AmacProcessResult handle, AmacReportAccount acc)
     {
         string UserName = acc.Name;
         string DirectPwd = acc.Password;
@@ -272,12 +262,65 @@ public class DirectReporter
 
         if (result?.FirstOrDefault() is ValidationResultItem root)
         {
-            return [..root.verifyMessage.children.Where(x=>x.children is not null).
-               SelectMany(x => x.children.Select(y => new ValidationInfo { Level = y.deepLevel, Message = y.description }))];
+            handle.ValidateCode = int.Parse(root.processCode);
+
+            if (root.processCode == "00") 
+                handle.ResultInfo = [new ValidationInfo { Level = "Success", Message = "" }];
+            else
+                handle.ResultInfo = root.verifyMessage?.children?.Where(x => x.children is not null)?.
+                   SelectMany(x => x.children.Select(y => new ValidationInfo { Level = y.deepLevel, Message = y.description }))?.ToArray() ?? [];
         }
 
-        return [new ValidationInfo { Level = "Error", Message = "未获取到返回信息" }];
+        handle.ResultInfo = [new ValidationInfo { Level = "Error", Message = "未获取到返回信息" }];
     }
+
+     
+    public static async Task Submit(AmacProcessResult handle, string company, AmacReportAccount acc)
+    {
+        string UserName = acc.Name;
+        string DirectPwd = acc.Password;
+        string PublicKey = acc.Key;
+
+        using var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Add("User-Agent", "imgfornote");
+
+        // 生成认证头部
+        var pwd = Sm3Utils.Encrypt32(DirectPwd);
+        var salt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+        var sign = Sm3Utils.Encrypt(UserName + salt + pwd);
+
+
+        HttpRequestMessage request = new HttpRequestMessage { Method = HttpMethod.Post };
+        request.Headers.Add("userName", UserName);
+        request.Headers.Add("salt", salt);
+        request.Headers.Add("sign", sign);
+        request.Headers.Add("User-Agent", "imgfornote");
+
+        var jsonOptions = new JsonSerializerOptions
+        {
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // 关键：不转义中文
+            WriteIndented = false // 是否格式化（可选）
+        };
+        var json = JsonSerializer.Serialize(new { handle = handle.Handle, subCompany = company }, jsonOptions);
+
+        // 发送请求
+        request.RequestUri = new Uri(handle.FileType < DirectFileType.RS0001 ? DisclosureSubmitUrl : OperationSubmitUrl);
+        request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+
+
+        var response = await httpClient.SendAsync(request);
+        var responseContent = await response.Content.ReadAsStringAsync();
+
+        var pr = JsonSerializer.Deserialize<ProcessResponse>(responseContent);
+        if(pr is null)
+        {
+            handle.SubmitError = "Json Error";
+            return;
+        }    
+        handle.SubmitCode = int.Parse(pr.ProcessCode!);
+        handle.SubmitError = pr.ProcessMessage;
+    }
+
 
     // <summary>
     /// 异步打印 HttpRequestMessage 的详细信息（用于调试）
@@ -324,4 +367,28 @@ public class DirectReporter
     }
 }
 
-public record AmacDirectHandle(int Id, DirectFileType FileType, string Handle, IList<ValidationInfo>? ResultInfo = null);
+public record AmacDirectHandle(int Id, DirectFileType FileType, string Handle, IList<ValidationInfo>? ResultInfo = null, bool Submit = false);
+
+
+public class AmacProcessResult
+{
+    /// <summary>
+    /// 同 report id
+    /// </summary>
+    public int Id { get; set; }
+
+    public DirectFileType FileType { get; set; }
+
+    public int UploadCode { get; set; } = -1;
+
+    public string? UploadError { get; set; }
+
+    public string? Handle { get; set; }
+
+    public int ValidateCode { get; set; } = -1;
+
+    public IList<ValidationInfo>? ResultInfo { get; set; }
+
+    public string? SubmitError { get; set; }
+    public int SubmitCode { get; set; } = -1;
+}
