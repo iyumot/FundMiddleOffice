@@ -12,4 +12,7 @@
 		<PackageReference Include="Sdcb.PaddleOCR" Version="3.0.1" />
 		<PackageReference Include="Sdcb.PaddleOCR.Models.Online" Version="3.0.1" />
 	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\FMO.Logging\FMO.Logging.csproj" />
+	</ItemGroup>
 </Project>

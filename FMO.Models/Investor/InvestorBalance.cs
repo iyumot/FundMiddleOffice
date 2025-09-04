@@ -27,3 +27,18 @@ public class InvestorBalance
         return (investorId, fundId);
     }
 }
+
+
+public class InvestorFundEntry
+{
+    public long Id => ((long)InvestorId << 44) | ((long)FundId << 24) | (uint)FirstBuy.DayNumber;
+
+    public int InvestorId { get; set; }
+
+    public int FundId { get; set; }
+
+    public DateOnly FirstBuy { get; set; }
+
+    public DateOnly SellOut { get; set; }
+
+}

@@ -1,12 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
+using FMO.OCR;
+using FMO.TPL;
 using FMO.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.Playwright;
-using System.Security.Cryptography;
+using MiniExcelLibs;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
 namespace FMO.IO.AMAC;
 
@@ -22,7 +25,7 @@ public static class PfidAssist
         if (await page.Locator("#username").IsVisibleAsync() || !await locator.IsVisibleAsync())
         {
             using var db = DbHelper.Base();
-            var amacc = db.GetCollection<AmacAccount>().FindById("xinpi2");
+            var amacc = db.GetCollection<AmacAccount>().FindById("xinpi");
 
             // 设置账号密码
             await page.Locator("#username").FillAsync(amacc.Name);
@@ -32,8 +35,7 @@ public static class PfidAssist
             locator = page.Locator("#img_captcha");
             var buf = await locator.ScreenshotAsync();
 
-
-            VerifyMessage verify = new VerifyMessage { Title = "请输入验证码", Type = VerifyType.Captcha, Image = buf, TimeOut = 1000 * 30  };
+            VerifyMessage verify = new VerifyMessage { Title = "请输入验证码", Type = VerifyType.Captcha, Image = buf, TimeOut = 1000 * 30 };
             try
             {
                 WeakReferenceMessenger.Default.Send(verify);
@@ -70,7 +72,85 @@ public static class PfidAssist
         else return (false, "未找到登陆界面");
     }
 
-    
+
+
+    private static async Task<bool> FillCaptcha(IPage page, int times = 3)
+    {
+        string last = "";
+        for (int i = 0; i < times; i++)
+        {
+            var locator = page.Locator("#img_captcha");
+            var buf = await locator.ScreenshotAsync();
+
+
+            var code = await OCRWorker.VerifyCode(buf);
+            if (code == last) return false;
+
+            if (code.Length != 5)
+            {
+                await page.Mouse.ClickAsync(10, 10);
+                await page.Locator("#captcha").FillAsync("");
+                continue;
+            }
+
+
+            await page.Locator("#captcha").FillAsync(code);
+            return true;
+        }
+        return false;
+    }
+
+
+    public static async Task<(bool Success, string Message)> CheckAndLoginAuto(IPage page)
+    {
+        var locator = page.Locator("#menu-product");
+
+        // 登陆
+        if (await page.Locator("#username").IsVisibleAsync() || !await locator.IsVisibleAsync())
+        {
+            using var db = DbHelper.Base();
+            var amacc = db.GetCollection<AmacAccount>().FindById("xinpi");
+
+            // 设置账号密码
+            await page.Locator("#username").FillAsync(amacc.Name);
+            await page.Locator("#password").FillAsync(amacc.Password);
+            await page.Locator("#captcha").FillAsync("");
+
+            try
+            {
+                var vef = await FillCaptcha(page);
+                if (!vef)
+                {
+                    return (false, "未能成功识别验证码");
+                }
+
+
+
+                // 验证登录
+                await page.Locator("#btnLogin").ClickAsync();
+
+
+
+                // 验证码错误
+                locator = page.Locator("#message_login");
+                if (await locator.IsVisibleAsync())
+                {
+                    return (false, await locator.InnerTextAsync());
+                }
+                return (true, "");
+            }
+            finally { }
+        }
+        else return (false, "未找到登陆界面");
+    }
+
+
+
+
+
+
+
+
     public static async Task<(bool IsSuccess, IList<PendingReportInfo> Pendings)> Query()
     {
         using var pw = await Playwright.CreateAsync();
@@ -95,11 +175,6 @@ public static class PfidAssist
 
 
 
-
-    //{"iTotalRecords":400,"aaData":[{"disc_date":"2025-08-07 00:00:00","error_info":"0","fund_type":"证券投资基金","fund_name":"鑫享世宸量化选股1号私募证券投资基金","compName":"宁波鑫享世宸投资管理合伙企业（有限合伙）","statusClass":"label-success","report_id":"7248209","today":"2025-08-20 12:34:38","statusText":"已上报","report_name":"鑫享世宸量化选股1号私募证券投资基金2025年7月月度报告","create_date":"2025-08-01 01:59:49","submit_date":"2025-08-06 09:42:09","stock_code":"SGM937","status":"4"},{"disc_date":"2025-08-07 00:00:00","error_info":"0","fund_type":"证券投资基金","fund_name":"鑫享世宸5号私募证券投资基金","compName":"宁波鑫享世宸投资管理合伙企业（有限合伙）","statusClass":"label-success","report_id":"7248210","today":"2025-08-20 12:34:38","statusText":"已上报","report_name":"鑫享世宸5号私募证券投资基金2025年7月月度报告","create_date":"2025-08-01 01:59:49","submit_date":"2025-08-06 09:41:30","stock_code":"SJJ152","status":"4"},{ "disc_date":"2025-07-31 00:00:00","error_info":"0","fund_type":"证券投资基金","fund_name":"鑫享世宸吉祥1号私募证券投资基金","compName":"宁波鑫享世宸投资管理合伙企业（有限合伙）","statusClass":"label-success","report_id":"7112574","today":"2025-08-20 12:34:38","statusText":"已上报","report_name":"鑫享世宸吉祥1号私募证券投资基金2025年2季度报告","create_date":"2025-07-01 08:35:01","submit_date":"2025-07-15 16:55:18","stock_code":"SAUJ47","status":"4"},{ "disc_date":"2025-07-31 00:00:00","error_info":"0","fund_type":"证券投资基金","fund_name":"鑫享世宸量化选股1号私募证券投资基金","compName":"宁波鑫享世宸投资管理合伙企业（有限合伙）","statusClass":"label-success","report_id":"7112577","today":"2025-08-20 12:34:38","statusText":"已上报","report_name":"鑫享世宸量化选股1号私募证券投资基金2025年2季度报告","create_date":"2025-07-01 08:35:01","submit_date":"2025-07-15 16:25:04","stock_code":"SGM937","status":"4"},{ "disc_date":"2025-07-31 00:00:00","error_info":"0","fund_type":"证券投资基金","fund_name":"鑫享世宸量化CTA1号私募证券投资基金","compName":"宁波鑫享世宸投资管理合伙企业（有限合伙）","statusClass":"label-success","report_id":"7112576","today":"2025-08-20 12:34:38","statusText":"已上报","report_name":"鑫享世宸量化CTA1号私募证券投资基金2025年2季度报告","create_date":"2025-07-01 08:35:01","submit_date":"2025-07-15 16:24:25","stock_code":"SGA032","status":"4"},{ "disc_date":"2025-07-31 00:00:00","error_info":"0","fund_type":"证券投资基金","fund_name":"鑫享世宸5号私募证券投资基金","compName":"宁波鑫享世宸投资管理合伙企业（有限合伙）","statusClass":"label-success","report_id":"7112578","today":"2025-08-20 12:34:38","statusText":"已上报","report_name":"鑫享世宸5号私募证券投资基金2025年2季度报告","create_date":"2025-07-01 08:35:01","submit_date":"2025-07-15 16:23:49","stock_code":"SJJ152","status":"4"},{ "disc_date":"2025-07-31 00:00:00","error_info":"0","fund_type":"证券投资基金","fund_name":"鑫享万象稳健一号私募证券投资基金","compName":"宁波鑫享世宸投资管理合伙企业（有限合伙）","statusClass":"label-success","report_id":"7112581","today":"2025-08-20 12:34:38","statusText":"已上报","report_name":"鑫享万象稳健一号私募证券投资基金2025年2季度报告","create_date":"2025-07-01 08:35:03","submit_date":"2025-07-15 16:22:19","stock_code":"SST963","status":"4"},{ "disc_date":"2025-07-31 00:00:00","error_info":"0","fund_type":"证券投资基金","fund_name":"鑫享世宸1号私募证券投资基金","compName":"宁波鑫享世宸投资管理合伙企业（有限合伙）","statusClass":"label-success","report_id":"7112575","today":"2025-08-20 12:34:38","statusText":"已上报","report_name":"鑫享世宸1号私募证券投资基金2025年2季度报告","create_date":"2025-07-01 08:35:01","submit_date":"2025-07-15 16:14:26","stock_code":"SEV943","status":"4"},{ "disc_date":"2025-07-31 00:00:00","error_info":"0","fund_type":"证券投资基金","fund_name":"鑫享世宸2号私募证券投资基金","compName":"宁波鑫享世宸投资管理合伙企业（有限合伙）","statusClass":"label-success","report_id":"7112579","today":"2025-08-20 12:34:38","statusText":"已上报","report_name":"鑫享世宸2号私募证券投资基金2025年2季度报告","create_date":"2025-07-01 08:35:02","submit_date":"2025-07-15 16:14:23","stock_code":"SJU169","status":"4"},{ "disc_date":"2025-07-31 00:00:00","error_info":"0","fund_type":"证券投资基金","fund_name":"鑫享世宸量化CTA1号A期私募证券投资基金","compName":"宁波鑫享世宸投资管理合伙企业（有限合伙）","statusClass":"label-success","report_id":"7112580","today":"2025-08-20 12:34:38","statusText":"已上报","report_name":"鑫享世宸量化CTA1号A期私募证券投资基金2025年2季度报告","create_date":"2025-07-01 08:35:03","submit_date":"2025-07-15 16:03:53","stock_code":"SQE018","status":"4"}],"iTotalDisplayRecords":400,"sEcho":2}
-
-
-
     /// <summary>
     /// 获取投资人账号
     /// </summary>
@@ -115,7 +190,7 @@ public static class PfidAssist
         //} 
 
         using var pw = await Playwright.CreateAsync();
-        var browser = await pw.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Channel = "msedge" });
+        var browser = await pw.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Channel = "msedge", Headless = false });
 
         var fi = new FileInfo(@"config\pfid.ck");
         var context = fi.Exists ? await browser.NewContextAsync(new BrowserNewContextOptions { StorageStatePath = fi.FullName }) : await browser.NewContextAsync();
@@ -128,7 +203,7 @@ public static class PfidAssist
         // 检查登陆
         var locator = page.Locator("#menu-product");
 
-        var login = await CheckAndLogin(page);
+        var login = await CheckAndLoginAuto(page);
 
         if (!login.Success) return [];
         try
@@ -143,7 +218,7 @@ public static class PfidAssist
             await browser.Contexts[0].StorageStateAsync(new BrowserContextStorageStateOptions { Path = Path.GetFullPath(@"config\pfid.ck") });
 
             // 定向披露
-            var cusloc = page.Locator("#reportInvest");
+            var cusloc = page.Locator("#reportInvest").Filter(new LocatorFilterOptions { HasText = "投资者账号列表" });
             if (!await cusloc.IsVisibleAsync())
             {
                 locator = page.Locator("aside >> dt").Filter(new LocatorFilterOptions { HasText = "定向披露" });
@@ -216,13 +291,308 @@ public static class PfidAssist
     }
 
 
+    public static async Task<(bool Success, string Message)> Login(IPage page, AmacAccount acc)
+    {
+        await page.GotoAsync("https://pfid.amac.org.cn/");
+
+        // 等待页面完全加载（包括图片、CSS、JS 等）
+        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+        // 检查登陆
+        var locator = page.Locator("#menu-product");
+        if (await locator.IsVisibleAsync())
+            return (true, "");
+
+        // 登陆
+        if (await page.Locator("#username").IsVisibleAsync() || !await locator.IsVisibleAsync())
+        {
+            using var db = DbHelper.Base();
+            var amacc = db.GetCollection<AmacAccount>().FindById("xinpi");
+
+            // 设置账号密码
+            await page.Locator("#username").FillAsync(amacc.Name);
+            await page.Locator("#password").FillAsync(amacc.Password);
+            await page.Locator("#captcha").FillAsync("");
+
+            try
+            {
+                var vef = await FillCaptcha(page);
+                if (!vef)
+                {
+                    return (false, "未能成功识别验证码");
+                }
+
+                // 验证登录
+                await page.Locator("#btnLogin").ClickAsync();
+
+                // 验证码错误
+                locator = page.Locator("#message_login");
+                if (await locator.IsVisibleAsync())
+                {
+                    return (false, await locator.InnerTextAsync());
+                }
+                return (true, "");
+            }
+            catch (Exception ex) { return (false, ex.Message); }
+        }
+        else return (false, "未找到登陆界面");
+    }
+
+
+    public static async Task<(bool Success, string Error)> UpdateInvestorAccounts(AmacAccount amac, bool full = false)
+    {
+        // 检查历史记录
+        using var db = DbHelper.Base();
+        var last = full ? default : db.GetCollection<PfidAccount>().Query().OrderByDescending(x => x.Update).FirstOrDefault()?.Update ?? default;
+        if (last.Year > 1970) last = last.AddDays(-5);
+
+        // 投资人新购或全部赎回
+        var changed = db.GetCollection<InvestorFundEntry>().Query().Where(x => x.FirstBuy > last).ToList();
+
+        if (changed.Count == 0) // 没有变动
+            return (true, "");
+
+        var cids = changed.Select(x => x.InvestorId).Distinct().ToList();
+        var investors = db.GetCollection<Investor>().FindAll().ToList();
+        var fcode = db.GetCollection<Fund>().Query().Select(x => new { x.Id, x.Code }).ToList();
+        var fff = db.GetCollection<InvestorFundEntry>().Find(x => cids.Contains(x.InvestorId) && x.SellOut == default).Select(x => new { x.InvestorId, x.FundId }).
+            Join(fcode, x => x.FundId, x => x.Id, (o, i) => new { o.InvestorId, i.Code }).GroupBy(x => x.InvestorId).Select(x => new { InvestorId = x.Key, Codes = x.Select(x => x.Code!).Distinct().ToList() }).
+            Join(investors, x => x.InvestorId, x => x.Id, (o, i) => new PfidAccountInfo() { Id = i.Id, Name = i.Name, Type = i.Type, Identity = i.Identity!, Phone = i.Phone, Email = i.Email, FundCodes = o.Codes }).ToList();
+
+        using var pw = await Playwright.CreateAsync();
+        var browser = await pw.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Channel = "msedge", Headless = false });
+
+        var fi = new FileInfo(@"config\pfid.ck");
+        var context = fi.Exists ? await browser.NewContextAsync(new BrowserNewContextOptions { StorageStatePath = fi.FullName }) : await browser.NewContextAsync();
+        var page = await context.NewPageAsync();
+
+        var login = await Login(page, amac);
+
+        if (!login.Success) return (false, "登陆失败");
+
+        try
+        {
+            // 检查登陆
+            var locator = page.Locator("#menu-product");
+            if (!await locator.IsVisibleAsync())
+                return (false, "未找到主菜单");
+
+            // 登陆成功，保存cookie
+            await browser.Contexts[0].StorageStateAsync(new BrowserContextStorageStateOptions { Path = Path.GetFullPath(@"config\pfid.ck") });
+
+            // 定向披露
+            var cusloc = page.Locator("#reportInvest").Filter(new LocatorFilterOptions { HasText = "投资者账号列表" });
+            if (!await cusloc.IsVisibleAsync())
+            {
+                locator = page.Locator("aside >> dt").Filter(new LocatorFilterOptions { HasText = "定向披露" });
+                await locator.ClickAsync();
+            }
+
+            if (!await cusloc.IsVisibleAsync())
+                return (false, "未找到账号列表菜单");
+
+            await cusloc.ClickAsync();
+
+
+
+            // 每页记录
+            var frame = page.Frames.Last();
+            // 等待页面完全加载（包括图片、CSS、JS 等）
+            try { await frame.WaitForLoadStateAsync(LoadState.NetworkIdle); } catch { }
+
+            locator = frame.Locator("select.select");
+            var box = await locator.BoundingBoxAsync(new LocatorBoundingBoxOptions { Timeout = 1000 });
+
+            if (!await locator.IsVisibleAsync())
+                return (false, "切换全部数据失败");
+
+            IResponse? response = null;
+            await page.RunAndWaitForResponseAsync(async () => await locator.SelectOptionAsync(new SelectOptionValue { Value = "-1" }), x =>
+            {
+                if (x.Url.Contains("find-cr-investor-list.do"))
+                {
+                    response = x;
+                    return true;
+                }
+                return false;
+            });
+
+            if (response is null) return (false, "获取已知账号失败");
+
+            var json = await response.JsonAsync();
+
+
+            var str = await response.TextAsync();
+            var node = JsonNode.Parse(str);
+            var exist = new Dictionary<int, string>();
+            if (node?["total"] is JsonValue tot && tot.GetValue<int>() is int total && total > 0 && node?["aaData"] is JsonArray arr && arr.Count > 0)
+            {
+                var da = arr.Deserialize<PfidAccountJson[]>();
+
+                var cus = db.GetCollection<Investor>().FindAll().ToArray();
+
+                try
+                {
+                    foreach (var item in da!)
+                    {
+                        if (cus.FirstOrDefault(x => x.Identity is not null && IsLike(x.Name, item.Name!) && IsLike(x.Identity.Id, item.Identity!)) is Investor investor)
+                            exist[investor.Id] = item.Account!;
+                    }
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+
+            // 合并
+            foreach (var item in fff)
+            {
+                if (exist.TryGetValue(item.Id, out var value))
+                    item.PfidAccount = value;
+                else
+                    item.PfidAccount = string.IsNullOrWhiteSpace(item.Phone) ? item.Email : item.Phone;
+            }
+
+            // 生成表格
+            var gpath = Path.GetFullPath("temp\\pfidinv.xlsx");
+            Tpl.Generate(gpath, @"files\tpl\pfid_investor.xlsx", new
+            {
+                i = fff.Select(x => new
+                {
+                    x.PfidAccount,
+                    x.Name,
+                    Type = EnumDescriptionTypeConverter.GetEnumDescription(x.Type),
+                    IdType = EnumDescriptionTypeConverter.GetEnumDescription(x.Identity.Type),
+                    IdType2 = x.Identity.Other,
+                    Id = x.Identity.Id,
+                    Phone = string.IsNullOrWhiteSpace(x.Email) ? x.Phone : "",
+                    x.Email,
+                    Status = "启用",
+                    Codes = x.FundCodes is null ? null : string.Join(',', x.FundCodes)
+                })
+            });
+
+            // 上传
+            locator = page.Frames[^1].Locator("a").Filter(new LocatorFilterOptions { HasText = "批量导入" });
+            await locator.ClickAsync();
+
+            frame = page.Frames[^1]; // 使用 name 属性
+
+            if (frame == null)
+                return (false, "无法找到 iframe: layui-layer-iframe3");
+
+            //   等待 iframe 加载完成
+            await frame.WaitForLoadStateAsync();
+
+            //  在 iframe 内等待文件输入框 #f_file
+            var fileInput = await frame.WaitForSelectorAsync("#f_file", new FrameWaitForSelectorOptions
+            {
+                State = WaitForSelectorState.Visible,
+                Timeout = 2000
+            });
+
+            if (fileInput == null)
+                return (false, "在 iframe 中未找到 #f_file 元素");
+
+            //  上传文件（使用本地绝对路径） 
+            await fileInput.SetInputFilesAsync(gpath);
+
+            //  可选：等待后续操作完成（如上传进度、提示等）
+            await page.WaitForTimeoutAsync(1000);
+
+            // 提交
+            await frame.Locator("#submitButton").ClickAsync();
+
+
+
+            var resultTextLocator = frame.GetByText("导入结束", new FrameGetByTextOptions { Exact = false });
+
+            await resultTextLocator.WaitForAsync(new LocatorWaitForOptions
+            {
+                State = WaitForSelectorState.Visible,
+                Timeout = 30000
+            });
+
+            string fullText = await resultTextLocator.InnerTextAsync();
+
+
+            var match = Regex.Match(fullText, @"导入成功.?(\d+).?条，导入失败.?(\d+).?条");
+            if (!match.Success)
+            {
+                int successCount = int.Parse(match.Groups[1].Value);
+                int failCount = int.Parse(match.Groups[2].Value);
+            }
+
+            // 获取错误信息
+            var downloadLink = frame.Locator("a", new FrameLocatorOptions { HasText = "下载错误" });
+            if (await downloadLink.IsVisibleAsync())
+            {
+                // ⭐ 开始监听下载事件
+                var downloadTask = page.WaitForDownloadAsync();
+
+                // 点击触发下载
+                await downloadLink.ClickAsync();
+
+                // 等待下载完成
+                var download = await downloadTask;
+                await download.SaveAsAsync(Path.GetFullPath(@"temp\pfid_cus_error.xlsx"));
+
+                // 解析错误
+            }
+
+            // 删除
+            File.Delete("temp\\pfidinv.xlsx");
+        }
+        catch (Exception e)
+        {
+
+        }
+
+
+        return default;
+    }
+
+
     private static bool IsLike(string full, string star)
     {
         var arr = star.Split('*');
 
         return full.StartsWith(arr[0]) && full.EndsWith(arr[^1]);
     }
+
+
+    public static ParseError(string path)
+    {
+        var reader = MiniExcel.GetReader(path, true, "投资者信息", ExcelType.XLSX);
+        reader.
+    }
+
 }
+
+/// <summary>
+/// pfid 账户
+/// </summary>
+public class PfidAccountInfo
+{
+    public int Id { get; set; }
+
+    public string? PfidAccount { get; set; }
+
+    public required string Name { get; set; }
+
+    public required Identity Identity { get; set; }
+
+    public string? Email { get; set; }
+
+    public string? Phone { get; set; }
+
+    public List<string>? FundCodes { get; set; }
+
+    public string? Error { get; set; }
+    public AmacInvestorType Type { get; internal set; }
+}
+
 
 public class PfidAccountJson
 {

@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.IO.AMAC;
+using FMO.Logging;
 using FMO.Models;
 using FMO.Utilities;
 using Microsoft.Win32;
@@ -297,10 +298,15 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
             string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "投资者账号.xlsx");
             workbook.SaveAs(path);
+
+            // 上传
+            
+
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(new FileInfo(path).Directory!.FullName) { UseShellExecute = true });
         }
         catch (Exception e)
         {
+            LogEx.Error(e);
             HandyControl.Controls.Growl.Error($"生成失败：{e.Message}");
         }
     }

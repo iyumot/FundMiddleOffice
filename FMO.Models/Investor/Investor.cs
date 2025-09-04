@@ -74,4 +74,4 @@ public class InvestorCertifications : MultiFile
 /// </summary>
 /// <param name="Id">investor id</param>
 /// <param name="Account"></param>
-public record PfidAccount(int Id, string Account);
+public record PfidAccount(int Id, string Account, DateOnly Update = default);
