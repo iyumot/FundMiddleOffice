@@ -206,6 +206,31 @@ public partial class AccountEventViewModel : ObservableObject
         Name = ev.Name;
     }
 
+
+    [RelayCommand]
+    public void OpenRawFolder()
+    {
+        if (string.IsNullOrWhiteSpace(Name)) return;
+
+        var folder = Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "stock", Id.ToString(), Name, "原始文件");
+        if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = folder, UseShellExecute = true }); } catch { }
+    }
+
+
+    [RelayCommand]
+    public void OpenSealFolder()
+    {
+        if (string.IsNullOrWhiteSpace(Name)) return;
+
+        var folder = Path.Combine(Directory.GetCurrentDirectory(), "files", "accounts", "stock", Id.ToString(), Name, "用印文件");
+        if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = folder, UseShellExecute = true }); } catch { }
+    }
+
+
+
+
 }
 
 public partial class AccountCredentialEventViewModel : AccountEventViewModel

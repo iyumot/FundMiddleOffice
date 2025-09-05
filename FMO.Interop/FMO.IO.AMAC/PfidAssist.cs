@@ -562,11 +562,11 @@ public static class PfidAssist
     }
 
 
-    public static ParseError(string path)
-    {
-        var reader = MiniExcel.GetReader(path, true, "投资者信息", ExcelType.XLSX);
-        reader.
-    }
+    //public static ParseError(string path)
+    //{
+    //    var reader = MiniExcel.GetReader(path, true, "投资者信息", ExcelType.XLSX);
+    //    reader.
+    //}
 
 }
 

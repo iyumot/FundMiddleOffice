@@ -243,13 +243,19 @@
                 <StackPanel Margin="2,0">
                     <DockPanel LastChildFill="False">
                         <TextBlock FontSize="14" Text="原始材料" />
-                        <Button hc:IconElement.Geometry="{StaticResource f.folder}" Style="{StaticResource ButtonIcon.Small}" />
+                        <Button
+                            hc:IconElement.Geometry="{StaticResource f.folder}"
+                            Command="{Binding OpenRawFolderCommand}"
+                            Style="{StaticResource ButtonIcon.Small}" />
                     </DockPanel>
 
 
                     <DockPanel LastChildFill="False">
                         <TextBlock FontSize="14" Text="用印文件" />
-                        <Button hc:IconElement.Geometry="{StaticResource f.folder}" Style="{StaticResource ButtonIcon.Small}" />
+                        <Button
+                            hc:IconElement.Geometry="{StaticResource f.folder}"
+                            Command="{Binding OpenSealFolderCommand}"
+                            Style="{StaticResource ButtonIcon.Small}" />
                     </DockPanel>
 
 
@@ -629,13 +635,19 @@
                             <StackPanel Margin="2,0">
                                 <DockPanel LastChildFill="False">
                                     <TextBlock FontSize="14" Text="原始材料" />
-                                    <Button hc:IconElement.Geometry="{StaticResource f.folder}" Style="{StaticResource ButtonIcon.Small}" />
+                                    <Button
+                                        hc:IconElement.Geometry="{StaticResource f.folder}"
+                                        Command="{Binding OpenRawFolderCommand}"
+                                        Style="{StaticResource ButtonIcon.Small}" />
                                 </DockPanel>
 
 
                                 <DockPanel LastChildFill="False">
                                     <TextBlock FontSize="14" Text="用印文件" />
-                                    <Button hc:IconElement.Geometry="{StaticResource f.folder}" Style="{StaticResource ButtonIcon.Small}" />
+                                    <Button
+                                        hc:IconElement.Geometry="{StaticResource f.folder}"
+                                        Command="{Binding OpenSealFolderCommand}"
+                                        Style="{StaticResource ButtonIcon.Small}" />
                                 </DockPanel>
 
 
