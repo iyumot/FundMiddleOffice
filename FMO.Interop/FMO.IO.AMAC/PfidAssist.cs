@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
+using FMO.Logging;
 using FMO.Models;
 using FMO.OCR;
 using FMO.TPL;
@@ -480,7 +481,7 @@ public static class PfidAssist
             frame = page.Frames[^1]; // 使用 name 属性
 
             if (frame == null)
-                return (false, "无法找到 iframe: layui-layer-iframe3");
+                return (false, "无法找到 iframe");
 
             //   等待 iframe 加载完成
             await frame.WaitForLoadStateAsync();
@@ -505,7 +506,7 @@ public static class PfidAssist
             await frame.Locator("#submitButton").ClickAsync();
 
 
-
+            frame = page.Frames[^1];
             var resultTextLocator = frame.GetByText("导入结束", new FrameGetByTextOptions { Exact = false });
 
             await resultTextLocator.WaitForAsync(new LocatorWaitForOptions
@@ -517,8 +518,8 @@ public static class PfidAssist
             string fullText = await resultTextLocator.InnerTextAsync();
 
 
-            var match = Regex.Match(fullText, @"导入成功.?(\d+).?条，导入失败.?(\d+).?条");
-            if (!match.Success)
+            var match = Regex.Match(fullText, @"导入成功.?(\d+).?条.*导入失败.?(\d+).?条");
+            if (match.Success)
             {
                 int successCount = int.Parse(match.Groups[1].Value);
                 int failCount = int.Parse(match.Groups[2].Value);
@@ -536,9 +537,17 @@ public static class PfidAssist
 
                 // 等待下载完成
                 var download = await downloadTask;
-                await download.SaveAsAsync(Path.GetFullPath(@"temp\pfid_cus_error.xlsx"));
+                string errxlsx = Path.GetFullPath(@"temp\pfid_cus_error.xlsx");
+                await download.SaveAsAsync(errxlsx);
 
                 // 解析错误
+                var errors = ParseError(errxlsx);
+                foreach (var item in fff)
+                {
+                    item.Error = errors.TryGetValue(item.PfidAccount!, out var error) ? error : null;
+                }
+
+                db.GetCollection<PfidAccountInfo>().Upsert(fff);
             }
 
             // 删除
@@ -546,7 +555,7 @@ public static class PfidAssist
         }
         catch (Exception e)
         {
-
+            LogEx.Error(e);
         }
 
 
@@ -562,11 +571,20 @@ public static class PfidAssist
     }
 
 
-    //public static ParseError(string path)
-    //{
-    //    var reader = MiniExcel.GetReader(path, true, "投资者信息", ExcelType.XLSX);
-    //    reader.
-    //}
+    public static Dictionary<string, string> ParseError(string path)
+    {
+        var rows = MiniExcel.Query(path, false, "投资者信息", ExcelType.XLSX);
+        Dictionary<string, string> dic = [];
+        foreach (var row in rows.Skip(1))
+        {
+            var id = row.A;
+            if (string.IsNullOrWhiteSpace(id)) break;
+
+            var err = row.K;
+            dic.Add(id, err);
+        }
+        return dic;
+    }
 
 }
 
