@@ -568,7 +568,7 @@ public static partial class DataTracker
             }
         }
 
-        db.GetCollection<DailyManageSacle>().InsertBulk(assets.Select(x => new DailyManageSacle(x.Key, x.Value)));
+        db.GetCollection<DailyManageSacle>().Upsert(assets.Select(x => new DailyManageSacle(x.Key, x.Value)));
     }
 
 

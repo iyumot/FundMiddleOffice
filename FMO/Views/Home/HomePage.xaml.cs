@@ -348,6 +348,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
         // 生成缺失的日期
         var mis = tdays.Except(scaledates).ToList();
         DataTracker.UpdateManageSacle(mis);
+
         var scales = db.GetCollection<DailyManageSacle>().FindAll().ToList();
         var sc = scales.OrderBy(x => x.Date).GroupBy(x => new { x.Date.Year, x.Date.Month }).Select(x => new { Date = new DateTime(x.Key.Year, x.Key.Month, 1), Value = x.Max(y => y.Scale) / 10000 }).ToList();
 
