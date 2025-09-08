@@ -1260,10 +1260,10 @@ public static partial class DataTracker
     {
         var data = table.Find(x => x.FundId == fundId && x.InvestorId == investorId).GroupBy(x => x.ConfirmedDate).OrderBy(x => x.Key);
         var list = new List<InvestorFundEntry>();
+        decimal share = 0;
+        InvestorFundEntry fe = new() { FundId = fundId, InvestorId = investorId };
         foreach (var tf in data)
         {
-            decimal share = 0;
-            InvestorFundEntry fe = new() { FundId = fundId, InvestorId = investorId };
             foreach (var item in tf.OrderBy(x => x.ConfirmedDate).GroupBy(x => x.ConfirmedDate))
             {
                 var sc = item.Sum(x => x.ShareChange());
