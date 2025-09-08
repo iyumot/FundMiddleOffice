@@ -41,7 +41,20 @@ public static partial class DatabaseAssist
         [89] = UpdatePolicy,
         [92] = UpdateSecurityCard,
         [93] = UpdateInvestorBalance,
+        [96] = ClearTaBecauseSCBug,
     };
+
+    /// <summary>
+    /// 由于shareclass 错误，清空TA
+    /// </summary>
+    /// <param name="database"></param>
+    /// <exception cref="NotImplementedException"></exception>
+    private static void ClearTaBecauseSCBug(BaseDatabase database)
+    {
+        using var db = DbHelper.Platform();
+        db.GetCollection<TrusteeMethodShotRange>().DeleteMany(x => x.Id.Contains("QueryTransferRequests"));
+        db.GetCollection<TrusteeMethodShotRange>().DeleteMany(x => x.Id.Contains("QueryTransferRecords"));
+    }
 
     private static void UpdateInvestorBalance(BaseDatabase db)
     {

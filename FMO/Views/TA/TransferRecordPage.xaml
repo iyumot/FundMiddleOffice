@@ -738,37 +738,6 @@
                             shared:FilterColumn.FilterSource="{Binding Data.FundNameFilter, Source={StaticResource proxy}}"
                             shared:FilterColumn.Header="产品"
                             shared:FilterColumn.PopupContentTemplate="{StaticResource StringFilterTemplate}">
-                            <!--<DataGridTemplateColumn.Header>
-                                <ContentControl Content="{Binding Data, Source={StaticResource proxy}}">
-                                    <ContentControl.ContentTemplate>
-                                        <DataTemplate>
-                                            <DockPanel>
-                                                <TextBlock Text="header" />
-                                                <ToggleButton
-                                                    x:Name="ttt"
-                                                    hc:IconElement.Geometry="{StaticResource f.filter}"
-                                                    Background="Transparent"
-                                                    BorderThickness="0"
-                                                    Style="{StaticResource ToggleButtonIcon.Small}" />
-
-                                                <Popup
-                                                    AllowsTransparency="True"
-                                                    IsOpen="{Binding ElementName=ttt, Path=IsChecked}"
-                                                    StaysOpen="False">
-                                                    <Border Background="WhiteSmoke">
-                                                         <PopupContentTemplate>
-                                                    </Border>
-                                                </Popup>
-                                            </DockPanel>
-                                            <DataTemplate.Triggers>
-                                                <DataTrigger Binding="{Binding FundNameFilter.IsActive}" Value="True">
-                                                    <Setter TargetName="ttt" Property="Foreground" Value="Green" />
-                                                </DataTrigger>
-                                            </DataTemplate.Triggers>
-                                        </DataTemplate>
-                                    </ContentControl.ContentTemplate>
-                                </ContentControl>
-                            </DataGridTemplateColumn.Header>-->
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <DockPanel Background="Transparent" LastChildFill="False">
@@ -788,6 +757,10 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
+                        <DataGridTextColumn
+                            Binding="{Binding ShareClass}"
+                            ElementStyle="{StaticResource CenterText}"
+                            Header="份额" />
 
                         <DataGridTemplateColumn
                             shared:FilterColumn.FilterSource="{Binding Data.InvestorNameFilter, Source={StaticResource proxy}}"
@@ -1058,6 +1031,10 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
+                        <DataGridTextColumn
+                            Binding="{Binding ShareClass}"
+                            ElementStyle="{StaticResource CenterText}"
+                            Header="份额" />
                         <!--<DataGridTextColumn Binding="{Binding InvestorName}" Header="投资人" />-->
                         <DataGridTemplateColumn
                             shared:FilterColumn.FilterSource="{Binding Data.InvestorNameFilter, Source={StaticResource proxy}}"

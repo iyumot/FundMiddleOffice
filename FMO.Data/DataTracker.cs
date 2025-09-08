@@ -758,7 +758,8 @@ public static partial class DataTracker
             {
                 r.FundId = f.Id;
                 r.FundName = f.Name;
-                r.ShareClass = c;
+                if (!string.IsNullOrWhiteSpace(c))
+                    r.ShareClass = c;
                 continue;
             }
             else Log.Error($"QueryTransferRequests 发现未知的产品{r.FundName} {r.FundCode}");
