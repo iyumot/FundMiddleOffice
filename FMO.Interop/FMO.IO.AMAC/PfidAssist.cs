@@ -464,7 +464,7 @@ public static class PfidAssist
                     x.PfidAccount,
                     x.Name,
                     Type = EnumDescriptionTypeConverter.GetEnumDescription(x.Type),
-                    IdType = EnumDescriptionTypeConverter.GetEnumDescription(x.Identity.Type),
+                    IdType = x.Identity.Type == IDType.IdentityCard ? "身份证" : EnumDescriptionTypeConverter.GetEnumDescription(x.Identity.Type),
                     IdType2 = x.Identity.Other,
                     Id = x.Identity.Id,
                     Phone = string.IsNullOrWhiteSpace(x.Email) ? x.Phone : "",
