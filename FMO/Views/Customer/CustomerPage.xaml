@@ -215,8 +215,8 @@
 
                 <Button
                     hc:IconElement.Geometry="{StaticResource f.circle-minus}"
-                    Command="{Binding GeneratePfidSheetCommand}"
-                    Content="生成pfid账号"
+                    Command="{Binding SyncPfidSheetCommand}"
+                    Content="同步pfid账号"
                     Style="{StaticResource ButtonDefault.Small}" />
 
                 <!--<hc:SimplePanel>

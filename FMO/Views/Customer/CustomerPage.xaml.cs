@@ -313,6 +313,17 @@ public partial class CustomerPageViewModel : ObservableRecipient, IRecipient<Inv
 
 
     [RelayCommand]
+    public async Task SyncPfidSheet()
+    {
+        using var db = DbHelper.Base();
+        var acc = db.GetCollection<AmacAccount>().FindById("xinpi");
+        var (s,e) = await PfidAssist.UpdateInvestorAccounts(acc);
+        if (s)
+            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Info, $"同步完成：{e}"));
+        else WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, $"同步失败：{e}"));
+    }
+
+    [RelayCommand]
     public async Task ImportQualificationData()
     {
         var fd = new OpenFileDialog();

@@ -41,7 +41,7 @@ public static partial class DatabaseAssist
         [89] = UpdatePolicy,
         [92] = UpdateSecurityCard,
         [93] = UpdateInvestorBalance,
-        [96] = ClearTaBecauseSCBug,
+        [97] = ClearTaBecauseSCBug,
     };
 
     /// <summary>

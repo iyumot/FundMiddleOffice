@@ -374,6 +374,7 @@ public static class PfidAssist
         try
         {
             // 检查登陆
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             var locator = page.Locator("#menu-product");
             if (!await locator.IsVisibleAsync())
                 return (false, "未找到主菜单");
@@ -505,17 +506,52 @@ public static class PfidAssist
             // 提交
             await frame.Locator("#submitButton").ClickAsync();
 
+            string targetText = "导入结束";
+            ILocator? foundLocator = null;
+            IFrame? targetFrame = null;
 
-            frame = page.Frames[^1];
-            var resultTextLocator = frame.GetByText("导入结束", new FrameGetByTextOptions { Exact = false });
+            // 最多等待30秒，轮询所有 frame 查找目标元素
+            var startTime = DateTime.UtcNow;
+            var timeout = TimeSpan.FromSeconds(30);
 
-            await resultTextLocator.WaitForAsync(new LocatorWaitForOptions
+            while (DateTime.UtcNow - startTime < timeout)
             {
-                State = WaitForSelectorState.Visible,
-                Timeout = 30000
-            });
+                foreach (var f in page.Frames)
+                {
+                    // 跳过 detached 的 frame
+                    if (f.IsDetached) continue;
 
-            string fullText = await resultTextLocator.InnerTextAsync();
+                    locator = f.GetByText(targetText, new() { Exact = false });
+
+                    try
+                    {
+                        // 检查元素是否可见（Playwright 会自动等待元素出现）
+                        await locator.WaitForAsync(new() { State = WaitForSelectorState.Visible, Timeout = 1000 });
+
+                        // 找到了！
+                        foundLocator = locator;
+                        targetFrame = f;
+                        break;
+                    }
+                    catch (TimeoutException)
+                    {
+                        // 元素未在当前 frame 中出现，继续
+                        continue;
+                    }
+                }
+
+                if (foundLocator != null) break;
+
+                // 等待一小段时间再重试
+                await Task.Delay(500);
+            }
+
+            if (foundLocator == null)
+            {
+                return (false, "未获取到返回信息");
+            }
+
+            string fullText = await foundLocator.InnerTextAsync();
 
 
             var match = Regex.Match(fullText, @"导入成功.?(\d+).?条.*导入失败.?(\d+).?条");
@@ -526,7 +562,7 @@ public static class PfidAssist
             }
 
             // 获取错误信息
-            var downloadLink = frame.Locator("a", new FrameLocatorOptions { HasText = "下载错误" });
+            var downloadLink = targetFrame.Locator("a", new FrameLocatorOptions { HasText = "下载错误" });
             if (await downloadLink.IsVisibleAsync())
             {
                 // ⭐ 开始监听下载事件
@@ -552,6 +588,8 @@ public static class PfidAssist
 
             // 删除
             File.Delete("temp\\pfidinv.xlsx");
+            if (match.Success)
+                return (true, $"同步完成，错误{match.Groups[2].Value}");
         }
         catch (Exception e)
         {
