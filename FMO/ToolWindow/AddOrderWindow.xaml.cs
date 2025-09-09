@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FMO.Models;
-using FMO.PDF;
 using FMO.Shared;
 using FMO.Utilities;
 using LiteDB;
@@ -45,6 +44,7 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
 
         OrderFile = new();
         OrderFile.FileChanged += f => UpdateFile(new { OrderFile = f });
+        OrderFile.FileChanged += f => SetDate(f);
 
 
         Video = new();
@@ -105,6 +105,11 @@ public abstract partial class AddOrderWindowViewModelBase : ObservableObject
         //};
     }
 
+    private void SetDate(SimpleFile f)
+    {
+        if (Date is null && DateTimeHelper.TryFindDate(f.File?.Name) is DateOnly date)
+            Date = new DateTime(date, default);
+    }
 
     private void UpdateFile<T>(T v)
     {
@@ -650,7 +655,7 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
 
                 db.GetCollection<TransferRecord>().Update(same);
                 foreach (var item in same)
-                   link.Add(new ManualLinkOrder(item.Id, Id, item.ExternalId!, item.ExternalRequestId!));
+                    link.Add(new ManualLinkOrder(item.Id, Id, item.ExternalId!, item.ExternalRequestId!));
                 //DataTracker.LinkOrder(same);
             }
             else
