@@ -240,7 +240,7 @@
                                     IsReadOnly="True"
                                     ItemsSource="{Binding InvestorDetail}"
                                     RowStyle="{StaticResource DataGridRowStyle}"
-                                    Style="{StaticResource DataGrid.Small}">
+                                    Style="{StaticResource DataGrid.NoSelect}">
                                     <DataGrid.Columns>
                                         <DataGridTemplateColumn>
                                             <DataGridTemplateColumn.CellTemplate>
