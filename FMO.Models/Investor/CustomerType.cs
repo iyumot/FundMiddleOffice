@@ -22,9 +22,9 @@ public enum AmacInvestorType
 
     [Description("境内非法人机构（一般合伙企业等）")] NonLegalEntity,
 
-    [Description("QFII、RQFII等")] QFII,
+    [Description("境外资金（QFII、RQFII等）")] QFII,
 
-    [Description("其它境外机构")] Foreign,
+    [Description("境外机构")] Foreign,
 
     [Description("财政直接出资")]
     DirectFinancialInvestment,
