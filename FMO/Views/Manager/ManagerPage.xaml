@@ -274,6 +274,7 @@
 
             <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top">
                 <ToggleButton
+                    Width="22"
                     hc:IconElement.Geometry="{StaticResource f.pencil}"
                     local:HelpService.Help="点击这里修改管理人资料和证件"
                     local:HelpService.Placement="Left"
