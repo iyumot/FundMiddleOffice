@@ -312,6 +312,7 @@
             Name="datagrid"
             d:ItemsSource="{d:SampleData}"
             local:HelpService.Help="{StaticResource Help.Investor.Tags}"
+            local:HelpService.Placement="LeftTop"
             AutoGenerateColumns="False"
             EnableRowVirtualization="True"
             IsReadOnly="True"

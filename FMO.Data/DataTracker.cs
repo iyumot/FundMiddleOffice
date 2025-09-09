@@ -1238,21 +1238,32 @@ public static partial class DataTracker
     /// <param name="from"></param>
     public static void UpdateInvestorBalance(ILiteCollection<TransferRecord> table, ILiteCollection<InvestorBalance> tableIB, int investorId, int fundId, DateOnly from = default)
     {
-        var data = table.Find(x => x.FundId == fundId && x.InvestorId == investorId).GroupBy(x => x.ConfirmedDate).OrderBy(x => x.Key);
-        var list = new List<InvestorBalance>();
-        foreach (var tf in data)
-        {
-            var share = tf.Sum(x => x.ShareChange());
-            var deposit = tf.Where(x => x.Type switch { TransferRecordType.Subscription or TransferRecordType.Purchase or TransferRecordType.MoveIn or TransferRecordType.SwitchIn or TransferRecordType.TransferIn => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
-            var withdraw = tf.Where(x => x.Type switch { TransferRecordType.Redemption or TransferRecordType.ForceRedemption or TransferRecordType.MoveOut or TransferRecordType.SwitchOut or TransferRecordType.TransferOut or TransferRecordType.Distribution => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
+        var tf = table.Find(x => x.FundId == fundId && x.InvestorId == investorId).ToList();
+        if (tf.Count > 0) return;
 
-            var last = list.LastOrDefault() ?? new();
-            var cur = new InvestorBalance { FundId = fundId, InvestorId = investorId, Share = share, Deposit = deposit, Withdraw = withdraw, Date = tf.Key };
-            list.Add(cur);
-        }
+        var share = tf.Sum(x => x.ShareChange());
+        var deposit = tf.Where(x => x.Type switch { TransferRecordType.Subscription or TransferRecordType.Purchase or TransferRecordType.MoveIn or TransferRecordType.SwitchIn or TransferRecordType.TransferIn => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
+        var withdraw = tf.Where(x => x.Type switch { TransferRecordType.Redemption or TransferRecordType.ForceRedemption or TransferRecordType.MoveOut or TransferRecordType.SwitchOut or TransferRecordType.TransferOut or TransferRecordType.Distribution => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
 
-        tableIB.DeleteMany(x => x.FundId == fundId && x.InvestorId == investorId && x.Date >= from);
-        tableIB.Upsert(list);
+        var cur = new InvestorBalance { FundId = fundId, InvestorId = investorId, Share = share, Deposit = deposit, Withdraw = withdraw, Date = tf.Max(x => x.ConfirmedDate) };
+        tableIB.Upsert(cur);
+
+
+        //var data = table.Find(x => x.FundId == fundId && x.InvestorId == investorId).GroupBy(x => x.ConfirmedDate).OrderBy(x => x.Key);
+        //var list = new List<InvestorBalance>();
+        //foreach (var tf in data)
+        //{
+        //    var share = tf.Sum(x => x.ShareChange());
+        //    var deposit = tf.Where(x => x.Type switch { TransferRecordType.Subscription or TransferRecordType.Purchase or TransferRecordType.MoveIn or TransferRecordType.SwitchIn or TransferRecordType.TransferIn => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
+        //    var withdraw = tf.Where(x => x.Type switch { TransferRecordType.Redemption or TransferRecordType.ForceRedemption or TransferRecordType.MoveOut or TransferRecordType.SwitchOut or TransferRecordType.TransferOut or TransferRecordType.Distribution => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
+
+        //    var last = list.LastOrDefault() ?? new();
+        //    var cur = new InvestorBalance { FundId = fundId, InvestorId = investorId, Share = share, Deposit = deposit, Withdraw = withdraw, Date = tf.Key };
+        //    list.Add(cur);
+        //}
+
+        // tableIB.DeleteMany(x => x.FundId == fundId && x.InvestorId == investorId && x.Date >= from);
+        // tableIB.Upsert(list);
     }
 
 

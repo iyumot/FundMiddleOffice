@@ -42,7 +42,29 @@ public static partial class DatabaseAssist
         [92] = UpdateSecurityCard,
         [93] = UpdateInvestorBalance,
         [97] = ClearTaBecauseSCBug,
+        [98] = RecalcInvestorBalance,
     };
+
+    private static void RecalcInvestorBalance(BaseDatabase db)
+    {
+        var ta = db.GetCollection<TransferRecord>().FindAll().ToArray();
+        var list = new List<InvestorBalance>();
+        foreach (var c in ta.GroupBy(x => x.InvestorId))
+        {
+            foreach (var tf in c.GroupBy(x => x.FundId))
+            {
+                var share = tf.Sum(x => x.ShareChange());
+                var deposit = tf.Where(x => x.Type switch { TransferRecordType.Subscription or TransferRecordType.Purchase or TransferRecordType.MoveIn or TransferRecordType.SwitchIn or TransferRecordType.TransferIn => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
+                var withdraw = tf.Where(x => x.Type switch { TransferRecordType.Redemption or TransferRecordType.ForceRedemption or TransferRecordType.MoveOut or TransferRecordType.SwitchOut or TransferRecordType.TransferOut or TransferRecordType.Distribution => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
+
+                var cur = new InvestorBalance { FundId = tf.Key, InvestorId = c.Key, Share = share, Deposit = deposit, Withdraw = withdraw, Date = tf.Max(x => x.ConfirmedDate) };
+
+                list.Add(cur);               
+            }
+        }
+        db.GetCollection<InvestorBalance>().DeleteAll();
+        db.GetCollection<InvestorBalance>().Insert(list);
+    }
 
     /// <summary>
     /// 由于shareclass 错误，清空TA
