@@ -651,8 +651,14 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
             {
                 var same = db.GetCollection<TransferRecord>().Find(x => x.ConfirmedDate == Record.ConfirmedDate && x.FundId == Record.FundId && x.InvestorId == Record.InvestorId).ToArray();
                 foreach (var item in same)
+                {
                     item.OrderId = Id;
-
+                    if(db.GetCollection<TransferRequest>().FindById(item.RequestId) is TransferRequest request)
+                    {
+                        request.OrderId = Id;
+                        db.GetCollection<TransferRequest>().Upsert(request);
+                    }
+                }
                 db.GetCollection<TransferRecord>().Update(same);
                 foreach (var item in same)
                     link.Add(new ManualLinkOrder(item.Id, Id, item.ExternalId!, item.ExternalRequestId!));
@@ -663,6 +669,13 @@ public partial class SupplementaryOrderWindowViewModel : AddOrderWindowViewModel
                 var rec = db.GetCollection<TransferRecord>().FindById(Record.Id);
                 rec.OrderId = Id;
                 db.GetCollection<TransferRecord>().Update(rec);
+
+                if (db.GetCollection<TransferRequest>().FindById(rec.RequestId) is TransferRequest request)
+                {
+                    request.OrderId = Id;
+                    db.GetCollection<TransferRequest>().Upsert(request);
+                }
+
                 link.Add(new ManualLinkOrder(Record.Id, Id, Record.ExternalId!, Record.ExternalRequestId!));
                 //DataTracker.LinkOrder(rec);
             }
