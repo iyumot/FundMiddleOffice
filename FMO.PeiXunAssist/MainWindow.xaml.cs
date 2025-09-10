@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using ExcelLibrary.SpreadSheet;
 using FMO.IO.AMAC;
+using FMO.Models;
 using FMO.Utilities;
 using Microsoft.Playwright;
 using System.Collections.ObjectModel;
