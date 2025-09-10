@@ -31,7 +31,7 @@
         <DataGrid
             AutoGenerateColumns="False"
             ColumnHeaderStyle="{StaticResource CenterColumnHeader}"
-            IsReadOnly="False"
+            IsReadOnly="True"
             ItemsSource="{Binding .}"
             Style="{StaticResource DataGrid.NoSelect}">
             <DataGrid.Columns>
@@ -60,7 +60,7 @@
     <DataTemplate x:Key="DailyMissing">
         <DataGrid
             AutoGenerateColumns="False"
-            IsReadOnly="False"
+            IsReadOnly="True"
             ItemsSource="{Binding .}"
             Style="{StaticResource DataGrid.NoSelect}">
             <DataGrid.Columns>
@@ -173,7 +173,7 @@
         <DataGrid
             AutoGenerateColumns="False"
             ColumnHeaderStyle="{StaticResource CenterColumnHeader}"
-            IsReadOnly="False"
+            IsReadOnly="True"
             ItemsSource="{Binding .}"
             Style="{StaticResource DataGrid.NoSelect}">
             <DataGrid.Columns>
@@ -209,7 +209,7 @@
         <DataGrid
             AutoGenerateColumns="False"
             ColumnHeaderStyle="{StaticResource CenterColumnHeader}"
-            IsReadOnly="False"
+            IsReadOnly="True"
             ItemsSource="{Binding .}"
             Style="{StaticResource DataGrid.NoSelect}">
             <DataGrid.Columns>
@@ -233,7 +233,7 @@
         <DataGrid
             AutoGenerateColumns="False"
             ColumnHeaderStyle="{StaticResource CenterColumnHeader}"
-            IsReadOnly="False"
+            IsReadOnly="True"
             ItemsSource="{Binding .}"
             Style="{StaticResource DataGrid.NoSelect}">
             <DataGrid.Columns>
