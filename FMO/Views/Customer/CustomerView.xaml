@@ -808,7 +808,9 @@
 
         <!--  查看/编辑 切换  -->
         <ToggleButton
-            Grid.Column="2"
+            Width="20"
+            Height="20"
+            Margin="5,0"
             HorizontalAlignment="Right"
             VerticalAlignment="Top"
             local:HelpService.Help="{StaticResource Help.Investor.Modify}"
