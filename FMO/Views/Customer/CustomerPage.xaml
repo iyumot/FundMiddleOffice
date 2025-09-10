@@ -216,7 +216,7 @@
                 <Button
                     hc:IconElement.Geometry="{StaticResource f.circle-minus}"
                     Command="{Binding SyncPfidSheetCommand}"
-                    Content="同步pfid账号"
+                    Content="同步投资人信批账号"
                     Style="{StaticResource ButtonDefault.Small}" />
 
                 <!--<hc:SimplePanel>
