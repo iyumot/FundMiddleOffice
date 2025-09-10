@@ -89,9 +89,9 @@
 
 
             <StackPanel Visibility="{Binding ShowAgent, Converter={StaticResource Boolean2VisibilityConverter}}">
-                <shared:FileView Content="{Binding Authorization}" />
+                <shared:FileView Content="{Binding Authorization}" Header="代理人授权书" />
 
-                <shared:FileView Content="{Binding Agent}" />
+                <shared:FileView Content="{Binding Agent}" Header="代理人证件" />
             </StackPanel>
             <Grid Visibility="{Binding NeedExperience, Converter={StaticResource Boolean2VisibilityConverter}}">
 
