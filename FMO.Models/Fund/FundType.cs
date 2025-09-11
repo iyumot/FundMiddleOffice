@@ -11,6 +11,8 @@ public enum FundType
     [Description("私募证券投资基金")]
     PrivateSecuritiesInvestmentFund,
 
+    [Description("私募证券投资基金FOF基金")]
+    PrivateSecuritiesInvestmentFundFOF,
 
     [Description("私募股权投资基金")]
     PrivateEquityFund,
