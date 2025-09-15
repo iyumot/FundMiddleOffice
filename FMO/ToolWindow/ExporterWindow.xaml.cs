@@ -131,7 +131,9 @@ public partial class ExporterWindowViewModel : ObservableObject
         AssemblyLoadContext context = new AssemblyLoadContext(Guid.NewGuid().ToString(), true);
         try
         {
-            var assembly = context.LoadFromAssemblyPath(Path.GetFullPath(Path.Combine(@$"files\tpl\{SelectedTemplate.Id}", SelectedTemplate.Entry)));
+            string assemblyPath = Path.GetFullPath(Path.Combine(@$"files\tpl\{SelectedTemplate.Id}", SelectedTemplate.Entry));
+            using var fs = new FileStream(assemblyPath, FileMode.Open);
+            var assembly = context.LoadFromStream(fs);
             var type = assembly.GetType(SelectedTemplate.Type);
             if (type is null)
                 return;

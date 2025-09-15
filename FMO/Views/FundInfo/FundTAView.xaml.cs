@@ -9,7 +9,6 @@ using FMO.Utilities;
 using Microsoft.Win32;
 using System.IO;
 using System.Runtime.Loader;
-using System.Threading.Tasks;
 using System.Windows.Controls;
 
 namespace FMO;
@@ -184,7 +183,7 @@ public partial class FundTAViewModel : ObservableObject
         using var db = DbHelper.Base();
         // 排除不存在的模板
         var tpl = db.GetCollection<TemplateInfo>().FindById("DF3CEE4F-EF22-E7F7-8238-6CFEE4605326");
-        if (tpl is null || !File.Exists(@$"files\tpl\{tpl.Id}"))
+        if (tpl is null || !Directory.Exists(@$"files\tpl\{tpl.Id}"))
         {
             WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "模板不存在"));
             return;
@@ -193,7 +192,9 @@ public partial class FundTAViewModel : ObservableObject
         AssemblyLoadContext context = new AssemblyLoadContext(Guid.NewGuid().ToString(), true);
         try
         {
-            var assembly = context.LoadFromAssemblyPath(Path.GetFullPath(Path.Combine(@$"files\tpl\{tpl.Id}", tpl.Entry)));
+            string assemblyPath = Path.GetFullPath(Path.Combine(@$"files\tpl\{tpl.Id}", tpl.Entry));
+            using var fs = new FileStream(assemblyPath, FileMode.Open);
+            var assembly = context.LoadFromStream(fs);
             var type = assembly.GetType(tpl.Type);
             if (type is null)
                 return;
@@ -225,48 +226,10 @@ public partial class FundTAViewModel : ObservableObject
         finally
         {
             context.Unload();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
 
-        //// 默认模板
-        //var tplfile = "invester_share.xlsx";
-        //if (Tpl.IsExists(tplfile))
-        //{
-        //    tplfile = Tpl.GetPath(tplfile);
-        //}
-        //else
-        //{
-        //    var dlg = new OpenFileDialog();
-        //    dlg.Title = "选择表格模板";
-        //    dlg.Filter = "Excel|*.xlsx";
-        //    if (dlg.ShowDialog() switch { false or null => true, _ => false })
-        //        return;
-
-        //    tplfile = dlg.FileName;
-        //}
-        //try
-        //{
-        //    var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), $"{FundName}-份额.xlsx");
-
-        //    using var db = DbHelper.Base();
-        //    var customers = db.GetCollection<Investor>().FindAll().ToArray();
-
-        //    var gend = CurrentShares.OrderByDescending(x => x.Share).Take(10).Join(customers, x => x.Id, x => x.Id, (x, y) => new
-        //    {
-        //        Name = x.Name,
-        //        ID = y.Identity?.Id,
-        //        Amount = x.Asset,
-        //        Portion = x.Proportion,
-        //        Phone = y.Phone,
-        //        Addr = y.Address
-        //    });
-
-
-        //    Tpl.Generate(path, tplfile, new { ii = gend });
-
-        //}
-        //catch (Exception)
-        //{
-        //}
     }
 
 

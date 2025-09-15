@@ -37,11 +37,12 @@ public class Exporter : IExporter
         var cs = db.GetCollection<InvestorHolding>(nameof(Investor)).Find(x => cid.Contains(x.Id)).ToList();
         cs.ForEach(x => x.Records = ta[x.Id]);
 
-        var totalShare = cs.Sum(x => x.Share);
         var nv = db.GetDailyCollection(FundId).Query().OrderByDescending(x => x.Date).Where(x => x.Date <= Date).FirstOrDefault()?.NetValue ?? 0;
-        cs.ForEach(x => x.Init(nv, totalShare));
+        cs.ForEach(x => x.Init(nv));
+        var totalShare = cs.Sum(x => x.Share);
+        cs.ForEach(x => x.Proportion = x.Share / totalShare);
 
-        var obj = ObjectExtension.ExpandToDictionary(new { c = cs });
+        var obj = ObjectExtension.ExpandToDictionary(new { c = cs.Where(x => x.Proportion > 0).ToList() });
         ExportInfo.Data = obj;
 
         return ExportInfo;
@@ -64,9 +65,9 @@ public class InvestorHolding : Investor
     public decimal Deposit { get; private set; }
     public decimal Withdraw { get; private set; }
     public decimal Profit { get; private set; }
-    public decimal Proportion { get; private set; }
+    public decimal Proportion { get; set; }
 
-    public void Init(decimal nv, decimal totalShare)
+    public void Init(decimal nv)
     {
         if (Records is null || Records.Count == 0) return;
 
@@ -76,7 +77,6 @@ public class InvestorHolding : Investor
         Withdraw = Records.Where(x => x.Type switch { TransferRecordType.Redemption or TransferRecordType.Redemption or TransferRecordType.MoveOut or TransferRecordType.Distribution => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
         Profit = Asset + Withdraw - Deposit;
 
-        Proportion = Share == 0 ? 0 : Share / totalShare;
     }
 
 

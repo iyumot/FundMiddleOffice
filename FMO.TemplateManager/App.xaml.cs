@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Serilog;
+using System.Text;
 using System.Windows;
 
 namespace FMO.TemplateManager;
@@ -12,5 +13,6 @@ public partial class App : Application
     {
 
         Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+        Log.Logger = new LoggerConfiguration().WriteTo.LiteDB(@"logs.db", "logex").CreateLogger();
     }
 }
