@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using System.Globalization;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -108,8 +109,18 @@ public partial class NetValueCurveView : UserControl
 
             var rtb = new RenderTargetBitmap((int)visual.ActualWidth, (int)visual.ActualHeight, 96, 96, PixelFormats.Default);
             rtb.Render(drawingVisual);
+             
+            var dataObj = new DataObject();
+            dataObj.SetData(DataFormats.Bitmap, rtb);
 
-            Clipboard.SetDataObject(new DataObject(DataFormats.Bitmap, rtb));
+            var ms = new MemoryStream();
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(rtb));
+            encoder.Save(ms);
+            ms.Seek(0, SeekOrigin.Begin);
+            dataObj.SetData("PNG", ms);
+
+            Clipboard.SetDataObject(dataObj, true);
             HandyControl.Controls.Growl.Success("净值曲线已复制");
         }
         catch { HandyControl.Controls.Growl.Error("复制净值曲线失败"); }
@@ -890,7 +901,7 @@ public class DailyValueCurveDrawing : FrameworkElement
         double padding = 5;
         double rowHeight = fontSize + 4;
         double maxWidth = values.Max(v => CreateFormattedText(v.label + ": " + v.value, typeface, fontSize).Width) + padding * 2;
- 
+
         // 获取当前可视区域的边界（减去margin）
         double margin = 50;
         double maxCanvasWidth = this.ActualWidth - margin * 2;
