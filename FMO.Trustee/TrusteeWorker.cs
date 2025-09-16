@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using FMO.Logging;
 using FMO.Models;
 using FMO.Utilities;
 using LiteDB;
@@ -279,6 +280,7 @@ public partial class TrusteeWorker : ObservableObject
                     var rc = await tr.QueryTransferRequests(begin, end);
                     if (rc.Code != ReturnCode.Success && rc.Code != ReturnCode.TrafficLimit)
                     {
+                        LogEx.Error($"{rc.Code} {rc.Data?.Count} {tr.Title} 获取的交易申请记录数据异常");
                         WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Error, $"{tr.Title} 获取的交易申请记录数据异常"));
                     }
                     ///
@@ -296,7 +298,7 @@ public partial class TrusteeWorker : ObservableObject
                         if (rc.Data?.Any(x => x.InvestorName == "unset" || x.FundName == "unset" || x.InvestorIdentity == "unset") ?? false)
                         {
                             ret.Add(new(tr.Title, ReturnCode.DataIsNotWellFormed, rc.Data));
-                            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Error, $"{tr.Title} 获取的交易申请记录数据异常"));
+                            WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Error, $"{tr.Title} 获取的交易申请记录存在未识别的主体"));
                             break;
                         }
                     }
