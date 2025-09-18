@@ -546,7 +546,7 @@ public static partial class DataTracker
         //IEnumerable<BsonValue> array = dates.Select(x => BsonMapper.Global.ToDocument(x));
         var array = dates.Select(x => new BsonValue(x.DayNumber));
 
-        Dictionary<DateOnly, decimal> assets = new();
+        Dictionary<DateOnly, decimal> assets = dates.ToDictionary(x => x, _ => 0m);
 
         // 遍历每个符合条件的集合，执行查询并转换结果
         foreach (var collectionName in fvCollections)
@@ -561,9 +561,6 @@ public static partial class DataTracker
 
             foreach (var item in results)
             {
-                if (!assets.ContainsKey(item.Date))
-                    assets[item.Date] = 0;
-
                 assets[item.Date] += item.NetAsset;
             }
         }

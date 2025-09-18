@@ -36,7 +36,7 @@ public class DailyValue
 
     public string? Class { get; set; }
 
-    public long Id => GenerateId(FundId, Class, Date);
+    public long Id => Date.DayNumber;// GenerateId(FundId, Class, Date);
 
 
     public DateOnly Date { get; set; }

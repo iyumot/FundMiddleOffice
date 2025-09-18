@@ -43,7 +43,25 @@ public static partial class DatabaseAssist
         [93] = UpdateInvestorBalance,
         [97] = ClearTaBecauseSCBug,
         [98] = RecalcInvestorBalance,
+        [100] = FixNv,
     };
+
+    private static void FixNv(BaseDatabase db)
+    {
+        var fvCollections = db.GetCollectionNames().Where(c => Regex.IsMatch(c, @"fv_")).ToList();
+        foreach (var fv in fvCollections)
+        {
+            var docs = db.GetCollection(fv).FindAll().ToArray();
+            //foreach (var item in docs)
+            //{
+            //    item["_id"] = item["Date"]["DayNumber"];
+            //}
+            db.GetCollection(fv).DeleteAll();
+            db.GetCollection(fv).Insert(docs.DistinctBy(x => x["Date"].AsDocument["DayNumber"]));
+        }
+
+        UpdateManageScale(db);
+    }
 
     private static void RecalcInvestorBalance(BaseDatabase db)
     {
@@ -59,7 +77,7 @@ public static partial class DatabaseAssist
 
                 var cur = new InvestorBalance { FundId = tf.Key, InvestorId = c.Key, Share = share, Deposit = deposit, Withdraw = withdraw, Date = tf.Max(x => x.ConfirmedDate) };
 
-                list.Add(cur);               
+                list.Add(cur);
             }
         }
         db.GetCollection<InvestorBalance>().DeleteAll();
@@ -167,7 +185,7 @@ public static partial class DatabaseAssist
         }
 
         var result = dys.GroupBy(x => x.Date).Select(x => new DailyManageSacle(x.Key, x.Sum(y => y.Scale)));
-
+        var tmp = dys.Where(x => x.Date.DayNumber > 739400).GroupBy(x => x.Date).ToArray();
         db.GetCollection<DailyManageSacle>().Upsert(result);
     }
 
