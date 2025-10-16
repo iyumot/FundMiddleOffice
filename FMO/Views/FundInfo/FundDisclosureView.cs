@@ -185,7 +185,7 @@ public partial class AnnouncementViewModel : EditableControlViewModelBase<FundAn
         {
             if (Id == 0) return; // 新建时不保存
             using var db = DbHelper.Base();
-            db.GetCollection<FundAnnouncement>().UpdateMany(BsonMapper.Global.ToDocument(f).ToString(), $"_id={Id}");
+            db.GetCollection<FundAnnouncement>().UpdateMany(BsonMapper.Global.ToDocument(new { File = f }).ToString(), $"_id={Id}");
         };
     }
 
