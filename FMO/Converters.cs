@@ -86,6 +86,10 @@ public class ValueIsEffectToVisibilityConverter : IValueConverter
                 show = d.Year > 1970; // 1970/1/1
                 break;
 
+            case int d:
+                show = d != 0;
+                break;
+
             default:
                 show = value != default;
                 break;

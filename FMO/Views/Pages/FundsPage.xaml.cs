@@ -65,6 +65,11 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
     public partial int ClearCount { get; set; }
 
 
+    [ObservableProperty]
+    public partial int SetupCount { get; set; }
+
+    [ObservableProperty]
+    public partial int RegisterCount { get; set; }
 
     public FundPageUiConfig UiConfig { get; set; }
 
@@ -91,12 +96,17 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
 
         DataViewSource = new CollectionViewSource { Source = Funds };
         DataViewSource.Filter += DataViewSource_Filter;
-
-        TotalCount = funds.Count();
-        NormalCount = funds.Count(x => x.Status == FundStatus.Normal);
-        ClearCount = Funds.Count(x => x.IsCleared);
+        UpdateFundCount();
     }
 
+    private void UpdateFundCount()
+    {
+        TotalCount = Funds.Count();
+        NormalCount = Funds.Count(x => x.Status == FundStatus.Normal);
+        ClearCount = Funds.Count(x => x.IsCleared);
+        SetupCount = Funds.Count(x => x.Status <= FundStatus.Registration);
+        RegisterCount = Funds.Count(x => x.Status == FundStatus.Registration);
+    }
 
     private void DataViewSource_Filter(object sender, FilterEventArgs e)
     {
@@ -144,8 +154,7 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
         }
 
         /// 更新
-        ClearCount = Funds.Count(x => x.IsCleared);
-        NormalCount = Funds.Count(x => x.Status == FundStatus.Normal);
+        UpdateFundCount();
     }
 
 

@@ -31,8 +31,22 @@
                 </Style>
             </DockPanel.Resources>
             <TextBlock FontWeight="Bold" Text="{Binding TotalCount, StringFormat=管理基金共 {0} 只，}" />
-            <TextBlock FontWeight="Bold" Text="{Binding NormalCount, StringFormat=运行中 {0} 只，}" />
-            <TextBlock FontWeight="Bold" Text="{Binding ClearCount, StringFormat=已清算 {0} 只}" />
+            <TextBlock
+                FontWeight="Bold"
+                Text="{Binding NormalCount, StringFormat=运行中 {0} 只，}"
+                Visibility="{Binding NormalCount, Converter={StaticResource ValueIsEffectToVisibilityConverter}}" />
+            <TextBlock
+                FontWeight="Bold"
+                Text="{Binding SetupCount, StringFormat=筹建中 {0} 只，}"
+                Visibility="{Binding SetupCount, Converter={StaticResource ValueIsEffectToVisibilityConverter}}" />
+            <TextBlock
+                FontWeight="Bold"
+                Text="{Binding RegisterCount, StringFormat=正在备案 {0} 只，}"
+                Visibility="{Binding RegisterCount, Converter={StaticResource ValueIsEffectToVisibilityConverter}}" />
+            <TextBlock
+                FontWeight="Bold"
+                Text="{Binding ClearCount, StringFormat=已清算 {0} 只}"
+                Visibility="{Binding ClearCount, Converter={StaticResource ValueIsEffectToVisibilityConverter}}" />
             <Viewbox
                 Width="12"
                 Height="12"
