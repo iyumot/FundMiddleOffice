@@ -111,14 +111,14 @@ public partial class NetValueCurveView : UserControl
             rtb.Render(drawingVisual);
              
             var dataObj = new DataObject();
-            dataObj.SetData(DataFormats.Bitmap, rtb);
+           dataObj.SetData(DataFormats.Bitmap, rtb);
 
-            var ms = new MemoryStream();
-            var encoder = new PngBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(rtb));
-            encoder.Save(ms);
-            ms.Seek(0, SeekOrigin.Begin);
-            dataObj.SetData("PNG", ms);
+            //var ms = new MemoryStream();
+            //var encoder = new PngBitmapEncoder();
+            //encoder.Frames.Add(BitmapFrame.Create(rtb));
+            //encoder.Save(ms);
+            //ms.Seek(0, SeekOrigin.Begin);
+            //dataObj.SetData("PNG", ms);
 
             Clipboard.SetDataObject(dataObj, true);
             HandyControl.Controls.Growl.Success("净值曲线已复制");
