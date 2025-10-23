@@ -9,7 +9,7 @@ public record FundClearNotFinishedContext(string FundName, string? Code, DateOnl
 /// <summary>
 /// 基金长期未结束清盘
 /// </summary>
-public class FundClearNotFinishedRule : VerifyRule<LiquidationFlow, FundEntityRemoved<int>>
+public class FundClearNotFinishedRule : VerifyRule<LiquidationFlow, FundEntityRemoved<int>, EntityChanged<Fund, DateOnly>>
 {
     private ConcurrentDictionary<int, DataTip> Tips { get; } = [];
 
@@ -43,6 +43,11 @@ public class FundClearNotFinishedRule : VerifyRule<LiquidationFlow, FundEntityRe
             Params.Add(f.FundId);
     }
 
+    protected override void OnEntityOverride(IEnumerable<EntityChanged<Fund, DateOnly>> obj)
+    {
+        foreach (var f in obj.Where(x => x.PropertyName == nameof(Fund.ClearDate)))
+            Params.Add(f.Entity.Id);
+    }
 
 
     protected override void VerifyOverride()
@@ -68,4 +73,5 @@ public class FundClearNotFinishedRule : VerifyRule<LiquidationFlow, FundEntityRe
             Send(tip);
         }
     }
+
 }
