@@ -760,7 +760,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
             //else cus.IDCards.Add(fsi);
             //db.GetCollection<Investor>().Update(cus);
 
-            IDCards.Files.Add(new FileMetaViewModel(FileMeta.Create(fi, $"{Name}-证件.jpg")));
+            IDCards.AddFile(fi.FullName);
         }
         catch (Exception ex)
         {

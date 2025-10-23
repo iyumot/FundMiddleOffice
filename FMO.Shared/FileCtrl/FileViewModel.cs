@@ -389,6 +389,19 @@ public partial class MultiFileViewModel : ObservableObject
     }
 
 
+    public void AddFile(string file)
+    {
+        var newf = new FileInfo(file);
+        var desire = SpecificFileName is null ? newf.Name : SpecificFileName(newf.Extension);
+
+        var m = FileMeta.Create(newf, desire);
+        FileMetaViewModel newv = new() { Meta = m };
+        Files.Add(newv);
+        newv.MetaChanged += ItemChanged;
+        InvokeFileChanged();
+    }
+
+
     protected virtual void InvokeFileChanged()
     {
 
