@@ -104,11 +104,11 @@ public class BankAccount
     public static BankAccount? FromString(string str)
     {
         BankAccount account = new BankAccount();
-        var m = Regex.Match(str, @"[账\s*号|账\s*户\s*号\s*码]\s*[:：\s]*(\d+)");
+        var m = Regex.Match(str, @"(?:账\s*号|账\s*户\s*号\s*码)\s*[:：\s]*(\d{5,})");
         if (!m.Success) return null;
         account.Number = m.Groups[1].Value;
 
-        m = Regex.Match(str, @"(?:账\s*)?户\s*名\s*(?:称)?\s*[:：\s]*\s*(\w+)");
+        m = Regex.Match(str, @"(?:账\s*)?户\s*名\s*(?:称)?\s*[:：\s]*\s*([\w--]+)");
         if (!m.Success) return null;
         account.Name = m.Groups[1].Value;
 
