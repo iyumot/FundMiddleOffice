@@ -194,6 +194,16 @@ public partial class FileMetaViewModel : ReadOnlyFileMetaViewModel
         OnMetaChanged();
     }
 
+
+    internal void SetFile(string path)
+    {
+        var newf = new FileInfo(path);
+        var desire = SpecificFileName is null ? newf.Name : SpecificFileName(newf.Extension);
+
+        Meta = FileMeta.Create(newf, desire);
+        OnMetaChanged();
+    }
+
     [RelayCommand]
     public void Delete()
     {

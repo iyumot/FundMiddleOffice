@@ -442,6 +442,7 @@
         <hc:UniformSpacingPanel ChildWrapping="Wrap" Spacing="5">
             <ContentPresenter
                 VerticalAlignment="Center"
+                AllowDrop="{Binding IsReadOnly, Converter={StaticResource Boolean2BooleanReConverter}, RelativeSource={RelativeSource AncestorType=local:FileView}}"
                 Content="{Binding Normal}"
                 ContentTemplate="{StaticResource FileItemTemplate.NoDate}" />
 
@@ -456,6 +457,7 @@
             <Border Margin="5,0,0,0">
                 <ContentPresenter
                     VerticalAlignment="Center"
+                    AllowDrop="{Binding IsReadOnly, Converter={StaticResource Boolean2BooleanReConverter}, RelativeSource={RelativeSource AncestorType=local:FileView}}"
                     Content="{Binding Another}"
                     ContentTemplate="{StaticResource FileItemTemplate.NoDate}" />
             </Border>
@@ -768,7 +770,7 @@
 
 
     <Style x:Key="DualFileStyle" TargetType="local:FileView">
-        <Setter Property="AllowDrop" Value="{Binding IsReadOnly, RelativeSource={RelativeSource Self}, Converter={StaticResource Boolean2BooleanReConverter}}" />
+        <!--<Setter Property="AllowDrop" Value="{Binding IsReadOnly, RelativeSource={RelativeSource Self}, Converter={StaticResource Boolean2BooleanReConverter}}" />-->
         <Setter Property="ContentTemplate" Value="{StaticResource DualFile.Wrap.NoDate}" />
         <Setter Property="HeaderTemplate" Value="{StaticResource DefaultHeader}" />
         <Setter Property="Header" Value="{Binding Content.Label, RelativeSource={RelativeSource Self}, FallbackValue=文件}" />

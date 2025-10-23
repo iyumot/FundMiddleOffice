@@ -16,7 +16,15 @@ public class FileView : HeaderedContentControl
     public static readonly DependencyProperty IsReadOnlyProperty =
         DependencyProperty.Register("IsReadOnly", typeof(bool), typeof(FileView), new PropertyMetadata(false));
 
-
+    protected override void OnDrop(DragEventArgs e)
+    {
+        if (IsReadOnly) return;
+        if (e.Data.GetData(DataFormats.FileDrop) is string[] files && files.Length > 0)
+        {
+            if (e.OriginalSource is FrameworkElement fe && fe.DataContext is FileMetaViewModel vm)
+                vm.SetFile(files[0]);
+        }
+    }
 }
 
 
