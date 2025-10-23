@@ -1236,7 +1236,7 @@ public static partial class DataTracker
     public static void UpdateInvestorBalance(ILiteCollection<TransferRecord> table, ILiteCollection<InvestorBalance> tableIB, int investorId, int fundId, DateOnly from = default)
     {
         var tf = table.Find(x => x.FundId == fundId && x.InvestorId == investorId).ToList();
-        if (tf.Count > 0) return;
+        if (tf.Count == 0) return;
 
         var share = tf.Sum(x => x.ShareChange());
         var deposit = tf.Where(x => x.Type switch { TransferRecordType.Subscription or TransferRecordType.Purchase or TransferRecordType.MoveIn or TransferRecordType.SwitchIn or TransferRecordType.TransferIn => true, _ => false }).Sum(x => x.ConfirmedNetAmount);
