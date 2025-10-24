@@ -31,7 +31,12 @@ public partial class LiquidationFlowViewModel : FlowViewModel
     [SetsRequiredMembers]
     public LiquidationFlowViewModel(LiquidationFlow flow) : base(flow)
     {
+        using var db = DbHelper.Base();
+        var fund = db.GetCollection<Fund>().FindById(flow.FundId);
+
         LiquidationReport = new(flow.LiquidationReport);
+        LiquidationReport.Normal.SpecificFileName = (e) => $"{fund.Name}-清算报告{e}";
+        LiquidationReport.Another.SpecificFileName = (e) => $"{fund.Name}-清算报告(用印){e}";
         LiquidationReport.FileChanged += f => SaveFileChanged(new { LiquidationReport = f });
 
 
