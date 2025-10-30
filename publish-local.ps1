@@ -48,7 +48,7 @@ foreach ($projectName in $ProjectsToPublish) {
         $projectPath
         "--framework", "net9.0-windows"
         "--runtime", $Runtime
-        "--self-contained", "true"
+        "--self-contained", "false"
         "--output", $PublishPath
         "-c", "Release"
         "--nologo"
