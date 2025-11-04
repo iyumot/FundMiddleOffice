@@ -154,6 +154,12 @@
                                             </Viewbox>
                                         </shared:FileView.Header>
                                     </shared:FileView>
+
+
+                                    <Button
+                                        hc:IconElement.Geometry="{StaticResource f.upload}"
+                                        Command="{Binding UploadCommand}"
+                                        Style="{StaticResource ButtonIcon.Small}" />
                                 </hc:UniformSpacingPanel>
                             </DataTemplate>
                         </Setter.Value>

@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using FMO.AMAC.Direct;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
@@ -35,7 +36,7 @@ public partial class FundDisclosureViewModel : ObservableObject, IRecipient<Fund
 
         Announcements = [.. data.Select(x => new AnnouncementViewModel(x))];
 
-        PeriodicDisclosure = [.. db.GetCollection<FundPeriodicReport>().Find(x => x.FundId == fid).Select(x=>new FundPeriodicReportViewModel (x))];
+        PeriodicDisclosure = [.. db.GetCollection<FundPeriodicReport>().Find(x => x.FundId == fid).Select(x => new FundPeriodicReportViewModel(x))];
         QuarterlyDisclosure = [.. db.GetCollection<FundQuarterlyUpdate>().Find(x => x.FundId == fid).Select(x => new FundQuarterlyUpdateViewModel(x))];
 
 
@@ -54,7 +55,7 @@ public partial class FundDisclosureViewModel : ObservableObject, IRecipient<Fund
         Annually.Source = PeriodicDisclosure;
         Annually.Filter += (s, e) => e.Accepted = e.Item switch { FundPeriodicReportViewModel r => r.Type == PeriodicReportType.AnnualReport, _ => false };
 
-        QuarterlyUpdate.Source = QuarterlyDisclosure; 
+        QuarterlyUpdate.Source = QuarterlyDisclosure;
     }
 
     public int FundId { get; }
@@ -94,6 +95,8 @@ public partial class FundDisclosureViewModel : ObservableObject, IRecipient<Fund
 
 public partial class FundPeriodicReportViewModel : ObservableObject
 {
+    private readonly FundPeriodicReport report;
+
     public FundPeriodicReportViewModel(FundPeriodicReport report)
     {
         Id = report.Id;
@@ -103,6 +106,7 @@ public partial class FundPeriodicReportViewModel : ObservableObject
         Excel = new(report.Excel);
         Pdf = new(report.Pdf);
         Xbrl = new(report.Xbrl);
+        this.report = report;
     }
 
     public int Id { get; }
@@ -127,6 +131,42 @@ public partial class FundPeriodicReportViewModel : ObservableObject
     public SimpleFileViewModel Xbrl { get; }
 
     public SimpleFileViewModel Pdf { get; }
+
+
+    [RelayCommand]
+    public async Task Upload()
+    {
+        // 获取 账号
+        using var db = DbHelper.Base();
+        var acc = db.GetCollection<AmacReportAccount>().FindOne(x => x.Id == "pof");
+
+        if (acc is null || string.IsNullOrWhiteSpace(acc.Name) || string.IsNullOrWhiteSpace(acc.Password) || string.IsNullOrWhiteSpace(acc.Key))
+        {
+            HandyControl.Controls.Growl.Info("请先在[平台]中设置信批账号");
+            return;
+        }
+
+        var manager = db.GetCollection<Manager>().Query().First();
+
+        var result = await DirectReporter.UploadReport(report, acc);
+
+        if(result.UploadCode != 0)
+        { 
+            HandyControl.Controls.Growl.Info($"上传文件失败:{result.UploadError}");
+            return;
+        }
+
+        HandyControl.Controls.Growl.Info($"上传报告成功，请等待校验结果");
+        await Task.Delay(20 * 1000);
+
+        await DirectReporter.QueryResult(result, acc);
+
+
+
+        await DirectReporter.Submit(result, manager.Name, acc);
+
+        HandyControl.Controls.Growl.Info($"报告提交:{result.SubmitError}");
+    }
 }
 
 public partial class FundQuarterlyUpdateViewModel : ObservableObject

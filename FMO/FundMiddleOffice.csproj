@@ -98,6 +98,7 @@
     <ProjectReference Include="..\FMO.Data\FMO.Data.csproj" />
     <ProjectReference Include="..\FMO.Interop\FMO.IO.AMAC\FMO.IO.AMAC.csproj" />
     <ProjectReference Include="..\FMO.InterOp\FMO.IO.DS\FMO.IO.DS.csproj" />
+    <ProjectReference Include="..\FMO.Interop\FMO.PFID\FMO.AMAC.Direct.csproj" />
     <ProjectReference Include="..\FMO.Logging\FMO.Logging.csproj" />
     <ProjectReference Include="..\FMO.Patch\FMO.Patch.csproj" />
     <ProjectReference Include="..\FMO.PDF\FMO.PDF.csproj" TargetFramework="net9.0-windows" />

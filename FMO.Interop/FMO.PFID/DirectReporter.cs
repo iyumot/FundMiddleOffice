@@ -107,7 +107,7 @@ public class DirectReporter
 
         if (report.FundCode is null) return new AmacProcessResult { Id = report.Id, FileType = type, UploadError = "基金备案编码为空" };
         if (type == DirectFileType.Unk) return new AmacProcessResult { Id = report.Id, FileType = type, UploadError = "未知的报告类型" };
-        if (file(report) is not FileMeta fm || !fm.Exists) return new AmacProcessResult { Id = report.Id, FileType = type, UploadError = "文件不存在" };
+        if (file(report) is not FileMeta fm || !fm.Exists) return new AmacProcessResult { Id = report.Id, FileType = type, UploadError = "报告文件不存在" };
 
         var date = new DateOnly(report.PeriodEnd.Year, report.PeriodEnd.Month, 1).AddMonths(1).AddDays(-1);
         // 生成zip
@@ -128,7 +128,7 @@ public class DirectReporter
             using var db = DbHelper.Base();
             var manager = db.GetCollection<Manager>().Query().First();
             var result = await UploadFile(type, path, date, acc, manager.Name, report.FundCode);
-            return new AmacProcessResult { Id = report.Id, FileType = type, Handle = result!.Handle, UploadCode = result.ProcessCode switch { "00" or "100" => 0, var n => int.Parse(n!) }, UploadError = result.ProcessCode switch { "00" or "100" => "Success", var n => n } };
+            return new AmacProcessResult { Id = report.Id, FileType = type, Handle = result!.Handle, UploadCode = result.ProcessCode switch { "00" or "100" => 0, var n => int.Parse(n!) }, UploadError = result.ProcessMessage };
         }
         catch (Exception ex) { LogEx.Error(ex); return new AmacProcessResult { Id = report.Id, FileType = type, UploadError = ex.Message }; }
         finally { File.Delete(path); }
@@ -200,7 +200,7 @@ public class DirectReporter
         request.RequestUri = new Uri(fileType < DirectFileType.RS0001 ? DisclosureUploadUrl : OperationUploadUrl);
         request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        await PrintHttpRequestMessageAsync(request);
+        //await PrintHttpRequestMessageAsync(request);
 
         var response = await httpClient.SendAsync(request);
         var responseContent = await response.Content.ReadAsStringAsync();
@@ -264,17 +264,17 @@ public class DirectReporter
         {
             handle.ValidateCode = int.Parse(root.processCode);
 
-            if (root.processCode == "00") 
+            if (root.processCode == "00")
                 handle.ResultInfo = [new ValidationInfo { Level = "Success", Message = "" }];
             else
                 handle.ResultInfo = root.verifyMessage?.children?.Where(x => x.children is not null)?.
                    SelectMany(x => x.children.Select(y => new ValidationInfo { Level = y.deepLevel, Message = y.description }))?.ToArray() ?? [];
         }
-
-        handle.ResultInfo = [new ValidationInfo { Level = "Error", Message = "未获取到返回信息" }];
+        else
+            handle.ResultInfo = [new ValidationInfo { Level = "Error", Message = "未获取到返回信息" }];
     }
 
-     
+
     public static async Task Submit(AmacProcessResult handle, string company, AmacReportAccount acc)
     {
         string UserName = acc.Name;
@@ -312,11 +312,11 @@ public class DirectReporter
         var responseContent = await response.Content.ReadAsStringAsync();
 
         var pr = JsonSerializer.Deserialize<ProcessResponse>(responseContent);
-        if(pr is null)
+        if (pr is null)
         {
             handle.SubmitError = "Json Error";
             return;
-        }    
+        }
         handle.SubmitCode = int.Parse(pr.ProcessCode!);
         handle.SubmitError = pr.ProcessMessage;
     }
@@ -364,6 +364,36 @@ public class DirectReporter
         }
 
         Debug.WriteLine("==========================================");
+    }
+
+
+    public static string GetStatusMessage(string? code)
+    {
+        return code switch
+        {
+            "00" => "直连报送成功",
+            "01" => "鉴权错误",
+            "02" => "直连机构不存在",
+            "03" => "报告主体未设置或设置有误",
+            "04" => "机构未启用直连报送",
+            "05" => "未支持的报告类型",
+            "06" => "错误的报告截止日",
+            "07" => "无法自动创建报告",
+            "08" => "业务数据格式错误，无法解析",
+            "10" => "报告已提交，无法重复提交，请到协会端处理",
+            "11" => "数据校验错误，请修改后重报。可到协会端查看，定位错误数据。",
+            "12" => "数据校验警告提示，请修改后重报，或确认无误后再点击确认报送。",
+            "21" => "报告文件校验码验证错误",
+            "22" => "上报过于频繁",
+            "23" => "XBRL文件名错误",
+            "24" => "报送确认时间太短",
+            "90" => "直连报送已超时，请重报",
+            "91" => "直连接口调用被临时禁用",
+            "99" => "程序异常：XXXX，请联系系统管理员，建议先协会端手工处理。",
+            "100" => "直连报送正在处理中",
+            "101" => "操作机构名称必填写",
+            _ => $"未知状态码：{code}"
+        };
     }
 }
 
