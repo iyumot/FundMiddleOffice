@@ -86,13 +86,10 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
         if (flow.SupplementaryFile?.Files.Any() ?? false)
             ModifyBySupplementary = true;
 
-        Contract.SpecificFileName = x =>
-        {
-            using var db = DbHelper.Base();
-            var fund = db.GetCollection<Fund>().FindById(FundId);
+        using var db = DbHelper.Base();
+        var fund = db.GetCollection<Fund>().FindById(FundId).Name;
 
-            return $"{fund.Name}_基金合同_{Date:yyyy年MM月dd日}{x}";
-        };
+        Contract.SpecificFileName = x => $"{fund}_基金合同_{Date:yyyy年MM月dd日}{x}";
 
 
         ///补充协议
@@ -107,11 +104,16 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
         RegistrationLetter.FileChanged += f => SaveFileChanged(new { RegistrationLetter = f });
 
 
-        Announcement = new(flow.Announcement) { Label = "变更公告", Filter = "文本|*.docx;*.doc;*.pdf" };
+        Announcement = new(flow.Announcement) { Label = "变更公告", Filter = "文本|*.docx;*.doc;*.pdf", SpecificFileName = x => $"{fund}_变更公告_{Date:yyyy年MM月dd日}{x}" };
         Announcement.FileChanged += f => SaveFileChanged(new { Announcement = f });
+        Announcement.Normal.SpecificFileName = Announcement.SpecificFileName;
+        Announcement.Another.SpecificFileName = Announcement.SpecificFileName;
 
-        CommitmentLetter = new(flow.CommitmentLetter) { Label = "信息变更承诺函", Filter = "文本|*.docx;*.doc;*.pdf" };
+
+        CommitmentLetter = new(flow.CommitmentLetter) { Label = "信息变更承诺函", Filter = "文本|*.docx;*.doc;*.pdf", SpecificFileName = x => $"{fund}_信息变更承诺函_{Date:yyyy年MM月dd日}{x}" };
         CommitmentLetter.FileChanged += f => SaveFileChanged(new { CommitmentLetter = f });
+
+        CommitmentLetter.Another.SpecificFileName = CommitmentLetter.SpecificFileName;
 
 
         //SignedSupplementary = new()
