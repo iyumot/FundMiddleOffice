@@ -90,7 +90,7 @@ public partial class ContractModifyFlowViewModel : ContractRelatedFlowViewModel,
         var fund = db.GetCollection<Fund>().FindById(FundId).Name;
 
         Contract.SpecificFileName = x => $"{fund}_基金合同_{Date:yyyy年MM月dd日}{x}";
-
+        Contract.FileChanged += f => SaveFileChanged(new { ContractFile = f });
 
         ///补充协议
         SupplementaryFile = new(flow.SupplementaryFile) { Label = "补充协议", Filter = "文本|*.docx;*.doc;*.pdf" };
