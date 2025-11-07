@@ -54,6 +54,11 @@
                                 Foreground="Lime"
                                 ToolTip="查看" />
                             <Button
+                                hc:IconElement.Geometry="{StaticResource f.signature}"
+                                Command="{Binding RenameCommand}"
+                                Foreground="Orange"
+                                ToolTip="重命名" />
+                            <Button
                                 hc:IconElement.Geometry="{StaticResource f.clone}"
                                 Command="{Binding CopyCommand}"
                                 Foreground="RoyalBlue"
@@ -117,6 +122,11 @@
                                 Command="{Binding ViewCommand}"
                                 Foreground="Lime"
                                 ToolTip="查看" />
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.signature}"
+                                Command="{Binding RenameCommand}"
+                                Foreground="Orange"
+                                ToolTip="重命名" />
                             <Button
                                 hc:IconElement.Geometry="{StaticResource f.clone}"
                                 Command="{Binding CopyCommand}"
@@ -198,6 +208,11 @@
                                 Command="{Binding ViewCommand}"
                                 Foreground="Lime"
                                 ToolTip="查看" />
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.signature}"
+                                Command="{Binding RenameCommand}"
+                                Foreground="Orange"
+                                ToolTip="重命名" />
                             <Button
                                 hc:IconElement.Geometry="{StaticResource f.clone}"
                                 Command="{Binding CopyCommand}"
@@ -298,6 +313,11 @@
                                 Command="{Binding ViewCommand}"
                                 Foreground="Lime"
                                 ToolTip="查看" />
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.signature}"
+                                Command="{Binding RenameCommand}"
+                                Foreground="Orange"
+                                ToolTip="重命名" />
                             <Button
                                 hc:IconElement.Geometry="{StaticResource f.clone}"
                                 Command="{Binding CopyCommand}"

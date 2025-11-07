@@ -156,6 +156,8 @@ public partial class ReadOnlyFileMetaViewModel : ObservableObject
         }
         catch (Exception e) { LogEx.Error(e); WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, "文件另存为失败")); }
     }
+
+    
 }
 
 
@@ -215,10 +217,34 @@ public partial class FileMetaViewModel : ReadOnlyFileMetaViewModel
         OnMetaChanged();
     }
 
+    [RelayCommand]
+    public void Rename()
+    {
+        if (Meta is null) return;
+
+        var wnd = new RenameWindow();
+        RenameWindowViewModel vm = new();
+        wnd.DataContext = vm;
+
+        var ext = Path.GetExtension(Name);
+        vm.NewName = SpecificFileName is null ? Name : SpecificFileName(ext);
+
+        wnd.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        wnd.Owner = Application.Current.MainWindow;
+        if (true == wnd.ShowDialog())
+        {
+            var name = vm.NewName;
+            if (!Path.HasExtension(name))
+                name += ext;
+
+            Meta = Meta with { Name = name };
+            OnMetaChanged();
+        }
+    }
 
     protected virtual void OnMetaChanged()
     {
-        ChooseCommand.NotifyCanExecuteChanged(); 
+        ChooseCommand.NotifyCanExecuteChanged();
         MetaChanged?.Invoke(this);
     }
 }
@@ -336,7 +362,7 @@ public partial class MultiFileViewModel : ObservableObject
     {
         Label = multiSealed?.Label;
         if (multiSealed?.Files is not null)
-            Files = [.. multiSealed.Files.Where(x=>x is not null).Select(x => new FileMetaViewModel { Meta = x })];
+            Files = [.. multiSealed.Files.Where(x => x is not null).Select(x => new FileMetaViewModel { Meta = x })];
         else Files = [];
 
         foreach (var file in Files)
