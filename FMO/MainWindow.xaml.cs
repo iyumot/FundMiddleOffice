@@ -120,7 +120,8 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                     new MainMenu { Title = "信批", IconBrush = Brushes.OliveDrab, Command = OpenPageCommand, Parameter = "Disclosure", Icon = GetGeometry("f.disclosure")},
                     new MainMenu { Title = "平台", IconBrush = Brushes.Brown, Command = OpenPageCommand, Parameter = "Trustee", Icon = GetGeometry("f.infinity")},
                     new MainMenu { Title = "任务", IconBrush = Brushes.DarkOrchid, Command = OpenPageCommand, Parameter = "Task", Icon = GetGeometry("f.bolt")},
-                    new MainMenu { Title = "报表", IconBrush = Brushes.RoyalBlue, Command = OpenPageCommand, Parameter = "Statement", Icon = GetGeometry("f.square-poll-vertical")},  ];
+                    new MainMenu { Title = "报表", IconBrush = Brushes.RoyalBlue, Command = OpenPageCommand, Parameter = "Statement", Icon = GetGeometry("f.square-poll-vertical")},
+                    new MainMenu { Title = "法规", IconBrush = Brushes.OrangeRed, Command = OpenPageCommand, Parameter = "Law", Icon = GetGeometry("f.scale-balanced")},  ];
 
 
         Pages = new ObservableCollection<TabItemInfo>([new TabItemInfo { Header = "首页", IsCloseable = false, Content = new HomePage() }]);
@@ -352,6 +353,18 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                     break;
                 }
 
+            case "Law":
+                {
+                    var page = Pages.FirstOrDefault(x => x.Content is LawPage);
+                    if (page is null)
+                    {
+                        page = new TabItemInfo { Header = "法律法规", Background = Brushes.OrangeRed, HeaderBrush = Brushes.White, Content = new LawPage() };
+                        Pages.Add(page);
+                    }
+
+                    page.IsSelected = true;
+                    break;
+                }
 
 
             default:
