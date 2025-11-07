@@ -149,6 +149,8 @@ public partial class ReadOnlyFileMetaViewModel : ObservableObject
         {
             var d = new SaveFileDialog();
             d.FileName = Name!;
+            d.DefaultExt = Path.GetExtension(Name!);
+            d.AddExtension = true;
             if (d.ShowDialog() == true)
                 File.Copy(@$"files\hardlink\{Id}", d.FileName);
         }
