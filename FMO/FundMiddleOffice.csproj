@@ -69,6 +69,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="res\laws.db" />
     <None Remove="res\logo.ico" />
     <None Remove="res\logo2.ico" />
     <None Remove="res\securitycompany.txt" />
@@ -117,6 +118,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <Resource Include="res\laws.db" />
     <Resource Include="res\logo.ico" />
     <Resource Include="res\futurecompany.txt" />
     <Resource Include="res\securitycompany.txt" />

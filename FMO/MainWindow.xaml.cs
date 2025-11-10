@@ -121,7 +121,7 @@ public partial class MainWindowViewModel : ObservableRecipient, IRecipient<strin
                     new MainMenu { Title = "平台", IconBrush = Brushes.Brown, Command = OpenPageCommand, Parameter = "Trustee", Icon = GetGeometry("f.infinity")},
                     new MainMenu { Title = "任务", IconBrush = Brushes.DarkOrchid, Command = OpenPageCommand, Parameter = "Task", Icon = GetGeometry("f.bolt")},
                     new MainMenu { Title = "报表", IconBrush = Brushes.RoyalBlue, Command = OpenPageCommand, Parameter = "Statement", Icon = GetGeometry("f.square-poll-vertical")},
-                    new MainMenu { Title = "法规", IconBrush = Brushes.OrangeRed, Command = OpenPageCommand, Parameter = "Law", Icon = GetGeometry("f.scale-balanced")},  ];
+               /*     new MainMenu { Title = "法规", IconBrush = Brushes.OrangeRed, Command = OpenPageCommand, Parameter = "Law", Icon = GetGeometry("f.scale-balanced")},  */];
 
 
         Pages = new ObservableCollection<TabItemInfo>([new TabItemInfo { Header = "首页", IsCloseable = false, Content = new HomePage() }]);
