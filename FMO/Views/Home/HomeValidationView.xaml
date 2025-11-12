@@ -47,7 +47,7 @@
 
         <local:ValidationItemView
             DataContext="{Binding FundScaleWarn.View}"
-            Header="连续交易日低于500万"
+            Header="连续30+交易日低于500万"
             TipTemplate="{StaticResource FundScaleWarn}" />
     </hc:UniformSpacingPanel>
 </UserControl>
