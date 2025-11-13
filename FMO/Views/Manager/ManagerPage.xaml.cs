@@ -730,6 +730,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         };
 
         PolicyDocuments.Add(item);
+        IsAddingNewPolicy = false;
     }
 
     private OwnershipItem Parse(int institutionId, IList<IEntity> per, IEnumerable<Ownership> os, OwnershipItem oi)
