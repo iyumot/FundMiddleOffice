@@ -19,6 +19,15 @@
         <Setter Property="TextAlignment" Value="Center" />
     </Style>
 
+    <Style x:Key="StopDateText" TargetType="TextBlock">
+        <Setter Property="TextAlignment" Value="Center" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Context.PurchaseLimited}" Value="true">
+                <Setter Property="Foreground" Value="Red" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
 
     <Style
         x:Key="CenterColumnHeader"
@@ -268,6 +277,35 @@
     </DataTemplate>
 
 
+    <DataTemplate x:Key="FundStopPurchase">
+        <StackPanel>
+            <TextBlock Text="以下日期均为达到限制的下一个交易日" />
+            <DataGrid
+                AutoGenerateColumns="False"
+                ColumnHeaderStyle="{StaticResource CenterColumnHeader}"
+                IsReadOnly="True"
+                ItemsSource="{Binding .}"
+                Style="{StaticResource DataGrid.NoSelect}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn
+                        Binding="{Binding Context.FundName}"
+                        ElementStyle="{StaticResource LeftText}"
+                        Header="基金" />
+
+                    <DataGridTextColumn
+                        Width="100"
+                        Binding="{Binding Context.LimitedDate, StringFormat=yyyy/MM/dd}"
+                        ElementStyle="{StaticResource StopDateText}"
+                        Header="禁止申购" />
+
+                    <DataGridTextColumn
+                        Binding="{Binding Context.ClearDate, StringFormat=yyyy/MM/dd, Converter={StaticResource ZeroToBlankConverter}}"
+                        ElementStyle="{StaticResource CenterText}"
+                        Header="预估清盘" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+    </DataTemplate>
 
 
 
