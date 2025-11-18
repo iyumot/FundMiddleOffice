@@ -5,7 +5,7 @@ namespace FMO.Utilities;
 
 
 
-public record FundStopPurchaseContext(string FundName, bool PurchaseLimited, DateOnly LimitedDate, DateOnly? ClearDate);
+public record FundStopPurchaseContext(string FundName, bool PurchaseLimited, decimal DailyAverage, DateOnly LimitedDate, DateOnly? ClearDate);
 
 
 /// <summary>
@@ -35,7 +35,7 @@ public class FundStopPurchaseRule : VerifyRule<DailyValue>
 
             // 合并，缺失的值=0
             var dys = db.GetDailyCollection(f.Id).Query().Where(x => x.Date >= begin).Select(x => new { x.Date, x.NetAsset }).ToList();
-            var fdys = from d in dys join t in tradingdays on d.Date equals t into r from x in r.DefaultIfEmpty() orderby d.Date select (d.Date, d.NetAsset);
+            var fdys = from t in tradingdays join d in dys on t equals d.Date into r from x in r.DefaultIfEmpty() orderby t select (Date: t, NetAsset: x?.NetAsset ?? 0);
 
             var dates = fdys.Select(x => x.Date).ToArray();
             if (dates.Length == 0) continue;
@@ -51,7 +51,7 @@ public class FundStopPurchaseRule : VerifyRule<DailyValue>
                 var tip = new DataTip<FundStopPurchaseContext>()
                 {
                     Tags = ["Fund", $"Fund{f.Id}", nameof(FundStopPurchaseRule)],
-                    _Context = new FundStopPurchaseContext(f.Name, fundLimit.PurchaseLimited, fundLimit.PotentialLimitDate, fundLimit.PotentialClearDate == default ? null : fundLimit.PotentialClearDate)
+                    _Context = new FundStopPurchaseContext(f.Name, fundLimit.PurchaseLimited, fundLimit.EstimatedDailyAssets, fundLimit.PotentialLimitDate, fundLimit.PotentialClearDate == default ? null : fundLimit.PotentialClearDate)
                 };
                 Tips.TryAdd(f.Id, tip);
                 Send(tip);
@@ -71,8 +71,6 @@ public class FundStopPurchaseRule : VerifyRule<DailyValue>
     private void Process(FundLimit limit, DateOnly[] dates, decimal[] assets)
     {
         int currentYear = DateTime.Now.Year;
-        decimal totalAsset = 0;
-        int dayCnt = 0;
         DateOnly begin = new DateOnly(2024, 8, 1);
 
         for (int i = 0; i < dates.Length; i++)
@@ -80,16 +78,16 @@ public class FundStopPurchaseRule : VerifyRule<DailyValue>
             var date = dates[i];
             var asset = assets[i];
 
+            if (asset != 0)
+            {
+                limit.TotalAsset += asset;
+                ++limit.DaysThisYear;
+            }
+
             if (!limit.PurchaseLimited)
             {
                 if (asset == 0)
                     limit.DataMissing = true;
-
-                if (asset != 0)
-                {
-                    totalAsset += asset;
-                    ++dayCnt;
-                }
 
                 // 连续60天
                 if (limit.PotentialLimitDate.Year > 2023 && date >= limit.PotentialLimitDate)
@@ -97,14 +95,14 @@ public class FundStopPurchaseRule : VerifyRule<DailyValue>
                     limit.PurchaseLimited = true;
                     limit.LimitDate = date;
                 }
-                else if (date >= begin && asset < Threshold && limit.LimitBaseDate == default)
+                else if (date >= begin && asset != 0 && asset < Threshold && limit.LimitBaseDate == default)
                 {
                     limit.LimitBaseDate = date;
                     limit.PotentialLimitDate = Days.NextTradingDay(date, 60);
                 }
                 else if (date >= begin && asset >= Threshold && limit.LimitBaseDate != default)
                 {
-                    limit.LimitBaseDate = date;
+                    limit.LimitBaseDate = default;
                     limit.PotentialLimitDate = default;
                 }
 
@@ -115,7 +113,7 @@ public class FundStopPurchaseRule : VerifyRule<DailyValue>
                     // 历史年度
                     if (date.Year != currentYear)
                     {
-                        var avg = totalAsset / dayCnt;
+                        var avg = limit.TotalAsset / limit.DaysThisYear;
                         if (avg < Threshold)
                         {
                             limit.PurchaseLimited = true;
@@ -123,8 +121,8 @@ public class FundStopPurchaseRule : VerifyRule<DailyValue>
                         }
                     }
 
-                    totalAsset = 0;
-                    dayCnt = 0;
+                    limit.TotalAsset = 0;
+                    limit.DaysThisYear = 0;
                 }
             }
 
@@ -144,11 +142,10 @@ public class FundStopPurchaseRule : VerifyRule<DailyValue>
         }
 
         // 更新年度平均
-        if (!limit.PurchaseLimited)
-        {
-            limit.TotalAsset = totalAsset;
-            limit.DaysThisYear = dayCnt;
-        }
+
+        var remaindays = Days.CountTradingDays(dates.Last(), new DateOnly(currentYear, 12, 31));
+        limit.EstimatedDailyAssets = (limit.TotalAsset + assets.Last(x => x != 0) * remaindays) / (limit.DaysThisYear + remaindays) / 10000;
+
 
         limit.CheckDate = dates.Last();
     }
@@ -258,7 +255,7 @@ public class FundStopPurchaseRule : VerifyRule<DailyValue>
                     var tip = new DataTip<FundStopPurchaseContext>()
                     {
                         Tags = ["Fund", $"Fund{f.Id}", nameof(FundStopPurchaseRule)],
-                        _Context = new FundStopPurchaseContext(f.Name, fundLimit.PurchaseLimited, fundLimit.PotentialLimitDate, fundLimit.PotentialClearDate == default ? null : fundLimit.PotentialClearDate)
+                        _Context = new FundStopPurchaseContext(f.Name, fundLimit.PurchaseLimited, fundLimit.EstimatedDailyAssets, fundLimit.PotentialLimitDate, fundLimit.PotentialClearDate == default ? null : fundLimit.PotentialClearDate)
                     };
                     Tips.TryAdd(f.Id, tip);
                     Send(tip);
@@ -283,7 +280,7 @@ public class FundStopPurchaseRule : VerifyRule<DailyValue>
                     var tip = new DataTip<FundStopPurchaseContext>()
                     {
                         Tags = ["Fund", $"Fund{f.Id}", nameof(FundStopPurchaseRule)],
-                        _Context = new FundStopPurchaseContext(f.Name, fundLimit.PurchaseLimited, fundLimit.PotentialLimitDate, fundLimit.PotentialClearDate == default ? null : fundLimit.PotentialClearDate)
+                        _Context = new FundStopPurchaseContext(f.Name, fundLimit.PurchaseLimited, fundLimit.EstimatedDailyAssets, fundLimit.PotentialLimitDate, fundLimit.PotentialClearDate == default ? null : fundLimit.PotentialClearDate)
                     };
 
                     Tips.TryAdd(f.Id, tip);

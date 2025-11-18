@@ -76,4 +76,9 @@ public class FundLimit
     /// 当年交易日数
     /// </summary>
     public int DaysThisYear { get; set; }
+
+    /// <summary>
+    /// 预估年度日均
+    /// </summary>
+    public decimal EstimatedDailyAssets { get; set; }
 }

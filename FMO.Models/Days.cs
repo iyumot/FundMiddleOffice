@@ -109,18 +109,24 @@ public static class Days
 
     public static DateOnly NextTradingDay(DateTime date) => NextTradingDay(DateOnly.FromDateTime(date));
 
-    //public static int CountTradingDays(DateOnly start, DateOnly end)
-    //{
-    //    if (start > end) return 0;
+    /// <summary>
+    /// 包含start end
+    /// </summary>
+    /// <param name="start"></param>
+    /// <param name="end"></param>
+    /// <returns></returns>
+    public static int CountTradingDays(DateOnly start, DateOnly end)
+    {
+        if (start > end) return 0;
 
-    //    int s = Dates.BinarySearch(start);
-    //    int e = Dates.BinarySearch(end);
+        int s = Dates.BinarySearch(start);
+        int e = Dates.BinarySearch(end);
 
-    //    s = s < 0 ? ~s : s;
-    //    e = e < 0 ? ~e : e;
+        s = s < 0 ? ~s : s;
+        e = e < 0 ? ~e : e + 1;
 
-    //    return Data[s..e].Count(x => x.Flag.HasFlag(DayFlag.Trade));
-    //}
+        return Data[s..e].Count(x => x.Flag.HasFlag(DayFlag.Trade));
+    }
 
     public static IList<DateOnly> TradingDaysBetween(DateOnly start, DateOnly end)
     {

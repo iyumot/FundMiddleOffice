@@ -293,6 +293,11 @@
                         Header="基金" />
 
                     <DataGridTextColumn
+                        Binding="{Binding Context.DailyAverage, StringFormat=0.00}"
+                        ElementStyle="{StaticResource CenterText}"
+                        Header="预估年度日均" />
+
+                    <DataGridTextColumn
                         Width="100"
                         Binding="{Binding Context.LimitedDate, StringFormat=yyyy/MM/dd}"
                         ElementStyle="{StaticResource StopDateText}"
