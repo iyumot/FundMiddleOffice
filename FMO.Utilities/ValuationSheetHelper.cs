@@ -171,18 +171,19 @@ public static class ValuationSheetHelper
                 Rowid_AccountStart = i;
             }
 
+            if (tmp.Length > 20) continue;
 
-            if (tmp.Trim() == "实收资本")
+            if (tmp.Trim() == "实收资本" && Rowid_PaidInCapital == 0)
             {
                 Rowid_PaidInCapital = i;
                 continue;
             }
-            if (tmp.Contains("资产净值"))
+            if (tmp.Contains("资产净值") && Rowid_Equity == 0)
             {
                 Rowid_Equity = i;
                 continue;
             }
-            if (Regex.IsMatch(tmp, @"资产\w*合计"))
+            if (Regex.IsMatch(tmp, @"资产\w*合计") && Rowid_Assets == 0)
             {
                 Rowid_Assets = i;
                 continue;
