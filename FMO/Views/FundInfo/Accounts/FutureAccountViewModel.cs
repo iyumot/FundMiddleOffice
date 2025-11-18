@@ -2,11 +2,8 @@
 using CommunityToolkit.Mvvm.Input;
 using FMO.Models;
 using FMO.Shared;
-using FMO.TPL;
 using FMO.Utilities;
 using LiteDB;
-using Microsoft.Win32;
-using Serilog;
 using System.IO;
 
 namespace FMO;
@@ -54,10 +51,10 @@ public partial class FutureAccountViewModel : ObservableObject
 
                 BankLetter = new(common.BankLetter);
                 BankLetter.FileChanged += f => UpdateFile(new { BankLetter = f });
-                 
 
-                ServiceAgreement = new (common.ServiceAgreement);
-                ServiceAgreement.FileChanged += f => UpdateFile(new { ServiceAgreement = f }); 
+
+                ServiceAgreement = new(common.ServiceAgreement);
+                ServiceAgreement.FileChanged += f => UpdateFile(new { ServiceAgreement = f });
 
                 AccountLetter = new(common.AccountLetter);
                 AccountLetter.FileChanged += f => UpdateFile(new { AccountLetter = f });
@@ -69,7 +66,12 @@ public partial class FutureAccountViewModel : ObservableObject
         {
             if (Id == 0) return; // 新建时不保存
             using var db = DbHelper.Base();
-            db.GetCollection<FundAnnouncement>().UpdateMany(BsonMapper.Global.ToDocument(f).ToString(), $"_id={Id}");
+
+            var acc = db.GetCollection<FutureAccount>().FindById(Id);
+             
+            acc.Common!.UpdateFrom(f);
+            db.GetCollection<FutureAccount>().Update(acc);
+            //db.GetCollection<FutureAccount>().UpdateMany(BsonMapper.Global.ToDocument(new { Common = f }).ToString(), $"_id={Id}");
         }
 
         [ObservableProperty]
@@ -117,7 +119,7 @@ public partial class FutureAccountViewModel : ObservableObject
         public int FundId { get; }
         public string? Company { get; }
 
- 
+
 
 
         [RelayCommand]
@@ -213,7 +215,7 @@ public partial class FutureAccountViewModel : ObservableObject
             IsReadOnly = true;
         }
 
-     
+
     }
 
 

@@ -286,7 +286,14 @@ public partial class BasicAccountViewModel : ObservableObject
     {
         if (Id == 0) return; // 新建时不保存
         using var db = DbHelper.Base();
-        db.GetCollection<FundAnnouncement>().UpdateMany(BsonMapper.Global.ToDocument(f).ToString(), $"_id={Id}");
+        var acc = db.GetCollection<StockAccount>().FindById(Id);
+        var eve = Name == acc.Common!.Name ? acc.Common : acc.Credit;
+        if(eve is null) return;
+
+        eve!.UpdateFrom(f);
+        db.GetCollection<StockAccount>().Update(acc);
+        
+        //UpdateMany(BsonMapper.Global.ToDocument(f).ToString(), $"_id={Id}");
     }
 
     [ObservableProperty]
