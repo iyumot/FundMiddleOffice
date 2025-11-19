@@ -113,80 +113,89 @@
             <Button Command="{Binding TestCommand}" Content="test" />-->
         </DockPanel>
 
-        <ListBox
-            BorderThickness="0"
-            ItemsSource="{Binding Classes}"
-            Style="{StaticResource ListBoxCustom}">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <DockPanel>
-                        <DockPanel DockPanel.Dock="Top">
-                            <TextBlock FontSize="16" Text="{Binding Name}" />
-                            <TextBlock
-                                Margin="10,0"
-                                VerticalAlignment="Center"
-                                Text="{Binding Progress, StringFormat={}{0}%}" />
-                        </DockPanel>
-
-                        <Border Margin="15,0,0,0">
-                            <DockPanel>
-                                <ListBox
-                                    BorderThickness="0"
-                                    DockPanel.Dock="Top"
-                                    ItemsSource="{Binding Chapters}"
-                                    Style="{StaticResource ListBoxCustom}">
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <hc:SimplePanel>
-                                                <ProgressBar
-                                                    x:Name="p"
-                                                    Margin="2"
-                                                    hc:VisualElement.Text="{Binding VideoTime}"
-                                                    Value="{Binding VideoProgress}" />
-                                                <TextBlock
-                                                    x:Name="t"
-                                                    Margin="10,0"
-                                                    VerticalAlignment="Center"
-                                                    Text="{Binding Name}" />
-                                            </hc:SimplePanel>
-                                            <DataTemplate.Triggers>
-                                                <DataTrigger Binding="{Binding Learned}" Value="True">
-                                                    <Setter TargetName="p" Property="Background" Value="Green" />
-                                                    <Setter TargetName="t" Property="Foreground" Value="White" />
-                                                </DataTrigger>
-                                            </DataTemplate.Triggers>
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>
-
-                                <ListBox
-                                    BorderThickness="0"
-                                    ItemsSource="{Binding Tests}"
-                                    Style="{StaticResource ListBoxCustom}">
-                                    <ListBox.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <WrapPanel IsItemsHost="True" />
-                                        </ItemsPanelTemplate>
-                                    </ListBox.ItemsPanel>
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border x:Name="p">
-                                                <TextBlock Margin="10,2" Text="本章测验" />
-                                            </Border>
-                                            <DataTemplate.Triggers>
-                                                <DataTrigger Binding="{Binding Score}" Value="100">
-                                                    <Setter TargetName="p" Property="Background" Value="Green" />
-                                                    <Setter Property="TextElement.Foreground" Value="White" />
-                                                </DataTrigger>
-                                            </DataTemplate.Triggers>
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>
+        <Grid>
+            <ListBox
+                BorderThickness="0"
+                ItemsSource="{Binding Classes}"
+                Style="{StaticResource ListBoxCustom}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel>
+                            <DockPanel DockPanel.Dock="Top">
+                                <TextBlock FontSize="16" Text="{Binding Name}" />
+                                <TextBlock
+                                    Margin="10,0"
+                                    VerticalAlignment="Center"
+                                    Text="{Binding Progress, StringFormat={}{0}%}" />
                             </DockPanel>
-                        </Border>
-                    </DockPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+
+                            <Border Margin="15,0,0,0">
+                                <DockPanel>
+                                    <ListBox
+                                        BorderThickness="0"
+                                        DockPanel.Dock="Top"
+                                        ItemsSource="{Binding Chapters}"
+                                        Style="{StaticResource ListBoxCustom}">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <hc:SimplePanel>
+                                                    <ProgressBar
+                                                        x:Name="p"
+                                                        Margin="2"
+                                                        hc:VisualElement.Text="{Binding VideoTime}"
+                                                        Value="{Binding VideoProgress}" />
+                                                    <TextBlock
+                                                        x:Name="t"
+                                                        Margin="10,0"
+                                                        VerticalAlignment="Center"
+                                                        Text="{Binding Name}" />
+                                                </hc:SimplePanel>
+                                                <DataTemplate.Triggers>
+                                                    <DataTrigger Binding="{Binding Learned}" Value="True">
+                                                        <Setter TargetName="p" Property="Background" Value="Green" />
+                                                        <Setter TargetName="t" Property="Foreground" Value="White" />
+                                                    </DataTrigger>
+                                                </DataTemplate.Triggers>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+
+                                    <ListBox
+                                        BorderThickness="0"
+                                        ItemsSource="{Binding Tests}"
+                                        Style="{StaticResource ListBoxCustom}">
+                                        <ListBox.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel IsItemsHost="True" />
+                                            </ItemsPanelTemplate>
+                                        </ListBox.ItemsPanel>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border x:Name="p">
+                                                    <TextBlock Margin="10,2" Text="本章测验" />
+                                                </Border>
+                                                <DataTemplate.Triggers>
+                                                    <DataTrigger Binding="{Binding Score}" Value="100">
+                                                        <Setter TargetName="p" Property="Background" Value="Green" />
+                                                        <Setter Property="TextElement.Foreground" Value="White" />
+                                                    </DataTrigger>
+                                                </DataTemplate.Triggers>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </DockPanel>
+                            </Border>
+                        </DockPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <ScrollViewer HorizontalAlignment="Right" VerticalScrollBarVisibility="Hidden">
+                <StackPanel
+                    Margin="0,10,10,10"
+                    VerticalAlignment="Top"
+                    hc:Growl.GrowlParent="True" />
+            </ScrollViewer>
+        </Grid>
     </DockPanel>
 </Window>

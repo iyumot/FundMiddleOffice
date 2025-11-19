@@ -334,13 +334,9 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         var browser = await Operator!.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Channel = "msedge", Headless = false });
 
-        if (File.Exists("files\\peixun\\learn.json"))
-        {
-            Context = await browser.NewContextAsync(new BrowserNewContextOptions { StorageStatePath = "files\\peixun\\learn.json" });
-        }
-        else
-            Context = await browser.NewContextAsync();
-        var page = await Context.NewPageAsync();
+        var context = File.Exists("files\\peixun\\learn.json") ? await browser.NewContextAsync(new BrowserNewContextOptions { StorageStatePath = "files\\peixun\\learn.json" }) : await browser.NewContextAsync();
+
+        var page = await context.NewPageAsync();
         await page.GotoAsync("https://peixun.amac.org.cn/");
     }
 
