@@ -5,6 +5,7 @@ using Microsoft.Playwright;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Windows;
 
 namespace FMO.LearnAssist;
@@ -278,11 +279,29 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
                     var state = await ch.Locator("div.right >> a").First.InnerTextAsync();
                     var url = await ch.Locator("div.right >> a").First.GetAttributeAsync("data-href");
 
-                    cs.Add(new ChapterInfo { Name = name, Learned = state == "已学习", Url = url });
+                    ChapterInfo chapter = new() { Name = name, Learned = state == "已学习", Url = url };
+                    cs.Add(chapter);
+                }
+
+                // 获取测验
+                List<TestInfo> testList = new();
+                var tests = page.Locator("div.test-btn-box");
+                if (await tests.CountAsync() > 0)
+                {
+                    //是否完成
+                    foreach (var item in await tests.AllAsync())
+                    {
+                        var box = await item.Locator("div.hf_bg").BoundingBoxAsync(new LocatorBoundingBoxOptions { Timeout = 100 });
+
+                        var url = await item.Locator("a.a1").GetAttributeAsync("href");
+                        var @new = await item.Locator("a.a2").CountAsync() == 0;
+                        testList.Add(new TestInfo { Url = url!, Score = @new ? 0 : box is null ? 100 : 0 });
+                    }
+
                 }
 
                 current.Chapters = cs.ToArray();
-
+                current.Tests = testList.ToArray();
 
                 for (int i = 0; i < cs.Count; i++)
                 {
@@ -292,12 +311,37 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
                     await LearnSingleClass(ch, page);
                 }
+
+                // 做题
+
+                foreach (var item in testList)
+                {
+                    if (item.Score == 100) continue;
+
+                    await DoTest(page, item);
+                }
             }
             catch (Exception e)
             {
                 Toast.Error($"{e}");
             }
         }
+    }
+
+
+    [RelayCommand]
+    public async Task Pick()
+    {
+        var browser = await Operator!.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Channel = "msedge", Headless = false });
+
+        if (File.Exists("files\\peixun\\learn.json"))
+        {
+            Context = await browser.NewContextAsync(new BrowserNewContextOptions { StorageStatePath = "files\\peixun\\learn.json" });
+        }
+        else
+            Context = await browser.NewContextAsync();
+        var page = await Context.NewPageAsync();
+        await page.GotoAsync("https://peixun.amac.org.cn/");
     }
 
     [RelayCommand]
@@ -490,70 +534,161 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private async Task SkipTips(IPage page)
     {
-        for (int i = 0; i < 10; i++)
+        try
         {
-            var locator = page.Locator("span.next");
-            foreach (var item in await locator.AllAsync())
+            for (int i = 0; i < 10; i++)
             {
-                try
+                var locator = page.Locator("span.next");
+                foreach (var item in await locator.AllAsync())
                 {
-                    if (await item.IsVisibleAsync())
+                    try
                     {
-                        await item.ScrollIntoViewIfNeededAsync(new LocatorScrollIntoViewIfNeededOptions { Timeout = 1000 });
+                        if (await item.IsVisibleAsync())
+                        {
+                            await item.ScrollIntoViewIfNeededAsync(new LocatorScrollIntoViewIfNeededOptions { Timeout = 1000 });
 
-                        await page.WaitForTimeoutAsync(300);
-                        await item.ClickAsync();
-                        break;
+                            await page.WaitForTimeoutAsync(300);
+                            await item.ClickAsync();
+                            break;
+                        }
                     }
+                    catch { }
                 }
-                catch { }
             }
         }
+        catch { }
     }
 
     private int LineNumber([CallerLineNumber] int line = 0) => line;
 
+
+    private async Task DoTest(IPage page, TestInfo ch, int[][]? answers = null)
+    {
+        await page.GotoAsync("https://peixun.amac.org.cn/" + ch.Url);
+
+        await SkipTips(page);
+
+        await page.WaitForTimeoutAsync(1000);
+
+        for (int i = 0; i < 20; i++)
+        {
+            var locator = page.Locator("div.cont-wrap >> div.test >> div.test-cont");
+
+            // 题目类型
+            var type = await locator.Locator("span.test-style").First.InnerTextAsync();
+
+            // 选项
+            var sel = locator.Locator("div.xuanxiang");
+            if (await sel.CountAsync() == 0)
+            {
+                Toast.Warning("无法获取题目选项");
+                return;
+            }
+
+            // 答案
+            var answerStr = await sel.First.GetAttributeAsync("answer");
+            var cans = string.IsNullOrWhiteSpace(answerStr) ? null : answerStr.Split(',').Select(x => int.Parse(x) - 1).ToArray();
+
+            var items = await sel.First.Locator("ul >> li").AllAsync();
+
+            if (answers is null && cans is null)
+            {
+                if (type.Contains("多选"))
+                {
+                    foreach (var item in items)
+                    {
+                        await item.ClickAsync();
+                    }
+                }
+                else await items[Random.Shared.Next(items.Count - 1)].ClickAsync();
+            }
+            else if (answers is not null)
+            {
+                foreach (var id in answers[i])
+                {
+                    await items[id].ClickAsync();
+                }
+            }
+            else
+            {
+                foreach (var id in cans!)
+                {
+                    await items[id].ClickAsync();
+                }
+            }
+
+            await page.WaitForTimeoutAsync(1000);
+
+            locator = page.Locator("div.test >> a").Filter(new LocatorFilterOptions { HasText = "下一题" });
+            if (await locator.CountAsync() > 0 && await locator.First.IsVisibleAsync())
+                await locator.First.ClickAsync();
+            else break;
+        }
+
+        if (page.Locator("div.test >> a").Filter(new LocatorFilterOptions { HasText = "提交测验" }) is ILocator loc && await loc.CountAsync() > 0 && await loc.First.IsVisibleAsync())
+        {
+            await loc.ClickAsync();
+
+            // 检查
+            var locator = page.Locator("div.cir-intro");
+            await locator.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 2000 });
+            var result = await locator.InnerTextAsync();
+            if (result.Contains("100")) //全对
+            {
+                ch.Score = 100;
+                return;
+            }
+
+            if (answers is not null)
+            {
+                Toast.Error("已有答案，但答题错误，请手动答题");
+                return;
+            }
+
+            // 获取答案
+            locator = page.Locator("div.opt-btn >> a").Filter(new LocatorFilterOptions { HasText = "测验回顾" });
+            await locator.ClickAsync();
+
+            try
+            {
+                answers = await GetTestAnswer(page);
+
+                await DoTest(page, ch, answers);
+            }
+            catch
+            {
+                Toast.Error("无法获取答案");
+            }
+        }
+
+
+    }
+
+
+    private async Task<int[][]> GetTestAnswer(IPage page)
+    {
+        List<int[]> results = new();
+
+        while (true)
+        {
+            var loc = page.Locator("div.test >> div.test-result").Filter(new LocatorFilterOptions { HasText = "正确答案是" });
+            var ans = await loc.InnerTextAsync();
+
+            var ansid = Regex.Matches(ans, "[A-Z]").Select(x => x.Value[0] - 'A').ToArray();
+            results.Add(ansid);
+
+            await page.WaitForTimeoutAsync(1000);
+            var locator = page.Locator("div.test >> a").Filter(new LocatorFilterOptions { HasText = "下一题" });
+            if (await locator.CountAsync() > 0 && await locator.First.IsVisibleAsync())
+                await locator.First.ClickAsync();
+            else break;
+        }
+        return results.ToArray();
+    }
 
 
     public void Dispose()
     {
         Operator?.Dispose();
     }
-}
-
-
-
-
-public partial class ClassLearnInfo : ObservableObject
-{
-    public required string Name { get; set; }
-
-
-    [ObservableProperty]
-    public partial decimal Progress { get; set; }
-
-    [ObservableProperty]
-    public partial ChapterInfo[] Chapters { get; set; } = [];
-
-    public string? Url { get; internal set; }
-}
-
-
-public partial class ChapterInfo : ObservableObject
-{
-    public required string Name { get; set; }
-
-    [ObservableProperty]
-    public partial bool Learned { get; set; }
-
-
-    [ObservableProperty]
-    public partial double VideoProgress { get; set; }
-
-
-    [ObservableProperty]
-    public partial string? VideoTime { get; set; }
-
-    public string? Url { get; internal set; }
-
 }
