@@ -306,6 +306,7 @@ public partial class CMS : TrusteeApiBase
 #else
                 var json = await Query(interfaceId, formatedParams);
 #endif
+                LogRun(caller, formatedParams, json);
 
                 try
                 {
