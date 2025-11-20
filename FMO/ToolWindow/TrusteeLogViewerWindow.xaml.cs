@@ -84,6 +84,8 @@ public partial class TrusteeLogViewerWindowViewModel : ObservableObject
 
         Dates = Logs.Select(x => x.Time.Date).Distinct().ToArray();
 
+        OnSelectedDateChanged(Dates.FirstOrDefault());
+        SelectedLog = null;
         //Times = Logs.Select(x => x.Time.TimeOfDay).Distinct().ToArray();
     }
 

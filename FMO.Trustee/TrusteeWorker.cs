@@ -7,6 +7,7 @@ using FMO.Utilities;
 using LiteDB;
 using Serilog;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Runtime.CompilerServices;
 
 namespace FMO.Trustee;
@@ -70,7 +71,10 @@ public partial class TrusteeWorker : ObservableObject
 
     public const string TableRaisingBalance = "api_raising_balance";
 
-
+    /// <summary>
+    /// 每天检查一次Log，太大就清理
+    /// </summary>
+    private DateTime _clearLogTime = default;
 
     internal List<FundTrusteePair> Maps { get; } = new();
 
@@ -740,6 +744,13 @@ public partial class TrusteeWorker : ObservableObject
         var now = DateTime.Now;
         var minuteIndex = now.Ticks / TimeSpan.TicksPerMinute;
 
+        /// 每天检查清理log
+        if ((now - _clearLogTime).Days > 1)
+        {
+            ClearLog();
+            _clearLogTime = now;
+        }
+
         // 是否非工作时间 8-19点
         bool offwork = (now.Hour < 8 || now.Hour >= 19);
 
@@ -787,6 +798,20 @@ public partial class TrusteeWorker : ObservableObject
         db.GetCollection<WorkConfig>().Upsert(workConfig);
     }
 
+
+    private void ClearLog()
+    {
+        using var fs = new FileStream("data\\platformlog.db", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        if (fs.Length > 1024 * 1024 * 500)
+        {
+            var db = new LiteDatabase(@$"FileName=data\platformlog.db;Connection=Shared");
+            // 条目
+            var total = db.GetCollection<TrusteeCallHistory>().Count();
+            var mid = db.GetCollection<TrusteeCallHistory>().Query().Skip(total / 2).Limit(1).FirstOrDefault();
+            if (mid is not null)
+                db.GetCollection<TrusteeCallHistory>().DeleteMany(x => x.Time.Date < mid.Time);
+        }
+    }
 
     private DateOnly StartOfAnyWork()
     {
