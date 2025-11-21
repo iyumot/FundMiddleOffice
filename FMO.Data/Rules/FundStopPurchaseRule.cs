@@ -228,9 +228,9 @@ public class FundStopPurchaseRule : VerifyRule<DailyValue>
         using var db = DbHelper.Base();
         foreach (var fv in DailyValues.GroupBy(x => x.FundId))
         {
-            var limit = db.GetCollection<FundLimit>().FindById(fv.Key);
+            var fundLimit = db.GetCollection<FundLimit>().FindById(fv.Key);
             var f = db.GetCollection<Fund>().FindById(fv.Key);
-            if (limit.DataMissing)
+            if (fundLimit.DataMissing)
             {
                 // 组织数据 
                 var begin = f.SetupDate.Year < 2024 ? new DateOnly(2024, 1, 1) : f.SetupDate;
@@ -242,7 +242,7 @@ public class FundStopPurchaseRule : VerifyRule<DailyValue>
 
                 var dates = fdys.Select(x => x.Date).ToArray();
                 var assets = fdys.Select(x => x.NetAsset).ToArray();
-                FundLimit fundLimit = new() { Id = f.Id };
+                fundLimit = new() { Id = f.Id };
                 Process(fundLimit, dates, assets);
 
                 db.GetCollection<FundLimit>().Upsert(fundLimit);
@@ -263,11 +263,10 @@ public class FundStopPurchaseRule : VerifyRule<DailyValue>
             }
             else
             {
-                var fdys = fv.Where(x => x.Date > limit.CheckDate).OrderBy(x => x.Date).ToArray();
+                var fdys = fv.Where(x => x.Date > fundLimit.CheckDate).OrderBy(x => x.Date).ToArray();
 
                 var dates = fdys.Select(x => x.Date).ToArray();
                 var assets = fdys.Select(x => x.NetAsset).ToArray();
-                FundLimit fundLimit = new() { Id = f.Id };
                 Process(fundLimit, dates, assets);
 
                 db.GetCollection<FundLimit>().Upsert(fundLimit);
