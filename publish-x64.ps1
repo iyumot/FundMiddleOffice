@@ -10,7 +10,6 @@ $NexusRoot = "E:\nexus"
 # 要发布的项目列表
 $ProjectsToPublish = @(
 
-    "FMO.PeiXunAssist",
     "DatabaseViewer",
     "FMO.TemplateManager",
     "FMO.LearnAssist" ,
