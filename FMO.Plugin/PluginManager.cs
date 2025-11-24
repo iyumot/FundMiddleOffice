@@ -20,7 +20,7 @@ public static class PluginManager
     {
         var folder = AppDomain.CurrentDomain.BaseDirectory;
 
-        var directoryInfos = new DirectoryInfo(Path.Combine(folder, "plugins")).GetDirectories();
+        var directoryInfos = new DirectoryInfo ("plugins").GetDirectories();
 
 
         foreach (var di in directoryInfos)
