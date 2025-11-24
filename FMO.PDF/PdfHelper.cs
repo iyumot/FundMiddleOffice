@@ -8,6 +8,9 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 #if TARGET_NET9_WINDOWS
 using System.Windows;
 using System.Windows.Media;

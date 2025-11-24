@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0-windows</TargetFramework>	
+    <TargetFramework>net10.0-windows</TargetFramework>	
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
@@ -94,7 +94,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DatabaseViewer\DatabaseViewer.csproj" />
     <ProjectReference Include="..\FMO.Automation\FMO.Schedule.csproj" />
     <ProjectReference Include="..\FMO.Data\FMO.Data.csproj" />
     <ProjectReference Include="..\FMO.Interop\FMO.IO.AMAC\FMO.IO.AMAC.csproj" />
@@ -106,7 +105,6 @@
     <ProjectReference Include="..\FMO.Plugin\FMO.Plugin.csproj" />
     <ProjectReference Include="..\FMO.Shared\FMO.Shared.csproj" />
     <ProjectReference Include="..\FMO.SourceGenerator\FMO.SourceGenerator.csproj" OutputItemType="Analyzer" />
-    <ProjectReference Include="..\FMO.TemplateManager\FMO.TemplateManager.csproj" />
     <ProjectReference Include="..\FMO.TPL\FMO.TPL.csproj" />
     <ProjectReference Include="..\FMO.Trustee\FMO.Trustee.csproj" />
     <ProjectReference Include="..\FMO.Utilities\FMO.Utilities.csproj" />
