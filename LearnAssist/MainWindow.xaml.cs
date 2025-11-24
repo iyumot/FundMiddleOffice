@@ -688,3 +688,192 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         Operator?.Dispose();
     }
 }
+
+
+public partial class SimulatonViewModel : ObservableObject
+{
+    [ObservableProperty]
+    public partial string? Name { get; set; }
+
+
+    [ObservableProperty]
+    public partial bool IsCheckingLogin { get; set; } = true;
+
+    [ObservableProperty]
+    public partial bool ShowLoginTip { get; set; }
+
+    [ObservableProperty]
+    public partial bool ShowLoginError { get; set; }
+
+
+    [ObservableProperty]
+    public partial bool IsLogin { get; set; }
+
+    [ObservableProperty]
+    public partial int CurrentClass { get; set; }
+
+    [ObservableProperty]
+    public partial int CurrentChapter { get; set; }
+
+    [ObservableProperty]
+    public partial int? CountDown { get; set; }
+
+
+    [ObservableProperty]
+    public partial bool IsLoadingClasses { get; set; }
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(StartCommand))]
+    public partial bool CanStartLearn { get; set; }
+
+    public ObservableCollection<ClassLearnInfo> Classes { get; } = new();
+
+    private bool IsInitialized = false;
+
+
+    [ObservableProperty]
+    public partial decimal? TotalHour { get; private set; }
+
+    [ObservableProperty]
+    public partial decimal? MoralHour { get; private set; }
+
+    [ObservableProperty]
+    public partial decimal? LawHour { get; private set; }
+
+    [ObservableProperty]
+    public partial decimal? SkillHour { get; private set; }
+
+
+    [ObservableProperty]
+    public partial int Year { get; set; }
+
+    public SimulatonViewModel()
+    {
+        Directory.CreateDirectory("data");
+        Directory.CreateDirectory("files\\peixun");
+
+
+        Init();
+
+        IsInitialized = true;
+    }
+
+    private void Init()
+    {
+
+        Task.Run(async () =>
+        {
+
+            Name = "张三";
+
+            IsCheckingLogin = false;
+            IsLogin = true;
+            await GetClassInfo();
+
+            Year = DateTime.Now.Year;
+            GetCurrentYearLearn();
+            IsLoadingClasses = false;
+
+
+            await App.Current.Dispatcher.BeginInvoke(() => CanStartLearn = true);
+
+            // 居中
+            await App.Current.Dispatcher.BeginInvoke(() =>
+            {
+                var wnd = Application.Current.MainWindow;
+                var screen = SystemParameters.WorkArea;
+                wnd.Left = (screen.Width - wnd.Width) / 2 + screen.Left;
+                wnd.Top = (screen.Height - wnd.Height) / 2 + screen.Top;
+            });
+
+        });
+    }
+
+    private void GetCurrentYearLearn()
+    {
+        TotalHour = 15;
+        MoralHour = 5;
+        LawHour = 5;
+        SkillHour = 5;
+    }
+
+    private async Task GetClassInfo()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            await App.Current.Dispatcher.InvokeAsync(() => Classes.Add(new ClassLearnInfo { Name = $"课程{i + 1}", Url = "url", Progress = (decimal)Random.Shared.NextDouble() }));
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanStartLearn))]
+    public async Task Start()
+    {
+        if (Classes?.Count == 0)
+        {
+            Toast.Warning("没有找到任何课程");
+            return;
+        }
+
+
+        foreach (var current in Classes!)
+        {
+            try
+            {
+                // 打开课程页
+                Toast.Info($"开始学习 【{current.Name}】");
+
+                var cs = Enumerable.Range(1, 5).Select(i => new ChapterInfo { Name = $"章节{i}", Learned = false, Url = "url" }).ToList();
+                current.Chapters = cs.ToArray();
+
+                var testList = Enumerable.Range(1, 5).Select(i => new TestInfo { Score = 0, Url = "url" }).ToArray();
+                current.Tests = testList;
+
+                for (int i = 0; i < cs.Count; i++)
+                {
+                    var ch = cs[i];
+
+                    if (ch.Learned) continue;
+
+                    await LearnSingleClass(ch);
+                }
+
+                // 做题
+
+                foreach (var item in testList)
+                {
+                    if (item.Score == 100) continue;
+
+                    await DoTest(item);
+                }
+            }
+            catch (Exception e)
+            {
+                Toast.Error($"{e}");
+            }
+        }
+    }
+
+    private async Task DoTest(TestInfo item)
+    {
+        await Task.Delay(1000);
+        item.Score = 100;
+    }
+
+    private async Task LearnSingleClass(ChapterInfo ch)
+    {
+        var dur = Random.Shared.Next(4000);
+
+
+
+        for (int i = 0; i < 50; i++)
+        {
+            await Task.Delay(100);
+            ch.VideoProgress = (i + 1.0) / 50 * 100;
+            ch.VideoTime = $"{new TimeSpan(0, 0, (int)ch.VideoProgress * dur/100):c} / {new TimeSpan(0, 0, dur)}";
+        }
+
+        ch.Learned = true;
+    }
+
+
+}

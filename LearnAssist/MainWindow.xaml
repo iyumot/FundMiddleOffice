@@ -126,7 +126,7 @@
                                 <TextBlock
                                     Margin="10,0"
                                     VerticalAlignment="Center"
-                                    Text="{Binding Progress, StringFormat={}{0}%}" />
+                                    Text="{Binding Progress, StringFormat=P2}" />
                             </DockPanel>
 
                             <Border Margin="15,0,0,0">
@@ -153,6 +153,8 @@
                                                 <DataTemplate.Triggers>
                                                     <DataTrigger Binding="{Binding Learned}" Value="True">
                                                         <Setter TargetName="p" Property="Background" Value="Green" />
+                                                        <Setter TargetName="p" Property="Value" Value="0" />
+                                                        <Setter TargetName="p" Property="hc:VisualElement.Text" Value="" />
                                                         <Setter TargetName="t" Property="Foreground" Value="White" />
                                                     </DataTrigger>
                                                 </DataTemplate.Triggers>
