@@ -53,14 +53,14 @@ public class CopyableTextBlock : Control
         DependencyProperty.Register("Text", typeof(string), typeof(CopyableTextBlock), new PropertyMetadata(null, ModifyMasked));
 
 
-    internal string MaskedText
+    public string MaskedText
     {
         get { return (string)GetValue(MaskedTextProperty); }
         set { SetValue(MaskedTextProperty, value); }
     }
 
     // Using a DependencyProperty as the backing store for MaskedText.  This enables animation, styling, binding, etc...
-    internal static readonly DependencyProperty MaskedTextProperty =
+    public static readonly DependencyProperty MaskedTextProperty =
         DependencyProperty.Register("MaskedText", typeof(string), typeof(CopyableTextBlock), new PropertyMetadata(null));
 
 
