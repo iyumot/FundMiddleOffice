@@ -10,7 +10,6 @@ $NexusRoot = "E:\nexus"
 # 要发布的项目列表
 $ProjectsToPublish = @(
 
-    "FMO.PeiXunAssist",
     "DatabaseViewer",
     "FMO.TemplateManager",
     "FMO.LearnAssist" ,
@@ -53,7 +52,7 @@ foreach ($projectName in $ProjectsToPublish) {
         # 构造命令行参数
         $args = @(
             "publish", $projectPath,
-            "--framework", "net9.0-windows",
+            "--framework", "net10.0-windows",
             "--runtime", $runtime,
             "--self-contained", "false",
             "--output", $publishPath,

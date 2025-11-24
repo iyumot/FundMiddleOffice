@@ -10,7 +10,6 @@ $SolutionRoot = Get-Location
 $NexusRoot = "D:\fmo"
 
 $ProjectsToPublish = @(
-    "FMO.PeiXunAssist",
     "DatabaseViewer",
     "FMO.FeeCalc",
     "FMO.TemplateManager",
@@ -46,7 +45,7 @@ foreach ($projectName in $ProjectsToPublish) {
     $args = @(
         "publish"
         $projectPath
-        "--framework", "net9.0-windows"
+        "--framework", "net10.0-windows"
         "--runtime", $Runtime
         "--self-contained", "false"
         "--output", $PublishPath
