@@ -65,6 +65,7 @@ public class Manager : Institution
     /// AMAC中的股份比例
     /// </summary>
     //public s[]? ShareInfoAmac { get; set; }
- 
 
+    /// 介绍
+    public string? Description { get; set; }
 }

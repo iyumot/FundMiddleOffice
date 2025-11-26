@@ -211,12 +211,12 @@
                         Style="{StaticResource ButtonIcon.Small}" />
                 </DockPanel>
 
-                <shared:ChangeableControl Binding="{Binding InstitutionCode}" IsReadOnly="True" />
+                <shared:ChangeableControl Binding="{Binding InstitutionCode}" IsReadOnly="True" Margin="0,3,0,0"/>
 
 
                 <shared:ChangeableControl HorizontalContentAlignment="Stretch" Binding="{Binding RegisterAddress}" />
                 <shared:ChangeableControl HorizontalContentAlignment="Stretch" Binding="{Binding OfficeAddress}" />
-                <shared:ChangeableControl HorizontalContentAlignment="Stretch" Binding="{Binding BusinessScope}">
+                <shared:ChangeableControl HorizontalContentAlignment="Stretch" Binding="{Binding BusinessScope}" Margin="0,3">
                     <shared:ChangeableControl.EditTemplate>
                         <DataTemplate>
                             <TextBox
@@ -228,6 +228,18 @@
                     </shared:ChangeableControl.EditTemplate>
                 </shared:ChangeableControl>
 
+
+                <shared:ChangeableControl HorizontalContentAlignment="Stretch" Binding="{Binding Description}">
+                    <shared:ChangeableControl.EditTemplate>
+                        <DataTemplate>
+                            <TextBox
+                                     MinHeight="100"
+                                     AcceptsReturn="True"
+                                     Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                                     TextWrapping="Wrap" />     
+                        </DataTemplate>
+                    </shared:ChangeableControl.EditTemplate>
+                </shared:ChangeableControl>
 
                 <!--  logo  -->
                 <GroupBox Header="Logo" Style="{StaticResource GroupBoxTab}">

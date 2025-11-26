@@ -116,6 +116,13 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     public ChangeableViewModel<Manager, string> BusinessScope { get; }
 
 
+
+    /// <summary>
+    /// 经营范围
+    /// </summary> 
+    public ChangeableViewModel<Manager, string> Description { get; }
+
+
     /// <summary>
     /// 官网
     /// </summary> 
@@ -401,6 +408,16 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
             ClearFunc = x => x.BusinessScope = null,
         };
         BusinessScope.Init(manager);
+
+        Description = new()
+        {
+            Label = "简介",
+            InitFunc = x => x.Description,
+            UpdateFunc = (x, y) => x.Description = y,
+            ClearFunc = x => x.Description = null,
+        };
+        Description.Init(manager);
+
 
         WebSite = new ChangeableViewModel<Manager, string>
         {
