@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FMO.IO.DS.MeiShi.Json.OrderDetail;
+namespace FMO.DS.MeiShi.Json.OrderDetail;
 
 /// <summary>
 /// 根级JSON响应实体类

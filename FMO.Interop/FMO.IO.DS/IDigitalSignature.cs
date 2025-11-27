@@ -1,9 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
+using FMO.IO;
 using FMO.Utilities;
 using Microsoft.Playwright;
 using System.Text.RegularExpressions;
 
-namespace FMO.IO.DS;
+namespace FMO.DS;
 
 
 /// <summary>

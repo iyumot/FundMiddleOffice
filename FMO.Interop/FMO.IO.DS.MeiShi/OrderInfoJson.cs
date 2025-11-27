@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace FMO.IO.DS.MeiShi.Json.Order;
+namespace FMO.DS.MeiShi.Json.Order;
 
 /// <summary>
 /// 根级JSON响应实体类

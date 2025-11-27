@@ -7,7 +7,7 @@ using System.IO.Compression;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace FMO.IO.DS.MeiShi;
+namespace FMO.DS.MeiShi;
 
 public class Assist : AssistBase
 {
@@ -25,6 +25,15 @@ public class Assist : AssistBase
 
     public string? ManagerCode { get; private set; }
     public string? TokenId { get; private set; }
+
+    IPlaywright? playwright { get; set; }
+
+    IBrowserContext? BrowserContext { get; set; }
+
+
+
+
+
 
     public override async Task<bool> PrepareLoginAsync(IPage page)
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FMO.IO.DS.MeiShi.Json.QualificationJson;
+namespace FMO.DS.MeiShi.Json.QualificationJson;
 
 
 
