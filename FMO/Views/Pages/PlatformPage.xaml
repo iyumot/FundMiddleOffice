@@ -579,7 +579,8 @@
 
 
         <DockPanel DockPanel.Dock="Top">
-            <TextBlock DockPanel.Dock="Top" Text="电签平台" />
+            <TextBlock DockPanel.Dock="Top" Text="电签平台" FontWeight="Black" 
+                FontSize="18"/>
 
             <ListBox
                 BorderThickness="0"

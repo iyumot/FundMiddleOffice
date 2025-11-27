@@ -97,6 +97,7 @@
     <ProjectReference Include="..\FMO.Automation\FMO.Schedule.csproj" />
     <ProjectReference Include="..\FMO.Data\FMO.Data.csproj" />
     <ProjectReference Include="..\FMO.Interop\FMO.IO.AMAC\FMO.IO.AMAC.csproj" />
+    <ProjectReference Include="..\FMO.InterOp\FMO.IO.DS.MeiShi\FMO.IO.DS.MeiShi.csproj" />
     <ProjectReference Include="..\FMO.InterOp\FMO.IO.DS\FMO.IO.DS.csproj" />
     <ProjectReference Include="..\FMO.Interop\FMO.PFID\FMO.AMAC.Direct.csproj" />
     <ProjectReference Include="..\FMO.Logging\FMO.Logging.csproj" />

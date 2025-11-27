@@ -173,21 +173,21 @@ public partial class PlatformPageViewModel : ObservableObject, IRecipient<Truste
 
             var files = new DirectoryInfo("plugins").GetFiles("*.dll");
 
-            //TryAddSignature(Assembly.GetExecutingAssembly());
+            TryAddSignature(Assembly.GetAssembly(typeof(IO.DS.MeiShi.Assist))!);
 
-            foreach (var file in files)
-            {
-                try
-                {
-                    var assembly = Assembly.LoadFile(file.FullName);
-                    //TryAddTrustee(assembly);
-                    TryAddSignature(assembly);
-                }
-                catch (Exception e)
-                {
-                    Log.Error($"[{file.Name}]加载插件失败{e.Message}");
-                }
-            }
+            //foreach (var file in files)
+            //{
+            //    try
+            //    {
+            //        var assembly = Assembly.LoadFile(file.FullName);
+            //        //TryAddTrustee(assembly);
+            //        TryAddSignature(assembly);
+            //    }
+            //    catch (Exception e)
+            //    {
+            //        Log.Error($"[{file.Name}]加载插件失败{e.Message}");
+            //    }
+            //}
 
             _firstLoad = false;
         }
