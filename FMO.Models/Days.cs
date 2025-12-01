@@ -136,7 +136,7 @@ public static class Days
         int e = Dates.BinarySearch(end);
 
         s = s < 0 ? ~s : s;
-        e = e < 0 ? ~e : e;
+        e = e < 0 ? ~e : e + 1;
 
         return Data[s..e].Where(x => x.Flag.HasFlag(DayFlag.Trade)).Select(x => x.Date).ToList();
     }
@@ -152,7 +152,7 @@ public static class Days
         int e = Dates.BinarySearch(end);
 
         s = s < 0 ? ~s : s;
-        e = e < 0 ? ~e : e;
+        e = e < 0 ? ~e : e + 1;
 
         return Data[s..e].Where(x => x.Flag.HasFlag(DayFlag.Trade)).Select(x => x.Date).ToList();
     }
@@ -167,7 +167,7 @@ public static class Days
         int e = Dates.BinarySearch(end);
 
         s = s < 0 ? ~s : s;
-        e = e < 0 ? ~e : e;
+        e = e < 0 ? ~e : e + 1;
 
         return Data[s..e].Where(x => x.Flag.HasFlag(DayFlag.Trade)).Count();
     }
@@ -219,5 +219,13 @@ public static class Days
 
             Data.Add(new DateMeta(item.a, n, item.b));
         }
+    }
+
+    public static bool IsTradingDay(DateTime now)
+    {
+        int s = Dates.BinarySearch(DateOnly.FromDateTime(now));
+        s = s < 0 ? ~s : s;
+
+        return Data[s].Flag.HasFlag(DayFlag.Trade);
     }
 }
