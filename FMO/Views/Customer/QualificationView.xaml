@@ -82,10 +82,11 @@
             </Grid>
 
             <shared:FileView
+                Background="#ececec"
                 Content="{Binding CertificationFiles}"
                 Header="证明文件"
                 IsReadOnly="{Binding IsReadOnly}"
-                Style="{StaticResource MultiFileStyle}" />
+                Style="{StaticResource MultiFileStyle.List}" />
 
 
             <StackPanel Visibility="{Binding ShowAgent, Converter={StaticResource Boolean2VisibilityConverter}}">
