@@ -279,7 +279,7 @@ public partial class TrusteeWorker : ObservableObject
                     var range = GetWorkedRange(tr.Identifier, method);
 
                     DateOnly begin = range.End, end = DateOnly.FromDateTime(DateTime.Now);
-                    if (begin == end) begin = begin.AddDays(-5);
+                    if (begin == end) begin = Days.PrevTradingDay(begin);
 
                     var rc = await tr.QueryTransferRequests(begin, end);
                     if (rc.Code != ReturnCode.Success && rc.Code != ReturnCode.TrafficLimit)
@@ -366,6 +366,7 @@ public partial class TrusteeWorker : ObservableObject
                     var range = GetWorkedRange(tr.Identifier, method);
 
                     DateOnly begin = range.End, end = DateOnly.FromDateTime(DateTime.Now);
+                    if (begin == end) begin = Days.PrevTradingDay(begin);
 
                     var rc = await tr.QueryTransferRecords(begin, end);
 
@@ -518,6 +519,7 @@ public partial class TrusteeWorker : ObservableObject
                 var range = GetWorkedRange(tr.Identifier, method);
 
                 DateOnly begin = range.End, end = DateOnly.FromDateTime(DateTime.Now);
+                if (begin == end) begin = Days.PrevTradingDay(begin);
 
                 var rc = await tr.QueryRaisingAccountTransction(begin, end);
 
