@@ -578,21 +578,185 @@
 
 
 
-        <DockPanel DockPanel.Dock="Top">
-            <TextBlock DockPanel.Dock="Top" Text="电签平台" FontWeight="Black" 
-                FontSize="18"/>
+        <DockPanel
+            xmlns:ms="clr-namespace:FMO.ESigning.MeiShi;assembly=FMO.ESigning.MeiShi"
+            Margin="0,10"
+            DockPanel.Dock="Top">
+            <DockPanel.Resources>
+
+                <DataTemplate DataType="{x:Type ms:MeiShiViewModel}">
+                    <hc:UniformSpacingPanel Orientation="Vertical">
+                        <BulletDecorator>
+                            <BulletDecorator.Bullet>
+                                <TextBlock Width="50" Text="用户名" />
+                            </BulletDecorator.Bullet>
+                            <TextBox HorizontalContentAlignment="Center" Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}" />
+                        </BulletDecorator>
+                        <BulletDecorator>
+                            <BulletDecorator.Bullet>
+                                <TextBlock Width="50" Text="密码" />
+                            </BulletDecorator.Bullet>
+                            <TextBox HorizontalContentAlignment="Center" Text="{Binding Password, UpdateSourceTrigger=PropertyChanged}" />
+                        </BulletDecorator>
+                    </hc:UniformSpacingPanel>
+                </DataTemplate>
+
+                <Style
+                    x:Key="ESigning"
+                    BasedOn="{StaticResource ListBoxItemCustom}"
+                    TargetType="ListBoxItem">
+                    <Setter Property="Margin" Value="5" />
+                    <Setter Property="Width" Value="300" />
+                    <Setter Property="Padding" Value="4" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListBoxItem">
+                                <Border
+                                    x:Name="bd"
+                                    BorderBrush="Gray"
+                                    BorderThickness="1"
+                                    CornerRadius="8">
+                                    <DockPanel MinHeight="40">
+                                        <Grid DockPanel.Dock="Top">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition />
+                                                <RowDefinition x:Name="row2" Height="0" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition />
+                                                <ColumnDefinition Width="50" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <hc:SimplePanel Grid.RowSpan="2">
+                                                <CheckBox
+                                                    Margin="10,0"
+                                                    BorderBrush="Black"
+                                                    BorderThickness="3"
+                                                    IsChecked="{Binding IsEnable}"
+                                                    Visibility="{Binding RelativeSource={RelativeSource AncestorType=local:PlatformPage}, Path=DataContext.SetESigningState, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                                                <TextBlock
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="24"
+                                                    Text="{Binding Title}"
+                                                    Visibility="{Binding ShowConfigSetting, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+
+                                                <hc:SimplePanel VerticalAlignment="Center" Visibility="{Binding ShowConfigSetting, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                                    <hc:SimplePanel.Resources>
+                                                        <Style BasedOn="{StaticResource TextBox.Small}" TargetType="TextBox">
+                                                            <Setter Property="Margin" Value="6,1,0,1" />
+                                                        </Style>
+                                                    </hc:SimplePanel.Resources>
+                                                    <ContentPresenter
+                                                        Margin="{TemplateBinding Padding}"
+                                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                                </hc:SimplePanel>
+                                            </hc:SimplePanel>
+
+                                            <ToggleButton
+                                                Name="tog"
+                                                Grid.Column="1"
+                                                hc:IconElement.Geometry="{StaticResource f.gear}"
+                                                BorderThickness="0"
+                                                IsChecked="{Binding ShowConfigSetting}"
+                                                Style="{StaticResource ToggleButtonFlip}">
+                                                <ToggleButton.Content>
+                                                    <Viewbox Width="18" Height="18">
+                                                        <Path
+                                                            x:Name="pn"
+                                                            Data="{StaticResource f.gear}"
+                                                            Fill="Black" />
+                                                    </Viewbox>
+                                                </ToggleButton.Content>
+                                                <hc:StatusSwitchElement.CheckedElement>
+                                                    <Viewbox Width="18" Height="18">
+                                                        <Path Data="{StaticResource f.reply}" Fill="Black" />
+                                                    </Viewbox>
+                                                </hc:StatusSwitchElement.CheckedElement>
+                                            </ToggleButton>
+
+                                            <Button
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                hc:IconElement.Geometry="{StaticResource f.floppy-disk}"
+                                                Command="{Binding SaveCommand}"
+                                                Style="{StaticResource ButtonIcon}"
+                                                Visibility="{Binding ShowConfigSetting, Converter={StaticResource Boolean2VisibilityConverter}}" />
+
+                                        </Grid>
+                                    </DockPanel>
+
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsValid}" Value="False">
+                                        <Setter TargetName="bd" Property="BorderBrush" Value="Red" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding CanSave}" Value="False">
+                                        <Setter TargetName="pn" Property="Fill" Value="Red" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ShowConfigSetting}" Value="True">
+                                        <Setter TargetName="row2" Property="Height" Value="*" />
+                                    </DataTrigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+
+            </DockPanel.Resources>
+            <DockPanel DockPanel.Dock="Top" LastChildFill="False">
+                <TextBlock
+                    FontSize="18"
+                    FontWeight="Black"
+                    Text="电签平台" />
+
+                <ToggleButton
+                    Margin="10,0,0,0"
+                    Content="启用/禁用"
+                    IsChecked="{Binding SetESigningState}" />
+
+                <ListBox
+                    BorderThickness="0"
+                    ItemsPanel="{StaticResource WrapHorizontalItemsPanelTemplate}"
+                    ItemsSource="{Binding ESigningButtons}"
+                    Style="{StaticResource ListBoxCustom}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <DockPanel ToolTip="{Binding ToolTip}">
+                                <ProgressBar
+                                    Width="30"
+                                    Height="4"
+                                    Margin="0,-2,0,0"
+                                    DockPanel.Dock="Bottom"
+                                    IsIndeterminate="True"
+                                    Style="{StaticResource ProgressBarSuccess}"
+                                    Visibility="{Binding IsRunning, Converter={StaticResource Boolean2VisibilityConverter}}" />
+                                <Button
+                                    hc:IconElement.Geometry="{Binding Icon}"
+                                    Command="{Binding Command}"
+                                    Style="{StaticResource ButtonIcon}" />
+                            </DockPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+            </DockPanel>
 
             <ListBox
                 BorderThickness="0"
                 DockPanel.Dock="Top"
-                ItemTemplate="{StaticResource DT.Platform}"
-                ItemsSource="{Binding Digitals}"
-                Style="{StaticResource WrapPanelHorizontalListBox}">
+                ItemContainerStyle="{StaticResource ESigning}"
+                ItemsSource="{Binding ESignSource.View}"
+                Style="{StaticResource ListBoxCustom}">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel IsItemsHost="True" />
                     </ItemsPanelTemplate>
                 </ListBox.ItemsPanel>
+
             </ListBox>
 
         </DockPanel>

@@ -1,24 +1,20 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using FMO.IO;
-using FMO.IO.DS;
+using FMO.ESigning;
 using FMO.Models;
 using FMO.Trustee;
 using FMO.Utilities;
 using Serilog;
-using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace FMO;
 
@@ -106,7 +102,7 @@ public partial class ProxyViewModel : ObservableObject
 /// <summary>
 /// Page的vm
 /// </summary>
-public partial class PlatformPageViewModel : ObservableObject, IRecipient<TrusteeRunMessage>
+public partial class PlatformPageViewModel : ObservableObject, IRecipient<TrusteeRunMessage>, IRecipient<SigningRunMessage>
 {
 
     private static bool _firstLoad = true;
@@ -114,7 +110,7 @@ public partial class PlatformPageViewModel : ObservableObject, IRecipient<Truste
 
     public TrusteeViewModelBase[] Trustees2 { get; }
 
-    public ObservableCollection<PlatformPageViewModelDigital> Digitals { get; } = new();
+    //public ObservableCollection<PlatformPageViewModelDigital> Digitals { get; } = new();
 
     public AmacAccountViewModel[] AmacAccounts { get; set; }
 
@@ -161,9 +157,40 @@ public partial class PlatformPageViewModel : ObservableObject, IRecipient<Truste
 
     public CollectionViewSource TrusteeWorkLogSource { get; } = new();
 
+    [ObservableProperty]
+    public partial ESignViewModelBase[] ESignViewModels { get; set; }
+
+
+    public CollectionViewSource ESignSource { get; } = new();
+
+    /// <summary>
+    /// 启用/禁用电签
+    /// </summary>
+    [ObservableProperty]
+    public partial bool SetESigningState { get; set; }
+
+
+
+    public SyncButtonInfo[] ESigningButtons { get; set; }
+
+
+
+
+
+
+
     public PlatformPageViewModel()
     {
         WeakReferenceMessenger.Default.RegisterAll(this);
+
+        ESignViewModels = SigningGalley.ViewModels;
+        ESignSource.Source = ESignViewModels;
+        ESignSource.Filter += ESignSource_Filter;
+
+        ESigningButtons = [
+            new((Geometry)App.Current.Resources["f.user-group"], SyncSigningCustmersOnceCommand, nameof(ESigningWorker.SyncCustmersOnce), "同步投资人信息"),
+            new((Geometry)App.Current.Resources["f.file-shield"], SyncSigningQualificationsOnceCommand, nameof(ESigningWorker.SyncQualificationsOnce), "同步合格投资人认定"),
+            new((Geometry)App.Current.Resources["f.file-signature"], SyncSigningOrdersOnceCommand, nameof(ESigningWorker.SyncOrdersOnce), "同步交易订单"),  ];
 
         /// 读取所有托管插件
         /// 
@@ -173,7 +200,7 @@ public partial class PlatformPageViewModel : ObservableObject, IRecipient<Truste
 
             var files = new DirectoryInfo("plugins").GetFiles("*.dll");
 
-            TryAddSignature(Assembly.GetAssembly(typeof(IO.DS.MeiShi.Assist))!);
+            //TryAddSignature(Assembly.GetAssembly(typeof(IO.DS.MeiShi.Assist))!);
 
             //foreach (var file in files)
             //{
@@ -259,6 +286,11 @@ public partial class PlatformPageViewModel : ObservableObject, IRecipient<Truste
         TrusteeWorkLogSource.GroupDescriptions.Add(new PropertyGroupDescription("Time.Date"));
     }
 
+    private void ESignSource_Filter(object sender, FilterEventArgs e)
+    {
+        e.Accepted = SetESigningState ? true : (e.Item as ESignViewModelBase)!.IsEnable ?? false;
+    }
+
 
     /// <summary>
     /// 查看api 运行报告
@@ -273,7 +305,7 @@ public partial class PlatformPageViewModel : ObservableObject, IRecipient<Truste
 
         //只看3天内的
         TrusteeWorkLogs = TrusteeApiBase.GetLogs();//?.OrderByDescending(x => x.Time).Take(100);//.Where(x => (DateTime.Today - x.Time).Days < 3);
-        TrusteeWorkLogSource.Source = TrusteeWorkLogs; 
+        TrusteeWorkLogSource.Source = TrusteeWorkLogs;
     }
 
 
@@ -288,6 +320,7 @@ public partial class PlatformPageViewModel : ObservableObject, IRecipient<Truste
         window.ShowDialog();
     }
 
+    #region Trustee Buttons
 
     [RelayCommand]
     public async Task QueryNetValueOnce()
@@ -324,6 +357,28 @@ public partial class PlatformPageViewModel : ObservableObject, IRecipient<Truste
     {
         await Task.Run(() => TrusteeGallay.Worker.QueryRaisingBalanceOnce());
     }
+
+    #endregion
+
+
+    [RelayCommand]
+    public async Task SyncSigningCustmersOnce()
+    {
+        await Task.Run(() => SigningGalley.Worker.SyncCustmersOnce());
+    }
+
+    [RelayCommand]
+    public async Task SyncSigningQualificationsOnce()
+    {
+        await Task.Run(() => SigningGalley.Worker.SyncQualificationsOnce());
+    }
+
+    [RelayCommand]
+    public async Task SyncSigningOrdersOnce()
+    {
+        await Task.Run(() => SigningGalley.Worker.SyncOrdersOnce());
+    }
+
 
 
 
@@ -376,32 +431,32 @@ public partial class PlatformPageViewModel : ObservableObject, IRecipient<Truste
     /// 
     /// </summary>
     /// <param name="assembly"></param>
-    void TryAddSignature(Assembly assembly)
-    {
-        var type = assembly.GetTypes().FirstOrDefault(x => x.GetInterface(typeof(IDigitalSignature).FullName!) is not null);
-        if (type is null) return;
+    //void TryAddSignature(Assembly assembly)
+    //{
+    //    var type = assembly.GetTypes().FirstOrDefault(x => x.GetInterface(typeof(IDigitalSignature).FullName!) is not null);
+    //    if (type is null) return;
 
-        IDigitalSignature assist = (IDigitalSignature)Activator.CreateInstance(type)!;
+    //    IDigitalSignature assist = (IDigitalSignature)Activator.CreateInstance(type)!;
 
-        Stream? iconStream = null;
-        var res = assembly.GetManifestResourceNames();
-        var name = res.FirstOrDefault(x => x.Contains(".logo."));
-        if (name is not null)
-            iconStream = assembly.GetManifestResourceStream(name);
+    //    Stream? iconStream = null;
+    //    var res = assembly.GetManifestResourceNames();
+    //    var name = res.FirstOrDefault(x => x.Contains(".logo."));
+    //    if (name is not null)
+    //        iconStream = assembly.GetManifestResourceStream(name);
 
-        using var db = DbHelper.Platform();
-        var acc = db.GetCollection<PlatformAccount>().FindById(assist.Identifier);
+    //    using var db = DbHelper.Platform();
+    //    var acc = db.GetCollection<PlatformAccount>().FindById(assist.Identifier);
 
-        assist.UserID = acc?.UserId;
-        assist.Password = acc?.Password;
+    //    assist.UserID = acc?.UserId;
+    //    assist.Password = acc?.Password;
 
-        var icon = new BitmapImage();
-        icon.BeginInit();
-        icon.StreamSource = iconStream;
-        icon.EndInit();
+    //    var icon = new BitmapImage();
+    //    icon.BeginInit();
+    //    icon.StreamSource = iconStream;
+    //    icon.EndInit();
 
-        Digitals.Add(new PlatformPageViewModelDigital(assist, assist.Name, icon));
-    }
+    //    //Digitals.Add(new PlatformPageViewModelDigital(assist, assist.Name, icon));
+    //}
 
 
     partial void OnUseProxyForTrusteeChanged(bool value)
@@ -410,6 +465,10 @@ public partial class PlatformPageViewModel : ObservableObject, IRecipient<Truste
 
     }
 
+    partial void OnSetESigningStateChanged(bool value)
+    {
+        ESignSource.View.Refresh();
+    }
 
     private async Task UpdateLocalIP()
     {
@@ -441,213 +500,222 @@ public partial class PlatformPageViewModel : ObservableObject, IRecipient<Truste
         if (TrusteeAPIButtons.FirstOrDefault(x => x.Method == message.Name) is SyncButtonInfo btn)
             btn.IsRunning = message.IsRunning;
     }
+
+
+    public void Receive(SigningRunMessage message)
+    {
+        if (ESigningButtons.FirstOrDefault(x => x.Method == message.Name) is SyncButtonInfo btn)
+            btn.IsRunning = message.IsRunning;
+    }
+
+
 }
 
-public partial class PlatformPageViewModelDigital : ObservableRecipient//, IRecipient<string>
-{
-    /// <summary>
-    /// 图标
-    /// </summary>
-    public ImageSource? Icon { get; set; }
+//public partial class PlatformPageViewModelDigital : ObservableRecipient//, IRecipient<string>
+//{
+//    /// <summary>
+//    /// 图标
+//    /// </summary>
+//    public ImageSource? Icon { get; set; }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public required string Name { get; set; }
+//    /// <summary>
+//    /// 
+//    /// </summary>
+//    public required string Name { get; set; }
 
-    /// <summary>
-    /// 托管助手 
-    /// </summary>
-    public required IDigitalSignature Assist { get; set; }
+//    /// <summary>
+//    /// 托管助手 
+//    /// </summary>
+//    //public required IDigitalSignature Assist { get; set; }
 
 
-    [ObservableProperty]
-    public partial bool IsEnabled { get; set; }
+//    [ObservableProperty]
+//    public partial bool IsEnabled { get; set; }
 
-    /// <summary>
-    /// 初始化
-    /// </summary>
-    [ObservableProperty]
-    public partial bool IsInitialized { get; set; }
+//    /// <summary>
+//    /// 初始化
+//    /// </summary>
+//    [ObservableProperty]
+//    public partial bool IsInitialized { get; set; }
 
 
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(LoginStatus))]
-    public partial bool IsLogin { get; set; }
+//    [ObservableProperty]
+//    [NotifyPropertyChangedFor(nameof(LoginStatus))]
+//    public partial bool IsLogin { get; set; }
 
 
-    [ObservableProperty]
-    public partial bool NeedLogin { get; set; }
+//    [ObservableProperty]
+//    public partial bool NeedLogin { get; set; }
 
-    public string LoginStatus => IsLogin ? "已登陆" : "未登陆";
+//    public string LoginStatus => IsLogin ? "已登陆" : "未登陆";
 
 
 
-    [ObservableProperty]
-    public partial bool ShowAccount { get; set; }
+//    [ObservableProperty]
+//    public partial bool ShowAccount { get; set; }
 
-    [ObservableProperty]
-    public partial string? UserId { get; set; }
+//    [ObservableProperty]
+//    public partial string? UserId { get; set; }
 
 
-    [ObservableProperty]
-    public partial string? Password { get; set; }
+//    [ObservableProperty]
+//    public partial string? Password { get; set; }
 
 
 
-    /// <summary>
-    /// 同步项
-    /// </summary>
-    public SyncButtonData[] Buttons { get; set; }
+//    /// <summary>
+//    /// 同步项
+//    /// </summary>
+//    public SyncButtonData[] Buttons { get; set; }
 
 
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SynchronizeDataCommand))]
-    public partial bool SyncCommandCanExecute { get; set; } = true;
+//    [ObservableProperty]
+//    [NotifyCanExecuteChangedFor(nameof(SynchronizeDataCommand))]
+//    public partial bool SyncCommandCanExecute { get; set; } = true;
 
 
-    [SetsRequiredMembers]
-    public PlatformPageViewModelDigital(IDigitalSignature assist, string name, ImageSource? icon)
-    {
-        Icon = icon;
-        Name = name;
-        Assist = assist;
+//    //[SetsRequiredMembers]
+//    //public PlatformPageViewModelDigital(IDigitalSignature assist, string name, ImageSource? icon)
+//    //{
+//    //    Icon = icon;
+//    //    Name = name;
+//    //    Assist = assist;
 
 
-        UserId = assist.UserID;
-        Password = assist.Password;
-        IsLogin = false;
+//    //    UserId = assist.UserID;
+//    //    Password = assist.Password;
+//    //    IsLogin = false;
 
-        Buttons = [
-            new SyncButtonData((Geometry)App.Current.Resources["f.address-card"]  , SynchronizeDataCommand, SyncCustomers,"客户资料"),
-            new SyncButtonData((Geometry)App.Current.Resources["f.certificate"]  , SynchronizeDataCommand, SyncQualifications,"合投材料"),
-            new SyncButtonData((Geometry)App.Current.Resources["f.sheet-plastic"]  , SynchronizeDataCommand, SynchronizeOrder,"交易订单"),  ];
+//    //    Buttons = [
+//    //        new SyncButtonData((Geometry)App.Current.Resources["f.address-card"]  , SynchronizeDataCommand, SyncCustomers,"客户资料"),
+//    //        new SyncButtonData((Geometry)App.Current.Resources["f.certificate"]  , SynchronizeDataCommand, SyncQualifications,"合投材料"),
+//    //        new SyncButtonData((Geometry)App.Current.Resources["f.sheet-plastic"]  , SynchronizeDataCommand, SynchronizeOrder,"交易订单"),  ];
 
-        //using var db = DbHelper.Platform();
-        ////Config = db.GetCollection<TrusteeConfig>().FindOne(x => x.Id == Assist.Identifier) ?? new TrusteeConfig { Id = assist.Identifier };
+//    //    //using var db = DbHelper.Platform();
+//    //    ////Config = db.GetCollection<TrusteeConfig>().FindOne(x => x.Id == Assist.Identifier) ?? new TrusteeConfig { Id = assist.Identifier };
 
-        //IsActive = true;
+//    //    //IsActive = true;
 
-        //WeakReferenceMessenger.Default.Register(this, "Trustee.LogOut");
+//    //    //WeakReferenceMessenger.Default.Register(this, "Trustee.LogOut");
 
-        NeedLogin = !IsLogin;
-        //if (IsEnabled) Task.Run(async () => { await Task.Delay(2000); StartWork(); });
+//    //    NeedLogin = !IsLogin;
+//    //    //if (IsEnabled) Task.Run(async () => { await Task.Delay(2000); StartWork(); });
 
-        if (IsEnabled)
-            Task.Run(async () =>
-            {
-                try
-                {
+//    //    if (IsEnabled)
+//    //        Task.Run(async () =>
+//    //        {
+//    //            try
+//    //            {
 
-                    await using var page = await Automation.AcquirePage(assist.Identifier);
-                    //var page = pw.Page;
+//    //                await using var page = await Automation.AcquirePage(assist.Identifier);
+//    //                //var page = pw.Page;
 
-                    await assist.PrepareLoginAsync(page);
+//    //                await assist.PrepareLoginAsync(page);
 
-                    IsLogin = await assist.LoginValidationAsync(page);
+//    //                IsLogin = await assist.LoginValidationAsync(page);
 
-                    if (IsLogin)
-                        await assist.EndLoginAsync(page);
+//    //                if (IsLogin)
+//    //                    await assist.EndLoginAsync(page);
 
-                }
-                catch (Exception e)
-                {
-                    HandyControl.Controls.Growl.Error($"初始化登录{assist.Name}失败");
-                }
-                IsInitialized = true;
-            });
-    }
+//    //            }
+//    //            catch (Exception e)
+//    //            {
+//    //                HandyControl.Controls.Growl.Error($"初始化登录{assist.Name}失败");
+//    //            }
+//    //            IsInitialized = true;
+//    //        });
+//    //}
 
 
-    [RelayCommand(CanExecute = nameof(NeedLogin))]
-    public async Task Login()
-    {
-        NeedLogin = false;
+//    [RelayCommand(CanExecute = nameof(NeedLogin))]
+//    public async Task Login()
+//    {
+//        NeedLogin = false;
 
-        try
-        {
-            IsLogin = await Assist.LoginAsync();
-        }
-        catch { IsLogin = false; }
+//        try
+//        {
+//            IsLogin = await Assist.LoginAsync();
+//        }
+//        catch { IsLogin = false; }
 
-        NeedLogin = true;
-    }
+//        NeedLogin = true;
+//    }
 
 
 
 
 
-    [RelayCommand(CanExecute = nameof(SyncCommandCanExecute))]
-    public async Task SynchronizeData(SyncButtonData btn)
-    {
-        SyncCommandCanExecute = false;
+//    [RelayCommand(CanExecute = nameof(SyncCommandCanExecute))]
+//    public async Task SynchronizeData(SyncButtonData btn)
+//    {
+//        SyncCommandCanExecute = false;
 
-        btn.IsRunning = true;
-        try { await btn.SyncProcesser(); IsLogin = Assist.IsLogedIn; } catch (Exception ex) { }
-        btn.IsRunning = false;
+//        btn.IsRunning = true;
+//        try { await btn.SyncProcesser(); IsLogin = Assist.IsLogedIn; } catch (Exception ex) { }
+//        btn.IsRunning = false;
 
-        SyncCommandCanExecute = true;
-    }
+//        SyncCommandCanExecute = true;
+//    }
 
-    public async Task SyncCustomers()
-    {
-        await Assist.SynchronizeCustomerAsync();
+//    public async Task SyncCustomers()
+//    {
+//        await Assist.SynchronizeCustomerAsync();
 
-    }
+//    }
 
 
-    public async Task SyncQualifications()
-    {
-        await Assist.SynchronizeQualificatoinAsync();
-    }
+//    public async Task SyncQualifications()
+//    {
+//        await Assist.SynchronizeQualificatoinAsync();
+//    }
 
-    public async Task SynchronizeOrder()
-    {
-        await Assist.SynchronizeOrderAsync();
-    }
+//    public async Task SynchronizeOrder()
+//    {
+//        await Assist.SynchronizeOrderAsync();
+//    }
 
 
 
 
-    partial void OnIsEnabledChanged(bool value)
-    {
-        if (!value) return;
+//    partial void OnIsEnabledChanged(bool value)
+//    {
+//        if (!value) return;
 
-        Task.Run(async () =>
-        {
-            var assist = Assist;
-            try
-            {
-                await using var page = await Automation.AcquirePage(assist.Identifier);
-                //var page = pw.Page;
+//        Task.Run(async () =>
+//        {
+//            var assist = Assist;
+//            try
+//            {
+//                await using var page = await Automation.AcquirePage(assist.Identifier);
+//                //var page = pw.Page;
 
-                await assist.PrepareLoginAsync(page);
+//                await assist.PrepareLoginAsync(page);
 
-                IsLogin = await assist.LoginValidationAsync(page);
+//                IsLogin = await assist.LoginValidationAsync(page);
 
-                if (IsLogin)
-                    await assist.EndLoginAsync(page);
+//                if (IsLogin)
+//                    await assist.EndLoginAsync(page);
 
-            }
-            catch (Exception e)
-            {
-                HandyControl.Controls.Growl.Error($"初始化登录{assist.Name}失败");
-            }
-            IsInitialized = true;
-        });
-    }
+//            }
+//            catch (Exception e)
+//            {
+//                HandyControl.Controls.Growl.Error($"初始化登录{assist.Name}失败");
+//            }
+//            IsInitialized = true;
+//        });
+//    }
 
-    [RelayCommand]
-    public void SaveAccount()
-    {
-        Assist.UserID = UserId;
-        Assist.Password = Password;
-        using var db = DbHelper.Platform();
-        db.GetCollection<PlatformAccount>().Upsert(new PlatformAccount { Id = Assist.Identifier, UserId = UserId, Password = Password });
-    }
+//    [RelayCommand]
+//    public void SaveAccount()
+//    {
+//        Assist.UserID = UserId;
+//        Assist.Password = Password;
+//        using var db = DbHelper.Platform();
+//        db.GetCollection<PlatformAccount>().Upsert(new PlatformAccount { Id = Assist.Identifier, UserId = UserId, Password = Password });
+//    }
 
-}
+//}
 
 
 
@@ -934,9 +1002,9 @@ public partial class SyncButtonInfo(Geometry Icon, IAsyncRelayCommand Command, s
 {
     public Geometry Icon { get; } = Icon;
     public IAsyncRelayCommand Command { get; } = Command;
-    
+
     public string Method { get; } = Method;
-    
+
     [ObservableProperty]
     public partial bool IsRunning { get; set; }
 

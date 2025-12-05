@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FMO.Data\FMO.Data.csproj" />
+    <ProjectReference Include="..\FMO.ESigning.MeiShi\FMO.ESigning.MeiShi.csproj" />
+  </ItemGroup>
+
+</Project>

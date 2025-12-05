@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using FMO.ESigning;
 using FMO.IO.AMAC;
 using FMO.Models;
 using FMO.Schedule;
@@ -97,6 +98,7 @@ public partial class HomePageViewModel : ObservableObject, IRecipient<FundTipMes
 
         //启动api
         TrusteeGallay.Initialize();
+        SigningGalley.Initialize();
          
         Task.Run(() =>
         {
