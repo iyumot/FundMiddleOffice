@@ -139,6 +139,11 @@ public class InvestorQualification
     /// </summary>
     public string? Source { get; set; }
 
+    /// <summary>
+    /// 外部id
+    /// </summary>
+    public string? ExternalId { get; set; }
+
     //public QualificationType Type { get; set; }
 
     /// <summary>
@@ -226,7 +231,7 @@ public class InvestorQualification
     public string? Error { get; set; }
 
     public bool HasError => Check().HasError;
-
+     
     private bool IsFileExists(SimpleFile? info) => info?.File?.Exists ?? false;
 
     public (bool HasError, string? Info) Check()

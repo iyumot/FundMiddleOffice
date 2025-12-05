@@ -131,7 +131,7 @@ public partial class App : Application
 
     protected override async void OnExit(ExitEventArgs e)
     {
-        await Automation.DisposeAsync();
+        //await Automation.DisposeAsync();
 
 
         DirectoryInfo tmpd = new("temp");

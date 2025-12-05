@@ -471,6 +471,12 @@
                             ElementStyle="{StaticResource RightText}"
                             Header="金额/份额" />
 
+                        <DataGridTextColumn
+                            Binding="{Binding Source}"
+                            ElementStyle="{StaticResource CenterText}"
+                            Header="数据源" />
+
+
                         <DataGridTemplateColumn Header="申请单">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>

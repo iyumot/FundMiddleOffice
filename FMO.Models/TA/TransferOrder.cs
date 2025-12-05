@@ -37,11 +37,22 @@ public class TransferOrder
 
     public string? FundName { get; set; }
 
+    /// <summary>
+    /// sign 
+    /// </summary>
     public DateOnly Date { get; set; }
+
+
+    public DateOnly OpenDate { get; set; }
 
     public TransferOrderType Type { get; set; }
 
     public decimal Number { get; set; }
+
+    /// <summary>
+    /// 交易费
+    /// </summary>
+    public decimal Fee { get; set; }
 
     /// <summary>
     /// 客户Id
