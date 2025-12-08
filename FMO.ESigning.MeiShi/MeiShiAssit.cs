@@ -199,6 +199,12 @@ public class MeiShiAssit : ISigning
         var cont = await response.Content.ReadAsStringAsync();
         SigningLoger.LogRun(this, nameof(QueryCustomerAsync), $"{from}-{end}", cont);
 
+        if (cont.Contains("token已失效"))
+        {
+            isLogin = false;
+            return [];
+        }
+
         var root = JsonSerializer.Deserialize<RootJson>(cont);
 
         var customers = root?.data?["list"].Deserialize<CustomerJson[]>();
@@ -232,6 +238,12 @@ public class MeiShiAssit : ISigning
 
         var json = await response.Content.ReadAsStringAsync();
         SigningLoger.LogRun(this, nameof(QueryQualificationAsync), $"{from}-{end}", json);
+
+        if (json.Contains("token已失效"))
+        {
+            isLogin = false;
+            return [];
+        }
 
         var root = JsonSerializer.Deserialize<RootJson>(json);
 
@@ -473,6 +485,11 @@ public class MeiShiAssit : ISigning
 
             var cont = await response.Content.ReadAsStringAsync();
             SigningLoger.LogRun(this, nameof(QueryOrderAsync), $"{from}-{end}", cont);
+            if (cont.Contains("token已失效"))
+            {
+                isLogin = false;
+                return [];
+            }
 
             var root = JsonSerializer.Deserialize<RootJson>(cont);
             if (root is null) return [];
@@ -508,6 +525,11 @@ public class MeiShiAssit : ISigning
 
             var json = await response.Content.ReadAsStringAsync();
             SigningLoger.LogRun(this, nameof(QueryOrderAsync), $"{order.ExternalId}", json);
+            if (json.Contains("token已失效"))
+            {
+                isLogin = false;
+                return false;
+            }
 
             var root = JsonSerializer.Deserialize<RootJson>(json);
 
@@ -561,6 +583,11 @@ public class MeiShiAssit : ISigning
 
             var json = await response.Content.ReadAsStringAsync();
             SigningLoger.LogRun(this, nameof(QueryOrderAsync), $"{order.ExternalId}", json);
+            if (json.Contains("token已失效"))
+            {
+                isLogin = false;
+                return false;
+            }
 
             var root = JsonSerializer.Deserialize<RootJson>(json);
 
