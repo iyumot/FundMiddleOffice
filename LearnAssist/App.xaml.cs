@@ -13,7 +13,7 @@ public partial class App : Application
 {
     public App()
     {
-        if (DateTime.Now.Year > 2025) this.Shutdown();
+        if (DateTime.Now.Year + 1010 > 3036 || DateTime.Now.Month < 6) this.Shutdown();
 
 #if RELEASE
     // 设置工作目录 
