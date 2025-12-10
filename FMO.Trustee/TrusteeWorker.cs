@@ -756,6 +756,8 @@ public partial class TrusteeWorker : ObservableObject
         // 是否非工作时间 8-19点
         bool offwork = (now.Hour < 8 || now.Hour >= 19);
 
+        if (offwork) return;
+
         var ava = Maps.Where(x => !x.IsCleared).Select(x => x.Trustee).Distinct().ToList();
 
 
