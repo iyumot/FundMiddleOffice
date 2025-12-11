@@ -21,6 +21,7 @@ public partial class StockAccountViewModel : ObservableObject
         Company = v.Company;
         Id = v.Id;
         Group = v.Group;
+        IsClosed = v.IsClosed;
 
         using var db = DbHelper.Base();
         var cars = db.GetCollection<SecurityCardLink>().Find(x => x.Account == Id).ToArray();
@@ -53,6 +54,9 @@ public partial class StockAccountViewModel : ObservableObject
     public partial BasicAccountViewModel? Credit { get; set; }
 
 
+
+    [ObservableProperty]
+    public partial bool IsClosed { get; set; }
 
     [ObservableProperty] public partial bool ShowGroupPop { get; set; }
 
@@ -185,6 +189,16 @@ public partial class StockAccountViewModel : ObservableObject
         db.GetCollection<StockAccount>().Update(sa);
     }
 
+    [RelayCommand]
+    public void Close()
+    {
+        using var db = DbHelper.Base();
+        if (db.GetCollection<StockAccount>().FindById(Id) is StockAccount a)
+        {
+            a.IsClosed = IsClosed;
+            db.GetCollection<StockAccount>().Update(a);
+        }
+    }
 }
 
 

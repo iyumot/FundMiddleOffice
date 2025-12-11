@@ -16,6 +16,7 @@ public partial class FutureAccountViewModel : ObservableObject
         Company = v.Company;
         Id = v.Id;
         FundId = v.FundId;
+        IsClosed = v.IsClosed;
 
         Common = new(v.Id, FundId, v.Company, v.Common);
     }
@@ -26,11 +27,23 @@ public partial class FutureAccountViewModel : ObservableObject
     public string? Company { get; set; }
 
 
+    [ObservableProperty]
+    public partial bool IsClosed { get; set; }
+
     public BasicAccountViewModel Common { get; set; }
 
 
 
-
+    [RelayCommand]
+    public void Close()
+    {
+        using var db = DbHelper.Base();
+        if (db.GetCollection<StockAccount>().FindById(Id) is StockAccount a)
+        {
+            a.IsClosed = IsClosed;
+            db.GetCollection<StockAccount>().Update(a);
+        }
+    }
 
 
     public partial class BasicAccountViewModel : ObservableObject

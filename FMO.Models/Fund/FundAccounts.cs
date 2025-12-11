@@ -85,6 +85,11 @@ public class StockAccount
     public string? Company { get; set; }
 
     /// <summary>
+    /// 注销
+    /// </summary>
+    public bool IsClosed { get; set; }
+
+    /// <summary>
     /// 上海股东卡
     /// </summary>
     //public SecurityCardInfo? SHCard { get; set; }
@@ -116,6 +121,11 @@ public class FutureAccount
     public int FundId { get; set; }
 
     public string? Company { get; set; }
+
+    /// <summary>
+    /// 注销
+    /// </summary>
+    public bool IsClosed { get; set; }
 
     /// <summary>
     /// 基本户
