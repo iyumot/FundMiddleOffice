@@ -235,7 +235,8 @@ public partial class DividendFlowViewModel : FlowViewModel, IChangeableEntityVie
                     RecordDate = $"{RecordDate.OldValue ?? DateTime.Today:yyyy年MM月dd日}",
                     ExDividendDate = $"{ExDividendDate.OldValue ?? DateTime.Today:yyyy年MM月dd日}",
                     CashPaymentDate = $"{CashPaymentDate.OldValue ?? DateTime.Today:yyyy年MM月dd日}",
-                    AnnouncementDate = $"{anndate:yyyy年MM月dd日}"
+                    AnnouncementDate = $"{anndate:yyyy年MM月dd日}",
+                    Mail = manager.Email
                 };
 
                 if (Tpl.GenerateByPredefined(temp.FilePath, "产品分红公告.docx", data))

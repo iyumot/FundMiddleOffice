@@ -92,6 +92,12 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
     /// </summary> 
     public ChangeableViewModel<Manager, string> Fax { get; }
 
+
+    /// <summary>
+    /// 传真
+    /// </summary> 
+    public ChangeableViewModel<Manager, string> Email { get; }
+
     /// <summary>
     /// 统一信用代码
     /// </summary>  
@@ -365,7 +371,14 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
         };
         Fax.Init(manager);
 
-
+        Email = new ChangeableViewModel<Manager, string>
+        {
+            Label = "邮箱",
+            InitFunc = x => x.Email,
+            UpdateFunc = (x, y) => x.Email = y,
+            ClearFunc = x => x.Email = null,
+        };
+        Email.Init(manager);
 
         InstitutionCode = new ChangeableViewModel<Manager, string>
         {
