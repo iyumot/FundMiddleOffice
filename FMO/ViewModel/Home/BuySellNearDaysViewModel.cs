@@ -69,7 +69,7 @@ public partial class BuySellNearDaysViewModel : ObservableObject, IRecipient<ILi
 
         WeakReferenceMessenger.Default.RegisterAll(this);
 
-        Recent = [.. requests.Select(x => new TransferRequestViewModel(x))];
+        Recent = [.. requests.Where(x=>x.RequiredOrder()).Select(x => new TransferRequestViewModel(x))];
 
         if (requests.Any())
         {
