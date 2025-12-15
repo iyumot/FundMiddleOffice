@@ -56,7 +56,7 @@ public class ESigningWorker
 
             try
             {
-                var customers = await sign.QueryCustomerAsync();
+                var customers = await sign.QueryCustomerAsync(rec.QueryCustomerTime);
 
                 // 合并
                 MergeCustomers(customers);
