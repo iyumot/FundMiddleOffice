@@ -4,47 +4,22 @@ using System.Collections.Concurrent;
 namespace FMO.Utilities;
 
 
-public record FundOverdueContext(string FundName, DateOnly SetupDate, DateOnly Expire, int ExpiredDays);
 
+public record FundNearLiquidationContext(string FundName, DateOnly SetupDate, DateOnly Expire);
 
 /// <summary>
-/// 基金超期
+/// 基金临近清盘（<1年）
 /// </summary>
-public class FundOverdueRule : VerifyRule<NewDay, EntityChanged<DateOnly>>
+public class FundNearLiquidationAlertRule : VerifyRule<NewDay, EntityChanged<DateOnly>>
 {
-
     public ConcurrentDictionary<int, IDataTip> Tips { get; } = [];
 
     private bool VerifyAll { get; set; }
 
     private List<EntityChanged<DateOnly>> entityChangeds { get; } = new();
 
-    /// <summary>
-    /// 在Home的OnNewDay中会运行一次全基金验证，这里不再运行
-    /// </summary>
     public override void Init()
     {
-        //using var db = DbHelper.Base();
-        //var cur = DateOnly.FromDateTime(DateTime.Today);
-        //var funds = db.GetCollection<Fund>().Query().Select(x => new { x.Id, x.Status, x.Name, x.SetupDate }).ToList();
-
-        //var coll = db.GetCollection<FundElements>();
-        //foreach (var fund in funds.Where(x => x.Status == FundStatus.Normal || x.Status == FundStatus.StartLiquidation))
-        //{
-        //    var ele = coll.FindById(fund.Id);
-        //    if (ele is not null)
-        //    {
-        //        var expire = ele.ExpirationDate.Value;
-
-        //        if (expire != default && cur > expire)
-        //        {
-        //            DataTip<FundOverdueContext> tip = new() { Tags = ["Fund", $"Fund{ele.Id}", nameof(FundOverdueRule)], _Context = new FundOverdueContext(fund.Name, fund.SetupDate, expire, cur.DayNumber - expire.DayNumber) };
-        //            Tips.TryAdd(fund.Id, tip);
-        //            Send(tip);
-        //        }
-        //    }
-        //}
-
 
     }
 
@@ -58,6 +33,7 @@ public class FundOverdueRule : VerifyRule<NewDay, EntityChanged<DateOnly>>
 
 
     protected override void OnEntityOverride(IEnumerable<EntityChanged<DateOnly>> obj) => entityChangeds.AddRange(obj);
+
 
     protected override void VerifyOverride()
     {
@@ -76,9 +52,9 @@ public class FundOverdueRule : VerifyRule<NewDay, EntityChanged<DateOnly>>
             {
                 var expire = ele.ExpirationDate.Value;
 
-                if (expire != default && cur > expire)
+                if (expire == default || expire.DayNumber - cur.DayNumber < 365)
                 {
-                    DataTip<FundOverdueContext> tip = new() { Tags = ["Fund", $"Fund{ele.Id}", nameof(FundOverdueRule)], _Context = new FundOverdueContext(fund.Name, fund.SetupDate, expire, cur.DayNumber - expire.DayNumber) };
+                    DataTip<FundNearLiquidationContext> tip = new() { Tags = ["Fund", $"Fund{ele.Id}", nameof(FundNearLiquidationContext)], _Context = new FundNearLiquidationContext(fund.Name, fund.SetupDate, expire) };
                     Tips.TryAdd(fund.Id, tip);
                     Send(tip);
                 }
@@ -92,6 +68,5 @@ public class FundOverdueRule : VerifyRule<NewDay, EntityChanged<DateOnly>>
                 }
             }
         }
-
     }
 }

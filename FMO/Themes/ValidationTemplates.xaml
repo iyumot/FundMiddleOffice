@@ -238,6 +238,27 @@
 
 
 
+    <DataTemplate x:Key="FundNearLiquidation">
+        <DataGrid
+            AutoGenerateColumns="False"
+            ColumnHeaderStyle="{StaticResource CenterColumnHeader}"
+            IsReadOnly="True"
+            ItemsSource="{Binding .}"
+            Style="{StaticResource DataGrid.NoSelect}">
+            <DataGrid.Columns>
+                <DataGridTextColumn
+                    Binding="{Binding Context.FundName}"
+                    ElementStyle="{StaticResource LeftText}"
+                    Header="基金" />
+                <DataGridTextColumn
+                    Width="100"
+                    Binding="{Binding Context.Expire}"
+                    Header="清盘日期" />
+
+            </DataGrid.Columns>
+        </DataGrid>
+    </DataTemplate>
+
     <DataTemplate x:Key="FundScaleWarn">
         <DataGrid
             AutoGenerateColumns="False"

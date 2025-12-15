@@ -55,5 +55,11 @@
             DataContext="{Binding FundStopPurchase.View}"
             Header="受限产品"
             TipTemplate="{StaticResource FundStopPurchase}" />
+
+
+        <local:ValidationItemView
+            DataContext="{Binding FundClearNotFinished.View}"
+            Header="基金临近清盘"
+            TipTemplate="{StaticResource FundNearLiquidation}" />
     </hc:UniformSpacingPanel>
 </UserControl>

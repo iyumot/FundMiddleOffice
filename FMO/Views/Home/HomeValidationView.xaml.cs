@@ -28,6 +28,7 @@ public partial class HomeValidationViewModel : ObservableObject
         FundClearNotFinished.View.Filter = (o) => o switch { IDataTip d => d.Tags.Contains(nameof(FundClearNotFinishedRule)), _ => false };
         FundScaleWarn.View.Filter = (o) => o switch { IDataTip d => d.Tags.Contains(nameof(FundScaleWarnRule)), _ => false };
         FundStopPurchase.View.Filter = (o) => o switch { IDataTip d => d.Tags.Contains(nameof(FundStopPurchaseRule)), _ => false };
+        FundNearLiquidation.View.Filter = (o) => o switch { IDataTip d => d.Tags.Contains(nameof(FundNearLiquidationAlertRule)), _ => false };
     }
 
     /// <summary>
@@ -63,5 +64,8 @@ public partial class HomeValidationViewModel : ObservableObject
 
 
     public CollectionViewSource FundStopPurchase { get; } = new() { Source = DataObserver.Instance.Tips };
+
+
+    public CollectionViewSource FundNearLiquidation { get; } = new() { Source = DataObserver.Instance.Tips };
 
 }

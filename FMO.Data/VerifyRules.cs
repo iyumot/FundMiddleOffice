@@ -21,6 +21,9 @@ public static partial class VerifyRules
 
 
     public static FundStopPurchaseRule FundStopPurchaseRule { get; } = new();
+
+
+    public static FundNearLiquidationAlertRule FundNearLiquidationAlertRule { get; } = new();
 }
 
 ////生成结果如下 
