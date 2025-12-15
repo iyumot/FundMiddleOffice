@@ -47,7 +47,7 @@ public class ESigningWorker
         foreach (var sign in signings)
         {
             var config = db.GetCollection<ISigningConfig>().FindById(sign.Id);
-            if (!config?.IsEnable ?? true) continue; 
+            if (!config?.IsEnable ?? true) continue;
 
             // 获取历史 
             var rec = db.GetCollection<SigningWorkRecord>().FindById(sign.Id) ?? new() { Id = sign.Id };
@@ -59,10 +59,13 @@ public class ESigningWorker
                 var customers = await sign.QueryCustomerAsync(rec.QueryCustomerTime);
 
                 // 合并
-                MergeCustomers(customers);
+                if (customers?.Length > 0)
+                {
+                    MergeCustomers(customers);
 
-                rec.QueryCustomerTime = customers.Max(x => x.CreateTime);
-                db.GetCollection<SigningWorkRecord>().Upsert(rec);
+                    rec.QueryCustomerTime = customers.Max(x => x.CreateTime);
+                    db.GetCollection<SigningWorkRecord>().Upsert(rec);
+                }
             }
             catch (Exception e)
             {
@@ -126,7 +129,7 @@ public class ESigningWorker
         SigningLoger.LogWorker(nameof(SyncOrdersOnce));
 
         // 获取历史
-        using var db = DbHelper.Platform();db.DropCollection("SigningWorkRecord");
+        using var db = DbHelper.Platform(); db.DropCollection("SigningWorkRecord");
 
         var cidMap = GetInvestorIdMap();
         List<TransferOrder> orders = new();
