@@ -122,6 +122,8 @@ public partial class FundPeriodicReportViewModel : ObservableObject
     };
 
 
+    public string? FundName { get; set; }
+
     public DateOnly PeriodEnd { get; }
 
     public SimpleFileViewModel Word { get; }
