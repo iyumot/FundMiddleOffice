@@ -473,49 +473,80 @@ public partial class MainWindowViewModel : ObservableObject
                 ///表3
 
                 var sheet3 = workbook.AddWorksheet("分成表", 0);
-                sheet3.Cell(2, 1).Value = "管理费";
-                sheet3.Cell(2, 1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-                sheet3.Cell(1, 2).Value = "投资人";
-                sheet3.Cell(1, 3).Value = "费用";
+                sheet3.Cell(1, 1).Value = "投资人";
+                sheet3.Cell(1, 2).Value = "管理费";
                 int ar = 2;
+                List<int> hasFeeIds = new();
                 for (int j = 0; j < ids.Count; j++)
                 {
                     if (sheet.Cell(dates.Count + 2, j + joff).Value.GetNumber() == 0) continue;
 
+                    hasFeeIds.Add(ids[j]);
                     // 客户
-                    sheet3.Cell(ar, 2).Value = sheet.Cell(1, j + joff).Value;
+                    sheet3.Cell(ar, 1).Value = sheet.Cell(1, j + joff).Value;
                     // 
-                    sheet3.Cell(ar, 3).FormulaR1C1 = $"费用明细表!R{dates.Count + 2}C{j + joff}";
+                    sheet3.Cell(ar, 2).FormulaR1C1 = $"费用明细表!R{dates.Count + 2}C{j + joff}";
 
                     ++ar;
                 }
 
-                sheet3.Range(2, 1, --ar, 1).Merge();
-                sheet3.Range(2, 1, ar, 1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-                sheet3.Range(2, 1, ar, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                sheet3.Column(2).Width = 40;
-                sheet3.Column(3).Width = 20;
-                sheet3.Column(3).Style.NumberFormat.Format = "0.00";
+                sheet3.Range(1, 1, ar, 1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                sheet3.Range(1, 1, ar, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                sheet3.Column(1).Width = 50;
+                sheet3.Column(2).Width = 20;
+                sheet3.Column(2).Style.NumberFormat.Format = "0.00";
 
                 // 写入业绩报酬 
                 using var db = DbHelper.Base();
-                var per = db.GetCollection<TransferRecord>().Find(x => x.FundId == f.Fund.Id && x.PerformanceFee > 0).Where(x => x.ConfirmedDate >= dd[0]).ToArray();
-                if (per.Length > 0)
-                {
-                    for (int i = 0; i < per.Length; i++)
-                    {
-                        sheet3.Cell(ar + i + 3, 2).Value = $"{per[i].InvestorName} {per[i].ConfirmedDate.ToString("yyyy-MM-dd")} {EnumDescriptionTypeConverter.GetEnumDescription(per[i].Type)}";
-                        sheet3.Cell(ar + i + 3, 3).Value = per[i].PerformanceFee;
-                    }
-                    sheet3.Cell(ar + 3, 1).Value = "业绩报酬";
-                    sheet3.Range(ar + 3, 1, ar + per.Length + 3, 1).Merge();
-                    sheet3.Range(ar + 3, 1, ar + per.Length + 3, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                    sheet3.Range(ar + 3, 1, ar + per.Length + 3, 1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                var per = db.GetCollection<TransferRecord>().Find(x => x.FundId == f.Fund.Id && x.PerformanceFee > 0).Where(x => x.RequestDate >= dd[0] && x.RequestDate <= dd[^1]).ToArray();
 
-                    //汇总
-                    sheet3.Cell(ar + per.Length + 3, 2).Value = "汇总";
-                    sheet3.Cell(ar + per.Length + 3, 3).FormulaR1C1 = $"SUM(R{ar + 3}C{3}:R{ar + per.Length + 2}C{3})";
+                /// 按交易日期分组
+                var group = per.GroupBy(x => x.ConfirmedDate).ToArray();
+                for (int j = 0; j < group.Length; j++)
+                {
+                    var type = group[j].First().Type;
+                    var date = group[j].Key;
+
+                    // 头
+                    sheet3.Cell(1, 3 + j).Value = $"{(type == TransferRecordType.Distribution ? "分红" : "赎回")} {date:yyyy-MM-dd}";
+                    sheet3.Cell(1, 3 + j).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                    foreach (var t in group[j])
+                    {
+                        var idx = hasFeeIds.IndexOf(t.InvestorId);
+                        sheet3.Cell(idx + 2, 3 + j).Value = t.PerformanceFee;
+
+                    }
+
+                    sheet3.Column(3 + j).Width = 20;
+                    sheet3.Column(3 + j).Style.NumberFormat.Format = "0.00";
                 }
+
+
+                // 合计 
+                sheet3.Cell(1, group.Length + 3).Value = "合计";
+                for (int i = 0; i < hasFeeIds.Count; i++)
+                    sheet3.Cell(2 + i, group.Length + 3).FormulaR1C1 = $"SUM(R{2 + i}C2:R{2 + i}C{group.Length + 2})";
+
+                sheet3.Column(3 + group.Length).Width = 20;
+                sheet3.Column(3 + group.Length).Style.NumberFormat.Format = "0.00";
+
+
+                sheet3.Range(1, 1, 1, group.Length + 3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                sheet3.Range(1, 1, 1, group.Length + 3).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                sheet3.Range(1, 1, 1, group.Length + 3).Style.Font.FontSize = 14;
+                sheet3.Row(1).Height = 50;
+
+                sheet3.Range(2, 2, 2 + hasFeeIds.Count, group.Length + 3).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+                // 间隔行
+                for (int i = 0; i < hasFeeIds.Count; i += 2)
+                {
+                    sheet3.Range(2 + i, 1, 2 + i, group.Length + 3).Style.Fill.BackgroundColor = XLColor.LightGray;
+                }
+
+                for (int i = 0; i < hasFeeIds.Count; i++)
+                    sheet3.Row(2 + i).Height = 32;
 
                 string path = $"files/fee/{f.Fund.ShortName}_{dates[0]:yyyy.MM.dd}-{dates[^1]:yyyy.MM.dd}.xlsx";
                 workbook.SaveAs(path);

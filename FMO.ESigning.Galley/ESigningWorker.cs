@@ -27,7 +27,7 @@ public class ESigningWorker
     }
 
 
-    private DateTime _beginDate = new DateTime(2025, 8, 10);
+    private DateTime _beginDate = new DateTime(2000, 1, 1);//new DateTime(2025, 8, 10);
 
     private DateTime _lastWorkTime = default;
 
@@ -129,7 +129,7 @@ public class ESigningWorker
         SigningLoger.LogWorker(nameof(SyncOrdersOnce));
 
         // 获取历史
-        using var db = DbHelper.Platform(); db.DropCollection("SigningWorkRecord");
+        using var db = DbHelper.Platform();
 
         var cidMap = GetInvestorIdMap();
         List<TransferOrder> orders = new();
@@ -145,37 +145,44 @@ public class ESigningWorker
 
             // 已存在的订单
             var exist_ids = GetExistsOrderIds(sign.Id);
-            var data = await sign.QueryOrderAsync(rec.QueryOrderTime);
-
-            var db2 = DbHelper.Base();
-
-            // 排除已存在的
-            foreach (var item in data.ExceptBy(exist_ids, x => x.ExternalId).OrderBy(x => x.Date))
+            try
             {
-                await Task.Delay(500);
+                var data = await sign.QueryOrderAsync(rec.QueryOrderTime);
 
-                var (f, c) = db2.FindByName(item.FundName!);
-                if (f is not null)
+                var db2 = DbHelper.Base();
+
+                // 排除已存在的
+                foreach (var item in data.ExceptBy(exist_ids, x => x.ExternalId).OrderBy(x => x.Date))
                 {
-                    item.FundId = f.Id;
-                    item.FundName = f.Name;
-                    item.ShareClass = c;
+                    if (item is null) continue;
+
+                    await Task.Delay(500);
+
+                    var (f, c) = db2.FindByName(item.FundName!);
+                    if (f is not null)
+                    {
+                        item.FundId = f.Id;
+                        item.FundName = f.Name;
+                        item.ShareClass = c;
+                    }
+                    else { LogEx.Error($"Sync Order Fund Not Exists {item.FundName}, in {item.InvestorName} {item.Date} {item.Type}"); }
+
+                    if (cidMap.TryGetValue(item.InvestorIdentity!, out var cid))
+                        item.InvestorId = cid;
+                    else LogEx.Error($"Sync Order Investor Not Exists {item.InvestorName}/{item.InvestorIdentity}, in {item.InvestorName} {item.Date} {item.Type}");
+
+                    if (!await sign.QueryOrderAsync(item))
+                        LogEx.Error($"获取Order文件失败 Customer:{item.InvestorName} Fund{item.FundName} {item.Date}");
+                    orders.Add(item);
                 }
-                else { LogEx.Error($"Sync Order Fund Not Exists {item.FundName}, in {item.InvestorName} {item.Date} {item.Type}"); }
 
-                if (cidMap.TryGetValue(item.InvestorIdentity!, out var cid))
-                    item.InvestorId = cid;
-                else LogEx.Error($"Sync Order Investor Not Exists {item.InvestorName}/{item.InvestorIdentity}, in {item.InvestorName} {item.Date} {item.Type}");
-
-                if (!await sign.QueryOrderAsync(item))
-                    LogEx.Error($"获取Order文件失败 Customer:{item.InvestorName} Fund{item.FundName} {item.Date}");
-                orders.Add(item);
+                rec.QueryOrderTime = new DateTime(data.Max(x => x.Date), default);
+                db.GetCollection<SigningWorkRecord>().Upsert(rec);
             }
-
-
-
-            rec.QueryOrderTime = new DateTime(data.Max(x => x.Date), default);
-            db.GetCollection<SigningWorkRecord>().Upsert(rec);
+            catch (Exception e)
+            {
+                LogEx.Error(e);
+            }
         }
 
         using (var db2 = DbHelper.Base())
