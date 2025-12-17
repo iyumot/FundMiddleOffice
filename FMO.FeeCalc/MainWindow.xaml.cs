@@ -511,10 +511,10 @@ public partial class MainWindowViewModel : ObservableObject
                     sheet3.Cell(1, 3 + j).Value = $"{(type == TransferRecordType.Distribution ? "分红" : "赎回")} {date:yyyy-MM-dd}";
                     sheet3.Cell(1, 3 + j).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
-                    foreach (var t in group[j])
+                    foreach (var t in group[j].GroupBy(x => x.InvestorId))
                     {
-                        var idx = hasFeeIds.IndexOf(t.InvestorId);
-                        sheet3.Cell(idx + 2, 3 + j).Value = t.PerformanceFee;
+                        var idx = hasFeeIds.IndexOf(t.Key);
+                        sheet3.Cell(idx + 2, 3 + j).Value = t.Sum(x => x.PerformanceFee);
 
                     }
 
