@@ -375,6 +375,8 @@ public partial class MainWindowViewModel : ObservableObject
         {
             var (dd, ids, names, array) = FundHelper.GenerateShareSheet(f.Fund.Id, dates[0], dates[^1]);
 
+            // 份额一致
+            bool sharepair = true;
             int joff = 5;
             using (var workbook = new XLWorkbook())
             {
@@ -397,11 +399,29 @@ public partial class MainWindowViewModel : ObservableObject
                         sheet.Cell(i + 2, 3).Value = fees[i - 1].Share;
 
                     // 客户每日份额
+                    decimal sum = 0;
                     for (var j = 0; j < ids.Count; j++)
+                    {
                         sheet.Cell(i + 2, j + joff).Value = array[i, j] switch { 0 => 0, var d => d };
+                        sum += array[i, j];
+                    }
 
                     sheet.Cell(i + 2, 4).FormulaR1C1 = $"=sum(R{i + 2}C{joff}:R{i + 2}C{ids.Count + joff - 1})";
+
+                    if (sharepair && i > 0 && sum != fees[i - 1].Share)
+                        sharepair = false;
+
+                    if (i > 0)
+                        sheet.Cell(i + 2, 3).AddConditionalFormat().WhenIsTrue($"=C{2 + i}<>D{2 + i}").Fill.SetBackgroundColor(XLColor.Red);
                 }
+
+                if (!sharepair)
+                {
+                    sheet.Name += "份额不匹配";
+                    sheet.SetTabColor(XLColor.Red);
+                }
+                var sn1 = sheet.Name;
+
 
                 // 设置格式 
                 // 设置整行单元格为居中对齐
@@ -443,7 +463,7 @@ public partial class MainWindowViewModel : ObservableObject
 
                     // 客户每日费用
                     for (var j = 0; j < ids.Count; j++)
-                        sheet.Cell(i + 2, j + joff).FormulaR1C1 = $"=R{i + 2}C2 * (每日明细表!R{i + 2}C{j + joff}/每日明细表!R{i + 2}C4)";
+                        sheet.Cell(i + 2, j + joff).FormulaR1C1 = $"=R{i + 2}C2 * ({sn1}!R{i + 2}C{j + joff}/{sn1}!R{i + 2}C4)";
 
                 }
 
@@ -497,6 +517,7 @@ public partial class MainWindowViewModel : ObservableObject
                 sheet3.Column(2).Style.NumberFormat.Format = "0.00";
 
                 // 写入业绩报酬 
+                int rowSum = hasFeeIds.Count + 2;
                 using var db = DbHelper.Base();
                 var per = db.GetCollection<TransferRecord>().Find(x => x.FundId == f.Fund.Id && x.PerformanceFee > 0).Where(x => x.RequestDate >= dd[0] && x.RequestDate <= dd[^1]).ToArray();
 
@@ -520,6 +541,13 @@ public partial class MainWindowViewModel : ObservableObject
 
                     sheet3.Column(3 + j).Width = 20;
                     sheet3.Column(3 + j).Style.NumberFormat.Format = "0.00";
+
+                    // 校验
+                    var condf = sheet3.Cell(rowSum, j + 3).AddConditionalFormat();
+
+                    // 使用公式：注意以 C2 为基准（区域左上角）
+                    condf.WhenNotEquals((double)group[j].Sum(x => x.PerformanceFee))
+                        .Fill.SetBackgroundColor(XLColor.Red);
                 }
 
 
@@ -530,6 +558,14 @@ public partial class MainWindowViewModel : ObservableObject
 
                 sheet3.Column(3 + group.Length).Width = 20;
                 sheet3.Column(3 + group.Length).Style.NumberFormat.Format = "0.00";
+
+
+                // 下方合计 
+                sheet3.Cell(rowSum, 1).Value = "合计";
+                for (int j = 2; j <= group.Length + 3; j++)
+                    sheet3.Cell(rowSum, j).FormulaR1C1 = $"SUM(R2C{j}:R{rowSum - 1}C{j})";
+                sheet3.Row(rowSum).Height = 40;
+
 
 
                 sheet3.Range(1, 1, 1, group.Length + 3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
@@ -547,6 +583,9 @@ public partial class MainWindowViewModel : ObservableObject
 
                 for (int i = 0; i < hasFeeIds.Count; i++)
                     sheet3.Row(2 + i).Height = 32;
+
+                // 冻结首行
+                sheet3.SheetView.FreezeRows(1);
 
                 string path = $"files/fee/{f.Fund.ShortName}_{dates[0]:yyyy.MM.dd}-{dates[^1]:yyyy.MM.dd}.xlsx";
                 workbook.SaveAs(path);
