@@ -152,8 +152,8 @@ public partial class FundPeriodicReportViewModel : ObservableObject
 
         var result = await DirectReporter.UploadReport(report, acc);
 
-        if(result.UploadCode != 0)
-        { 
+        if (result.UploadCode != 0)
+        {
             HandyControl.Controls.Growl.Info($"上传文件失败:{result.UploadError}");
             return;
         }
@@ -163,11 +163,17 @@ public partial class FundPeriodicReportViewModel : ObservableObject
 
         await DirectReporter.QueryResult(result, acc);
 
+        if (result.ResultInfo?.Count > 0)
+            HandyControl.Controls.Growl.Info($"{result.ResultInfo[0].Message}");
+        else
+            HandyControl.Controls.Growl.Info($"校验异常");
 
-
-        await DirectReporter.Submit(result, manager.Name, acc);
-
-        HandyControl.Controls.Growl.Info($"报告提交:{result.SubmitError}");
+        if (result.ValidateCode == 0)
+        {
+            await Task.Delay(2000);
+            await DirectReporter.Submit(result, manager.Name, acc);
+            HandyControl.Controls.Growl.Info($"报告提交:{result.SubmitError}");
+        }
     }
 }
 

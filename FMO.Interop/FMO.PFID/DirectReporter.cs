@@ -291,7 +291,7 @@ public class DirectReporter
 
 
         HttpRequestMessage request = new HttpRequestMessage { Method = HttpMethod.Post };
-        request.Headers.Add("userName", UserName);
+        request.Headers.TryAddWithoutValidation("userName", UserName);
         request.Headers.Add("salt", salt);
         request.Headers.Add("sign", sign);
         request.Headers.Add("User-Agent", "imgfornote");
