@@ -131,12 +131,15 @@ public class MeiShiAssit : ISigning
             foreach (string setCookie in setCookieHeaders)
             {
                 // 使用正则提取 "name=value" 部分（忽略 ; 后的属性）
-                var match = Regex.Match(setCookie, @"^([^=]+)=([^;]*)(?:;|$)");
+                var match = Regex.Match(setCookie, @"^([^=]+)=((?:[^;]|(?<=\\);)*)");
                 if (match.Success)
                 {
                     string name = match.Groups[1].Value.Trim();
                     string value = match.Groups[2].Value.Trim();
-                    updatedCookies[name] = value; // 覆盖同名 cookie
+                    if (!string.IsNullOrEmpty(value)) // 防止删除 cookie（value 为空时应删除，但此处简化）
+                        updatedCookies[name] = value;
+                    else
+                        updatedCookies.Remove(name); // 可选：处理 cookie 删除
                 }
             }
         }
@@ -150,7 +153,7 @@ public class MeiShiAssit : ISigning
         request2.Headers.Add("accept-language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6");
         request2.Headers.Add("origin", "https://vipfunds.simu800.com");
         request2.Headers.Add("priority", "u=1, i");
-        request2.Headers.Add("referer", "https://vipfunds.simu800.com/vipmanager/singleSignOn?loginSucUri=https://vipfunds.simu800.com/vipmanager/panel&auth_channel=null&v=1764310139517");
+        //request2.Headers.Add("referer", "https://vipfunds.simu800.com/vipmanager/singleSignOn?loginSucUri=https://vipfunds.simu800.com/vipmanager/panel&auth_channel=null&v=1764310139517");
         request2.Headers.Add("sec-ch-ua", "\"Chromium\";v=\"142\", \"Microsoft Edge\";v=\"142\", \"Not_A Brand\";v=\"99\"");
         request2.Headers.Add("sec-ch-ua-mobile", "?0");
         request2.Headers.Add("sec-ch-ua-platform", "\"Windows\"");
@@ -159,9 +162,17 @@ public class MeiShiAssit : ISigning
         request2.Headers.Add("sec-fetch-site", "same-origin");
         request2.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0");
         // 构建更新后的 Cookie 字符串（用于 request2）
-        string cookieString2 = string.Join("; ", updatedCookies.Select(kv => $"{kv.Key}={kv.Value}"));
-        request2.Headers.Add("Cookie", cookieString2);
-
+        try
+        {
+            string cookieString2 = string.Join("; ", updatedCookies.Select(kv => $"{kv.Key}={kv.Value}"));
+            request2.Headers.Add("Cookie", cookieString2);
+        }
+        catch (Exception e)
+        {
+            LogEx.Error(e);
+            if (setCookieHeaders?.Any() ?? false)
+                LogEx.Information(string.Join('\n', setCookieHeaders));
+        }
 
         var jsonBody = "{}";
         request2.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
