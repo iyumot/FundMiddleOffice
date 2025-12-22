@@ -16,7 +16,10 @@
         <ResourceDictionary Source="/Themes/ValidationTemplates.xaml" />
     </UserControl.Resources>
 
-    <hc:UniformSpacingPanel Spacing="5" VerticalSpacing="5">
+    <hc:UniformSpacingPanel
+        ChildWrapping="Wrap"
+        Spacing="5"
+        VerticalSpacing="5">
 
         <local:ValidationItemView
             DataContext="{Binding ClearDateMissing.View}"
