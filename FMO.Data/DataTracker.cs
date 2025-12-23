@@ -447,7 +447,8 @@ public static partial class DataTracker
             var table = db.GetDailyCollection(g.Key.FundId, g.Key.Class);
 
             //当source=api，则不更新source=sheet
-            var old = table.Query().Where(x => x.Source == DailySource.Sheet).Select(x => x.Id).ToList();
+            var old = table.Find(x => x.Source == DailySource.Sheet).Select(x => x.Id).ToArray();
+            //var old = table.Query().Where(x => x.Source == DailySource.Sheet).Select(x => (long)x.Id).ToList();
             table.Upsert(g.ExceptBy(old, x => x.Id));
 
             // 如果是api，只更新非sheet
