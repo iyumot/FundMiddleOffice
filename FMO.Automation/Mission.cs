@@ -60,10 +60,11 @@ public abstract class Mission
         try
         {
             WorkLog = "";
+            DateTime now = DateTime.Now;
             try
             {
                 r = WorkOverride();
-                LastRun = DateTime.Now;
+                LastRun = now;
                 if (r) SetNextRun();
             }
             catch (Exception e)
@@ -74,8 +75,10 @@ public abstract class Mission
             }
 
             using (var db = new MissionDatabase())
+            {
                 db.GetCollection<Mission>().Upsert(this);
-
+                db.GetCollection<MissionRecord>().Insert(new MissionRecord { MissionId = Id, Record = WorkLog, Time = now });
+            }
         }
         catch (Exception e)
         {

@@ -42,6 +42,8 @@ public static class MissionSchedule
         // 不再使用
         //missions.RemoveWhere(x => x is FillFundDailyMission);
 
+        // 清理Log
+        db.GetCollection<MissionRecord>().DeleteMany(x => x.Time < DateTime.Now.AddMonths(-2));
 
 #if DEBUG
         foreach (var m in missions)
