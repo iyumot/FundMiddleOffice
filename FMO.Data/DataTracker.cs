@@ -1474,6 +1474,16 @@ public static partial class DataTracker
 
         WeakReferenceMessenger.Default.Send(data);
     }
+
+    public static void OnBatchTransferOrder(IList<TransferOrder> data)
+    {
+        // 匹配订单
+        using var db = DbHelper.Base();
+
+        db.GetCollection<TransferOrder>().Upsert(data);
+
+        WeakReferenceMessenger.Default.Send(data);
+    }
 }
 
 

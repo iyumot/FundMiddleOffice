@@ -185,24 +185,8 @@ public class ESigningWorker
             }
         }
 
-        using (var db2 = DbHelper.Base())
-        {
-            //var olds = db2.GetCollection<TransferOrder>().Find(x => string.IsNullOrWhiteSpace(x.Source)).ToList();
-            //olds.AddRange(orders);
-
-            //foreach (var item in olds.GroupBy(x => (x.Date, x.FundId, x.InvestorId, x.Type, x.Number)))
-            //{
-            //    var array = item.ToArray();
-
-            //    if (array.Length == 2 && string.IsNullOrWhiteSpace(array[0].Source) && array[1].Source =="meishi")
-            //    {
-            //        array[1].Id = array[0].Id;
-            //    }
-            //}
-
-            // 历史订单合并
-            db2.GetCollection<TransferOrder>().Upsert(orders);
-        }
+        DataTracker.OnBatchTransferOrder(orders);
+         
     }
 
 

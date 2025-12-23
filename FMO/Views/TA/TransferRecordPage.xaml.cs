@@ -9,6 +9,7 @@ using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -28,7 +29,7 @@ public partial class TransferRecordPage : UserControl
 
 
 public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<IList<TransferRequest>>, IRecipient<TransferRecord>,
-    IRecipient<PageTAMessage>, IRecipient<TransferOrder>, IRecipient<TipChangeMessage>, IRecipient<List<ManualLinkOrder>>
+    IRecipient<PageTAMessage>, IRecipient<TransferOrder>, IRecipient<TipChangeMessage>, IRecipient<List<ManualLinkOrder>>, IRecipient<IList<TransferOrder>>
 {
     [ObservableProperty]
     public partial ObservableCollection<TransferRecordViewModel>? Records { get; set; }
@@ -740,5 +741,25 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
             RequestsSource.Source = Requests;
         });
 
+    }
+
+    public void Receive(IList<TransferOrder> message)
+    {
+        // 新的
+        App.Current.Dispatcher.InvokeAsync(() =>
+        {
+            // 需要添加的
+            var add = Orders is null ? message.Select(x => new TransferOrderViewModel(x)).ToList() : message.ExceptBy(Orders.Select(x => x.Id), x => x.Id).Select(x => new TransferOrderViewModel(x)).ToList();
+            if (add.Count == 0) return;
+ 
+
+            // 入列
+            if (Orders is null || Orders.Count == 0)
+                Orders = [.. add];
+            else
+                Orders = [.. Orders, .. add];
+
+            OrderSource.Source = Orders;
+        });
     }
 }
