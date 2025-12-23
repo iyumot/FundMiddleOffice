@@ -474,7 +474,7 @@ public class MeiShiAssit : ISigning
 
     public async Task<TransferOrder[]> QueryOrderAsync(DateTime from = default, DateTime end = default)
     {
-        if (end == default) end = DateTime.Now;
+        //if (end == default) end = DateTime.Now.AddDays(1);
 
         if (!IsValid) return [];
         if (!isLogin) isLogin = await Login();
@@ -489,7 +489,8 @@ public class MeiShiAssit : ISigning
             request.RequestUri = new Uri("https://vipfunds.simu800.com/vip-manager/manager/signFlowController/querySignFlowAll");
             request.Headers.Add("tokenid", Token);
 
-            var param = new { queryType = 2, pageNum = 1, pageSize = 500, completionDateBegin = from.TimeStampByMilliseconds(), completionDateEnd = end.TimeStampByMilliseconds() };
+            object param = end != default ? new { queryType = 0, pageNum = 1, pageSize = 500, signFlowStartDateBegin = from.TimeStampByMilliseconds(), completionDateEnd = end.TimeStampByMilliseconds() } :
+                    new { queryType = 0, pageNum = 1, pageSize = 500, signFlowStartDateBegin = from.TimeStampByMilliseconds() };
             request.Content = new StringContent(JsonSerializer.Serialize(param), Encoding.UTF8, "application/json");
 
             var response = client.Send(request);
