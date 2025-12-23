@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using FMO.Logging;
 using Serilog;
 using System.ComponentModel;
 using System.Reflection;
@@ -166,12 +167,17 @@ public partial class MissionViewModel<T> : AutomationViewModelBase where T : Mis
     public partial bool CanRunOnce { get; set; } = true;
 
 
+    public virtual void AfterRun() { }
+
+
     [RelayCommand(CanExecute = nameof(CanRunOnce))]
     public async Task RunOnce()
     {
         CanRunOnce = false;
         await Task.Run(() => Mission.Work());
         CanRunOnce = true;
+
+        try { AfterRun(); } catch(Exception e) { LogEx.Error(e); }
     }
 
 
