@@ -119,7 +119,7 @@ public partial class TrusteeWorker : ObservableObject
         TransferRequestConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryTransferRequests)) ?? new(nameof(ITrustee.QueryTransferRequests));
         DailyFeeConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryFundDailyFee)) ?? new(nameof(ITrustee.QueryFundDailyFee)) { Interval = 60 * 12 }; // 每天一次
         RaisingAccountTransctionConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryRaisingAccountTransction)) ?? new(nameof(ITrustee.QueryRaisingAccountTransction));
-        NetValueConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryNetValue)) ?? new(nameof(ITrustee.QueryNetValue)) { Interval = 60 }; // 每6个小时
+        NetValueConfig = cfg.FirstOrDefault(x => x.Id == nameof(ITrustee.QueryNetValue)) ?? new(nameof(ITrustee.QueryNetValue)) { Interval = 30 }; // 每个小时
 
 
         RaisingBalanceConfig.Interval = 15;
@@ -127,7 +127,7 @@ public partial class TrusteeWorker : ObservableObject
         TransferRequestConfig.Interval = 60;
         DailyFeeConfig.Interval = 60 * 12;
         RaisingAccountTransctionConfig.Interval = 15;
-        NetValueConfig.Interval = 60;
+        NetValueConfig.Interval = 30;
 
 
         // 基金映射
@@ -564,13 +564,50 @@ public partial class TrusteeWorker : ObservableObject
     {
         if (trustees is null || trustees.Any()) trustees = Trustees;
 
-        using var db = DbHelper.Base();
-        var funds = db.GetCollection<Fund>().Query().Select(x => new { x.Id, x.Code, x.SetupDate, x.ClearDate, x.LastUpdate, x.Status }).ToList();
-
-        // 已清盘的
-        foreach (var fund in funds.Where(x => x.Status > FundStatus.StartLiquidation))
+        
+        List<WorkReturn> ret = new();
+        var method = nameof(ITrustee.QueryNetValue);
+        foreach (var tr in trustees)
         {
+            if (!tr.IsValid)
+            {
+                ret.Add(new(tr.Title, ReturnCode.ConfigInvalid));
+                continue;
+            }
 
+            try
+            {
+                // 获取历史区间
+                var range = GetWorkedRange(tr.Identifier, method);
+
+                DateOnly begin = range.End, end = DateOnly.FromDateTime(DateTime.Now);
+                if (begin == end) begin = Days.PrevTradingDay(begin);
+
+                var rc = await tr.QueryNetValue(begin, end);
+
+                ///
+                // 保存数据库 
+                if (rc.Data is not null)
+                {
+                    DataTracker.OnDailyValue(rc.Data);
+                }
+
+                // 合并记录
+                ret.Add(new(tr.Title, rc.Code, rc.Data));
+
+
+                // 更新进度
+                UpdateWorkedRange(range, begin, end);
+            }
+            catch (Exception e)
+            {
+                ret.Add(new(tr.Title, ReturnCode.Unknown));
+                Log.Error($"{method} {e}");
+            }
+
+            WeakReferenceMessenger.Default.Send(new TrusteeWorkResult(nameof(ITrustee.QueryNetValue), ret));
+            NetValueConfig.Last = DateTime.Now;
+            Save(NetValueConfig);
         }
     }
     #endregion
