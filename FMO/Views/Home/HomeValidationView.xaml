@@ -61,7 +61,7 @@
 
 
         <local:ValidationItemView
-            DataContext="{Binding FundClearNotFinished.View}"
+            DataContext="{Binding FundNearLiquidation.View}"
             Header="基金临近清盘"
             TipTemplate="{StaticResource FundNearLiquidation}" />
     </hc:UniformSpacingPanel>
