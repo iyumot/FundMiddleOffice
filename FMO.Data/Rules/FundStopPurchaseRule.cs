@@ -1,4 +1,5 @@
-﻿using FMO.Models;
+﻿using FMO.Logging;
+using FMO.Models;
 using System.Collections.Concurrent;
 
 namespace FMO.Utilities;
@@ -228,65 +229,80 @@ public class FundStopPurchaseRule : VerifyRule<DailyValue>
         using var db = DbHelper.Base();
         foreach (var fv in DailyValues.GroupBy(x => x.FundId))
         {
+
             var fundLimit = db.GetCollection<FundLimit>().FindById(fv.Key);
             var f = db.GetCollection<Fund>().FindById(fv.Key);
-            if (fundLimit.DataMissing)
+            try
             {
-                // 组织数据 
-                var begin = f.SetupDate.Year < 2024 ? new DateOnly(2024, 1, 1) : f.SetupDate;
-                var tradingdays = Days.TradingDaysBetween(begin, DateOnly.FromDateTime(DateTime.Now));
-
-                // 合并，缺失的值=0
-                var dys = db.GetDailyCollection(f.Id).Query().Where(x => x.Date >= begin).Select(x => new { x.Date, x.NetAsset }).ToList();
-                var fdys = from d in dys join t in tradingdays on d.Date equals t into r from x in r.DefaultIfEmpty() orderby d.Date select (d.Date, d.NetAsset);
-
-                var dates = fdys.Select(x => x.Date).ToArray();
-                var assets = fdys.Select(x => x.NetAsset).ToArray();
-                fundLimit = new() { Id = f.Id };
-                Process(fundLimit, dates, assets);
-
-                db.GetCollection<FundLimit>().Upsert(fundLimit);
-
-                if (fundLimit.PurchaseLimited || fundLimit.PotentialLimitDate != default || fundLimit.PotentialClearDate != default)
+                if (fundLimit.DataMissing)
                 {
-                    if (Tips.TryRemove(f.Id, out var old))
-                        Revoke(old.Id);
+                    // 组织数据 
+                    var begin = f.SetupDate.Year < 2024 ? new DateOnly(2024, 1, 1) : f.SetupDate;
+                    var tradingdays = Days.TradingDaysBetween(begin, DateOnly.FromDateTime(DateTime.Now));
 
-                    var tip = new DataTip<FundStopPurchaseContext>()
+                    // 合并，缺失的值=0
+                    var dys = db.GetDailyCollection(f.Id).Query().Where(x => x.Date >= begin).Select(x => new { x.Date, x.NetAsset }).ToList();
+                    var fdys = from d in dys join t in tradingdays on d.Date equals t into r from x in r.DefaultIfEmpty() orderby d.Date select (d.Date, d.NetAsset);
+
+                    var dates = fdys.Select(x => x.Date).ToArray();
+                    var assets = fdys.Select(x => x.NetAsset).ToArray();
+
+                    if (dates.Length == 0)
                     {
-                        Tags = ["Fund", $"Fund{f.Id}", nameof(FundStopPurchaseRule)],
-                        _Context = new FundStopPurchaseContext(f.Name, fundLimit.PurchaseLimited, fundLimit.EstimatedDailyAssets, fundLimit.PotentialLimitDate, fundLimit.PotentialClearDate == default ? null : fundLimit.PotentialClearDate)
-                    };
-                    Tips.TryAdd(f.Id, tip);
-                    Send(tip);
+                        LogEx.Error($"{f.Name} Has No Nv");
+                        continue;
+                    }
+
+                    fundLimit = new() { Id = f.Id };
+                    Process(fundLimit, dates, assets);
+
+                    db.GetCollection<FundLimit>().Upsert(fundLimit);
+
+                    if (fundLimit.PurchaseLimited || fundLimit.PotentialLimitDate != default || fundLimit.PotentialClearDate != default)
+                    {
+                        if (Tips.TryRemove(f.Id, out var old))
+                            Revoke(old.Id);
+
+                        var tip = new DataTip<FundStopPurchaseContext>()
+                        {
+                            Tags = ["Fund", $"Fund{f.Id}", nameof(FundStopPurchaseRule)],
+                            _Context = new FundStopPurchaseContext(f.Name, fundLimit.PurchaseLimited, fundLimit.EstimatedDailyAssets, fundLimit.PotentialLimitDate, fundLimit.PotentialClearDate == default ? null : fundLimit.PotentialClearDate)
+                        };
+                        Tips.TryAdd(f.Id, tip);
+                        Send(tip);
+                    }
                 }
+                else
+                {
+                    var fdys = fv.Where(x => x.Date > fundLimit.CheckDate).OrderBy(x => x.Date).ToArray();
+
+                    var dates = fdys.Select(x => x.Date).ToArray();
+                    var assets = fdys.Select(x => x.NetAsset).ToArray();
+                    Process(fundLimit, dates, assets);
+
+                    db.GetCollection<FundLimit>().Upsert(fundLimit);
+
+                    if (fundLimit.PurchaseLimited || fundLimit.PotentialLimitDate != default || fundLimit.PotentialClearDate != default)
+                    {
+                        if (Tips.TryRemove(f.Id, out var old))
+                            Revoke(old.Id);
+
+                        var tip = new DataTip<FundStopPurchaseContext>()
+                        {
+                            Tags = ["Fund", $"Fund{f.Id}", nameof(FundStopPurchaseRule)],
+                            _Context = new FundStopPurchaseContext(f.Name, fundLimit.PurchaseLimited, fundLimit.EstimatedDailyAssets, fundLimit.PotentialLimitDate, fundLimit.PotentialClearDate == default ? null : fundLimit.PotentialClearDate)
+                        };
+
+                        Tips.TryAdd(f.Id, tip);
+                        Send(tip);
+                    }
+                }
+
             }
-            else
+            catch (Exception ex)
             {
-                var fdys = fv.Where(x => x.Date > fundLimit.CheckDate).OrderBy(x => x.Date).ToArray();
-
-                var dates = fdys.Select(x => x.Date).ToArray();
-                var assets = fdys.Select(x => x.NetAsset).ToArray();
-                Process(fundLimit, dates, assets);
-
-                db.GetCollection<FundLimit>().Upsert(fundLimit);
-
-                if (fundLimit.PurchaseLimited || fundLimit.PotentialLimitDate != default || fundLimit.PotentialClearDate != default)
-                {
-                    if (Tips.TryRemove(f.Id, out var old))
-                        Revoke(old.Id);
-
-                    var tip = new DataTip<FundStopPurchaseContext>()
-                    {
-                        Tags = ["Fund", $"Fund{f.Id}", nameof(FundStopPurchaseRule)],
-                        _Context = new FundStopPurchaseContext(f.Name, fundLimit.PurchaseLimited, fundLimit.EstimatedDailyAssets, fundLimit.PotentialLimitDate, fundLimit.PotentialClearDate == default ? null : fundLimit.PotentialClearDate)
-                    };
-
-                    Tips.TryAdd(f.Id, tip);
-                    Send(tip);
-                }
+                LogEx.Error($"{f.Name} FundStopPurchaseRule", ex);
             }
-
 
         }
     }
