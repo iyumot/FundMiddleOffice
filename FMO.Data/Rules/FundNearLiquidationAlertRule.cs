@@ -52,7 +52,7 @@ public class FundNearLiquidationAlertRule : VerifyRule<NewDay, EntityChanged<Dat
             {
                 var expire = ele.ExpirationDate.Value;
 
-                if (expire == default || expire.DayNumber - cur.DayNumber < 365)
+                if (expire.DayNumber - cur.DayNumber < 365)
                 {
                     DataTip<FundNearLiquidationContext> tip = new() { Tags = ["Fund", $"Fund{ele.Id}", nameof(FundNearLiquidationContext)], _Context = new FundNearLiquidationContext(fund.Name, fund.SetupDate, expire) };
                     Tips.TryAdd(fund.Id, tip);
