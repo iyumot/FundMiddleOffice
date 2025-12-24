@@ -228,6 +228,14 @@ public static class LogEx
         Here(filePath, memberName, lineNumber).Error($"{exception.Message}\n{exception.StackTrace}");
     }
 
+    public static void Error(string msg, Exception exception,
+      [CallerFilePath] string filePath = "",
+      [CallerMemberName] string memberName = "",
+      [CallerLineNumber] int lineNumber = 0)
+    {
+        Here(filePath, memberName, lineNumber).Error($"msg\n{exception.Message}\n{exception.StackTrace}");
+    }
+
     public static void Error<T>(Exception exception, string message, T propertyValue,
         [CallerFilePath] string filePath = "",
         [CallerMemberName] string memberName = "",
