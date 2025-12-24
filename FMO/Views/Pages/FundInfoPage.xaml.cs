@@ -803,7 +803,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
             App.Current.Dispatcher.BeginInvoke(() =>
             {
-                var old = DailyValues.FirstOrDefault(x => x.Id == message.Daily.Id);
+                var old = DailyValues.FirstOrDefault(x => x.Id == message.Daily.Id && x.Class == message.Daily.Class);
                 if (old is not null)
                     DailyValues.Remove(old);
 

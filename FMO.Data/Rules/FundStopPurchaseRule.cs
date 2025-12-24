@@ -278,6 +278,13 @@ public class FundStopPurchaseRule : VerifyRule<DailyValue>
 
                     var dates = fdys.Select(x => x.Date).ToArray();
                     var assets = fdys.Select(x => x.NetAsset).ToArray();
+
+                    if (dates.Length == 0)
+                    {
+                        LogEx.Error($"{f.Name} Has No Nv");
+                        continue;
+                    }
+
                     Process(fundLimit, dates, assets);
 
                     db.GetCollection<FundLimit>().Upsert(fundLimit);
