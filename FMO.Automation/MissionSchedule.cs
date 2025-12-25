@@ -93,4 +93,12 @@ public static class MissionSchedule
             db.GetCollection<Mission>().Delete(id);
         }
     }
+
+    internal static void ManualSetNextRun(int id, DateTime time)
+    {
+        var m = missions.FirstOrDefault(x => x.Id == id);
+        if (m is null) return;
+        m.NextRun = time;
+        SaveChanges(m);
+    }
 }

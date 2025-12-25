@@ -82,10 +82,7 @@ public partial class AutomationViewModelBase : ObservableObject, IRecipient<Miss
     {
         if (set && NextRunDate is not null && NextRunTime is not null && NextRunDate.Value.Date.Add(NextRunTime.Value.TimeOfDay) is DateTime t && t > DateTime.Now)
         {
-            using var db = new MissionDatabase();
-            var mission = db.GetCollection<Mission>().FindById(Id);
-            mission.NextRun = t;
-            db.GetCollection<Mission>().Upsert(mission);
+            MissionSchedule.ManualSetNextRun(Id, t);
         }
         else
         {
