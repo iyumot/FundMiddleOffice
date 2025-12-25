@@ -65,10 +65,10 @@
                                 Command="{Binding DataContext.ViewSheetCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 CommandParameter="{Binding .}"
                                 Style="{StaticResource ButtonIcon.Small}"
-                                Visibility="Collapsed" />
+                                Visibility="Visible" />
                             <DataTemplate.Triggers>
-                                <DataTrigger Binding="{Binding Source}" Value="Sheet">
-                                    <Setter TargetName="b" Property="Visibility" Value="Visible" />
+                                <DataTrigger Binding="{Binding SheetPath}" Value="{x:Null}">
+                                    <Setter TargetName="b" Property="Visibility" Value="Collapsed" />
                                 </DataTrigger>
                             </DataTemplate.Triggers>
                         </DataTemplate>
