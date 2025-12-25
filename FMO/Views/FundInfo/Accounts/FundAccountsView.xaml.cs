@@ -410,8 +410,12 @@ public partial class FundAccountsViewModel : ObservableObject
         foreach (var x in cl.ExceptBy(SecurityCardChanges.Select(x => x.Id), x => x.Id))
             SecurityCardChanges.Add(new SecurityCardChangeViewModel(x));
 
+        SecurityCardChangeSource.View.Refresh();
+        SHSecurityCardSource.View.Refresh();
+        SZSecurityCardSource.View.Refresh();
+
         var cuc = list.Count + cl.Count;
-        HandyControl.Controls.Growl.Info($"已解析{cnt}个股卡{(cuc < cnt ? $"，失败{failed}个，{cnt - cuc}个不属于本产品" : "")}");
+        HandyControl.Controls.Growl.Info($"已解析{cuc}个股卡{(cuc < cnt ? $"，失败{failed}个，{cnt - cuc}个不属于本产品" : "")}");
     }
 
 
