@@ -189,14 +189,8 @@ public class MeiShiAssit : ISigning
     }
 
 
-    public async Task<Investor[]> QueryCustomerAsync(DateTime from = default, DateTime end = default)
+    private async Task<string> Query(DateTime from, DateTime end)
     {
-        if (!IsValid) return [];
-        if (!isLogin) isLogin = await Login();
-        if (!isLogin) { LogEx.Error("MeiShi Login Failed"); return []; }
-
-
-        if (end == default) end = DateTime.Now;
 
         HttpRequestMessage request = new();
         request.Method = HttpMethod.Post;
@@ -207,17 +201,37 @@ public class MeiShiAssit : ISigning
 
         var response = client.Send(request);
 
-        var cont = await response.Content.ReadAsStringAsync();
+        return await response.Content.ReadAsStringAsync();
+    }
+
+    public async Task<Investor[]> QueryCustomerAsync(DateTime from = default, DateTime end = default)
+    {
+        if (!IsValid) return [];
+        if (!isLogin) isLogin = await Login();
+        if (!isLogin) { LogEx.Error("MeiShi Login Failed"); return []; }
+
+
+        if (end == default) end = DateTime.Now;
+
+
+        var cont = await Query(from, end);
         SigningLoger.LogRun(this, nameof(QueryCustomerAsync), $"{from}-{end}", cont);
 
         if (cont.Contains("token已失效"))
         {
             isLogin = false;
-            return [];
+            isLogin = await Login();
+            if (!isLogin) { LogEx.Error("MeiShi Login Failed"); return []; }
+
+            cont = await Query(from, end);
         }
 
         var root = JsonSerializer.Deserialize<RootJson>(cont);
-
+        if (root?.code != 1008)
+        {
+            LogEx.Error($"MeiShi QueryCustomerAsync {root?.message}");
+            return [];
+        }
         var customers = root?.data?["list"].Deserialize<CustomerJson[]>();
         var formated = customers?.Where(x => x is not null)?.Select(x => x.To())?.ToArray() ?? [];
 

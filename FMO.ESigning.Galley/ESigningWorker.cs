@@ -55,7 +55,7 @@ public class ESigningWorker
                 rec.QueryCustomerTime = _beginDate;
 
             try
-            {
+            { 
                 var customers = await sign.QueryCustomerAsync(rec.QueryCustomerTime);
 
                 // 合并
