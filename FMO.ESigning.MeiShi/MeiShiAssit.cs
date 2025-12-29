@@ -503,7 +503,7 @@ public class MeiShiAssit : ISigning
             request.RequestUri = new Uri("https://vipfunds.simu800.com/vip-manager/manager/signFlowController/querySignFlowAll");
             request.Headers.Add("tokenid", Token);
 
-            object param = end != default ? new { queryType = 0, pageNum = 1, pageSize = 500, signFlowStartDateBegin = from.TimeStampByMilliseconds(), completionDateEnd = end.TimeStampByMilliseconds() } :
+            object param = end != default ? new { queryType = 0, pageNum = 1, pageSize = 500, signFlowStartDateBegin = from.TimeStampByMilliseconds() } :
                     new { queryType = 0, pageNum = 1, pageSize = 500, signFlowStartDateBegin = from.TimeStampByMilliseconds() };
             request.Content = new StringContent(JsonSerializer.Serialize(param), Encoding.UTF8, "application/json");
 
