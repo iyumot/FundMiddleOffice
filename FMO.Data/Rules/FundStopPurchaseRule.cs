@@ -1,6 +1,7 @@
 ﻿using FMO.Logging;
 using FMO.Models;
 using System.Collections.Concurrent;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FMO.Utilities;
 
@@ -249,7 +250,7 @@ public class FundStopPurchaseRule : VerifyRule<DailyValue>
 
                     if (dates.Length == 0)
                     {
-                        LogEx.Error($"{f.Name} Has No Nv");
+                        //LogEx.Error($"{f.Name} From {begin} Has No Nv");
                         continue;
                     }
 
@@ -281,7 +282,7 @@ public class FundStopPurchaseRule : VerifyRule<DailyValue>
 
                     if (dates.Length == 0)
                     {
-                        LogEx.Error($"{f.Name} Has No Nv");
+                        //LogEx.Error($"{f.Name} From {fundLimit.CheckDate} Has No Nv");
                         continue;
                     }
 
