@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
+using FMO.Logging;
 using FMO.Models;
 using LiteDB;
 using Serilog;
@@ -442,7 +443,7 @@ public static partial class DataTracker
     {
         var dailyValues = data.Where(x => x.NetValue != 0).ToList();
         if (dailyValues.Count == 0) return;
-        
+
         using var db = DbHelper.Base();
         foreach (var g in dailyValues.GroupBy(x => (x.FundId, x.Class)))
         {
@@ -451,7 +452,7 @@ public static partial class DataTracker
             ////当source=api，则不更新source=sheet
             //var old = table.Find(x => x.Source == DailySource.Sheet).Select(x => x.Id).ToArray();
             ////var old = table.Query().Where(x => x.Source == DailySource.Sheet).Select(x => (long)x.Id).ToList();
-            
+
             //foreach (var src in g.GroupBy(x => x.Source))
             //{
             //    if(src.Key == DailySource.Sheet)
@@ -460,16 +461,48 @@ public static partial class DataTracker
             //        table.Upsert(src.ExceptBy(old, x => x.Id));
             //}
 
-
-            // 如果是api，只更新非sheet
-            var dic = table.Query().Select(x => new { x.Id, x.SheetPath }).ToEnumerable().ToDictionary(x => x.Id);
-
-            foreach (var item in g)
+            try
             {
-                if (dic.TryGetValue(item.Id, out var value))
-                    item.SheetPath = value.SheetPath;
+
+                // 如果是api，只更新非sheet
+                var dic = table.Query().Where(x => x.Source == DailySource.Sheet).OrderBy(x => x.Id).Select(x => x.Id).ToList();
+
+                foreach (var item in g.GroupBy(x => x.Source))
+                {
+                    if (item.Key != DailySource.Sheet)
+                    {
+                        var nonsheet = item.ExceptBy(dic, x => x.Id);
+                        table.Upsert(nonsheet);
+
+                        //// 通知
+                        Parallel.ForEach(nonsheet, x =>
+                        {
+                            WeakReferenceMessenger.Default.Send(new FundDailyUpdateMessage(x.FundId, x));
+                        });
+                    }
+                    else
+                    {
+                        table.Upsert(item);
+                        //// 通知
+                        Parallel.ForEach(item, x =>
+                        {
+                            WeakReferenceMessenger.Default.Send(new FundDailyUpdateMessage(x.FundId, x));
+                        });
+                    }
+                }
             }
-            table.Upsert(g);
+            catch (Exception e)
+            {
+                LogEx.Error($"{g.Key.FundId}", e);
+            }
+
+
+            //foreach (var item in g)
+            //{ 
+            //    //if (item.SheetPath is null && dic.TryGetValue(item.Id, out var value))
+            //    //    item.SheetPath = value.SheetPath;
+            //}
+            //table.Upsert(nonsheet);
         }
 
         // 更新管理规模
@@ -539,11 +572,11 @@ public static partial class DataTracker
         }
 
 
-        // 通知
-        Parallel.ForEach(dailyValues, x =>
-        {
-            WeakReferenceMessenger.Default.Send(new FundDailyUpdateMessage(x.FundId, x));
-        });
+        //// 通知
+        //Parallel.ForEach(dailyValues, x =>
+        //{
+        //    WeakReferenceMessenger.Default.Send(new FundDailyUpdateMessage(x.FundId, x));
+        //});
 
 
         // 检验
