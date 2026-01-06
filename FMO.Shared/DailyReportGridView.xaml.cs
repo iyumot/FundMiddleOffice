@@ -32,7 +32,7 @@ public partial class DailyReportGridView : UserControl
 }
 
 
-public partial class DailyReportGridViewModel : ObservableRecipient, IRecipient<FundDailyUpdateMessage>, IRecipient<EntityChangedMessage<Fund,FundStatus>>
+public partial class DailyReportGridViewModel : ObservableRecipient, IRecipient<FundDailyUpdateMessage>, IRecipient<EntityChangedMessage<Fund, FundStatus>>
 {
 
     [ObservableProperty]
@@ -64,8 +64,8 @@ public partial class DailyReportGridViewModel : ObservableRecipient, IRecipient<
         item.Shares = item.Daily.Share / 10000;
         item.NetAsset = item.Daily.NetAsset / 10000;
 
-        var td = TradingDay.Current;
-        var gapdays = TradingDay.CountBetween(item.Daily.Date, td);
+        var td = Days.IsTradingDay(DateTime.Now) ? DateOnly.FromDateTime(DateTime.Now) : Days.NextTradingDay(DateTime.Now);
+        var gapdays = Days.CountTradingDays(item.Daily.Date, td);
         item.DateBrush = gapdays switch
         {
             > 7 => Brushes.Red,
@@ -92,7 +92,7 @@ public partial class DailyReportGridViewModel : ObservableRecipient, IRecipient<
 
 
         //最近的交易日
-        var td = TradingDay.Current;
+        var td = Days.IsTradingDay(DateTime.Now) ? DateOnly.FromDateTime(DateTime.Now) : Days.NextTradingDay(DateTime.Now);
         var tmp = funds.Select(x => new DailyReportItem { FundId = x.Id, FundName = x.ShortName, FundCode = x.Code }).ToArray();
 
         foreach (var item in tmp)
@@ -104,7 +104,7 @@ public partial class DailyReportGridViewModel : ObservableRecipient, IRecipient<
             item.Shares = item.Daily.Share / 10000;
             item.NetAsset = item.Daily.NetAsset / 10000;
 
-            var gapdays = TradingDay.CountBetween(item.Daily.Date, td);
+            var gapdays = Days.CountTradingDays(item.Daily.Date, td);
             item.DateBrush = gapdays switch
             {
                 > 7 => Brushes.Red,
@@ -142,7 +142,7 @@ public partial class DailyReportGridViewModel : ObservableRecipient, IRecipient<
         {
 
             //最近的交易日
-            var td = TradingDay.Current;
+            var td = Days.IsTradingDay(DateTime.Now) ? DateOnly.FromDateTime(DateTime.Now) : Days.NextTradingDay(DateTime.Now);
             using var db = DbHelper.Base();
             var fund = db.GetCollection<Fund>().FindById(message.Entity.Id);
             if (fund is null) return;
@@ -157,7 +157,7 @@ public partial class DailyReportGridViewModel : ObservableRecipient, IRecipient<
             item.Shares = item.Daily.Share / 10000;
             item.NetAsset = item.Daily.NetAsset / 10000;
 
-            var gapdays = TradingDay.CountBetween(item.Daily.Date, td);
+            var gapdays = Days.CountTradingDays(item.Daily.Date, td);
             item.DateBrush = gapdays switch
             {
                 > 7 => Brushes.Red,
@@ -178,7 +178,7 @@ public partial class DailyReportGridViewModel : ObservableRecipient, IRecipient<
         }
     }
 
-   
+
 
     public partial class DailyReportItem : ObservableObject
     {

@@ -100,8 +100,9 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
         RiskLevel = ele.RiskLevel?.Value;
 
-        // 净值
-        DailyValues = new ObservableCollection<DailyValue>(db.GetDailyCollection(Fund.Id).FindAll().OrderByDescending(x => x.Date).IntersectBy(TradingDay.Days, x => x.Date));
+        // 净值 
+
+        DailyValues = new ObservableCollection<DailyValue>(db.GetDailyCollection(Fund.Id).FindAll().OrderByDescending(x => x.Date).IntersectBy(Days.AllTradeDays, x => x.Date));
         var strategies = db.GetCollection<FundStrategy>().Find(x => x.FundId == fund.Id).ToList();
 
 
@@ -745,7 +746,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
             await App.Current.Dispatcher.BeginInvoke(() =>
             {
                 using var db = DbHelper.Base();
-                var ll = new List<DailyValue>(db.GetDailyCollection(Fund.Id).FindAll().OrderByDescending(x => x.Date).IntersectBy(TradingDay.Days, x => x.Date).ToList());
+                var ll = new List<DailyValue>(db.GetDailyCollection(Fund.Id).FindAll().OrderByDescending(x => x.Date).IntersectBy(Days.AllTradeDays, x => x.Date).ToList());
 
                 DailySource.Source = ll;
                 DailySource.View.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(DailyValue.Date), System.ComponentModel.ListSortDirection.Descending));

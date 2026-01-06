@@ -21,6 +21,7 @@ public record DateMeta(DateOnly Date, int Week, DayFlag Flag);
 public static class Days
 {
     private static List<DateOnly> Dates = new();
+    private static List<DateOnly> TradingDates = new();
     private static List<DateMeta> Data = new();
 
 
@@ -73,6 +74,10 @@ public static class Days
         }
         return list.ToArray();
     }
+
+
+    public static IList<DateOnly> AllTradeDays => TradingDates;
+
 
     /// <summary>
     /// 
@@ -173,19 +178,23 @@ public static class Days
     }
 
 
+
+
+
     static Days() => Init();
 
     private static void Init()
     {
         try
         {
-            var fi = new FileInfo(@"config\day.csv");
-            if (fi.Exists)
-            {
-                using var sr = new StreamReader(@"config\day.csv");
-                InitFromStream(sr);
-            }
-            else InitFromAssembly();
+            //var fi = new FileInfo(@"config\day.csv");
+            //if (fi.Exists)
+            //{
+            //    using var sr = new StreamReader(@"config\day.csv");
+            //    InitFromStream(sr);
+            //}
+            //else
+            InitFromAssembly();
         }
         catch
         {
@@ -218,6 +227,8 @@ public static class Days
                 n = 1;
 
             Data.Add(new DateMeta(item.a, n, item.b));
+            if (item.b == DayFlag.Trade)
+                TradingDates.Add(item.a);
         }
     }
 

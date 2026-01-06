@@ -21,7 +21,7 @@ public class SendDailyReportToWebhookMission : Mission
 
     protected override void SetNextRun()
     {
-        NextRun = LastRun < DateTime.Today ? DateTime.Today.AddTicks(Time.Ticks) : new DateTime(TradingDay.Next(DateTime.Today), Time);
+        NextRun = LastRun < DateTime.Today ? DateTime.Today.AddTicks(Time.Ticks) : new DateTime(Days.NextTradingDay(DateTime.Today), Time);
     }
 
 
