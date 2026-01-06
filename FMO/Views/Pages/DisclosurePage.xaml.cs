@@ -34,7 +34,8 @@ public partial class DisclosurePageViewModel : ObservableObject
 
     public int[] Years { get; set; }
 
-    public int[] Months { get; set; }
+    [ObservableProperty]
+    public partial int[] Months { get; set; }
 
     [ObservableProperty]
     public partial int? SelectedYear { get; set; }

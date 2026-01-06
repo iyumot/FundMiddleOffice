@@ -18,28 +18,24 @@ public record FileMeta(string Id, string Name, DateTime Time, string Hash)
 
 
     public static FileMeta Create(FileInfo fi)
-    {
-        string hash;
-        using (var md5 = MD5.Create())
-        using (var stream = new FileStream(fi.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
-            hash = BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
-
+    { 
         string id = Guid.NewGuid().ToString();
         Directory.CreateDirectory("files\\hardlink");
         var hard = @$"files\hardlink\{id}";
         if (!File.Exists(hard))
             File.Copy(fi.FullName, hard, true);
 
+
+        string hash;
+        using (var md5 = MD5.Create())
+        using (var stream = new FileStream(hard, FileMode.Open, FileAccess.Read, FileShare.Read))
+            hash = BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
+
         return new FileMeta(id, fi.Name, fi.LastWriteTime, hash);
     }
 
     public static FileMeta Create(FileInfo fi, string desireName)
     {
-        string hash;
-        using (var md5 = MD5.Create())
-        using (var stream = new FileStream(fi.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
-            hash = BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
-
         string id = Guid.NewGuid().ToString();
         Directory.CreateDirectory("files\\hardlink");
         var hard = @$"files\hardlink\{id}";
@@ -53,6 +49,10 @@ public record FileMeta(string Id, string Name, DateTime Time, string Hash)
 
 
         //FileMeta.CreateHardLink(@$"hardlink\{id}", desire);
+        string hash;
+        using (var md5 = MD5.Create())
+        using (var stream = new FileStream(hard, FileMode.Open, FileAccess.Read, FileShare.Read))
+            hash = BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
 
         // 必须有后缀
         return new FileMeta(id, desireName?.Contains('.') ?? false ? desireName : fi.Name, fi.LastWriteTime, hash);
