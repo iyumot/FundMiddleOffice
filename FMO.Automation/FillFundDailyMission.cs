@@ -3,6 +3,7 @@ using FMO.Utilities;
 
 namespace FMO.Schedule;
 
+[Obsolete]
 public class FillFundDailyMission : Mission
 {
 
