@@ -465,7 +465,7 @@ public static partial class DataTracker
             {
 
                 // 如果是api，只更新非sheet
-                var dic = table.Query().Where(x => x.Source == DailySource.Sheet).OrderBy(x => x.Id).Select(x => x.Id).ToList();
+                var dic = table.Find(x => x.Source == DailySource.Sheet).OrderBy(x => x.Id).Select(x => x.Id).ToList();
 
                 foreach (var item in g.GroupBy(x => x.Source))
                 {
