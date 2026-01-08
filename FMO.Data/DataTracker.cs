@@ -513,11 +513,13 @@ public static partial class DataTracker
         // 一个版本是用dv算，当份额与前一日不同时，录入
         // 一个版本是用ta算， 
         var comparer = Comparer<DailyValue>.Create((a, b) => a.Date.CompareTo(b.Date));
-        foreach (var g in dailyValues.GroupBy(x => x.FundId))
+        foreach (var g in dailyValues.Where(x => x.Class == null).GroupBy(x => x.FundId))
         {
             var fid = g.Key;
             List<FundShareRecordByDaily> add = new();
             var col = db.GetCollection<FundShareRecordByDaily>();
+
+            var exists = col.Find(x => x.FundId == fid).ToDictionary(x => x.Date, x => x);
 
             // 检查是否与前一天share不一样
             var sd = g.Min(x => x.Date);
@@ -550,13 +552,16 @@ public static partial class DataTracker
                 if (previous != null && previous.Share != dy.Share && dy.Share != 0)
                     add.Add(new FundShareRecordByDaily(fid, dy.Date, dy.Share));
 
+                // 删除错误值
+                if (previous != null && previous.Share == dy.Share && exists.TryGetValue(dy.Date, out var errid))
+                    col.Delete(errid.Id);
+
+
                 //var pre = ds.FirstOrDefault(x => x.Date < dy.Date);
                 //if (pre != null && pre.Share != dy.Share)
                 //    add.Add(new(g.Key, dy.Date, dy.Share));
             }
-
-
-
+             
             col.Upsert(add);
             var ee = col.Find(x => x.FundId == fid).OrderBy(x => x.Date).ToList();
 
