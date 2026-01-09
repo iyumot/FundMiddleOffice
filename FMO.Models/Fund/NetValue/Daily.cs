@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LiteDB;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -36,7 +37,7 @@ public class DailyValue
 
     public string? Class { get; set; }
 
-    public long Id => Date.DayNumber;// GenerateId(FundId, Class, Date);
+    [BsonId] public long Id => Date.DayNumber;// GenerateId(FundId, Class, Date);
 
 
     public DateOnly Date { get; set; }

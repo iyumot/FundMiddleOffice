@@ -44,7 +44,44 @@ public static partial class DatabaseAssist
         [97] = ClearTaBecauseSCBug,
         [98] = RecalcInvestorBalance,
         [100] = FixNv,
+        [104] = FixNv2,
     };
+
+    /// <summary>
+    /// sb 数据库，id都能重复
+    /// </summary>
+    /// <param name="database"></param>
+    /// <exception cref="NotImplementedException"></exception>
+    private static void FixNv2(BaseDatabase db)
+    {
+        var fvCollections = db.GetCollectionNames()
+                        .Where(c => Regex.IsMatch(c, @"^fv_", RegexOptions.IgnoreCase))
+                        .ToList();
+
+        foreach (var collectionName in fvCollections)
+        {
+            var collection = db.GetCollection<DailyValue>(collectionName);
+            var allDocs = collection.FindAll().ToList();
+
+            if (!allDocs.Any())
+                continue;
+
+            // 按 Id 分组，保留每组中最后一个文档（按 FindAll 返回顺序）
+            var uniqueDocs = allDocs
+                .GroupBy(x => x.Id)
+                .Select(g => g.Last()) // 保留最后一个
+                .ToList();
+             
+            db.DropCollection(collectionName);
+
+            // 重新插入去重后的数据
+            if (uniqueDocs.Any())
+            {
+                db.GetCollection<DailyValue>(collectionName).InsertBulk(uniqueDocs);
+            }
+        }
+    }
+
 
     private static void FixNv(BaseDatabase db)
     {

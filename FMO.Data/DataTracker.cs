@@ -482,7 +482,13 @@ public static partial class DataTracker
                     }
                     else
                     {
-                        table.Upsert(item);
+                        // 获取这些文档的业务 Id 列表
+                        var sheetIds = item.Select(x => x.Id).ToHashSet();
+
+                        // 删除表中已存在的这些 Id 的旧记录（无论来源）
+                        table.DeleteMany(x => sheetIds.Contains(x.Id));
+
+                        table.Upsert(item.AsEnumerable());
                         //// 通知
                         Parallel.ForEach(item, x =>
                         {
@@ -513,7 +519,7 @@ public static partial class DataTracker
         // 一个版本是用dv算，当份额与前一日不同时，录入
         // 一个版本是用ta算， 
         var comparer = Comparer<DailyValue>.Create((a, b) => a.Date.CompareTo(b.Date));
-        foreach (var g in dailyValues.Where(x => x.Class == null).GroupBy(x => x.FundId))
+        foreach (var g in dailyValues.Where(x => x.Class == null).OrderBy(x => x.Date).GroupBy(x => x.FundId))
         {
             var fid = g.Key;
             List<FundShareRecordByDaily> add = new();
@@ -539,14 +545,14 @@ public static partial class DataTracker
 
             if (sd.DayNumber > 20) sd = sd.AddDays(-20);
             var ed = g.Max(x => x.Date);
-            var ds = db.GetDailyCollection(g.Key).Find(x => x.Date > sd && x.Date < ed).OrderBy(x => x.Date).ToList();
+            var ds = db.GetDailyCollection(g.Key).Find(x => x.Date > sd && x.Date < ed).OrderBy(x => x.Id).ToArray();
             foreach (var dy in g)
             {
                 // 使用二分查找找到前一日记录
                 int index = ds.BinarySearch(dy, comparer);
                 index = index < 0 ? ~index - 1 : index - 1;
 
-                DailyValue? previous = index < 0 || index >= ds.Count ? null : ds[index];
+                DailyValue? previous = index < 0 || index >= ds.Length ? null : ds[index];
 
                 // 检查份额变化
                 if (previous != null && previous.Share != dy.Share && dy.Share != 0)
@@ -561,7 +567,7 @@ public static partial class DataTracker
                 //if (pre != null && pre.Share != dy.Share)
                 //    add.Add(new(g.Key, dy.Date, dy.Share));
             }
-             
+
             col.Upsert(add);
             var ee = col.Find(x => x.FundId == fid).OrderBy(x => x.Date).ToList();
 
