@@ -239,4 +239,13 @@ public static class Days
 
         return Data[s].Flag.HasFlag(DayFlag.Trade);
     }
+
+
+    public static bool IsTradingDay(DateOnly date)
+    {
+        int s = Dates.BinarySearch(date);
+        s = s < 0 ? ~s : s;
+
+        return Data[s].Flag.HasFlag(DayFlag.Trade);
+    }
 }
