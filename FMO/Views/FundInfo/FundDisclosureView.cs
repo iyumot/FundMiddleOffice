@@ -1,12 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using DocumentFormat.OpenXml.Bibliography;
 using FMO.AMAC.Direct;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
 using LiteDB;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Data;
 
@@ -179,6 +181,8 @@ public partial class FundPeriodicReportViewModel : ObservableObject
 
 public partial class FundQuarterlyUpdateViewModel : ObservableObject
 {
+    private readonly FundQuarterlyUpdate report;
+
     public FundQuarterlyUpdateViewModel(FundQuarterlyUpdate report)
     {
         Id = report.Id;
@@ -186,6 +190,7 @@ public partial class FundQuarterlyUpdateViewModel : ObservableObject
         PeriodEnd = report.PeriodEnd;
         Investor = new(report.Investor);
         Operation = new(report.Operation);
+        this.report = report;
     }
 
     public int Id { get; }
@@ -199,6 +204,47 @@ public partial class FundQuarterlyUpdateViewModel : ObservableObject
 
     public SimpleFileViewModel Operation { get; }
 
+
+    [RelayCommand]
+    public async Task UploadOperation()
+    {
+        // 获取 账号
+        using var db = DbHelper.Base();
+        var acc = db.GetCollection<AmacReportAccount>().FindOne(x => x.Id == "pmg");
+
+        if (acc is null || string.IsNullOrWhiteSpace(acc.Name) || string.IsNullOrWhiteSpace(acc.Password) || string.IsNullOrWhiteSpace(acc.Key))
+        {
+            HandyControl.Controls.Growl.Info("请先在[平台]中设置信批账号");
+            return;
+        }
+
+        var manager = db.GetCollection<Manager>().Query().First();
+
+        var result = await DirectReporter.UploadReport(report, acc);
+
+        if (result.UploadCode != 0)
+        {
+            HandyControl.Controls.Growl.Info($"上传文件失败:{result.UploadError}");
+            return;
+        }
+
+        HandyControl.Controls.Growl.Info($"上传报告成功，请等待校验结果");
+        await Task.Delay(20 * 1000);
+
+        await DirectReporter.QueryResult(result, acc);
+
+        if (result.ResultInfo?.Count > 0)
+            HandyControl.Controls.Growl.Info($"{result.ResultInfo[0].Message}");
+        else
+            HandyControl.Controls.Growl.Info($"校验异常");
+
+        if (result.ValidateCode == 0)
+        {
+            await Task.Delay(2000);
+            await DirectReporter.Submit(result, manager.Name, acc);
+            HandyControl.Controls.Growl.Info($"报告提交:{result.SubmitError}");
+        }
+    }
 }
 
 

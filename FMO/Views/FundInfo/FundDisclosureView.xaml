@@ -196,6 +196,10 @@
                                         Header="运行信息表"
                                         Style="{StaticResource SimpleViewOnlyFileStyle}" />
 
+                                    <Button
+                                        hc:IconElement.Geometry="{StaticResource f.upload}"
+                                        Command="{Binding UploadOperationCommand}"
+                                        Style="{StaticResource ButtonIcon.Small}" />
                                 </hc:UniformSpacingPanel>
                             </DataTemplate>
                         </Setter.Value>
