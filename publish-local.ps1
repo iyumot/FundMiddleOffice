@@ -4,7 +4,9 @@ param(
 )
 
 clear
+Write-Host "$(Get-Date)" -ForegroundColor Cyan
 Write-Host "开始打包" -ForegroundColor Cyan
+
 
 $SolutionRoot = Get-Location
 $NexusRoot = "D:\fmo"
