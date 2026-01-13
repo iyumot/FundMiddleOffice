@@ -798,7 +798,7 @@ public partial class FundInfoPageViewModel : ObservableRecipient, IRecipient<Fun
 
     public void Receive(FundDailyUpdateMessage message)
     {
-        if (message.FundId == Fund.Id && message.Daily.Class == null)
+        if (message.FundId == Fund.Id && message.Daily.Class == null && Days.IsTradingDay(message.Daily.Date))
         {
 
 
