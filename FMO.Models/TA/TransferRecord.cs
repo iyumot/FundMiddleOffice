@@ -184,11 +184,11 @@ public class TransferRecord// : IEquatable<TransferRecord>
             case TransferRecordType.Purchase:
             case TransferRecordType.Increase:
             case TransferRecordType.Distribution:
-                return -ConfirmedAmount;
+                return ConfirmedAmount;
             case TransferRecordType.Redemption:
             case TransferRecordType.ForceRedemption:
             case TransferRecordType.Decrease:
-                return ConfirmedAmount;
+                return -ConfirmedAmount;
             default:
                 return 0;
         }
