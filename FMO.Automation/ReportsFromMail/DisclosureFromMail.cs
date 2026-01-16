@@ -213,7 +213,7 @@ public class DisclosureFromMailMission : MailMission
                 reports.Add(new ParsedInfo(PeriodicReportType.QuarterlyUpdate, code, date, path, ms));
                 break;
 
-            case var p when p.Contains("运行信息"):
+            case var p when Regex.IsMatch(p, "运行信息|季度更新"):
                 reports.Add(new ParsedInfo(PeriodicReportType.QuarterlyUpdate, code, date, path, ms));
                 break;
 
