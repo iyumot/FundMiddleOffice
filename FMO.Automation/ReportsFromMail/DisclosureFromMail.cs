@@ -20,7 +20,7 @@ public class DisclosureFromMailMission : MailMission
     }
 
     //public void Test() => WorkOverride();
-   
+
     protected override bool WorkOverride()
     {
         // 获取所有缓存  
@@ -36,12 +36,13 @@ public class DisclosureFromMailMission : MailMission
         var files = di.GetFiles();
         using var db = new MissionDatabase();
         // 排除估值表，加快效率
-        var cat = db.GetCollection<MailCategoryInfo>().Query().Where(x => x.Category == MailCategory.ValueSheet && x.IsSealed).Select(x => x.Id).ToList();//.FindAll().Where(x => x.Category.HasFlag(MailCategory.Disclosure)).Select(x => x.Id).ToArray();
+        var cat = db.GetCollection<MailCategoryInfo>().Find(x => x.Category == MailCategory.ValueSheet).Select(x => x.Id).ToList();//.FindAll().Where(x => x.Category.HasFlag(MailCategory.Disclosure)).Select(x => x.Id).ToArray();
 
         var coll = db.GetCollection<MailMissionRecord>($"dfm_{Id}");
         var worked = coll.FindAll().ExceptBy(cat, x => x.Id).ToArray();
 
-        var work = IgnoreHistory ? files : files.ExceptBy(worked.Select(x => x.Id), x => x.Name).ToArray();
+        // 这里有问题， file 是uid， MailCategoryInfo是message id，不一样，无法排除
+        var work = IgnoreHistory ? files.ExceptBy(cat, x => x.Name).ToArray() : files.ExceptBy(worked.Select(x => x.Id), x => x.Name).ToArray();
 
         var log = $"{(IgnoreHistory ? "全部重解析" : $"已解析{worked.Length}个")}\n待处理邮件 {work.Length} 个";
 
@@ -162,7 +163,7 @@ public class DisclosureFromMailMission : MailMission
                         {
                             if (Regex.IsMatch(item.FileName, "投资[者人]"))
                                 fp.Investor = new SimpleFile { File = FileMeta.Create(item.Stream, item.FileName) };
-                            else if (item.FileName.Contains("运行"))
+                            else if (Regex.IsMatch(item.FileName, "运行|季度更新"))
                                 fp.Operation = new SimpleFile { File = FileMeta.Create(item.Stream, item.FileName) };
 
                             item.Stream.Dispose();
