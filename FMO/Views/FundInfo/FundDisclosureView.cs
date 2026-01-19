@@ -1,14 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using DocumentFormat.OpenXml.Bibliography;
 using FMO.AMAC.Direct;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
+using HandyControl.Controls;
 using LiteDB;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Data;
 
@@ -220,16 +219,21 @@ public partial class FundQuarterlyUpdateViewModel : ObservableObject
 
         var manager = db.GetCollection<Manager>().Query().First();
 
-        var result = await DirectReporter.UploadReport(report, acc);
-
-        if (result.UploadCode != 0)
+        // 检查是否有上传记录
+        var result = db.GetCollection<AmacProcessResult>().FindById(Id);
+        if (result is null)
         {
-            HandyControl.Controls.Growl.Info($"上传文件失败:{result.UploadError}");
-            return;
-        }
+            result = await DirectReporter.UploadReport(report, acc);
+            if (result.UploadCode != 0)
+            {
+                HandyControl.Controls.Growl.Info($"上传文件失败:{result.UploadError}");
+                return;
+            }
 
-        HandyControl.Controls.Growl.Info($"上传报告成功，请等待校验结果");
-        await Task.Delay(20 * 1000);
+            HandyControl.Controls.Growl.Info($"上传报告成功，请等待校验结果");
+            await Task.Delay(20 * 1000);
+        }
+        else HandyControl.Controls.Growl.Info("存在上传记录，继续查询结果");
 
         await DirectReporter.QueryResult(result, acc);
 
@@ -238,12 +242,13 @@ public partial class FundQuarterlyUpdateViewModel : ObservableObject
         else
             HandyControl.Controls.Growl.Info($"校验异常");
 
-        if (result.ValidateCode == 0)
+        if (result.ValidateCode == 0 || MessageBox.Show($"季度更新存在警告或错误", "是否强制提交", button: System.Windows.MessageBoxButton.YesNo) == System.Windows.MessageBoxResult.Yes)
         {
-            await Task.Delay(2000);
+            await Task.Delay(50000);
             await DirectReporter.Submit(result, manager.Name, acc);
-            HandyControl.Controls.Growl.Info($"报告提交:{result.SubmitError}");
+            HandyControl.Controls.Growl.Info($"报告提交, Code:{result.SubmitCode},{result.SubmitError}");
         }
+       
     }
 }
 

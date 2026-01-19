@@ -128,7 +128,10 @@ public class DirectReporter
             using var db = DbHelper.Base();
             var manager = db.GetCollection<Manager>().Query().First();
             var result = await UploadFile(type, path, date, acc, manager.Name, report.FundCode);
-            return new AmacProcessResult { Id = report.Id, FileType = type, Handle = result!.Handle, UploadCode = result.ProcessCode switch { "00" or "100" => 0, var n => int.Parse(n!) }, UploadError = result.ProcessMessage };
+            var r = new AmacProcessResult { Id = report.Id, FileType = type, Handle = result!.Handle, UploadCode = result.ProcessCode switch { "00" or "100" => 0, var n => int.Parse(n!) }, UploadError = result.ProcessMessage };
+
+            db.GetCollection<AmacProcessResult>().Upsert(r);
+            return r;
         }
         catch (Exception ex) { LogEx.Error(ex); return new AmacProcessResult { Id = report.Id, FileType = type, UploadError = ex.Message }; }
         finally { File.Delete(path); }
@@ -272,6 +275,9 @@ public class DirectReporter
         }
         else
             handle.ResultInfo = [new ValidationInfo { Level = "Error", Message = "未获取到返回信息" }];
+
+        using var db = DbHelper.Base();
+        db.GetCollection<AmacProcessResult>().Upsert(handle);
     }
 
 
@@ -319,6 +325,8 @@ public class DirectReporter
         }
         handle.SubmitCode = int.Parse(pr.ProcessCode!);
         handle.SubmitError = pr.ProcessMessage;
+        using var db = DbHelper.Base();
+        db.GetCollection<AmacProcessResult>().Upsert(handle);
     }
 
 
