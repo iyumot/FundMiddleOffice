@@ -40,7 +40,7 @@ public class FundDailyMissingRule : VerifyRule<DailyValue, EntityChanged<Fund, D
             if (has.Count == 0)
                 has.Add(f.SetupDate);
 
-            DateOnly begin = f.SetupDate, end = f.ClearDate == default ? DateOnly.FromDateTime(DateTime.Now) : f.ClearDate;
+            DateOnly begin = f.SetupDate, end = f.ClearDate == default ? DateOnly.FromDateTime(DateTime.Now).AddDays(-1) : f.ClearDate;
 
             List<DateOnly> missing = Days.TradingDaysBetween(begin, end).Except(has).ToList();
             if (missing.Count == 0) continue;
