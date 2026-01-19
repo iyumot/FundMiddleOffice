@@ -277,6 +277,8 @@ public class OrderInfoJson
 
 public class OrderFilesJson
 {
+    [JsonPropertyName("codeType")]
+    public int CodeType { get; set; }
 
     [JsonPropertyName("documentName")]
     public string DocumentName { get; set; }

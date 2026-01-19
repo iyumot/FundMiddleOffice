@@ -569,13 +569,13 @@ public class MeiShiAssit : ISigning
                 var fname = $"{order.InvestorName}-{order.Date:yyyy.MM.dd}-{f.DocumentName}";
                 var (stream, fn) = await Download(f.SealedUrl!, fname);
 
-                if (f.DocumentName.Contains("申请"))
+                if (f.DocumentName.Contains("申请") || f.CodeType == 125)
                     order.OrderSheet = new SimpleFile(FileMeta.Create(stream, fn));
-                else if (f.DocumentName.Contains("合同"))
+                else if (f.DocumentName.Contains("合同") || f.CodeType == 123)
                     order.Contract = new SimpleFile(FileMeta.Create(stream, fn));
-                else if (f.DocumentName.Contains("风险揭示"))
+                else if (f.DocumentName.Contains("风险揭示") || f.CodeType == 122)
                     order.RiskDiscloure = new SimpleFile(FileMeta.Create(stream, fn));
-                else if (f.DocumentName.Contains("告知书"))
+                else if (f.DocumentName.Contains("告知书") || f.CodeType == 121)
                     order.RiskPair = new SimpleFile(FileMeta.Create(stream, fn));
             }
 
@@ -633,7 +633,7 @@ public class MeiShiAssit : ISigning
                     order.Contract = new SimpleFile(FileMeta.Create(stream, fn));
                 else if (f.CodeType == 122)//(f.DocumentName.Contains("风险揭示"))
                     order.RiskDiscloure = new SimpleFile(FileMeta.Create(stream, fn));
-                else if (f.DocumentName.Contains("告知书"))
+                else if (f.CodeType == 121)//if (f.DocumentName.Contains("告知书"))
                     order.RiskPair = new SimpleFile(FileMeta.Create(stream, fn));
                 else if (f.CodeType == 126)//(f.DocumentName.Contains("双录"))
                     order.Videotape = new SimpleFile(FileMeta.Create(stream, fn));

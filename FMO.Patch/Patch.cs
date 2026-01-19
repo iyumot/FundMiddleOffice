@@ -45,7 +45,19 @@ public static partial class DatabaseAssist
         [98] = RecalcInvestorBalance,
         [100] = FixNv,
         [104] = FixNv2,
+        [106] = FixMeishi,
     };
+
+    private static void FixMeishi(BaseDatabase database)
+    {
+        using var db = DbHelper.Platform();
+        var list = db.GetCollection("SigningWorkRecord").FindAll().ToArray();
+        foreach (var item in list)
+        {
+            item["QueryOrderTime"] = new DateTime(2025, 12, 22);
+        }
+        db.GetCollection("SigningWorkRecord").Update(list);
+    }
 
     /// <summary>
     /// sb 数据库，id都能重复

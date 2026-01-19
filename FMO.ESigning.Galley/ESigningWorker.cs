@@ -55,7 +55,7 @@ public class ESigningWorker
                 rec.QueryCustomerTime = _beginDate;
 
             try
-            { 
+            {
                 var customers = await sign.QueryCustomerAsync(rec.QueryCustomerTime);
 
                 // 合并
@@ -152,7 +152,7 @@ public class ESigningWorker
                 var db2 = DbHelper.Base();
 
                 // 排除已存在的
-                foreach (var item in data.ExceptBy(exist_ids, x => x.ExternalId).OrderBy(x => x.Date))
+                foreach (var item in data.OrderBy(x => x.Date))
                 {
                     if (item is null) continue;
 
@@ -166,6 +166,10 @@ public class ESigningWorker
                         item.ShareClass = c;
                     }
                     else { LogEx.Error($"Sync Order Fund Not Exists {item.FundName}, in {item.InvestorName} {item.Date} {item.Type}"); }
+
+                    // 已存在的
+                    if (exist_ids.TryGetValue(item.ExternalId!, out var oid))
+                        item.Id = oid;
 
                     if (cidMap.TryGetValue(item.InvestorIdentity!, out var cid))
                         item.InvestorId = cid;
@@ -186,7 +190,7 @@ public class ESigningWorker
         }
 
         DataTracker.OnBatchTransferOrder(orders);
-         
+
     }
 
 
@@ -209,10 +213,10 @@ public class ESigningWorker
     }
 
 
-    private static string[] GetExistsOrderIds(string identity)
+    private static Dictionary<string, int> GetExistsOrderIds(string identity)
     {
         using var db = DbHelper.Base();
-        return db.GetCollection<TransferOrder>().Find(x => x.Source == identity && x.ExternalId != null).Select(x => x.ExternalId!).ToArray() ?? [];
+        return db.GetCollection<TransferOrder>().Find(x => x.Source == identity && x.ExternalId != null).Select(x => new { x.Id, x.ExternalId }).ToArray().ToDictionary(x => x.ExternalId!, x => x.Id);
     }
 
     private static Dictionary<string, int> GetInvestorIdMap()
