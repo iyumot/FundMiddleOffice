@@ -78,13 +78,74 @@ partial class TransferRecordViewModel : ITransferViewModel, IHasOrderViewModel
     [RelayCommand]
     public void ViewOrder()
     {
-        if (OrderId is null) return;
+        if (!HasOrder) TryLink();
+        if (!HasOrder) return;
 
         var wnd = new ModifyOrderWindow();
         wnd.DataContext = new ModifyOrderWindowViewModel(OrderId.Value);
         wnd.Owner = App.Current.MainWindow;
         wnd.ShowDialog();
     }
+
+    public bool IsOrderPair(TransferOrder order)
+    {
+        switch (Type)
+        {
+            case TransferRecordType.Subscription:
+            case TransferRecordType.Purchase:
+                return order.Type switch { TransferOrderType.FirstTrade or TransferOrderType.Buy => true, _ => false } && order.Number == RequestAmount;
+
+            case TransferRecordType.Redemption:
+            case TransferRecordType.ForceRedemption:
+                switch (order.Type)
+                {
+                    case TransferOrderType.Share:
+                        return order.Number == RequestShare;
+                    case TransferOrderType.Amount:
+                    case TransferOrderType.RemainAmout:
+                        return order.Number == RequestAmount;
+                    default:
+                        return false;
+                }
+            default:
+                return false;
+        }
+
+    }
+
+    public void TryLink()
+    {
+        using var db = DbHelper.Base();
+        var orders = db.GetCollection<TransferOrder>().Find(x => x.InvestorId == InvestorId && x.Date <= ConfirmedDate).ToList();
+
+        orders = orders.Where(x => IsOrderPair(x)).ToList();
+
+
+        // 排除已关联的
+        var maped = db.GetCollection<TransferMapping>().Query().Select(x => x.OrderId).ToArray();
+        orders = orders.ExceptBy(maped, x => x.Id).ToList();
+
+        if (orders.Count == 1)
+        {
+            OrderId = orders[0].Id;
+
+            var r = db.GetCollection<TransferRecord>().FindById(Id);
+            r.OrderId = orders[0].Id;
+            db.GetCollection<TransferRecord>().Update(r);
+
+            if (RequestId is int d)
+            {
+                var q = db.GetCollection<TransferRequest>().FindById(d);
+                q.OrderId = orders[0].Id;
+                db.GetCollection<TransferRequest>().Update(q);
+            }
+
+            db.GetCollection<TransferMapping>().Insert(new TransferMapping { OrderId = OrderId.Value, RequestId = RequestId ?? 0, RecordId = Id });
+        }
+        OnPropertyChanged(nameof(HasOrder));
+        OnPropertyChanged(nameof(LackOrder));
+    }
+
 
     [RelayCommand]
     public void ViewJson()

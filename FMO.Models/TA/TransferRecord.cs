@@ -2,6 +2,7 @@
 using System.ComponentModel;
 
 namespace FMO.Models;
+
 public record ManualLinkOrder(int Id, int OrderId, string ExternalId, string ExternalRequestId);
 
 /// <summary>
@@ -121,7 +122,7 @@ public class TransferRecord// : IEquatable<TransferRecord>
     /// 没有order 和 request 
     /// </summary>
     public bool IsLiquidating { get; set; }
-     
+
 
     /// <summary>
     /// 数据来源
@@ -195,5 +196,40 @@ public class TransferRecord// : IEquatable<TransferRecord>
     }
 
 
+    public bool IsTypePair(TransferOrderType type)
+    {
+        if ((Type == TransferRecordType.Subscription || Type == TransferRecordType.Purchase) && (type == TransferOrderType.FirstTrade || type == TransferOrderType.Buy))
+            return true;
+        else if ((Type == TransferRecordType.Redemption || Type == TransferRecordType.ForceRedemption) && (type switch { TransferOrderType.Amount or TransferOrderType.Share or TransferOrderType.RemainAmout => true, _ => false }))
+            return true;
+
+        return false;
+    }
+
+    public bool IsOrderPair(TransferOrder order)
+    {
+        switch (Type)
+        {
+            case TransferRecordType.Subscription:
+            case TransferRecordType.Purchase:
+                return order.Type switch { TransferOrderType.FirstTrade or TransferOrderType.Buy => true, _ => false } && order.Number == RequestAmount;
+
+            case TransferRecordType.Redemption:
+            case TransferRecordType.ForceRedemption:
+                switch (order.Type)
+                {
+                    case TransferOrderType.Share:
+                        return order.Number == RequestShare;
+                    case TransferOrderType.Amount:
+                    case TransferOrderType.RemainAmout:
+                        return order.Number == RequestAmount;
+                    default:
+                        return false;
+                }
+            default:
+                return false;
+        }
+
+    }
 }
 

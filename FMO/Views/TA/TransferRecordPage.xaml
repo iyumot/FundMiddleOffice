@@ -928,7 +928,7 @@
                                             Foreground="Green"
                                             Style="{StaticResource ButtonIcon.Small}"
                                             Visibility="{Binding HasOrder, Converter={StaticResource Boolean2VisibilityConverter}}" />
-                                        <Viewbox
+                                        <!--<Viewbox
                                             x:Name="fea"
                                             Height="15"
                                             Visibility="Collapsed">
@@ -936,7 +936,16 @@
                                                 x:Name="co"
                                                 Data="{StaticResource f.feather-pointed}"
                                                 Fill="Red" />
-                                        </Viewbox>
+                                        </Viewbox>-->
+                                        <Button
+                                            x:Name="fea"
+                                            hc:IconElement.Geometry="{StaticResource f.circle-nodes}"
+                                            hc:IconElement.Height="15"
+                                            hc:IconElement.Width="15"
+                                            Command="{Binding ViewOrderCommand}"
+                                            Foreground="Red"
+                                            Style="{StaticResource ButtonIcon.Small}"
+                                            Visibility="Collapsed" />
                                         <hc:SimplePanel
                                             x:Name="clear"
                                             HorizontalAlignment="Center"
@@ -957,7 +966,7 @@
                                     </hc:SimplePanel>
                                     <DataTemplate.Triggers>
                                         <DataTrigger Binding="{Binding IsSameManager}" Value="True">
-                                            <Setter TargetName="co" Property="Fill" Value="Gray" />
+                                            <Setter TargetName="fea" Property="Foreground" Value="Gray" />
                                         </DataTrigger>
                                         <MultiDataTrigger>
                                             <MultiDataTrigger.Conditions>
