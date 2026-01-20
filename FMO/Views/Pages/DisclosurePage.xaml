@@ -140,7 +140,10 @@
                         </Border>
                     </DataTemplate>
                 </hc:UniformSpacingPanel.Resources>
-                <GroupBox Header="月报" Visibility="{Binding MonthlySource.View.IsEmpty, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                <Expander
+                    Header="月报"
+                    IsExpanded="True"
+                    Visibility="{Binding MonthlySource.View.IsEmpty, Converter={StaticResource Boolean2VisibilityReConverter}}">
 
                     <ListBox
                         ItemTemplate="{StaticResource ReportItem}"
@@ -156,10 +159,27 @@
                             </ItemsPanelTemplate>
                         </ListBox.ItemsPanel>
                     </ListBox>
-                </GroupBox>
+                </Expander>
 
-                <GroupBox Header="季报" Visibility="{Binding QuarterlySource.View.IsEmpty, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                <Expander IsExpanded="True" Visibility="{Binding QuarterlySource.View.IsEmpty, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                    <Expander.Header>
+                        <DockPanel>
+                            <TextBlock
+                                Margin="10,0"
+                                VerticalAlignment="Center"
+                                FontWeight="Bold"
+                                Text="季报" />
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.upload}"
+                                Command="{Binding UploadQuarterlyCommand}"
+                                Style="{StaticResource ButtonIcon.Small}" />
 
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.box}"
+                                Command="{Binding GenerateMeishiAnnouncesCommand}"
+                                Style="{StaticResource ButtonIcon.Small}" />
+                        </DockPanel>
+                    </Expander.Header>
                     <ListBox
                         ItemTemplate="{StaticResource ReportItem}"
                         ItemsSource="{Binding QuarterlySource.View}"
@@ -174,9 +194,12 @@
                             </ItemsPanelTemplate>
                         </ListBox.ItemsPanel>
                     </ListBox>
-                </GroupBox>
+                </Expander>
 
-                <GroupBox Header="半年报" Visibility="{Binding SemiAnnualSource.View.IsEmpty, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                <Expander
+                    Header="半年报"
+                    IsExpanded="True"
+                    Visibility="{Binding SemiAnnualSource.View.IsEmpty, Converter={StaticResource Boolean2VisibilityReConverter}}">
 
                     <ListBox
                         ItemTemplate="{StaticResource ReportItem}"
@@ -192,9 +215,12 @@
                             </ItemsPanelTemplate>
                         </ListBox.ItemsPanel>
                     </ListBox>
-                </GroupBox>
+                </Expander>
 
-                <GroupBox Header="年报" Visibility="{Binding AnnualSource.View.IsEmpty, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                <Expander
+                    Header="年报"
+                    IsExpanded="True"
+                    Visibility="{Binding AnnualSource.View.IsEmpty, Converter={StaticResource Boolean2VisibilityReConverter}}">
 
                     <ListBox
                         ItemTemplate="{StaticResource ReportItem}"
@@ -210,7 +236,7 @@
                             </ItemsPanelTemplate>
                         </ListBox.ItemsPanel>
                     </ListBox>
-                </GroupBox>
+                </Expander>
             </hc:UniformSpacingPanel>
 
         </ScrollViewer>

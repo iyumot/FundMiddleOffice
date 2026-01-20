@@ -1,6 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using FMO.Logging;
 using FMO.Models;
 using FMO.Utilities;
+using System.IO;
+using System.IO.Compression;
 using System.Windows.Controls;
 using System.Windows.Data;
 
@@ -98,6 +102,62 @@ public partial class DisclosurePageViewModel : ObservableObject
 
 
 
+    [RelayCommand]
+    public async Task UploadQuarterly()
+    {
+        var items = QuarterlySource?.View?.OfType<FundPeriodicReportViewModel>().ToList();
+
+        if (items is null) return;
+
+        foreach (var v in items)
+        {
+            // 启动上传（不 await，让它在后台运行）
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await v.Upload();
+                    // 可选：成功后记录日志
+                }
+                catch (Exception ex)
+                {
+                    // 建议记录异常，避免静默失败
+                    LogEx.Error($"Upload failed for {v.FundName}: {ex}");
+                }
+            });
+
+            // 等待 5 秒后再启动下一个
+            await Task.Delay(TimeSpan.FromSeconds(5));
+        }
+    }
 
 
+    [RelayCommand]
+    public void GenerateMeishiAnnounces()
+    {    // Validate inputs
+        if (SelectedMonth is null || SelectedYear <= 0 || SelectedMonth < 1 || SelectedMonth > 12)
+            return;
+
+        int quarterIndex = (SelectedMonth.Value - 1) / 3; // 0, 1, 2, or 3
+        string[] quarters = ["一", "二", "三", "四"];
+        string q = quarters[quarterIndex];
+
+        using var ms = new FileStream(@$"temp\{SelectedYear}{q}季报.zip", FileMode.Create);
+        using ZipArchive archive = new ZipArchive(ms, ZipArchiveMode.Create);
+
+        foreach (var item in QuarterlySource.View)
+        {
+            if (item is FundPeriodicReportViewModel v)
+            {
+                if (v.Pdf?.Meta is not null)
+                    archive.CreateEntryFromFile(@$"files\hardlink\{v.Pdf.Meta.Id}", $"{v.FundName}-{SelectedYear}{q}季度报告-{DateTime.Now:yyyyMMdd}.pdf");
+            }
+        }
+
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
+        {
+            FileName = "temp",
+            UseShellExecute = true
+        });
+    }
 }
