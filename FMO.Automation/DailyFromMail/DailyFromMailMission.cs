@@ -13,7 +13,7 @@ namespace FMO.Schedule;
 public class DailyFromMailMission : MailMission
 {
     public int Interval { get; set; } = 15;
-     
+
 
 
     protected override void SetNextRun()
@@ -182,12 +182,14 @@ public class DailyFromMailMission : MailMission
                 if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
 
                 var di = new FileInfo(Path.Combine(folder, x.File));
-                if (di.Exists && di.Length == x.Stream!.Length) continue;
-                using var fs = di.OpenWrite();
-                x.Stream!.Seek(0, SeekOrigin.Begin);
-                x.Stream!.CopyTo(fs);
+                if (!di.Exists || di.Length != x.Stream!.Length)
+                {
+                    using var fs = di.OpenWrite();
+                    x.Stream!.Seek(0, SeekOrigin.Begin);
+                    x.Stream!.CopyTo(fs);
+                    fs.Flush();
+                }
                 x.Daily.SheetPath = Path.GetRelativePath(Directory.GetCurrentDirectory(), di.FullName);
-                fs.Flush();
             }
 
             DataTracker.OnDailyValue(ds.Where(x => x.Fund is not null && x.Daily is not null).Select(x => x.Daily!));
