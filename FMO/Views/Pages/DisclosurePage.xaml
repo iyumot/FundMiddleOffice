@@ -108,15 +108,17 @@
                     <DataTemplate x:Key="ReportItem">
                         <Border>
                             <DockPanel Margin="4">
-                                <TextBlock
-                                    DockPanel.Dock="Top"
-                                    FontSize="15"
-                                    Text="{Binding FundName}" />
-                                <hc:UniformSpacingPanel
-                                    ChildWrapping="Wrap"
-                                    Orientation="Vertical"
-                                    Spacing="5"
-                                    VerticalSpacing="5">
+                                <DockPanel DockPanel.Dock="Top">
+                                    <TextBlock FontSize="15" Text="{Binding FundName}" />
+                                    <Button
+                                        hc:IconElement.Geometry="{StaticResource f.upload}"
+                                        Command="{Binding UploadCommand}"
+                                        DockPanel.Dock="Right"
+                                        Style="{StaticResource ButtonIcon.Small}" />
+
+                                </DockPanel>
+
+                                <UniformGrid Columns="2">
 
                                     <shared:FileView
                                         Content="{Binding Word}"
@@ -129,25 +131,18 @@
                                         </shared:FileView.Header>
                                     </shared:FileView>
 
-                                    <DockPanel>
 
-                                        <Button
-                                            hc:IconElement.Geometry="{StaticResource f.upload}"
-                                            Command="{Binding UploadCommand}"
-                                            DockPanel.Dock="Right"
-                                            Style="{StaticResource ButtonIcon.Small}" />
+                                    <shared:FileView
+                                        Content="{Binding Excel}"
+                                        HeaderTemplate="{x:Null}"
+                                        Style="{StaticResource IconViewFileStyle}">
+                                        <shared:FileView.Header>
+                                            <Viewbox Width="14" Height="14">
+                                                <Path Data="{StaticResource f.file-excel}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Control}}}" />
+                                            </Viewbox>
+                                        </shared:FileView.Header>
+                                    </shared:FileView>
 
-                                        <shared:FileView
-                                            Content="{Binding Excel}"
-                                            HeaderTemplate="{x:Null}"
-                                            Style="{StaticResource IconViewFileStyle}">
-                                            <shared:FileView.Header>
-                                                <Viewbox Width="14" Height="14">
-                                                    <Path Data="{StaticResource f.file-excel}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Control}}}" />
-                                                </Viewbox>
-                                            </shared:FileView.Header>
-                                        </shared:FileView>
-                                    </DockPanel>
 
                                     <shared:FileView Content="{Binding Pdf}" Style="{StaticResource IconViewFileStyle}">
                                         <shared:FileView.Header>
@@ -166,7 +161,7 @@
                                     </shared:FileView>
 
 
-                                </hc:UniformSpacingPanel>
+                                </UniformGrid>
                             </DockPanel>
                         </Border>
                     </DataTemplate>
@@ -174,15 +169,19 @@
                     <DataTemplate x:Key="ReportItem2">
                         <Border>
                             <DockPanel Margin="4">
-                                <TextBlock
-                                    DockPanel.Dock="Top"
-                                    FontSize="15"
-                                    Text="{Binding FundName}" />
-                                <hc:UniformSpacingPanel
-                                    ChildWrapping="Wrap"
-                                    Orientation="Vertical"
-                                    Spacing="5"
-                                    VerticalSpacing="5">
+
+                                <DockPanel DockPanel.Dock="Top">
+                                    <TextBlock FontSize="15" Text="{Binding FundName}" />
+                                    <Button
+                                        hc:IconElement.Geometry="{StaticResource f.upload}"
+                                        Command="{Binding UploadCommand}"
+                                        DockPanel.Dock="Right"
+                                        Style="{StaticResource ButtonIcon.Small}" />
+
+                                </DockPanel>
+
+
+                                <UniformGrid Columns="2">
 
                                     <shared:FileView
                                         Content="{Binding Word}"
@@ -195,25 +194,16 @@
                                         </shared:FileView.Header>
                                     </shared:FileView>
 
-                                    <DockPanel>
-
-                                        <Button
-                                            hc:IconElement.Geometry="{StaticResource f.upload}"
-                                            Command="{Binding UploadCommand}"
-                                            DockPanel.Dock="Right"
-                                            Style="{StaticResource ButtonIcon.Small}" />
-
-                                        <shared:FileView
-                                            Content="{Binding Excel}"
-                                            HeaderTemplate="{x:Null}"
-                                            Style="{StaticResource IconViewFileStyle}">
-                                            <shared:FileView.Header>
-                                                <Viewbox Width="14" Height="14">
-                                                    <Path Data="{StaticResource f.file-excel}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Control}}}" />
-                                                </Viewbox>
-                                            </shared:FileView.Header>
-                                        </shared:FileView>
-                                    </DockPanel>
+                                    <shared:FileView
+                                        Content="{Binding Excel}"
+                                        HeaderTemplate="{x:Null}"
+                                        Style="{StaticResource IconViewFileStyle}">
+                                        <shared:FileView.Header>
+                                            <Viewbox Width="14" Height="14">
+                                                <Path Data="{StaticResource f.file-excel}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Control}}}" />
+                                            </Viewbox>
+                                        </shared:FileView.Header>
+                                    </shared:FileView>
 
                                     <shared:FileView Content="{Binding Pdf}" Style="{StaticResource IconViewFileStyle}">
                                         <shared:FileView.Header>
@@ -238,7 +228,7 @@
                                             </Viewbox>
                                         </shared:FileView.Header>
                                     </shared:FileView>
-                                </hc:UniformSpacingPanel>
+                                </UniformGrid>
                             </DockPanel>
                         </Border>
                     </DataTemplate>

@@ -990,7 +990,62 @@
     </Style>
 
     <Style x:Key="IconViewFileStyle" TargetType="local:FileView">
-        <Setter Property="ContentTemplate" Value="{StaticResource FileNoPathTemplate}" />
+        <Setter Property="ContentTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <DockPanel Background="Transparent" LastChildFill="False">
+                        <DockPanel.Resources>
+                            <Style BasedOn="{StaticResource ButtonIcon.Small}" TargetType="Button" />
+                        </DockPanel.Resources>
+                        <hc:SimplePanel Height="20">
+                            <hc:SimplePanel
+                                x:Name="p"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Stretch"
+                                Background="White">
+                                <DockPanel Margin="5,2" LastChildFill="False">
+                                    <DockPanel LastChildFill="False">
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.book-open-reader}"
+                                            Command="{Binding ViewCommand}"
+                                            Foreground="Lime"
+                                            ToolTip="查看" />
+
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.clone}"
+                                            Command="{Binding CopyCommand}"
+                                            Foreground="RoyalBlue"
+                                            ToolTip="复制" />
+                                    </DockPanel>
+                                    <Button
+                                        Margin="-5"
+                                        hc:IconElement.Geometry="{StaticResource f.xmark}"
+                                        Command="{Binding DeleteCommand}"
+                                        CommandParameter="{Binding .}"
+                                        Foreground="Red"
+                                        Style="{StaticResource ButtonIcon.Small}"
+                                        ToolTip="删除"
+                                        Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource AncestorType=local:FileView}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                                </DockPanel>
+                            </hc:SimplePanel>
+                        </hc:SimplePanel>
+                        <TextBlock
+                            Margin="6,0,0,0"
+                            VerticalAlignment="Center"
+                            FontSize="8"
+                            Foreground="Gray"
+                            Text="文件不存在"
+                            Visibility="{Binding Exists, Converter={StaticResource Boolean2VisibilityReConverter}, TargetNullValue=Collapsed}" />
+                    </DockPanel>
+                    <DataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding Exists, TargetNullValue=False}" Value="False">
+                            <Setter TargetName="p" Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+
+                    </DataTemplate.Triggers>
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
         <Setter Property="HeaderTemplate" Value="{x:Null}" />
         <Setter Property="Template">
             <Setter.Value>
