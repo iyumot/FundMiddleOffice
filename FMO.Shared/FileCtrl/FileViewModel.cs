@@ -211,6 +211,9 @@ public partial class FileMetaViewModel : ReadOnlyFileMetaViewModel
     [RelayCommand]
     public void Delete()
     {
+        if (HandyControl.Controls.MessageBox.Show($"是否删除 {Name}", "提示", MessageBoxButton.YesNo) == MessageBoxResult.No)
+            return;
+
         if (!string.IsNullOrWhiteSpace(Id))
             File.Delete($@"files\hardlink\{Id}");
         Meta = null;
