@@ -55,28 +55,50 @@
         </Style>
     </UserControl.Resources>
     <DockPanel>
-        <ListBox
-            BorderThickness="0"
-            ItemContainerStyle="{StaticResource ZoomOnSelectListBoxItemStyle}"
-            ItemsSource="{Binding Years}"
-            SelectedIndex="0"
-            SelectedItem="{Binding SelectedYear}" />
 
-        <ListBox
-            BorderThickness="0"
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <DockPanel
+            Margin="0,8"
             DockPanel.Dock="Top"
-            ItemContainerStyle="{StaticResource ZoomOnSelectListBoxItemStyle}"
-            ItemsPanel="{StaticResource UniformHorizontalItemsPanelTemplate}"
-            ItemsSource="{Binding Months}"
-            SelectedIndex="0"
-            SelectedItem="{Binding SelectedMonth}">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding ., StringFormat={}{0}月}" />
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+            LastChildFill="False">
+            <ComboBox
+                BorderThickness="0"
+                ItemsSource="{Binding Years}"
+                SelectedIndex="0"
+                SelectedItem="{Binding SelectedYear}" />
 
+            <ListBox
+                BorderThickness="0"
+                ItemContainerStyle="{StaticResource ListBoxItem.AllaysFocus}"
+                ItemsPanel="{StaticResource StackHorizontalItemsPanelTemplate}"
+                ItemsSource="{Binding Months}"
+                SelectedIndex="0"
+                SelectedItem="{Binding SelectedMonth}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding ., StringFormat={}{0}月}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <CheckBox Content="排除已清盘产品" IsChecked="{Binding FilterClearedFund}" />
+
+            <TextBlock />
+
+
+        </DockPanel>
 
         <ScrollViewer>
             <hc:UniformSpacingPanel Orientation="Vertical" Spacing="8">
@@ -92,10 +114,14 @@
                                     Text="{Binding FundName}" />
                                 <hc:UniformSpacingPanel
                                     ChildWrapping="Wrap"
+                                    Orientation="Vertical"
                                     Spacing="5"
                                     VerticalSpacing="5">
 
-                                    <shared:FileView Content="{Binding Word}" Style="{StaticResource SimpleViewOnlyFileStyle}">
+                                    <shared:FileView
+                                        Content="{Binding Word}"
+                                        IsReadOnly="False"
+                                        Style="{StaticResource IconViewFileStyle}">
                                         <shared:FileView.Header>
                                             <Viewbox Width="14" Height="14">
                                                 <Path Data="{StaticResource f.file-word}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Control}}}" />
@@ -103,18 +129,27 @@
                                         </shared:FileView.Header>
                                     </shared:FileView>
 
-                                    <shared:FileView
-                                        Content="{Binding Excel}"
-                                        HeaderTemplate="{x:Null}"
-                                        Style="{StaticResource SimpleViewOnlyFileStyle}">
-                                        <shared:FileView.Header>
-                                            <Viewbox Width="14" Height="14">
-                                                <Path Data="{StaticResource f.file-excel}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Control}}}" />
-                                            </Viewbox>
-                                        </shared:FileView.Header>
-                                    </shared:FileView>
+                                    <DockPanel>
 
-                                    <shared:FileView Content="{Binding Pdf}" Style="{StaticResource SimpleViewOnlyFileStyle}">
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.upload}"
+                                            Command="{Binding UploadCommand}"
+                                            DockPanel.Dock="Right"
+                                            Style="{StaticResource ButtonIcon.Small}" />
+
+                                        <shared:FileView
+                                            Content="{Binding Excel}"
+                                            HeaderTemplate="{x:Null}"
+                                            Style="{StaticResource IconViewFileStyle}">
+                                            <shared:FileView.Header>
+                                                <Viewbox Width="14" Height="14">
+                                                    <Path Data="{StaticResource f.file-excel}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Control}}}" />
+                                                </Viewbox>
+                                            </shared:FileView.Header>
+                                        </shared:FileView>
+                                    </DockPanel>
+
+                                    <shared:FileView Content="{Binding Pdf}" Style="{StaticResource IconViewFileStyle}">
                                         <shared:FileView.Header>
                                             <Viewbox Width="14" Height="14">
                                                 <Path Data="{StaticResource f.file-pdf}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Control}}}" />
@@ -122,7 +157,7 @@
                                         </shared:FileView.Header>
                                     </shared:FileView>
 
-                                    <shared:FileView Content="{Binding Xbrl}" Style="{StaticResource SimpleViewOnlyFileStyle}">
+                                    <shared:FileView Content="{Binding Xbrl}" Style="{StaticResource IconViewFileStyle}">
                                         <shared:FileView.Header>
                                             <Viewbox Width="14" Height="14">
                                                 <Path Data="{StaticResource f.file-code}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Control}}}" />
@@ -131,10 +166,78 @@
                                     </shared:FileView>
 
 
-                                    <Button
-                                        hc:IconElement.Geometry="{StaticResource f.upload}"
-                                        Command="{Binding UploadCommand}"
-                                        Style="{StaticResource ButtonIcon.Small}" />
+                                </hc:UniformSpacingPanel>
+                            </DockPanel>
+                        </Border>
+                    </DataTemplate>
+
+                    <DataTemplate x:Key="ReportItem2">
+                        <Border>
+                            <DockPanel Margin="4">
+                                <TextBlock
+                                    DockPanel.Dock="Top"
+                                    FontSize="15"
+                                    Text="{Binding FundName}" />
+                                <hc:UniformSpacingPanel
+                                    ChildWrapping="Wrap"
+                                    Orientation="Vertical"
+                                    Spacing="5"
+                                    VerticalSpacing="5">
+
+                                    <shared:FileView
+                                        Content="{Binding Word}"
+                                        IsReadOnly="False"
+                                        Style="{StaticResource IconViewFileStyle}">
+                                        <shared:FileView.Header>
+                                            <Viewbox Width="14" Height="14">
+                                                <Path Data="{StaticResource f.file-word}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Control}}}" />
+                                            </Viewbox>
+                                        </shared:FileView.Header>
+                                    </shared:FileView>
+
+                                    <DockPanel>
+
+                                        <Button
+                                            hc:IconElement.Geometry="{StaticResource f.upload}"
+                                            Command="{Binding UploadCommand}"
+                                            DockPanel.Dock="Right"
+                                            Style="{StaticResource ButtonIcon.Small}" />
+
+                                        <shared:FileView
+                                            Content="{Binding Excel}"
+                                            HeaderTemplate="{x:Null}"
+                                            Style="{StaticResource IconViewFileStyle}">
+                                            <shared:FileView.Header>
+                                                <Viewbox Width="14" Height="14">
+                                                    <Path Data="{StaticResource f.file-excel}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Control}}}" />
+                                                </Viewbox>
+                                            </shared:FileView.Header>
+                                        </shared:FileView>
+                                    </DockPanel>
+
+                                    <shared:FileView Content="{Binding Pdf}" Style="{StaticResource IconViewFileStyle}">
+                                        <shared:FileView.Header>
+                                            <Viewbox Width="14" Height="14">
+                                                <Path Data="{StaticResource f.file-pdf}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Control}}}" />
+                                            </Viewbox>
+                                        </shared:FileView.Header>
+                                    </shared:FileView>
+
+                                    <shared:FileView Content="{Binding Xbrl}" Style="{StaticResource IconViewFileStyle}">
+                                        <shared:FileView.Header>
+                                            <Viewbox Width="14" Height="14">
+                                                <Path Data="{StaticResource f.file-code}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Control}}}" />
+                                            </Viewbox>
+                                        </shared:FileView.Header>
+                                    </shared:FileView>
+
+                                    <shared:FileView Content="{Binding Sealed}" Style="{StaticResource IconViewFileStyle}">
+                                        <shared:FileView.Header>
+                                            <Viewbox Width="14" Height="14">
+                                                <Path Data="{StaticResource f.file-shield}" Fill="Red" />
+                                            </Viewbox>
+                                        </shared:FileView.Header>
+                                    </shared:FileView>
                                 </hc:UniformSpacingPanel>
                             </DockPanel>
                         </Border>
@@ -217,13 +320,27 @@
                     </ListBox>
                 </Expander>
 
-                <Expander
-                    Header="年报"
-                    IsExpanded="True"
-                    Visibility="{Binding AnnualSource.View.IsEmpty, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                <Expander IsExpanded="True" Visibility="{Binding AnnualSource.View.IsEmpty, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                    <Expander.Header>
+                        <DockPanel>
+                            <TextBlock
+                                Margin="10,0"
+                                VerticalAlignment="Center"
+                                FontWeight="Bold"
+                                Text="年报" />
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.upload}"
+                                Command="{Binding UploadAnnualyCommand}"
+                                Style="{StaticResource ButtonIcon.Small}" />
 
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.box}"
+                                Command="{Binding GenerateMeishiAnnouncesCommand}"
+                                Style="{StaticResource ButtonIcon.Small}" />
+                        </DockPanel>
+                    </Expander.Header>
                     <ListBox
-                        ItemTemplate="{StaticResource ReportItem}"
+                        ItemTemplate="{StaticResource ReportItem2}"
                         ItemsSource="{Binding AnnualSource.View}"
                         Style="{StaticResource ListBoxCustom}">
                         <ListBox.ItemsPanel>

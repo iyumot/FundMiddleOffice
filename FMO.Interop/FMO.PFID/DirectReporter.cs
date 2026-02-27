@@ -97,11 +97,11 @@ public class DirectReporter
     {
         var type = report.Type switch
         {
-            PeriodicReportType.MonthlyReport => DirectFileType.PB0001,
-            PeriodicReportType.QuarterlyReport => DirectFileType.PB0002,
-            PeriodicReportType.SemiAnnualReport => DirectFileType.PB0004,
-            PeriodicReportType.AnnualReport => DirectFileType.PB0003,
-            PeriodicReportType.QuarterlyUpdate => DirectFileType.RS0001,
+            FundReportType.MonthlyReport => DirectFileType.PB0001,
+            FundReportType.QuarterlyReport => DirectFileType.PB0002,
+            FundReportType.SemiAnnualReport => DirectFileType.PB0004,
+            FundReportType.AnnualReport => DirectFileType.PB0003,
+            FundReportType.QuarterlyUpdate => DirectFileType.RS0001,
             _ => DirectFileType.Unk
         };
 
@@ -117,12 +117,28 @@ public class DirectReporter
             using (var archive = new ZipArchive(File.Create(path), ZipArchiveMode.Create))
             {
                 var entry = archive.CreateEntry($"CN_{report.FundCode}_{type}_{date:yyyy-MM-dd}.xlsx");
-                using var entryStream = entry.Open();
-                using var fs = fm.OpenRead();
-                if (fs is null) return new AmacProcessResult { Id = report.Id, FileType = type, UploadError = "无法读取文件" };
+                using (var entryStream = entry.Open())
+                {
+                    using var fs = fm.OpenRead();
+                    if (fs is null) return new AmacProcessResult { Id = report.Id, FileType = type, UploadError = "无法读取文件" };
 
-                fs.CopyTo(entryStream);
-                entryStream.Flush();
+                    fs.CopyTo(entryStream);
+                    entryStream.Flush();
+                }
+
+                if(report.Type == FundReportType.AnnualReport && report is FundPeriodicReport fp && fp.Sealed?.File is FileMeta fmm)
+                {
+                    entry = archive.CreateEntry($"01_{report.FundCode}_年报.pdf");
+                    using (var es = entry.Open())
+                    {
+                        using (var ffs = fmm.OpenRead())
+                        {
+                            if (ffs is null) return new AmacProcessResult { Id = report.Id, FileType = type, UploadError = "无法读取年报附件" };
+                            ffs.CopyTo(es);
+                            es.Flush();
+                        }
+                    }
+                }
             }
 
             using var db = DbHelper.Base();

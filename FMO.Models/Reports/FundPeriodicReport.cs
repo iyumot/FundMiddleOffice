@@ -8,7 +8,7 @@ namespace FMO.Models;
 /// 不然FundPeriodicReport的ID会溢出
 /// </summary>
 [TypeConverter(typeof(EnumDescriptionTypeConverter))]
-public enum PeriodicReportType
+public enum FundReportType
 {
     /// <summary>
     /// 每月报告
@@ -43,7 +43,7 @@ public interface IPeriodical
 
     int FundId { get; }
     
-    PeriodicReportType Type { get; }
+    FundReportType Type { get; }
 
     string? FundCode { get; }
 
@@ -66,7 +66,7 @@ public class FundPeriodicReport : IPeriodical
     /// </summary>
     public DateOnly PeriodEnd { get; set; }
 
-    public PeriodicReportType Type { get; set; }
+    public FundReportType Type { get; set; }
 
 
 
@@ -77,6 +77,8 @@ public class FundPeriodicReport : IPeriodical
     public SimpleFile? Xbrl { get; set; }
 
     public SimpleFile? Pdf { get; set; }
+
+    public SimpleFile? Sealed { get; set; }
 }
 
 
@@ -91,7 +93,7 @@ public class FundQuarterlyUpdate : IPeriodical
 
     public string? FundCode { get; set; }
 
-    public PeriodicReportType Type => PeriodicReportType.QuarterlyUpdate;
+    public FundReportType Type => FundReportType.QuarterlyUpdate;
 
 
 

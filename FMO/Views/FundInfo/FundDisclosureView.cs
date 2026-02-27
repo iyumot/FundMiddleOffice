@@ -45,16 +45,16 @@ public partial class FundDisclosureViewModel : ObservableObject, IRecipient<Fund
 
 
         Monthly.Source = PeriodicDisclosure;
-        Monthly.Filter += (s, e) => e.Accepted = e.Item switch { FundPeriodicReportViewModel r => r.Type == PeriodicReportType.MonthlyReport, _ => false };
+        Monthly.Filter += (s, e) => e.Accepted = e.Item switch { FundPeriodicReportViewModel r => r.Type == FundReportType.MonthlyReport, _ => false };
 
         Quarterly.Source = PeriodicDisclosure;
-        Quarterly.Filter += (s, e) => e.Accepted = e.Item switch { FundPeriodicReportViewModel r => r.Type == PeriodicReportType.QuarterlyReport, _ => false };
+        Quarterly.Filter += (s, e) => e.Accepted = e.Item switch { FundPeriodicReportViewModel r => r.Type == FundReportType.QuarterlyReport, _ => false };
 
         SemiAnnually.Source = PeriodicDisclosure;
-        SemiAnnually.Filter += (s, e) => e.Accepted = e.Item switch { FundPeriodicReportViewModel r => r.Type == PeriodicReportType.SemiAnnualReport, _ => false };
+        SemiAnnually.Filter += (s, e) => e.Accepted = e.Item switch { FundPeriodicReportViewModel r => r.Type == FundReportType.SemiAnnualReport, _ => false };
 
         Annually.Source = PeriodicDisclosure;
-        Annually.Filter += (s, e) => e.Accepted = e.Item switch { FundPeriodicReportViewModel r => r.Type == PeriodicReportType.AnnualReport, _ => false };
+        Annually.Filter += (s, e) => e.Accepted = e.Item switch { FundPeriodicReportViewModel r => r.Type == FundReportType.AnnualReport, _ => false };
 
         QuarterlyUpdate.Source = QuarterlyDisclosure;
     }
@@ -101,24 +101,43 @@ public partial class FundPeriodicReportViewModel : ObservableObject
     public FundPeriodicReportViewModel(FundPeriodicReport report)
     {
         Id = report.Id;
+        Code = report.FundCode;
         Type = report.Type;
         PeriodEnd = report.PeriodEnd;
         Word = new(report.Word);
         Excel = new(report.Excel);
         Pdf = new(report.Pdf);
         Xbrl = new(report.Xbrl);
+        Sealed = new(report.Sealed);
         this.report = report;
+
+
+        Word.FileChanged += f => UpdateFile(new { Word = f });
+        Excel.FileChanged += f => UpdateFile(new { Excel = f });
+        Pdf.FileChanged += f => UpdateFile(new { Pdf = f });
+        Xbrl.FileChanged += f => UpdateFile(new { Xbrl = f });
+        Sealed.FileChanged += f => UpdateFile(new { Sealed = f });
     }
 
-    public int Id { get; }
+    private void UpdateFile<T>(T v)
+    {
+        if (Id == 0) return;
+        using var db = DbHelper.Base();
+        report.UpdateFrom(v!);
+        db.GetCollection<FundPeriodicReport>().UpdateMany(BsonMapper.Global.ToDocument(v).ToString(), $"_id={Id}");
+    }
 
-    public PeriodicReportType Type { get; }
+ 
+
+    public int Id { get; }
+    public string? Code { get; }
+    public FundReportType Type { get; }
 
     public string Title => Type switch
     {
-        PeriodicReportType.QuarterlyReport => $"{PeriodEnd:yy} {PeriodEnd.Month switch { < 4 => "Q1", < 7 => "Q2", < 10 => "Q3", _ => "Q4" }}",
-        PeriodicReportType.SemiAnnualReport => $"{PeriodEnd:yy} {PeriodEnd.Month switch { < 7 => "上半年", _ => "下半年" }}",
-        PeriodicReportType.AnnualReport => $"{PeriodEnd:yy}",
+        FundReportType.QuarterlyReport => $"{PeriodEnd:yy} {PeriodEnd.Month switch { < 4 => "Q1", < 7 => "Q2", < 10 => "Q3", _ => "Q4" }}",
+        FundReportType.SemiAnnualReport => $"{PeriodEnd:yy} {PeriodEnd.Month switch { < 7 => "上半年", _ => "下半年" }}",
+        FundReportType.AnnualReport => $"{PeriodEnd:yy}",
         _ => $"{PeriodEnd:yy/MM}",
     };
 
@@ -134,6 +153,9 @@ public partial class FundPeriodicReportViewModel : ObservableObject
     public SimpleFileViewModel Xbrl { get; }
 
     public SimpleFileViewModel Pdf { get; }
+
+
+    public SimpleFileViewModel Sealed { get; }
 
 
     [RelayCommand]
@@ -193,7 +215,7 @@ public partial class FundQuarterlyUpdateViewModel : ObservableObject
     }
 
     public int Id { get; }
-    public PeriodicReportType Type { get; }
+    public FundReportType Type { get; }
     public string Title => $"{PeriodEnd:yy} {PeriodEnd.Month switch { < 4 => "Q1", < 7 => "Q2", < 10 => "Q3", _ => "Q4" }}";
 
 
@@ -248,7 +270,7 @@ public partial class FundQuarterlyUpdateViewModel : ObservableObject
             await DirectReporter.Submit(result, manager.Name, acc);
             HandyControl.Controls.Growl.Info($"报告提交, Code:{result.SubmitCode},{result.SubmitError}");
         }
-       
+
     }
 }
 

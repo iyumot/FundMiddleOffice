@@ -34,9 +34,28 @@ public partial class DisclosurePageViewModel : ObservableObject
         Months = Enumerable.Range(1, 12).Reverse().ToArray();
 
         debouncer = new Debouncer(() => Update());
+
+        clearDateMap = db.GetCollection<Fund>().Query().Select(x=> new {x.Code, x.ClearDate, x.Status}).ToArray().ToDictionary(x=> x.Code!, x=>x.Status == FundStatus.Normal ? DateOnly.MaxValue : x.ClearDate);
+        MonthlySource.Filter += (s, e) => e.Accepted = Filter(e.Item as FundPeriodicReportViewModel);
+        QuarterlySource.Filter += (s, e) => e.Accepted = Filter(e.Item as FundPeriodicReportViewModel);
+        SemiAnnualSource.Filter += (s, e) => e.Accepted = Filter(e.Item as FundPeriodicReportViewModel);
+        AnnualSource.Filter += (s, e) => e.Accepted = Filter(e.Item as FundPeriodicReportViewModel);
+    }
+
+    private bool Filter(FundPeriodicReportViewModel? v)
+    {
+        return !FilterClearedFund || ( v is not null && clearDateMap.TryGetValue(v.Code!, out var date) && date > v.PeriodEnd);
     }
 
     public int[] Years { get; set; }
+
+    public Dictionary<string, DateOnly> clearDateMap { get; set; } 
+
+    public FundReportType[] Types { get; } = [FundReportType.MonthlyReport, FundReportType.QuarterlyReport, FundReportType.QuarterlyUpdate, FundReportType.AnnualReport];
+
+
+    [ObservableProperty]
+    public partial FundReportType SelectedType { get; set; }
 
     [ObservableProperty]
     public partial int[] Months { get; set; }
@@ -48,6 +67,8 @@ public partial class DisclosurePageViewModel : ObservableObject
     [ObservableProperty]
     public partial int? SelectedMonth { get; set; }
 
+    [ObservableProperty]
+    public partial bool FilterClearedFund { get; set; } = true;
 
     public CollectionViewSource MonthlySource { get; } = new();
 
@@ -66,7 +87,7 @@ public partial class DisclosurePageViewModel : ObservableObject
     {
         if (value is null) Months = [];
         else if (value == DateTime.Now.Year)
-            Months = Enumerable.Range(1, DateTime.Now.Month).Reverse().ToArray();
+            Months = Enumerable.Range(1, DateTime.Now.Month - 1).Reverse().ToArray();
         else
             Months = Enumerable.Range(1, 12).Reverse().ToArray();
 
@@ -79,6 +100,15 @@ public partial class DisclosurePageViewModel : ObservableObject
         debouncer.Invoke();
     }
 
+    partial void OnSelectedTypeChanged(FundReportType value) => debouncer.Invoke();
+
+    partial void OnFilterClearedFundChanged(bool oldValue, bool newValue)
+    { 
+        MonthlySource.View.Refresh();
+        QuarterlySource.View.Refresh();
+        SemiAnnualSource.View.Refresh();
+        AnnualSource.View.Refresh();
+    }
 
     private void Update()
     {
@@ -91,10 +121,10 @@ public partial class DisclosurePageViewModel : ObservableObject
 
         App.Current.Dispatcher.InvokeAsync(() =>
         {
-            MonthlySource.Source = vm.Where(x => x.Type == PeriodicReportType.MonthlyReport);
-            QuarterlySource.Source = vm.Where(x => x.Type == PeriodicReportType.QuarterlyReport);
-            SemiAnnualSource.Source = vm.Where(x => x.Type == PeriodicReportType.SemiAnnualReport);
-            AnnualSource.Source = vm.Where(x => x.Type == PeriodicReportType.AnnualReport);
+            MonthlySource.Source = vm.Where(x => x.Type == FundReportType.MonthlyReport);
+            QuarterlySource.Source = vm.Where(x => x.Type == FundReportType.QuarterlyReport);
+            SemiAnnualSource.Source = vm.Where(x => x.Type == FundReportType.SemiAnnualReport);
+            AnnualSource.Source = vm.Where(x => x.Type == FundReportType.AnnualReport);
         });
 
     }
@@ -131,6 +161,35 @@ public partial class DisclosurePageViewModel : ObservableObject
         }
     }
 
+
+    [RelayCommand]
+    public async Task UploadAnnualy()
+    {
+        var items = AnnualSource?.View?.OfType<FundPeriodicReportViewModel>().ToList();
+
+        if (items is null) return;
+
+        foreach (var v in items)
+        {
+            // 启动上传（不 await，让它在后台运行）
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await v.Upload();
+                    // 可选：成功后记录日志
+                }
+                catch (Exception ex)
+                {
+                    // 建议记录异常，避免静默失败
+                    LogEx.Error($"Upload failed for {v.FundName}: {ex}");
+                }
+            });
+
+            // 等待 5 秒后再启动下一个
+            await Task.Delay(TimeSpan.FromSeconds(5));
+        }
+    }
 
     [RelayCommand]
     public void GenerateMeishiAnnounces()
