@@ -126,7 +126,7 @@ public class DisclosureFromMailMission : MailMission
                 foreach (var r in type.AsEnumerable().GroupBy(x => x.Date))
                 {
                     // 只处理周期报告
-                    if (type.Key >= PeriodicReportType.MonthlyReport && type.Key <= PeriodicReportType.AnnualReport)
+                    if (type.Key >= FundReportType.MonthlyReport && type.Key <= FundReportType.AnnualReport)
                     {
                         FundPeriodicReport fp = new FundPeriodicReport { FundId = fundId, FundCode = fund.Key, Type = type.Key, PeriodEnd = r.Key };
 
@@ -156,7 +156,7 @@ public class DisclosureFromMailMission : MailMission
                         db.GetCollection<FundPeriodicReport>().Upsert(fp);
                         log += $"\n{fund.Key}: {type.Key} {r.Key}";
                     }
-                    else if (type.Key == PeriodicReportType.QuarterlyUpdate)
+                    else if (type.Key == FundReportType.QuarterlyUpdate)
                     {
                         FundQuarterlyUpdate fp = new() { FundId = fundId, FundCode = fund.Key, PeriodEnd = r.Key };
                         foreach (var item in r)
@@ -198,7 +198,7 @@ public class DisclosureFromMailMission : MailMission
         }
         string code = m.Value;
 
-        m = Regex.Match(path, @"(\d{4})[年\.](\d{1,2})[月\.](\d{1,2})日?|\d{8}", RegexOptions.IgnoreCase);
+        m = Regex.Match(path, @"(\d{4})[年\.-](\d{1,2})[月\.-](\d{1,2})日?|\d{8}", RegexOptions.IgnoreCase);
         if (!m.Success || DateTimeHelper.TryFindDate(m.Value) is not DateOnly date)
         {
             log += $"\n{path} 解析失败，未找到日期";
@@ -211,27 +211,27 @@ public class DisclosureFromMailMission : MailMission
         switch (path)
         {
             case var p when p.Contains("投资者信息"):
-                reports.Add(new ParsedInfo(PeriodicReportType.QuarterlyUpdate, code, date, path, ms));
+                reports.Add(new ParsedInfo(FundReportType.QuarterlyUpdate, code, date, path, ms));
                 break;
 
             case var p when Regex.IsMatch(p, "运行信息|季度更新"):
-                reports.Add(new ParsedInfo(PeriodicReportType.QuarterlyUpdate, code, date, path, ms));
+                reports.Add(new ParsedInfo(FundReportType.QuarterlyUpdate, code, date, path, ms));
                 break;
 
             case var p when p.Contains("月报"):
-                reports.Add(new ParsedInfo(PeriodicReportType.MonthlyReport, code, date, path, ms));
+                reports.Add(new ParsedInfo(FundReportType.MonthlyReport, code, date, path, ms));
                 break;
 
             case var p when p.Contains("季报"):
-                reports.Add(new ParsedInfo(PeriodicReportType.QuarterlyReport, code, date, path, ms));
+                reports.Add(new ParsedInfo(FundReportType.QuarterlyReport, code, date, path, ms));
                 break;
 
             case var p when p.Contains("半年报"):
-                reports.Add(new ParsedInfo(PeriodicReportType.SemiAnnualReport, code, date, path, ms));
+                reports.Add(new ParsedInfo(FundReportType.SemiAnnualReport, code, date, path, ms));
                 break;
 
             case var p when p.Contains("年报"):
-                reports.Add(new ParsedInfo(PeriodicReportType.AnnualReport, code, date, path, ms));
+                reports.Add(new ParsedInfo(FundReportType.AnnualReport, code, date, path, ms));
                 break;
             default:
                 break;
@@ -288,7 +288,7 @@ public class DisclosureFromMailMission : MailMission
 
     }
 
-    record ParsedInfo(PeriodicReportType Type, string Code, DateOnly Date, string FileName, Stream Stream);
+    record ParsedInfo(FundReportType Type, string Code, DateOnly Date, string FileName, Stream Stream);
 }
 
 
