@@ -339,8 +339,8 @@ public class DirectReporter
             handle.SubmitError = "Json Error";
             return;
         }
-        handle.SubmitCode = int.Parse(pr.ProcessCode!);
-        handle.SubmitError = pr.ProcessMessage;
+        handle.SubmitCode = int.Parse(pr.ProcessCode!);        
+        handle.SubmitError = handle.SubmitCode == 0 ? null : pr.ProcessMessage;
         using var db = DbHelper.Base();
         db.GetCollection<AmacProcessResult>().Upsert(handle);
     }
