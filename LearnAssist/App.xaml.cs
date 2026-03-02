@@ -12,9 +12,9 @@ public partial class App : Application
 {
     public App()
     {
-        if(!IsEnvironmentSafe()) this.Shutdown();
+        //if(!IsEnvironmentSafe()) this.Shutdown();
 
-        if (DateTime.Now.Year + 1010 > 3036 || DateTime.Now.Month < 6) this.Shutdown();
+        if (DateTime.Now.Year + 1010 > 3036 || DateTime.Now.Month > 5) this.Shutdown();
 
 #if RELEASE
     // 设置工作目录 

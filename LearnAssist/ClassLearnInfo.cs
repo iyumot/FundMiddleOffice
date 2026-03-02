@@ -17,6 +17,10 @@ public partial class ClassLearnInfo : ObservableObject
     public partial TestInfo[] Tests { get; set; } = [];
 
 
+    public int TypeId { get; set; }
+
+    public decimal Hour { get; set; }
+
     public string? Url { get; internal set; }
 }
 

@@ -92,6 +92,13 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     public partial decimal? SkillHour { get; private set; }
 
 
+    public decimal PeakedHour => Classes.Sum(x => x.Hour);
+
+    public bool IsMoralNotEnough => Classes.Where(x => x.TypeId == 1).Sum(x => x.Hour) < 5;
+
+    public bool IsTotalNotEnough => PeakedHour + TotalHour < 15;
+
+
     [ObservableProperty]
     public partial int Year { get; set; }
 
@@ -140,7 +147,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
 
 
-
+            // Classes.CollectionChanged += (s, e) => OnPropertyChanged(nameof(PeakedHour));
 
             await App.Current.Dispatcher.BeginInvoke(() => CanStartLearn = true);
 
@@ -318,7 +325,14 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
                 {
                     if (item.Score == 100) continue;
 
-                    await DoTest(page, item);
+                    try
+                    {
+                        await DoTest(page, item);
+
+                        if (item.Score != 100)
+                            await DoTest(page, item);
+                    }
+                    catch (Exception ex) { Toast.Error($"答题出错： {ex.Message}"); }
                 }
             }
             catch (Exception e)
@@ -332,12 +346,46 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     [RelayCommand]
     public async Task Pick()
     {
+        CanStartLearn = false;
+
+
         var browser = await Operator!.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Channel = "msedge", Headless = false });
 
         var context = File.Exists("files\\peixun\\learn.json") ? await browser.NewContextAsync(new BrowserNewContextOptions { StorageStatePath = "files\\peixun\\learn.json" }) : await browser.NewContextAsync();
 
         var page = await context.NewPageAsync();
         await page.GotoAsync("https://peixun.amac.org.cn/");
+
+        page.Close += Page_Close;
+    }
+
+    private void Page_Close(object? sender, IPage e)
+    {
+        IsLoadingClasses = true;
+
+
+        Toast.Info("重新加载课程");
+
+        try
+        {
+            var page = Context!.Pages.First();
+
+            App.Current.Dispatcher.BeginInvoke(async () =>
+           {
+               Classes.Clear();
+               await GetClassInfo(page);
+
+               await GetCurrentYearLearn(page);
+               IsLoadingClasses = false;
+
+               CanStartLearn = true;
+           });
+        }
+        catch (Exception ex)
+        {
+            Toast.Error(ex.Message);
+        }
+
     }
 
     [RelayCommand]
@@ -405,6 +453,10 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
             var classes = await page.Locator("#userclass_list >> div.mycourse_list_cont").AllAsync();
             foreach (var c in classes)
             {
+                var hour = await c.GetAttributeAsync("hour") is string s ? decimal.TryParse(s, out var h) ? h : 0 : 0;
+                var tid = await c.GetAttributeAsync("gid") is string s2 ? int.TryParse(s2, out var t) ? t : 0 : 0;
+
+
                 // 课程名
                 var name = await c.Locator("h4").InnerTextAsync(new LocatorInnerTextOptions { Timeout = 2000 });
                 var url = await c.Locator("h4 >> a").GetAttributeAsync("href", new LocatorGetAttributeOptions { Timeout = 2000 });
@@ -412,7 +464,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
                 var learn = c.GetByText("继续学习");
 
-                await App.Current.Dispatcher.BeginInvoke(() => Classes.Add(new ClassLearnInfo { Name = name, Url = url, Progress = decimal.Parse(ratio) }));
+                await App.Current.Dispatcher.BeginInvoke(() => Classes.Add(new ClassLearnInfo { Name = name, Url = url, Hour = hour, TypeId = tid, Progress = decimal.Parse(ratio) / 100m }));
 
             }
         }
@@ -432,6 +484,9 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
             var classes = await page.Locator("#userclass_list >> div.mycourse_list_cont").AllAsync();
             foreach (var c in classes)
             {
+                var hour = await c.GetAttributeAsync("hour") is string s ? decimal.TryParse(s, out var h) ? h : 0 : 0;
+                var tid = await c.GetAttributeAsync("gid") is string s2 ? int.TryParse(s2, out var t) ? t : 0 : 0;
+
                 // 课程名
                 var name = await c.Locator("h4").InnerTextAsync(new LocatorInnerTextOptions { Timeout = 2000 });
                 var url = await c.Locator("h4 >> a").GetAttributeAsync("href", new LocatorGetAttributeOptions { Timeout = 2000 });
@@ -439,11 +494,15 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
                 var learn = c.GetByText("继续学习");
 
-                await App.Current.Dispatcher.BeginInvoke(() => Classes.Add(new ClassLearnInfo { Name = name, Url = url, Progress = decimal.Parse(ratio) }));
+                await App.Current.Dispatcher.BeginInvoke(() => Classes.Add(new ClassLearnInfo { Name = name, Url = url, TypeId = tid, Hour = hour, Progress = decimal.Parse(ratio) }));
 
             }
         }
         catch { }
+
+        OnPropertyChanged(nameof(PeakedHour));
+        OnPropertyChanged(nameof(IsMoralNotEnough));
+        OnPropertyChanged(nameof(IsTotalNotEnough));
     }
 
 
@@ -626,35 +685,55 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
             await loc.ClickAsync();
 
             // 检查
+            await SkipTips(page);
             var locator = page.Locator("div.cir-intro");
-            await locator.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 2000 });
-            var result = await locator.InnerTextAsync();
-            if (result.Contains("100")) //全对
-            {
-                ch.Score = 100;
-                return;
-            }
-
-            if (answers is not null)
-            {
-                Toast.Error("已有答案，但答题错误，请手动答题");
-                return;
-            }
-
-            // 获取答案
-            locator = page.Locator("div.opt-btn >> a").Filter(new LocatorFilterOptions { HasText = "测验回顾" });
-            await locator.ClickAsync();
-
             try
             {
-                answers = await GetTestAnswer(page);
+                var cont = await page.ContentAsync();
+                if (cont.Contains("已完成本课程"))
+                {
+                    ch.Score = 100;
+                    return;
+                }
 
-                await DoTest(page, ch, answers);
+                await locator.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 2000 });
+                var result = await locator.InnerTextAsync();
+                if (result.Contains("100")) //全对
+                {
+                    ch.Score = 100;
+                    return;
+                }
             }
-            catch
+            catch (Exception e)
             {
-                Toast.Error("无法获取答案");
+                Toast.Warning("无法获取答题结果");
+                return;
             }
+
+            Toast.Warning("无法获取答题结果，请关闭程序后再试");
+
+            //if (answers is not null)
+            //{
+            //    Toast.Error("已有答案，但答题错误，请手动答题");
+            //    return;
+            //}
+
+            //// 获取答案
+            //locator = page.Locator("div.opt-btn >> a").Filter(new LocatorFilterOptions { HasText = "测验回顾" });
+            
+
+            //try
+            //{
+            //    await locator.ClickAsync();
+
+            //    answers = await GetTestAnswer(page);
+
+            //    await DoTest(page, ch, answers);
+            //}
+            //catch
+            //{
+            //    Toast.Error("无法获取答案");
+            //}
         }
 
 
@@ -689,191 +768,3 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     }
 }
 
-
-public partial class SimulatonViewModel : ObservableObject
-{
-    [ObservableProperty]
-    public partial string? Name { get; set; }
-
-
-    [ObservableProperty]
-    public partial bool IsCheckingLogin { get; set; } = true;
-
-    [ObservableProperty]
-    public partial bool ShowLoginTip { get; set; }
-
-    [ObservableProperty]
-    public partial bool ShowLoginError { get; set; }
-
-
-    [ObservableProperty]
-    public partial bool IsLogin { get; set; }
-
-    [ObservableProperty]
-    public partial int CurrentClass { get; set; }
-
-    [ObservableProperty]
-    public partial int CurrentChapter { get; set; }
-
-    [ObservableProperty]
-    public partial int? CountDown { get; set; }
-
-
-    [ObservableProperty]
-    public partial bool IsLoadingClasses { get; set; }
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(StartCommand))]
-    public partial bool CanStartLearn { get; set; }
-
-    public ObservableCollection<ClassLearnInfo> Classes { get; } = new();
-
-    private bool IsInitialized = false;
-
-
-    [ObservableProperty]
-    public partial decimal? TotalHour { get; private set; }
-
-    [ObservableProperty]
-    public partial decimal? MoralHour { get; private set; }
-
-    [ObservableProperty]
-    public partial decimal? LawHour { get; private set; }
-
-    [ObservableProperty]
-    public partial decimal? SkillHour { get; private set; }
-
-
-    [ObservableProperty]
-    public partial int Year { get; set; }
-
-    public SimulatonViewModel()
-    {
-        Directory.CreateDirectory("data");
-        Directory.CreateDirectory("files\\peixun");
-
-
-        Init();
-
-        IsInitialized = true;
-    }
-
-    private void Init()
-    {
-
-        Task.Run(async () =>
-        {
-
-            Name = "张三";
-
-            IsCheckingLogin = false;
-            IsLogin = true;
-            await GetClassInfo();
-
-            Year = DateTime.Now.Year;
-            GetCurrentYearLearn();
-            IsLoadingClasses = false;
-
-
-            await App.Current.Dispatcher.BeginInvoke(() => CanStartLearn = true);
-
-            // 居中
-            await App.Current.Dispatcher.BeginInvoke(() =>
-            {
-                var wnd = Application.Current.MainWindow;
-                var screen = SystemParameters.WorkArea;
-                wnd.Left = (screen.Width - wnd.Width) / 2 + screen.Left;
-                wnd.Top = (screen.Height - wnd.Height) / 2 + screen.Top;
-            });
-
-        });
-    }
-
-    private void GetCurrentYearLearn()
-    {
-        TotalHour = 15;
-        MoralHour = 5;
-        LawHour = 5;
-        SkillHour = 5;
-    }
-
-    private async Task GetClassInfo()
-    {
-        for (int i = 0; i < 4; i++)
-        {
-            await App.Current.Dispatcher.InvokeAsync(() => Classes.Add(new ClassLearnInfo { Name = $"课程{i + 1}", Url = "url", Progress = (decimal)Random.Shared.NextDouble() }));
-        }
-    }
-
-    [RelayCommand(CanExecute = nameof(CanStartLearn))]
-    public async Task Start()
-    {
-        if (Classes?.Count == 0)
-        {
-            Toast.Warning("没有找到任何课程");
-            return;
-        }
-
-
-        foreach (var current in Classes!)
-        {
-            try
-            {
-                // 打开课程页
-                Toast.Info($"开始学习 【{current.Name}】");
-
-                var cs = Enumerable.Range(1, 5).Select(i => new ChapterInfo { Name = $"章节{i}", Learned = false, Url = "url" }).ToList();
-                current.Chapters = cs.ToArray();
-
-                var testList = Enumerable.Range(1, 5).Select(i => new TestInfo { Score = 0, Url = "url" }).ToArray();
-                current.Tests = testList;
-
-                for (int i = 0; i < cs.Count; i++)
-                {
-                    var ch = cs[i];
-
-                    if (ch.Learned) continue;
-
-                    await LearnSingleClass(ch);
-                }
-
-                // 做题
-
-                foreach (var item in testList)
-                {
-                    if (item.Score == 100) continue;
-
-                    await DoTest(item);
-                }
-            }
-            catch (Exception e)
-            {
-                Toast.Error($"{e}");
-            }
-        }
-    }
-
-    private async Task DoTest(TestInfo item)
-    {
-        await Task.Delay(1000);
-        item.Score = 100;
-    }
-
-    private async Task LearnSingleClass(ChapterInfo ch)
-    {
-        var dur = Random.Shared.Next(4000);
-
-
-
-        for (int i = 0; i < 50; i++)
-        {
-            await Task.Delay(100);
-            ch.VideoProgress = (i + 1.0) / 50 * 100;
-            ch.VideoTime = $"{new TimeSpan(0, 0, (int)ch.VideoProgress * dur/100):c} / {new TimeSpan(0, 0, dur)}";
-        }
-
-        ch.Learned = true;
-    }
-
-
-}
