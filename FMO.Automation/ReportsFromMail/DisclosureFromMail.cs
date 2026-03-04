@@ -9,6 +9,10 @@ using System.Text.RegularExpressions;
 
 namespace FMO.Schedule;
 
+
+
+public record FundIdf(string Name, string Code);
+
 public class DisclosureFromMailMission : MailMission
 {
     public int Interval { get; set; } = 6;
@@ -50,15 +54,18 @@ public class DisclosureFromMailMission : MailMission
         double progress = 0;
 
         Dictionary<string, int> fundmap;
+        FundIdf[] fundCodeMap;
         using (var mdb = DbHelper.Base())
+        {
             fundmap = mdb.GetCollection<Fund>().Query().Select(x => new { x.Id, x.Code }).ToArray().DistinctBy(x => x.Code).ToDictionary(x => x.Code!, x => x.Id);
-
+            fundCodeMap = mdb.GetCollection<Fund>().Query().Select(x => new FundIdf(x.Name, x.Code!)).ToArray();
+        }
         Parallel.ForEach(work, f => //)
         //foreach (var f in work.AsEnumerable().Reverse())
         {
             try
             {
-                WorkOne(f, fundmap, log);
+                WorkOne(f, fundmap, fundCodeMap, log);
                 coll.Upsert(new MailMissionRecord { Id = f.Name, Time = DateTime.Now });
             }
             catch (Exception ex)
@@ -80,7 +87,7 @@ public class DisclosureFromMailMission : MailMission
         return true;
     }
 
-    private void WorkOne(FileInfo f, Dictionary<string, int> fundmap, string log)
+    public void WorkOne(FileInfo f, Dictionary<string, int> fundmap, FundIdf[] fundCodeMap, string log)
     {
         using MimeMessage mime = LoadMail(f.FullName);
 
@@ -98,7 +105,7 @@ public class DisclosureFromMailMission : MailMission
             {
                 case ".zip":
                     using (var ms = Copy(item.Content))
-                        HandleZip(filepath, ms, reports, log);
+                        HandleZip(filepath, ms, fundCodeMap, reports, log);
                     continue;
 
                 case ".xlsx":
@@ -107,7 +114,7 @@ public class DisclosureFromMailMission : MailMission
                 case ".pdf":
                 case ".xbrl":
                     using (var ms = Copy(item.Content))
-                        HandleRealFile(filepath, ms, reports, log);
+                        HandleRealFile(filepath, ms, fundCodeMap, reports, log);
                     continue;
             }
         }
@@ -186,24 +193,74 @@ public class DisclosureFromMailMission : MailMission
         return ms;
     }
 
-    private void HandleRealFile(string path, Stream stream, List<ParsedInfo> reports, string log)
+
+    private DateOnly ParseDateFromFileName(string path)
+    {
+        var m = Regex.Match(path, @"(\d{4})[年\.-](\d{1,2})[月\.-](\d{1,2})日?|\d{8}", RegexOptions.IgnoreCase);
+        if (m.Success && DateTimeHelper.TryFindDate(m.Value) is DateOnly date)
+            return date;
+
+        // 建投
+        m = Regex.Match(path, @"(?<!\d)\d{6}(?!\d)");
+        if (m.Success && DateOnly.TryParseExact(m.Value, "yyyyMM", out date))
+            return date.AddMonths(1).AddDays(-1);
+
+        m = Regex.Match(path, @"(\d{4})年(\d{1,2})月");
+        if (m.Success && DateOnly.TryParseExact($"{m.Groups[1].Value}{m.Groups[2].Value.PadLeft(2, '0')}", "yyyyMM", out date))
+            return date.AddMonths(1).AddDays(-1);
+
+        return default;
+    }
+
+    private void HandleRealFile(string path, Stream stream, FundIdf[] fundCodeMap, List<ParsedInfo> reports, string log)
     {
         // 解析文件名
         // 备案号
+        string code = "";
         var m = Regex.Match(path, "S[0-9A-Z]{5}", RegexOptions.IgnoreCase);
-        if (!m.Success)
+        if (m.Success) code = m.Value;
+        else
+        {
+            // 尝试从产品名获取 
+            foreach (var item in fundCodeMap)
+            {
+                if (path.Contains(item.Name))
+                    code = item.Code;
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(code))
         {
             log += $"\n{path} 解析失败，未找到备案号";
             return;
         }
-        string code = m.Value;
 
-        m = Regex.Match(path, @"(\d{4})[年\.-](\d{1,2})[月\.-](\d{1,2})日?|\d{8}", RegexOptions.IgnoreCase);
-        if (!m.Success || DateTimeHelper.TryFindDate(m.Value) is not DateOnly date)
+        ////////////////////////////////////////////////////
+        //m = Regex.Match(path, @"(\d{4})[年\.-](\d{1,2})[月\.-](\d{1,2})日?|\d{8}", RegexOptions.IgnoreCase);
+        //bool noDate = false;
+        //if (!m.Success || DateTimeHelper.TryFindDate(m.Value) is not DateOnly date)
+        //    noDate = true;
+
+        //if (noDate)
+        //{
+        //    // 建投
+        //    m = Regex.Match(path, @"(?<!\d)\d{6}(?!\d)");
+        //    if (m.Success && DateOnly.TryParseExact(m.Value, "yyyyMM", out date))
+        //        noDate = false;
+        //}
+
+        //if (noDate)
+        //{
+        //    log += $"\n{path} 解析失败，未找到日期";
+        //    return;
+        //}
+        var date = ParseDateFromFileName(path);
+        if (date == default)
         {
             log += $"\n{path} 解析失败，未找到日期";
             return;
         }
+        ////////////////////////////////////////////////////
 
         var ms = new MemoryStream();
         stream.CopyTo(ms);
@@ -239,7 +296,7 @@ public class DisclosureFromMailMission : MailMission
 
     }
 
-    private void HandleZip(string path, Stream stream, List<ParsedInfo> reports, string log)
+    private void HandleZip(string path, Stream stream, FundIdf[] fundCodeMap, List<ParsedInfo> reports, string log)
     {
         using var zip = new ZipArchive(stream);
         foreach (var ent in zip.Entries)
@@ -247,7 +304,7 @@ public class DisclosureFromMailMission : MailMission
             switch (Path.GetExtension(ent.Name).ToLower())
             {
                 case ".zip":
-                    HandleZip(ent.Name, ent.Open(), reports, log);
+                    HandleZip(ent.Name, ent.Open(), fundCodeMap, reports, log);
                     continue;
 
                 case ".xlsx":
@@ -255,7 +312,7 @@ public class DisclosureFromMailMission : MailMission
                 case ".docx":
                 case ".pdf":
                 case ".xbrl":
-                    HandleRealFile(ent.Name, ent.Open(), reports, log);
+                    HandleRealFile(ent.Name, ent.Open(), fundCodeMap, reports, log);
                     continue;
             }
         }

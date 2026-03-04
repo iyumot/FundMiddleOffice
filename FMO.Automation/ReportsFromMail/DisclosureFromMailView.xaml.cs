@@ -38,6 +38,11 @@ public partial class DisclosureFromMailViewModel : MissionViewModel<DisclosureFr
     [ObservableProperty]
     public partial int? Interval { get; set; }
 
+
+    [ObservableProperty]
+    public partial DateTime StartDate { get; set; }
+
+
     public DisclosureFromMailViewModel(DisclosureFromMailMission m) : base(m)
     {
         Title = "信披更新";
