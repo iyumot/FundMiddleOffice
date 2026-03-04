@@ -1017,15 +1017,17 @@
                                             Foreground="RoyalBlue"
                                             ToolTip="复制" />
                                     </DockPanel>
-                                    <Button
-                                        Margin="-5"
-                                        hc:IconElement.Geometry="{StaticResource f.xmark}"
-                                        Command="{Binding DeleteCommand}"
-                                        CommandParameter="{Binding .}"
-                                        Foreground="Red"
-                                        Style="{StaticResource ButtonIcon.Small}"
-                                        ToolTip="删除"
-                                        Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource AncestorType=local:FileView}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                                    <hc:SimplePanel x:Name="del" Visibility="Collapsed">
+                                        <Button
+                                            Margin="-5"
+                                            hc:IconElement.Geometry="{StaticResource f.xmark}"
+                                            Command="{Binding DeleteCommand}"
+                                            CommandParameter="{Binding .}"
+                                            Foreground="Red"
+                                            Style="{StaticResource ButtonIcon.Small}"
+                                            ToolTip="删除"
+                                            Visibility="{Binding IsReadOnly, RelativeSource={RelativeSource AncestorType=local:FileView}, Converter={StaticResource Boolean2VisibilityReConverter}}" />
+                                    </hc:SimplePanel>
                                 </DockPanel>
                             </hc:SimplePanel>
                         </hc:SimplePanel>
@@ -1041,7 +1043,9 @@
                         <DataTrigger Binding="{Binding Exists, TargetNullValue=False}" Value="False">
                             <Setter TargetName="p" Property="Visibility" Value="Collapsed" />
                         </DataTrigger>
-
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="del" Property="Visibility" Value="Visible" />
+                        </Trigger>
                     </DataTemplate.Triggers>
                 </DataTemplate>
             </Setter.Value>
