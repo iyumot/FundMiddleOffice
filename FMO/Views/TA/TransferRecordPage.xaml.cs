@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using DocumentFormat.OpenXml.Bibliography;
 using FMO.Models;
 using FMO.Shared;
 using FMO.Utilities;
@@ -517,6 +518,32 @@ public partial class TransferRecordPageViewModel : ObservableObject, IRecipient<
             r.IsAborted = obj.IsAborted;
             db.GetCollection<TransferOrder>().Update(obj);
         }
+    }
+
+
+    [RelayCommand]
+    public async Task SyncOrder(TransferOrderViewModel r)
+    {
+        var signing = ESigning.SigningGalley.FindByIdentifier(r.Source);
+        if (signing is null)
+        {
+            HandyControl.Controls.Growl.Warning("未找到对应的电子签平台");
+            return;
+        }
+
+        var order = r.Build(); 
+        if (!await signing.QueryOrderAsync(order))
+        {
+            HandyControl.Controls.Growl.Warning("未找到对应的订单");
+            return;
+        }
+
+        using var db = DbHelper.Base();
+        db.GetCollection<TransferOrder>().Upsert(order);
+
+        var idx = Orders!.IndexOf(r);
+        Orders.RemoveAt(idx);
+        Orders.Insert(idx, new TransferOrderViewModel(order));
     }
 
 

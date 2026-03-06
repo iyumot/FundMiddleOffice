@@ -19,6 +19,17 @@ public static class SigningGalley
 
     }
 
+    public static ISigning? FindByIdentifier(string? identifier)
+    {
+        foreach (var item in ViewModels)
+        {
+            if (item.Signing.Id == identifier)
+                return item.Signing;
+        }
+        return null;
+    }
+
+
     /// <summary>
     /// 放到首页中
     /// </summary>

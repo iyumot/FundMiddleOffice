@@ -217,7 +217,7 @@ public class MeiShiAssit : ISigning
         var cont = await Query(from, end);
         SigningLoger.LogRun(this, nameof(QueryCustomerAsync), $"{from}-{end}", cont);
 
-        if (cont.Contains("token已失效"))
+        if (Regex.IsMatch(cont, "token已失效|重新登录"))
         {
             isLogin = false;
             isLogin = await Login();
@@ -264,7 +264,7 @@ public class MeiShiAssit : ISigning
         var json = await response.Content.ReadAsStringAsync();
         SigningLoger.LogRun(this, nameof(QueryQualificationAsync), $"{from}-{end}", json);
 
-        if (json.Contains("token已失效"))
+        if (Regex.IsMatch(json, "token已失效|重新登录"))
         {
             isLogin = false;
             return [];
@@ -511,7 +511,7 @@ public class MeiShiAssit : ISigning
 
             var cont = await response.Content.ReadAsStringAsync();
             SigningLoger.LogRun(this, nameof(QueryOrderAsync), $"{from}-{end}", cont);
-            if (cont.Contains("token已失效"))
+            if (Regex.IsMatch(cont, "token已失效|重新登录"))
             {
                 isLogin = false;
                 return [];
@@ -540,6 +540,10 @@ public class MeiShiAssit : ISigning
     {
         try
         {
+            if (!IsValid) return false;
+            if (!isLogin) isLogin = await Login();
+            if (!isLogin) { LogEx.Error("MeiShi Login Failed"); return false; }
+
             // 获取详细数据
             HttpRequestMessage request = new();
             request.Method = HttpMethod.Get;
@@ -551,7 +555,7 @@ public class MeiShiAssit : ISigning
 
             var json = await response.Content.ReadAsStringAsync();
             SigningLoger.LogRun(this, nameof(QueryOrderAsync), $"{order.ExternalId}", json);
-            if (json.Contains("token已失效"))
+            if (Regex.IsMatch(json, "token已失效|重新登录"))
             {
                 isLogin = false;
                 return false;
@@ -598,6 +602,10 @@ public class MeiShiAssit : ISigning
     {
         try
         {
+            if (!IsValid) return false;
+            if (!isLogin) isLogin = await Login();
+            if (!isLogin) { LogEx.Error("MeiShi Login Failed"); return false; }
+
             // 获取详细数据
             HttpRequestMessage request = new();
             request.Method = HttpMethod.Get;
@@ -609,7 +617,7 @@ public class MeiShiAssit : ISigning
 
             var json = await response.Content.ReadAsStringAsync();
             SigningLoger.LogRun(this, nameof(QueryOrderAsync), $"{order.ExternalId}", json);
-            if (json.Contains("token已失效"))
+            if (Regex.IsMatch(json, "token已失效|重新登录"))
             {
                 isLogin = false;
                 return false;

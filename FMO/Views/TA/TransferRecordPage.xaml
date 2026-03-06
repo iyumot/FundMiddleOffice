@@ -471,10 +471,46 @@
                             ElementStyle="{StaticResource RightText}"
                             Header="金额/份额" />
 
-                        <DataGridTextColumn
-                            Binding="{Binding Source}"
-                            ElementStyle="{StaticResource CenterText}"
-                            Header="数据源" />
+                        <DataGridTemplateColumn Header="数据源">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <hc:SimplePanel x:Name="actionPanel">
+
+                                        <TextBlock
+                                            x:Name="txt"
+                                            Style="{StaticResource CenterText}"
+                                            Text="{Binding Source}" />
+
+                                        <Button
+                                            x:Name="btn"
+                                            hc:IconElement.Geometry="{StaticResource f.cloud-arrow-down}"
+                                            BorderThickness="0"
+                                            Command="{Binding DataContext.SyncOrderCommand, RelativeSource={RelativeSource AncestorType=local:TransferRecordPage}}"
+                                            CommandParameter="{Binding .}"
+                                            Foreground="RoyalBlue"
+                                            Style="{StaticResource ButtonIcon.Small}"
+                                            ToolTip="从平台下载数据"
+                                            Visibility="Collapsed" />
+                                    </hc:SimplePanel>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding Source}" Value="manual">
+                                            <Setter Property="IsEnabled" Value="False" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Source}" Value="{x:Null}">
+                                            <Setter Property="IsEnabled" Value="False" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Source}" Value="import">
+                                            <Setter Property="IsEnabled" Value="False" />
+                                        </DataTrigger>
+                                        <!--  监听行的鼠标悬停状态  -->
+                                        <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                            <Setter TargetName="btn" Property="Visibility" Value="Visible" />
+                                            <Setter TargetName="txt" Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
 
 
                         <DataGridTemplateColumn Header="申请单">
@@ -562,7 +598,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-
+                        <!--  删除  -->
                         <DataGridTemplateColumn>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -603,6 +639,9 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
+
+
+
 
 
                     </DataGrid.Columns>
