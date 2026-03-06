@@ -21,6 +21,11 @@ partial class TransferOrderViewModel : ITransferViewModel
     /// </summary>
     public bool IsApplyed { get =>field; set { field = value; OnPropertyChanged(nameof(IsApplyed)); } }
 
+
+    public bool IsEditable => string.IsNullOrWhiteSpace(Source) || Source == "manual";
+     
+
+
     [RelayCommand]
     public void OpenInvestorView()
     {
