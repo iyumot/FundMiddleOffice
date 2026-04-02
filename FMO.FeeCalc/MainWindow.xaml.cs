@@ -651,7 +651,7 @@ public partial class MainWindowViewModel : ObservableObject
                 // 下方合计 
                 sheet3.Cell(rowSum, 1).Value = "合计";
                 for (int j = 2; j <= colSumLast; j++)
-                    sheet3.Cell(rowSum, j).FormulaR1C1 = $"SUM(R2C{j}:R{rowSum - 1}C{j})";
+                    sheet3.Cell(rowSum, j).FormulaR1C1 = $"SUM(R{rowst}C{j}:R{rowSum - 1}C{j})";
                 sheet3.Row(rowSum).Height = 40;
 
 
