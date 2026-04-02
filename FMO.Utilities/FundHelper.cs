@@ -56,7 +56,7 @@ public static class FundHelper
         using var db = DbHelper.Base();
         db.GetCollection<Fund>().Insert(fund);
         InitiateFlow flow = new() { FundId = fund.Id, ElementFiles = new MultiFile { Label = "基金要素" }, ContractFiles = new MultiFile { Label = "基金合同" }, CustomFiles = new() };
-        db.GetCollection<FundFlow>().Insert(flow) ;
+        db.GetCollection<FundFlow>().Insert(flow);
         db.GetCollection<FundElements>().Insert(FundElements.Create(fund.Id, flow.Id));
 
 
@@ -84,8 +84,9 @@ public static class FundHelper
             db.GetCollection<TransferRecord>().Update(uncheck);
         }
 
+        // 计算份额表，排除已全部赎回的
         var data = db.GetCollection<TransferRecord>().Find(x => x.FundId == fundId).OrderBy(x => x.ConfirmedDate).ToList();
-
+        data = data.GroupBy(x => x.InvestorId).Where(x => x.Max(y => y.ConfirmedDate) >= begin || x.Sum(y => y.ShareChange()) > 0).SelectMany(x => x).ToList();
 
         /// 生成行、列头
         List<DateOnly> dates = new List<DateOnly>();
