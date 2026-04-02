@@ -493,9 +493,12 @@ public partial class MainWindowViewModel : ObservableObject
                 ///表3
 
                 var sheet3 = workbook.AddWorksheet("分成表", 0);
-                sheet3.Cell(1, 1).Value = "投资人";
-                sheet3.Cell(1, 2).Value = "管理费";
-                int ar = 2;
+                sheet3.Range(1, 1, 2, 1).Value = "投资人";
+                sheet3.Range(1, 1, 2, 1).Merge();
+                sheet3.Range(1, 3, 2, 3).Value = "管理费";
+                sheet3.Range(1, 3, 2, 3).Merge();
+                int rowst = 3;
+                int ar = 3;
                 List<int> hasFeeIds = new();
                 for (int j = 0; j < ids.Count; j++)
                 {
@@ -505,87 +508,170 @@ public partial class MainWindowViewModel : ObservableObject
                     // 客户
                     sheet3.Cell(ar, 1).Value = sheet.Cell(1, j + joff).Value;
                     // 
-                    sheet3.Cell(ar, 2).FormulaR1C1 = $"费用明细表!R{dates.Count + 2}C{j + joff}";
+                    sheet3.Cell(ar, 3).FormulaR1C1 = $"费用明细表!R{dates.Count + 2}C{j + joff}";
 
                     ++ar;
                 }
 
                 sheet3.Range(1, 1, ar, 1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
                 sheet3.Range(1, 1, ar, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                sheet3.Column(1).Width = 50;
-                sheet3.Column(2).Width = 20;
-                sheet3.Column(2).Style.NumberFormat.Format = "0.00";
+                sheet3.Column(1).Width = 30;
+                sheet3.Column(3).Width = 20;
+                sheet3.Column(3).Style.NumberFormat.Format = "0.00";
 
                 // 写入业绩报酬 
-                int rowSum = hasFeeIds.Count + 2;
+                int rowSum = ar;
                 using var db = DbHelper.Base();
                 var per = db.GetCollection<TransferRecord>().Find(x => x.FundId == f.Fund.Id && x.PerformanceFee > 0).Where(x => x.RequestDate >= dd[0] && x.RequestDate <= dd[^1]).ToArray();
 
-                /// 按交易日期分组
-                var group = per.GroupBy(x => x.ConfirmedDate).ToArray();
-                for (int j = 0; j < group.Length; j++)
+
+                // 业绩报酬 
+                // 分红
+                int colst = 4, colsCarry = 0, colref = 0, colref2 = 0;
+                var groupDist = per.Where(x => x.Type == TransferRecordType.Distribution).GroupBy(x => x.ConfirmedDate).ToArray();
+                if (groupDist.Length > 0)
                 {
-                    var type = group[j].First().Type;
-                    var date = group[j].Key;
-
-                    // 头
-                    sheet3.Cell(1, 3 + j).Value = $"{(type == TransferRecordType.Distribution ? "分红" : "赎回")} {date:yyyy-MM-dd}";
-                    sheet3.Cell(1, 3 + j).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-
-                    foreach (var t in group[j].GroupBy(x => x.InvestorId))
+                    colref = colst;
+                    colsCarry += groupDist.Length;
+                    for (int j = 0; j < groupDist.Length; j++)
                     {
-                        var idx = hasFeeIds.IndexOf(t.Key);
-                        sheet3.Cell(idx + 2, 3 + j).Value = t.Sum(x => x.PerformanceFee);
+                        var date = groupDist[j].Key;
 
+                        // 头
+                        sheet3.Cell(2, colst + j).Value = $"{date:yyyy-MM-dd}";
+                        sheet3.Range(1, colst + j, 2, colst + j).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                        foreach (var t in groupDist[j].GroupBy(x => x.InvestorId))
+                        {
+                            var idx = hasFeeIds.IndexOf(t.Key);
+                            sheet3.Cell(idx + rowst, colst + j).Value = t.Sum(x => x.PerformanceFee);
+
+                        }
+
+                        sheet3.Column(colst + j).Width = 20;
+                        sheet3.Column(colst + j).Style.NumberFormat.Format = "0.00";
+
+                        // 校验
+                        var condf = sheet3.Cell(rowSum, colst + j).AddConditionalFormat();
+
+                        // 使用公式：注意以 C2 为基准（区域左上角）
+                        condf.WhenNotEquals((double)groupDist[j].Sum(x => x.PerformanceFee))
+                            .Fill.SetBackgroundColor(XLColor.Red);
                     }
+                    // 分红头
+                    sheet3.Cell(1, colst).Value = "业绩报酬（分红）";
+                    if (groupDist.Length > 1) // 加入汇总
+                    {
+                        colref = colst + colsCarry;
+                        colsCarry += 1;
 
-                    sheet3.Column(3 + j).Width = 20;
-                    sheet3.Column(3 + j).Style.NumberFormat.Format = "0.00";
+                        // 合计 
+                        sheet3.Cell(1, groupDist.Length + 3).Value = "合计";
+                        sheet3.Range(1, groupDist.Length + 3, 2, groupDist.Length + 3).Merge();
+                        for (int i = rowst; i < ar; i++)
+                            sheet3.Cell(i, groupDist.Length + 3).FormulaR1C1 = $"SUM(R{i}C{colst}:R{i}C{colst + groupDist.Length - 1})";
 
-                    // 校验
-                    var condf = sheet3.Cell(rowSum, j + 3).AddConditionalFormat();
 
-                    // 使用公式：注意以 C2 为基准（区域左上角）
-                    condf.WhenNotEquals((double)group[j].Sum(x => x.PerformanceFee))
-                        .Fill.SetBackgroundColor(XLColor.Red);
+                        sheet3.Column(groupDist.Length + colst).Width = 20;
+                        sheet3.Column(groupDist.Length + colst).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        sheet3.Column(groupDist.Length + colst).Style.NumberFormat.Format = "#,##0.00;-#,##0.00;";
+
+                        sheet3.Range(1, colst, 2, colst + colsCarry).Merge();
+                    }
                 }
+
+                ////////////////////////////////////////////////////
+                // 赎回
+                colst += colsCarry; colsCarry = 0;
+                var groupRedem = per.Where(x => x.Type != TransferRecordType.Distribution).GroupBy(x => x.ConfirmedDate).ToArray();
+                if (groupRedem.Length > 0)
+                {
+                    colref2 = colst;
+                    colsCarry += groupRedem.Length;
+                    for (int j = 0; j < groupRedem.Length; j++)
+                    {
+                        var date = groupRedem[j].Key;
+
+                        // 头
+                        sheet3.Cell(2, colst + j).Value = $"{date:yyyy-MM-dd}";
+                        sheet3.Range(1, colst + j, 2, colst + j).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                        foreach (var t in groupRedem[j].GroupBy(x => x.InvestorId))
+                        {
+                            var idx = hasFeeIds.IndexOf(t.Key);
+                            sheet3.Cell(idx + rowst, colst + j).Value = t.Sum(x => x.PerformanceFee);
+
+                        }
+
+                        sheet3.Column(colst + j).Width = 16;
+                        sheet3.Column(colst + j).Style.NumberFormat.Format = "#,##0.00;-#,##0.00;";
+
+                        // 校验
+                        var condf = sheet3.Cell(rowSum, j + colst).AddConditionalFormat();
+
+                        // 使用公式：注意以 C2 为基准（区域左上角）
+                        condf.WhenNotEquals((double)groupRedem[j].Sum(x => x.PerformanceFee))
+                            .Fill.SetBackgroundColor(XLColor.Red);
+                    }
+                    // 头
+                    sheet3.Cell(1, colst).Value = "业绩报酬（赎回）";
+                    if (groupRedem.Length > 1) // 加入汇总
+                    {
+                        colref2 = colst + colsCarry;
+                        colsCarry += 1;
+
+                        // 合计 
+                        sheet3.Cell(2, groupRedem.Length + colst).Value = "合计";
+                        for (int i = rowst; i < ar; i++)
+                            sheet3.Cell(i, groupRedem.Length + colst).FormulaR1C1 = $"SUM(R{i}C{colst}:R{i}C{colst + groupRedem.Length - 1})";
+
+                        sheet3.Column(groupRedem.Length + colst).Width = 20;
+                        sheet3.Column(groupRedem.Length + colst).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        sheet3.Column(groupRedem.Length + colst).Style.NumberFormat.Format = "#,##0.00;-#,##0.00;";
+
+                        sheet3.Range(1, colst, 1, colst + groupRedem.Length).Merge();
+                    }
+                }
+
+                ////////////////////////////////////////////////////////////
 
 
                 // 合计 
-                sheet3.Cell(1, group.Length + 3).Value = "合计";
-                for (int i = 0; i < hasFeeIds.Count; i++)
-                    sheet3.Cell(2 + i, group.Length + 3).FormulaR1C1 = $"SUM(R{2 + i}C2:R{2 + i}C{group.Length + 2})";
+                int colSumLast = colsCarry + colst - 1;
 
-                sheet3.Column(3 + group.Length).Width = 20;
-                sheet3.Column(3 + group.Length).Style.NumberFormat.Format = "0.00";
+                sheet3.Cell(1, 2).Value = "费用合计";
+                sheet3.Range(1, 2, 2, 2).Merge();
+                for (int i = rowst; i < ar; i++)
+                    sheet3.Cell(i, 2).FormulaR1C1 = $"R{i}C3+{(colref == 0 ? 0 : $"R{i}C{colref}")}+{(colref2 == 0 ? 0 : $"R{i}C{colref2}")}";//$"SUM(R{i}C2:R{i}C{2 - 1})";
+
+                sheet3.Column(2).Width = 20;
+                sheet3.Column(2).Style.NumberFormat.Format = "0.00";
 
 
                 // 下方合计 
                 sheet3.Cell(rowSum, 1).Value = "合计";
-                for (int j = 2; j <= group.Length + 3; j++)
+                for (int j = 2; j <= colSumLast; j++)
                     sheet3.Cell(rowSum, j).FormulaR1C1 = $"SUM(R2C{j}:R{rowSum - 1}C{j})";
                 sheet3.Row(rowSum).Height = 40;
 
 
+                ////// 首行
+                sheet3.Range(1, 1, 1, colSumLast).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                sheet3.Range(1, 1, 1, colSumLast).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                sheet3.Range(1, 1, 1, colSumLast).Style.Font.FontSize = 14;
+                sheet3.Row(1).Height = 20;
 
-                sheet3.Range(1, 1, 1, group.Length + 3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                sheet3.Range(1, 1, 1, group.Length + 3).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-                sheet3.Range(1, 1, 1, group.Length + 3).Style.Font.FontSize = 14;
-                sheet3.Row(1).Height = 50;
-
-                sheet3.Range(2, 2, 2 + hasFeeIds.Count, group.Length + 3).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                sheet3.Range(2, 2, ar, colSumLast).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
 
                 // 间隔行
-                for (int i = 0; i < hasFeeIds.Count; i += 2)
-                {
-                    sheet3.Range(2 + i, 1, 2 + i, group.Length + 3).Style.Fill.BackgroundColor = XLColor.LightGray;
-                }
+                for (int i = rowst; i < ar; i += 2)
+                    sheet3.Range(i, 1, i, colSumLast).Style.Fill.BackgroundColor = XLColor.LightGray;
 
-                for (int i = 0; i < hasFeeIds.Count; i++)
-                    sheet3.Row(2 + i).Height = 32;
+                for (int i = rowst; i < ar; i++)
+                    sheet3.Row(i).Height = 32;
 
                 // 冻结首行
-                sheet3.SheetView.FreezeRows(1);
+                sheet3.SheetView.FreezeRows(2);
 
                 string path = $"files/fee/{f.Fund.ShortName}_{dates[0]:yyyy.MM.dd}-{dates[^1]:yyyy.MM.dd}.xlsx";
                 workbook.SaveAs(path);
