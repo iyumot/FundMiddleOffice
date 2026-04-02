@@ -513,11 +513,13 @@ public partial class MainWindowViewModel : ObservableObject
                     ++ar;
                 }
 
+                string numfmt = "_ * #,##0.00_ ;_ * -#,##0.00_ ;_ * \"-\"_ ;_ @_ ";
+
                 sheet3.Range(1, 1, ar, 1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
                 sheet3.Range(1, 1, ar, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
                 sheet3.Column(1).Width = 30;
                 sheet3.Column(3).Width = 20;
-                sheet3.Column(3).Style.NumberFormat.Format = "0.00";
+                sheet3.Column(3).Style.NumberFormat.Format = numfmt;
 
                 // 写入业绩报酬 
                 int rowSum = ar;
@@ -574,7 +576,7 @@ public partial class MainWindowViewModel : ObservableObject
 
                         sheet3.Column(groupDist.Length + colst).Width = 20;
                         sheet3.Column(groupDist.Length + colst).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                        sheet3.Column(groupDist.Length + colst).Style.NumberFormat.Format = "#,##0.00;-#,##0.00;";
+                        sheet3.Column(groupDist.Length + colst).Style.NumberFormat.Format = numfmt;
 
                         sheet3.Range(1, colst, 2, colst + colsCarry).Merge();
                     }
@@ -604,7 +606,7 @@ public partial class MainWindowViewModel : ObservableObject
                         }
 
                         sheet3.Column(colst + j).Width = 16;
-                        sheet3.Column(colst + j).Style.NumberFormat.Format = "#,##0.00;-#,##0.00;";
+                        sheet3.Column(colst + j).Style.NumberFormat.Format = numfmt;
 
                         // 校验
                         var condf = sheet3.Cell(rowSum, j + colst).AddConditionalFormat();
@@ -627,7 +629,7 @@ public partial class MainWindowViewModel : ObservableObject
 
                         sheet3.Column(groupRedem.Length + colst).Width = 20;
                         sheet3.Column(groupRedem.Length + colst).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                        sheet3.Column(groupRedem.Length + colst).Style.NumberFormat.Format = "#,##0.00;-#,##0.00;";
+                        sheet3.Column(groupRedem.Length + colst).Style.NumberFormat.Format = numfmt;
 
                         sheet3.Range(1, colst, 1, colst + groupRedem.Length).Merge();
                     }
@@ -645,7 +647,7 @@ public partial class MainWindowViewModel : ObservableObject
                     sheet3.Cell(i, 2).FormulaR1C1 = $"R{i}C3+{(colref == 0 ? 0 : $"R{i}C{colref}")}+{(colref2 == 0 ? 0 : $"R{i}C{colref2}")}";//$"SUM(R{i}C2:R{i}C{2 - 1})";
 
                 sheet3.Column(2).Width = 20;
-                sheet3.Column(2).Style.NumberFormat.Format = "0.00";
+                sheet3.Column(2).Style.NumberFormat.Format = numfmt;
 
 
                 // 下方合计 
