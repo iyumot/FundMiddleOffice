@@ -58,7 +58,7 @@ public class DisclosureFromMailMission : MailMission
         using (var mdb = DbHelper.Base())
         {
             fundmap = mdb.GetCollection<Fund>().Query().Select(x => new { x.Id, x.Code }).ToArray().DistinctBy(x => x.Code).ToDictionary(x => x.Code!, x => x.Id);
-            fundCodeMap = mdb.GetCollection<Fund>().Query().Select(x => new FundIdf(x.Name, x.Code!)).ToArray();
+            fundCodeMap = mdb.GetCollection<Fund>().Query().Select(x => new { x.Name, x.Code }).ToArray().Select(x => new FundIdf(x.Name, x.Code!)).ToArray();
         }
         Parallel.ForEach(work, f => //)
         //foreach (var f in work.AsEnumerable().Reverse())
