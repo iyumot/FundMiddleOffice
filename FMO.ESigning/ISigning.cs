@@ -52,6 +52,24 @@ public interface ISigning
 
     Task<bool> QueryOrderAsync(TransferOrder order);
 
+    /// <summary>
+    /// 批量上传信批文件
+    /// </summary>
+    /// <param name="filePath"></param>
+    /// <returns></returns>
+    //Task<bool> BatchUploadDisclosureFiles(string filePath, DateTime time, string type);
+
+
+    Task<bool> UploadDisclosureFile(string fundName, string fundCode, string shareClass, DateTime time, string announceName, string file);
+
+
+
+    /// <summary>
+    /// 获取在签约平台中的基金信息
+    /// </summary>
+    /// <returns></returns>
+    Task<EsigningFundInfo[]> QueryFundInfo();
+
 
     void OnConfig(ISigningConfig config);
 

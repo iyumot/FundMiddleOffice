@@ -233,10 +233,25 @@
                         </Border>
                     </DataTemplate>
                 </hc:UniformSpacingPanel.Resources>
-                <Expander
-                    Header="月报"
-                    IsExpanded="True"
-                    Visibility="{Binding MonthlySource.View.IsEmpty, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                <Expander IsExpanded="True" Visibility="{Binding MonthlySource.View.IsEmpty, Converter={StaticResource Boolean2VisibilityReConverter}}">
+                    <Expander.Header>
+                        <DockPanel>
+                            <TextBlock
+                                Margin="10,0"
+                                VerticalAlignment="Center"
+                                FontWeight="Bold"
+                                Text="月报" />
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.upload}"
+                                Command="{Binding UploadMonthlyCommand}"
+                                Style="{StaticResource ButtonIcon.Small}" />
+
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource f.box}"
+                                Command="{Binding GenerateMeishiAnnouncesMCommand}"
+                                Style="{StaticResource ButtonIcon.Small}" />
+                        </DockPanel>
+                    </Expander.Header>
 
                     <ListBox
                         ItemTemplate="{StaticResource ReportItem}"
