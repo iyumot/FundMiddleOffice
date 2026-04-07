@@ -110,7 +110,7 @@ public class DisclosureFromMailMission : MailMission
             {
                 case ".zip":
                     using (var ms = Copy(item.Content))
-                        HandleZip(filepath, ms, fundCodeMap, reports, log);
+                        HandleZip(filepath, ms, fundCodeMap, reports, ref log);
                     continue;
 
                 case ".xlsx":
@@ -119,7 +119,7 @@ public class DisclosureFromMailMission : MailMission
                 case ".pdf":
                 case ".xbrl":
                     using (var ms = Copy(item.Content))
-                        HandleRealFile(filepath, ms, fundCodeMap, reports, log);
+                        HandleRealFile(filepath, ms, fundCodeMap, reports, ref log);
                     continue;
             }
         }
@@ -221,7 +221,7 @@ public class DisclosureFromMailMission : MailMission
         return default;
     }
 
-    private void HandleRealFile(string path, Stream stream, FundIdf[] fundCodeMap, List<ParsedInfo> reports, string log)
+    private void HandleRealFile(string path, Stream stream, FundIdf[] fundCodeMap, List<ParsedInfo> reports, ref string log)
     {
         // 解析文件名
         // 备案号
@@ -305,7 +305,7 @@ public class DisclosureFromMailMission : MailMission
 
     }
 
-    private void HandleZip(string path, Stream stream, FundIdf[] fundCodeMap, List<ParsedInfo> reports, string log)
+    private void HandleZip(string path, Stream stream, FundIdf[] fundCodeMap, List<ParsedInfo> reports, ref string log)
     {
         using var zip = new ZipArchive(stream);
         foreach (var ent in zip.Entries)
@@ -313,7 +313,7 @@ public class DisclosureFromMailMission : MailMission
             switch (Path.GetExtension(ent.Name).ToLower())
             {
                 case ".zip":
-                    HandleZip(ent.Name, ent.Open(), fundCodeMap, reports, log);
+                    HandleZip(ent.Name, ent.Open(), fundCodeMap, reports, ref log);
                     continue;
 
                 case ".xlsx":
@@ -321,7 +321,7 @@ public class DisclosureFromMailMission : MailMission
                 case ".docx":
                 case ".pdf":
                 case ".xbrl":
-                    HandleRealFile(ent.Name, ent.Open(), fundCodeMap, reports, log);
+                    HandleRealFile(ent.Name, ent.Open(), fundCodeMap, reports, ref log);
                     continue;
             }
         }

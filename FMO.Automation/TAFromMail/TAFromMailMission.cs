@@ -63,7 +63,7 @@ public class TAFromMailMission : MailMission
         {
             try
             {
-                WorkOne(f, log);
+                WorkOne(f,ref log);
                 coll.Upsert(new MailMissionRecord { Id = f.Name, Time = DateTime.Now });
             }
             catch (Exception ex)
@@ -84,7 +84,7 @@ public class TAFromMailMission : MailMission
         return true;
     }
 
-    private void WorkOne(FileInfo f, string log)
+    private void WorkOne(FileInfo f, ref string log)
     {
         using MimeMessage mime = LoadMail(f.FullName);
 
