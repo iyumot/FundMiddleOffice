@@ -3,6 +3,7 @@ using FMO.Models;
 using FMO.Utilities;
 using MimeKit;
 using Serilog;
+using System.Collections.Concurrent;
 using System.IO;
 using System.IO.Compression;
 using System.Text.RegularExpressions;
@@ -60,12 +61,16 @@ public class DisclosureFromMailMission : MailMission
             fundmap = mdb.GetCollection<Fund>().Query().Select(x => new { x.Id, x.Code }).ToArray().DistinctBy(x => x.Code).ToDictionary(x => x.Code!, x => x.Id);
             fundCodeMap = mdb.GetCollection<Fund>().Query().Select(x => new { x.Name, x.Code }).ToArray().Select(x => new FundIdf(x.Name, x.Code!)).ToArray();
         }
+
+        ConcurrentBag<string> logBag = new();
         Parallel.ForEach(work, f => //)
         //foreach (var f in work.AsEnumerable().Reverse())
         {
             try
             {
-                WorkOne(f, fundmap, fundCodeMap, log);
+                var nlog = "";
+                WorkOne(f, fundmap, fundCodeMap, ref nlog);
+                logBag.Add(nlog);
                 coll.Upsert(new MailMissionRecord { Id = f.Name, Time = DateTime.Now });
             }
             catch (Exception ex)
@@ -78,8 +83,8 @@ public class DisclosureFromMailMission : MailMission
         }
         );
 
-
-        log += $"完成";
+        log += "\n" + string.Join("\n", logBag);
+        //log += $"完成";
 
         using (var mdb = new MissionDatabase())
             mdb.GetCollection<MissionRecord>().Insert(new MissionRecord { MissionId = Id, Time = DateTime.Now, Record = log });
@@ -87,7 +92,7 @@ public class DisclosureFromMailMission : MailMission
         return true;
     }
 
-    public void WorkOne(FileInfo f, Dictionary<string, int> fundmap, FundIdf[] fundCodeMap, string log)
+    public void WorkOne(FileInfo f, Dictionary<string, int> fundmap, FundIdf[] fundCodeMap, ref string log)
     {
         using MimeMessage mime = LoadMail(f.FullName);
 
@@ -209,6 +214,10 @@ public class DisclosureFromMailMission : MailMission
         if (m.Success && DateOnly.TryParseExact($"{m.Groups[1].Value}{m.Groups[2].Value.PadLeft(2, '0')}", "yyyyMM", out date))
             return date.AddMonths(1).AddDays(-1);
 
+        m = Regex.Match(path, @"(\d{4})年\w*([一二三四])季度");
+        if (m.Success && int.TryParse(m.Groups[1].Value, out var year))
+            return m.Groups[2].Value switch { "一" => new DateOnly(year, 3, 31), "二" => new DateOnly(year, 6, 30), "三" => new DateOnly(year, 9, 30), _ => new DateOnly(year, 12, 31) };
+
         return default;
     }
 
@@ -271,7 +280,7 @@ public class DisclosureFromMailMission : MailMission
                 reports.Add(new ParsedInfo(FundReportType.QuarterlyUpdate, code, date, path, ms));
                 break;
 
-            case var p when Regex.IsMatch(p, "运行信息|季度更新"):
+            case var p when Regex.IsMatch(p, "运行信息|运行监测|季度更新"):
                 reports.Add(new ParsedInfo(FundReportType.QuarterlyUpdate, code, date, path, ms));
                 break;
 
