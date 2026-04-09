@@ -223,7 +223,7 @@ public class CustomerJson
             10 => IDType.Institusion,                            // 基金会 → 暂归为机构（你可能需要调整）
             11 => IDType.Institusion,                            // 行政机关 → 机构
             12 => IDType.Other,                                  // 其它
-            13 => IDType.ProductRegistrationCode,                // 产品备案编号/登记证书 → 产品备案编码（或 ProductRegistrationCode）
+            13 => IDType.ProductFilingCode,                // 产品备案编号/登记证书 → 产品备案编码（或 ProductRegistrationCode）
             14 => IDType.OfficerID,                              // 军官证
             15 => IDType.PassportForeign,                        // 外籍护照 → 外国护照
             16 => IDType.CivilianID,                             // 文职证
