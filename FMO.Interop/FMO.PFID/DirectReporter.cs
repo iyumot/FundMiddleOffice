@@ -90,6 +90,15 @@ public class DirectReporter
 
 #endif
 
+    // 全局唯一静态锁（所有函数共用）
+    private static readonly SemaphoreSlim _slimLock = new(1, 1);
+
+    // 静态上次执行时间
+    private static DateTime _lastExecuteTime = DateTime.MinValue;
+
+    // 3秒限制
+    private static readonly TimeSpan _interval = TimeSpan.FromSeconds(3);
+
     public static async Task<AmacProcessResult> UploadReport(FundPeriodicReport report, AmacReportAccount acc) => await UploadReport(report, x => x.Excel?.File, acc);
     public static async Task<AmacProcessResult> UploadReport(FundQuarterlyUpdate report, AmacReportAccount acc) => await UploadReport(report, x => x.Operation?.File, acc);
 
@@ -126,7 +135,7 @@ public class DirectReporter
                     entryStream.Flush();
                 }
 
-                if(report.Type == FundReportType.AnnualReport && report is FundPeriodicReport fp && fp.Sealed?.File is FileMeta fmm)
+                if (report.Type == FundReportType.AnnualReport && report is FundPeriodicReport fp && fp.Sealed?.File is FileMeta fmm)
                 {
                     entry = archive.CreateEntry($"01_{report.FundCode}_年报.pdf");
                     using (var es = entry.Open())
@@ -166,69 +175,96 @@ public class DirectReporter
     /// <returns></returns>
     public static async Task<ProcessResponse?> UploadFile(DirectFileType fileType, string filePath, DateOnly reportEndDate, AmacReportAccount acc, string managerName, string entityCode)
     {
-        string UserName = acc.Name;
-        string DirectPwd = acc.Password;
-        string PublicKey = acc.Key;
-
-
-        using var httpClient = new HttpClient();
-        httpClient.DefaultRequestHeaders.Add("User-Agent", "imgfornote");
-
-        // 生成认证头部
-        var pwd = Sm3Utils.Encrypt32(DirectPwd);
-        var salt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
-        var sign = Sm3Utils.Encrypt(UserName + salt + pwd);
-
-
-        HttpRequestMessage request = new HttpRequestMessage { Method = HttpMethod.Post };
-        request.Headers.Add("userName", UserName);
-        request.Headers.Add("salt", salt);
-        request.Headers.Add("sign", sign);
-        request.Headers.Add("User-Agent", "imgfornote");
-
-
-
-        // 读取文件内容
-        var fileBytes = File.ReadAllBytes(filePath);
-        var base64File = Convert.ToBase64String(fileBytes);
-
-        // 计算校验和
-        var checksum = Sm3Utils.Encrypt(fileBytes);
-        checksum = Sm2Utils.Encrypt(PublicKey, checksum!);
-
-        // 构建请求体
-        var requestContent = new
+        try
         {
-            entityCode = entityCode,
-            reportType = $"{fileType}",
-            reportEndDate = $"{reportEndDate:yyyy-MM-dd}",
-            xbrlFileName = $"CN_{entityCode}_{fileType}_{reportEndDate:yyyy-MM-dd}.zip",
-            subCompany = managerName,
-            body = base64File,
-            checksum = checksum,
-        };
+            // 异步加锁（不会阻塞线程）
+            await _slimLock.WaitAsync();
 
-        var jsonOptions = new JsonSerializerOptions
+            var now = DateTime.Now;
+            var waitTime = _interval - (now - _lastExecuteTime);
+
+            // 异步等待剩余时间（安全、不卡）
+            if (waitTime > TimeSpan.Zero)
+                await Task.Delay(waitTime);
+
+
+            string UserName = acc.Name;
+            string DirectPwd = acc.Password;
+            string PublicKey = acc.Key;
+
+
+            using var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Add("User-Agent", "imgfornote");
+
+            // 生成认证头部
+            var pwd = Sm3Utils.Encrypt32(DirectPwd);
+            var salt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+            var sign = Sm3Utils.Encrypt(UserName + salt + pwd);
+
+
+            HttpRequestMessage request = new HttpRequestMessage { Method = HttpMethod.Post };
+            request.Headers.Add("userName", UserName);
+            request.Headers.Add("salt", salt);
+            request.Headers.Add("sign", sign);
+            request.Headers.Add("User-Agent", "imgfornote");
+
+
+
+            // 读取文件内容
+            var fileBytes = File.ReadAllBytes(filePath);
+            var base64File = Convert.ToBase64String(fileBytes);
+
+            // 计算校验和
+            var checksum = Sm3Utils.Encrypt(fileBytes);
+            checksum = Sm2Utils.Encrypt(PublicKey, checksum!);
+
+            // 构建请求体
+            var requestContent = new
+            {
+                entityCode = entityCode,
+                reportType = $"{fileType}",
+                reportEndDate = $"{reportEndDate:yyyy-MM-dd}",
+                xbrlFileName = $"CN_{entityCode}_{fileType}_{reportEndDate:yyyy-MM-dd}.zip",
+                subCompany = managerName,
+                body = base64File,
+                checksum = checksum,
+            };
+
+            var jsonOptions = new JsonSerializerOptions
+            {
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.Default,
+                WriteIndented = false,
+            };
+            var json = JsonSerializer.Serialize(requestContent, jsonOptions);
+
+            // 发送请求
+            request.RequestUri = new Uri(fileType < DirectFileType.RS0001 ? DisclosureUploadUrl : OperationUploadUrl);
+            request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            //await PrintHttpRequestMessageAsync(request);
+
+            var response = await httpClient.SendAsync(request);
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            Debug.WriteLine(responseContent);
+
+            // 解析响应
+            var result = JsonSerializer.Deserialize<ProcessResponse>(responseContent);
+
+            // 更新最后执行时间
+            _lastExecuteTime = DateTime.Now;
+            return result;
+        }
+        catch (Exception e)
         {
-            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.Default,
-            WriteIndented = false,
-        };
-        var json = JsonSerializer.Serialize(requestContent, jsonOptions);
-
-        // 发送请求
-        request.RequestUri = new Uri(fileType < DirectFileType.RS0001 ? DisclosureUploadUrl : OperationUploadUrl);
-        request.Content = new StringContent(json, Encoding.UTF8, "application/json");
-
-        //await PrintHttpRequestMessageAsync(request);
-
-        var response = await httpClient.SendAsync(request);
-        var responseContent = await response.Content.ReadAsStringAsync();
-
-        Debug.WriteLine(responseContent);
-
-        // 解析响应
-        var result = JsonSerializer.Deserialize<ProcessResponse>(responseContent);
-        return result;
+            LogEx.Error(e);
+            return null;
+        }
+        finally
+        {
+            // 释放锁
+            _slimLock.Release();
+        }
     }
 
 
@@ -243,106 +279,158 @@ public class DirectReporter
 
     public static async Task QueryResult(AmacProcessResult handle, AmacReportAccount acc)
     {
-        string UserName = acc.Name;
-        string DirectPwd = acc.Password;
-        string PublicKey = acc.Key;
-
-        using var httpClient = new HttpClient();
-        httpClient.DefaultRequestHeaders.Add("User-Agent", "imgfornote");
-
-        // 生成认证头部
-        var pwd = Sm3Utils.Encrypt32(DirectPwd);
-        var salt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
-        var sign = Sm3Utils.Encrypt(UserName + salt + pwd);
-
-
-        HttpRequestMessage request = new HttpRequestMessage { Method = HttpMethod.Post };
-        request.Headers.Add("userName", UserName);
-        request.Headers.Add("salt", salt);
-        request.Headers.Add("sign", sign);
-        request.Headers.Add("User-Agent", "imgfornote");
-
-        var jsonOptions = new JsonSerializerOptions
+        try
         {
-            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // 关键：不转义中文
-            WriteIndented = false // 是否格式化（可选）
-        };
-        var json = JsonSerializer.Serialize(new { handle = new string[] { handle.Handle } }, jsonOptions);
+            // 异步加锁（不会阻塞线程）
+            await _slimLock.WaitAsync();
 
-        // 发送请求
-        request.RequestUri = new Uri(handle.FileType < DirectFileType.RS0001 ? DisclosureResultUrl : OperationResultUrl);
-        request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+            var now = DateTime.Now;
+            var waitTime = _interval - (now - _lastExecuteTime);
+
+            // 异步等待剩余时间（安全、不卡）
+            if (waitTime > TimeSpan.Zero)
+                await Task.Delay(waitTime);
 
 
-        var response = await httpClient.SendAsync(request);
-        var responseContent = await response.Content.ReadAsStringAsync();
+            string UserName = acc.Name;
+            string DirectPwd = acc.Password;
+            string PublicKey = acc.Key;
 
-        var result = JsonSerializer.Deserialize<List<ValidationResultItem>>(responseContent);
+            using var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Add("User-Agent", "imgfornote");
 
-        if (result?.FirstOrDefault() is ValidationResultItem root)
-        {
-            handle.ValidateCode = int.Parse(root.processCode);
+            // 生成认证头部
+            var pwd = Sm3Utils.Encrypt32(DirectPwd);
+            var salt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+            var sign = Sm3Utils.Encrypt(UserName + salt + pwd);
 
-            if (root.processCode == "00")
-                handle.ResultInfo = [new ValidationInfo { Level = "Success", Message = "" }];
+
+            HttpRequestMessage request = new HttpRequestMessage { Method = HttpMethod.Post };
+            request.Headers.Add("userName", UserName);
+            request.Headers.Add("salt", salt);
+            request.Headers.Add("sign", sign);
+            request.Headers.Add("User-Agent", "imgfornote");
+
+            var jsonOptions = new JsonSerializerOptions
+            {
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // 关键：不转义中文
+                WriteIndented = false // 是否格式化（可选）
+            };
+            var json = JsonSerializer.Serialize(new { handle = new string[] { handle.Handle } }, jsonOptions);
+
+            // 发送请求
+            request.RequestUri = new Uri(handle.FileType < DirectFileType.RS0001 ? DisclosureResultUrl : OperationResultUrl);
+            request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+
+
+            var response = await httpClient.SendAsync(request);
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var result = JsonSerializer.Deserialize<List<ValidationResultItem>>(responseContent);
+
+            if (result?.FirstOrDefault() is ValidationResultItem root)
+            {
+                handle.ValidateCode = int.Parse(root.processCode);
+
+                if (root.processCode == "00")
+                    handle.ResultInfo = [new ValidationInfo { Level = "Success", Message = "" }];
+                else
+                    handle.ResultInfo = root.verifyMessage?.children?.Where(x => x.children is not null)?.
+                       SelectMany(x => x.children.Select(y => new ValidationInfo { Level = y.deepLevel, Message = y.description }))?.ToArray() ?? [];
+            }
             else
-                handle.ResultInfo = root.verifyMessage?.children?.Where(x => x.children is not null)?.
-                   SelectMany(x => x.children.Select(y => new ValidationInfo { Level = y.deepLevel, Message = y.description }))?.ToArray() ?? [];
-        }
-        else
-            handle.ResultInfo = [new ValidationInfo { Level = "Error", Message = "未获取到返回信息" }];
+                handle.ResultInfo = [new ValidationInfo { Level = "Error", Message = "未获取到返回信息" }];
 
-        using var db = DbHelper.Base();
-        db.GetCollection<AmacProcessResult>().Upsert(handle);
+            using var db = DbHelper.Base();
+            db.GetCollection<AmacProcessResult>().Upsert(handle);
+
+            // 更新最后执行时间
+            _lastExecuteTime = DateTime.Now;
+        }
+        catch (Exception e)
+        {
+            LogEx.Error(e);
+        }
+        finally
+        {
+            // 释放锁
+            _slimLock.Release();
+        }
     }
 
 
     public static async Task Submit(AmacProcessResult handle, string company, AmacReportAccount acc)
     {
-        string UserName = acc.Name;
-        string DirectPwd = acc.Password;
-        string PublicKey = acc.Key;
-
-        using var httpClient = new HttpClient();
-        httpClient.DefaultRequestHeaders.Add("User-Agent", "imgfornote");
-
-        // 生成认证头部
-        var pwd = Sm3Utils.Encrypt32(DirectPwd);
-        var salt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
-        var sign = Sm3Utils.Encrypt(UserName + salt + pwd);
-
-
-        HttpRequestMessage request = new HttpRequestMessage { Method = HttpMethod.Post };
-        request.Headers.TryAddWithoutValidation("userName", UserName);
-        request.Headers.Add("salt", salt);
-        request.Headers.Add("sign", sign);
-        request.Headers.Add("User-Agent", "imgfornote");
-
-        var jsonOptions = new JsonSerializerOptions
+        try
         {
-            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // 关键：不转义中文
-            WriteIndented = false // 是否格式化（可选）
-        };
-        var json = JsonSerializer.Serialize(new { handle = handle.Handle, subCompany = company }, jsonOptions);
+            // 异步加锁（不会阻塞线程）
+            await _slimLock.WaitAsync();
 
-        // 发送请求
-        request.RequestUri = new Uri(handle.FileType < DirectFileType.RS0001 ? DisclosureSubmitUrl : OperationSubmitUrl);
-        request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+            var now = DateTime.Now;
+            var waitTime = _interval - (now - _lastExecuteTime);
+
+            // 异步等待剩余时间（安全、不卡）
+            if (waitTime > TimeSpan.Zero)
+                await Task.Delay(waitTime);
 
 
-        var response = await httpClient.SendAsync(request);
-        var responseContent = await response.Content.ReadAsStringAsync();
+            string UserName = acc.Name;
+            string DirectPwd = acc.Password;
+            string PublicKey = acc.Key;
 
-        var pr = JsonSerializer.Deserialize<ProcessResponse>(responseContent);
-        if (pr is null)
-        {
-            handle.SubmitError = "Json Error";
-            return;
+            using var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Add("User-Agent", "imgfornote");
+
+            // 生成认证头部
+            var pwd = Sm3Utils.Encrypt32(DirectPwd);
+            var salt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+            var sign = Sm3Utils.Encrypt(UserName + salt + pwd);
+
+
+            HttpRequestMessage request = new HttpRequestMessage { Method = HttpMethod.Post };
+            request.Headers.TryAddWithoutValidation("userName", UserName);
+            request.Headers.Add("salt", salt);
+            request.Headers.Add("sign", sign);
+            request.Headers.Add("User-Agent", "imgfornote");
+
+            var jsonOptions = new JsonSerializerOptions
+            {
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // 关键：不转义中文
+                WriteIndented = false // 是否格式化（可选）
+            };
+            var json = JsonSerializer.Serialize(new { handle = handle.Handle, subCompany = company }, jsonOptions);
+
+            // 发送请求
+            request.RequestUri = new Uri(handle.FileType < DirectFileType.RS0001 ? DisclosureSubmitUrl : OperationSubmitUrl);
+            request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+
+
+            var response = await httpClient.SendAsync(request);
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var pr = JsonSerializer.Deserialize<ProcessResponse>(responseContent);
+            if (pr is null)
+            {
+                handle.SubmitError = "Json Error";
+                return;
+            }
+            handle.SubmitCode = int.Parse(pr.ProcessCode!);
+            handle.SubmitError = handle.SubmitCode == 0 ? null : pr.ProcessMessage;
+            using var db = DbHelper.Base();
+            db.GetCollection<AmacProcessResult>().Upsert(handle);
+
+            // 更新最后执行时间
+            _lastExecuteTime = DateTime.Now;
         }
-        handle.SubmitCode = int.Parse(pr.ProcessCode!);        
-        handle.SubmitError = handle.SubmitCode == 0 ? null : pr.ProcessMessage;
-        using var db = DbHelper.Base();
-        db.GetCollection<AmacProcessResult>().Upsert(handle);
+        catch (Exception e)
+        {
+            LogEx.Error(e);
+        }
+        finally
+        {
+            // 释放锁
+            _slimLock.Release();
+        }
     }
 
 
