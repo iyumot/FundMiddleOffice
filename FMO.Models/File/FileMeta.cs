@@ -148,6 +148,12 @@ public record FileMeta(string Id, string Name, DateTime Time, string Hash)
         try { return new FileStream(@$"files\hardlink\{Id}", FileMode.Open, FileAccess.Read, FileShare.Read); }
         catch { return null; }
     }
+
+    public bool Delete()
+    {
+        try { File.Delete(@$"files\hardlink\{Id}"); return true; }
+        catch { return false; }
+    }
 }
 
 
