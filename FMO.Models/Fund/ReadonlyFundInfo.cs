@@ -44,7 +44,7 @@ public class ReadonlyFundInfo
     /// <summary>
     /// 在协会的id
     /// </summary>
-    public long AmacId { get; set; }
+    public string? AmacID { get; set; }
 
 
     /// <summary>
@@ -228,7 +228,7 @@ public class ReadonlyFundInfo
         Code = fund.Code;
         LastUpdate = fund.LastUpdate;
         ClearDate = fund.ClearDate;
-        AmacId = fund.AmacId;
+        AmacID = fund.AmacID;
         Url = fund.Url;
         Status = fund.Status;
         AsAdvisor = fund.AsAdvisor;

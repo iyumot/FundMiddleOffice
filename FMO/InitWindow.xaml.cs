@@ -9,6 +9,7 @@ using Microsoft.Win32;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Windows;
 
 namespace FMO;
@@ -126,7 +127,8 @@ public partial class InitWindowViewModel : ObservableRecipient, IRecipient<InitS
             Name = x.Name!,
             ShortName = Fund.GetDefaultShortName(x.Name!),
             Url = "https://gs.amac.org.cn/amac-infodisc/res/pof" + x.Url,
-            AsAdvisor = x.IsAdvisor
+            AsAdvisor = x.IsAdvisor,
+            AmacID = Regex.Match(x.Url!, @"\d{5,}").Value
         }));
 
         // 增加默认的platfrom proxy

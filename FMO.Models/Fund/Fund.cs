@@ -53,7 +53,9 @@ public class Fund
     /// <summary>
     /// 在协会的id
     /// </summary>
-    public long AmacId { get; set; }
+    //public long AmacId { get; set; }
+
+    public string? AmacID { get; set; }
 
 
     /// <summary>

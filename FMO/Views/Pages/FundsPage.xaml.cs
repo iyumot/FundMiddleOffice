@@ -179,7 +179,8 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
                 Name = x.Name!,
                 ShortName = Fund.GetDefaultShortName(x.Name!),
                 Url = "https://gs.amac.org.cn/amac-infodisc/res/pof" + x.Url,
-                AsAdvisor = x.IsAdvisor
+                AsAdvisor = x.IsAdvisor,
+                AmacID = Regex.Match(x.Url!, @"\d{5,}").Value
             });
 
             using HttpClient client = new HttpClient();
