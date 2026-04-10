@@ -82,6 +82,8 @@ public record FileMeta(string Id, string Name, DateTime Time, string Hash)
     public static FileMeta Create(string path) => Create(new FileInfo(path));
 
 
+    public string GetFullPath() => Path.GetFullPath(@$"files\hardlink\{Id}");
+
     public static string GetSafeFileName(DirectoryInfo di, string filename)
     {
         string name = Path.GetFileNameWithoutExtension(filename), ext = Path.GetExtension(filename);
