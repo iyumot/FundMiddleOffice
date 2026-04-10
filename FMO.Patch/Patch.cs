@@ -46,7 +46,22 @@ public static partial class DatabaseAssist
         [100] = FixNv,
         [104] = FixNv2,
         [106] = FixMeishi,
+        [107] = FixFund,
     };
+
+    private static void FixFund(BaseDatabase database)
+    {
+        var d = database.GetCollection("Fund").FindAll().ToArray();
+        foreach (var item in d)
+        {
+            if (item.ContainsKey("AmacId") && item["AmacId"].IsInt64)
+            {
+                item.Remove("AmacId");
+                item.Add("AmacID", "");
+            }
+        }
+        database.GetCollection("Fund").Update(d);
+    }
 
     private static void FixMeishi(BaseDatabase database)
     {
@@ -83,7 +98,7 @@ public static partial class DatabaseAssist
                 .GroupBy(x => x.Id)
                 .Select(g => g.Last()) // 保留最后一个
                 .ToList();
-             
+
             db.DropCollection(collectionName);
 
             // 重新插入去重后的数据

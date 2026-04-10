@@ -215,6 +215,7 @@ public partial class FundsPageViewModel : ObservableRecipient, IRecipient<Fund>
                     oldf.Type = f.Type;
                     oldf.Trustee = f.Trustee;
                     oldf.LastUpdate = f.LastUpdate;
+                    oldf.AmacID = f.AmacID;
                     db.GetCollection<Fund>().Update(oldf);
 
                     WeakReferenceMessenger.Default.Send(oldf);
