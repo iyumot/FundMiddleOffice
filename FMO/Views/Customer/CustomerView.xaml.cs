@@ -328,45 +328,75 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
 
         switch (Type.NewValue)
         {
+            // 请选择
+            case AmacInvestorType.None:
+                break;
+
+            // 自然人（非员工跟投）
             case AmacInvestorType.NonEmployee:
+            // 自然人（员工跟投）
             case AmacInvestorType.Employee:
                 IDTypes = Enum.GetValues<IDType>().Where(x => x >= Models.IDType.IdentityCard && x < Models.IDType.Institusion).ToArray();
                 break;
+
+            // 本产品管理人跟投
             case AmacInvestorType.Manager:
+            // 境内法人机构（公司等）
             case AmacInvestorType.LegalEntity:
+            // 境内非法人机构（个人独资企业）
             case AmacInvestorType.IndividualProprietorship:
+            // 境内非法人机构（一般合伙企业等）
             case AmacInvestorType.NonLegalEntity:
+            // 境外机构
             case AmacInvestorType.Foreign:
+            // 财政直接出资
             case AmacInvestorType.DirectFinancialInvestment:
+            // 保险资产管理计划
+            case AmacInvestorType.InsuranceAssetManagementPlan:
+            // 慈善基金、捐赠基金等社会公益基金
+            case AmacInvestorType.SocialWelfareFund:
+            // 养老基金
+            case AmacInvestorType.PensionFund:
+            // 社会保障基金
+            case AmacInvestorType.SocialSecurityFund:
+            // 企业年金
+            case AmacInvestorType.EnterpriseAnnuity:
+            // 政府类引导基金
+            case AmacInvestorType.GovernmentGuidanceFund:
                 IDTypes = [Models.IDType.UnifiedSocialCreditCode, Models.IDType.OrganizationCode, Models.IDType.BusinessLicenseNumber, Models.IDType.RegistrationNumber, Models.IDType.Other];
                 break;
+
+            // 境外资金（QFII、RQFII等）
             case AmacInvestorType.QFII:
                 IDTypes = [Models.IDType.SecuritiesBusinessLicense, Models.IDType.Other];
                 break;
+
+            // 产品
             case AmacInvestorType.Product:
+            // 私募基金产品
             case AmacInvestorType.PrivateFundProduct:
+            // 证券公司及其子公司资产管理计划
             case AmacInvestorType.SecuritiesCompanyAssetManagementPlan:
+            // 基金公司及其子公司资产管理计划
             case AmacInvestorType.FundCompanyAssetManagementPlan:
+            // 期货公司及其子公司资产管理计划
             case AmacInvestorType.FuturesCompanyAssetManagementPlan:
-                IDTypes = [Models.IDType.ProductFilingCode, Models.IDType.ProductRegistrationCode, Models.IDType.Other];
+                IDTypes = [Models.IDType.ProductFilingCode, Models.IDType.Other];
                 break;
+
+            // 信托计划
             case AmacInvestorType.TrustPlan:
-            case AmacInvestorType.CommercialBankFinancialProduct:
-            case AmacInvestorType.InsuranceAssetManagementPlan:
-            case AmacInvestorType.SocialWelfareFund:
-            case AmacInvestorType.PensionFund:
-            case AmacInvestorType.SocialSecurityFund:
-            case AmacInvestorType.EnterpriseAnnuity:
-                IDTypes = [Models.IDType.UnifiedSocialCreditCode, Models.IDType.BusinessLicenseNumber, Models.IDType.Other];
+                IDTypes = [Models.IDType.UnifiedSocialCreditCode, Models.IDType.OrganizationCode, Models.IDType.BusinessLicenseNumber, Models.IDType.RegistrationNumber, Models.IDType.TrustRegistrationSystemProductCode, Models.IDType.Other];
                 break;
-            case AmacInvestorType.GovernmentGuidanceFund:
-                IDTypes = [Models.IDType.ProductFilingCode, Models.IDType.UnifiedSocialCreditCode, Models.IDType.BusinessLicenseNumber, Models.IDType.OrganizationCode, Models.IDType.Other];
+
+            // 商业银行理财产品
+            case AmacInvestorType.CommercialBankFinancialProduct:
+                IDTypes = [Models.IDType.ProductRegistrationCode, Models.IDType.Other];
                 break;
 
             default:
                 break;
         }
-    }
 
     private void EntityType_PropertyChanged(object? sender, PropertyChangedEventArgs? e)
     {
