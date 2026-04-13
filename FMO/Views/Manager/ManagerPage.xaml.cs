@@ -999,7 +999,7 @@ public partial class ManagerPageViewModel : EditableControlViewModelBase<Manager
 
     internal void SetLogo(string v)
     {
-        var db = DbHelper.Base();
+        using var db = DbHelper.Base();
         db.FileStorage.Upload("icon.main", v);
         if (db.FileStorage.Exists("icon.main"))
         {

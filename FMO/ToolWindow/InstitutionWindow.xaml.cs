@@ -360,7 +360,7 @@ public partial class InstitutionWindowViewModel : EditableControlViewModelBase<I
     [RelayCommand]
     public void AddShareHolder()
     {
-        var db = DbHelper.Base();
+        using var db = DbHelper.Base();
         var manager = (db.GetCollection<IEntity>().FindById(Id) as Institution)!;
 
         var wnd = new AddOrModifyShareHolderWindow();
@@ -405,7 +405,7 @@ public partial class InstitutionWindowViewModel : EditableControlViewModelBase<I
     [RelayCommand]
     public void EditShareHolder(RelationViewModel value)
     {
-        var db = DbHelper.Base();
+        using var db = DbHelper.Base();
         var manager = db.GetCollection<Manager>().FindById(1);
         var wnd = new AddOrModifyShareHolderWindow();
         AddOrModifyShareHolderWindowViewModel obj = new(manager);
