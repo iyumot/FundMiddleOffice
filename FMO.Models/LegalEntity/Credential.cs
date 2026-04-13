@@ -445,3 +445,85 @@ public class IdValidator
     }
     #endregion
 }
+ 
+
+/// <summary>
+/// 证件类型枚举扩展（硬编码，无反射）
+/// </summary>
+public static class IDTypeExtensions
+{
+    /// <summary>
+    /// 枚举 => 中文描述
+    /// </summary>
+    public static string ToAmacString(this IDType idType)
+    {
+        return idType switch
+        {
+            IDType.Unknown => "未知",
+            IDType.IdentityCard => "身份证",
+            IDType.PassportChina => "护照",
+            IDType.OfficerID => "军官证",
+            IDType.SoldierID => "士兵证",
+            IDType.HongKongMacauPass => "港澳居民来往内地通行证",
+            IDType.HouseholdRegister => "户口本",
+            IDType.PassportForeign => "外国护照",
+            IDType.CivilianID => "文职证",
+            IDType.PoliceID => "警官证",
+            IDType.TaiwanCompatriotsID => "台胞证",
+            IDType.ForeignPermanentResidentID => "外国人永久居留身份证",
+            IDType.UnifiedSocialCreditCode => "统一社会信用代码",
+            IDType.OrganizationCode => "组织机构代码证",
+            IDType.BusinessLicenseNumber => "营业执照号",
+            IDType.RegistrationNumber => "注册号",
+            IDType.ManagerRegistrationCode => "管理人登记编码",
+            IDType.ProductFilingCode => "产品备案编码",
+            IDType.SecuritiesBusinessLicense => "证券业务许可证",
+            IDType.Approval => "批文",
+            IDType.ProductRegistrationCode => "产品登记编码",
+            IDType.ResidencePermitForHongKongMacaoAndTaiwanResidents => "港澳台居民居住证",
+            IDType.TrustRegistrationSystemProductCode => "信托登记系统产品编码",
+            IDType.Other => "其他",
+            _ => idType.ToString()
+        };
+    }
+
+    /// <summary>
+    /// 中文描述/字符串 => 枚举（硬编码解析）
+    /// 匹配不到返回 Unknown
+    /// </summary>
+    public static IDType FromString(this string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return IDType.Unknown;
+
+        return text.Trim() switch
+        {
+            "未知" => IDType.Unknown,
+            "身份证" => IDType.IdentityCard,
+            "护照" => IDType.PassportChina,
+            "军官证" => IDType.OfficerID,
+            "士兵证" => IDType.SoldierID,
+            "港澳居民来往内地通行证" => IDType.HongKongMacauPass,
+            "户口本" => IDType.HouseholdRegister,
+            "外国护照" => IDType.PassportForeign,
+            "文职证" => IDType.CivilianID,
+            "警官证" => IDType.PoliceID,
+            "台胞证" => IDType.TaiwanCompatriotsID,
+            "外国人永久居留身份证" => IDType.ForeignPermanentResidentID,
+            "Institusion" => IDType.Institusion,
+            "统一社会信用代码" => IDType.UnifiedSocialCreditCode,
+            "组织机构代码证" => IDType.OrganizationCode,
+            "营业执照号" => IDType.BusinessLicenseNumber,
+            "注册号" => IDType.RegistrationNumber,
+            "管理人登记编码" => IDType.ManagerRegistrationCode,
+            "产品备案编码" => IDType.ProductFilingCode,
+            "证券业务许可证" => IDType.SecuritiesBusinessLicense,
+            "批文" => IDType.Approval,
+            "产品登记编码" => IDType.ProductRegistrationCode,
+            "港澳台居民居住证" => IDType.ResidencePermitForHongKongMacaoAndTaiwanResidents,
+            "信托登记系统产品编码" => IDType.TrustRegistrationSystemProductCode,
+            "其他" => IDType.Other,
+            _ => IDType.Unknown // 兜底
+        };
+    }
+}
