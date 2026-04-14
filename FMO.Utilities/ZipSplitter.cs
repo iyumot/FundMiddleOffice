@@ -5,99 +5,77 @@ namespace FMO.Utilities;
 
 public class ZipSplitter
 {
-
-    /// <summary>
-    /// 分卷压缩
-    /// </summary>
-    /// <param name="filePaths">文件路径数组</param>
-    /// <param name="outputFolder">输出文件夹</param>
-    /// <param name="baseFileName">输出基础文件名（不含扩展名）</param>
-    /// <param name="splitSizeBytes">每个分卷大小（字节）</param>
-    /// <returns>所有生成的分卷文件完整路径列表</returns>
     public static string[] CreateSplitZip(string[] filePaths, string outputFolder, string baseFileName, long splitSizeBytes)
     {
-        // 输出目录校验
         if (!Directory.Exists(outputFolder))
             Directory.CreateDirectory(outputFolder);
 
         var volumePaths = new List<string>();
 
-        // 初始化分卷流
-        using var splitStream = new SplitZipStream(outputFolder, baseFileName, splitSizeBytes, volumePaths);
-        using var zipStream = new ZipOutputStream(splitStream);
-        zipStream.SetLevel(9); // 最优压缩
-        zipStream.UseZip64 = UseZip64.Off;
-
-        // 批量添加文件
-        foreach (var filePath in filePaths)
+        // 核心修复：确保外层流生命周期覆盖内层流
+        using (var splitStream = new SplitZipStream(outputFolder, baseFileName, splitSizeBytes, volumePaths))
         {
-            if (!File.Exists(filePath)) continue;
+            using (var zipStream = new ZipOutputStream(splitStream))
+            {
+                zipStream.SetLevel(9);
+                zipStream.UseZip64 = UseZip64.Off;
 
-            var entryName = Path.GetFileName(filePath);
-            var entry = new ZipEntry(entryName) { DateTime = DateTime.Now };
+                foreach (var filePath in filePaths)
+                {
+                    if (!File.Exists(filePath)) continue;
 
-            zipStream.PutNextEntry(entry);
+                    var entry = new ZipEntry(Path.GetFileName(filePath)) { DateTime = DateTime.Now };
+                    zipStream.PutNextEntry(entry);
 
-            using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-            fs.CopyTo(zipStream);
+                    using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                    fs.CopyTo(zipStream);
+                    zipStream.CloseEntry();
+                }
 
-            zipStream.CloseEntry();
-        }
+                // 必须在此处 Finish，确保所有数据写入 splitStream
+                zipStream.Finish();
+            } // zipStream 在此处 Dispose，此时 splitStream 仍存活，允许 Flush
+        } // splitStream 在此处 Dispose
 
-        zipStream.Finish();
         return volumePaths.ToArray();
     }
 
-
-
     public static string[] CreateSplitZip(FileMeta[] files, string outputDir, string baseFileName, long splitSizeBytes)
     {
-        // 确保输出目录存在
         if (!Directory.Exists(outputDir))
             Directory.CreateDirectory(outputDir);
 
-        // 第一个分卷路径
-        string firstVolumePath = Path.Combine(outputDir, $"{baseFileName}.01.zip");
         var volumePaths = new List<string>();
 
-        // 分卷流
         using (var splitStream = new SplitZipStream(outputDir, baseFileName, splitSizeBytes, volumePaths))
-        using (var zipStream = new ZipOutputStream(splitStream))
         {
-            zipStream.SetLevel(9); // 最高压缩
-            zipStream.UseZip64 = UseZip64.Off;
-
-            foreach (var file in files)
+            using (var zipStream = new ZipOutputStream(splitStream))
             {
-                if (file is null || !file.Exists) continue;
+                zipStream.SetLevel(9);
+                zipStream.UseZip64 = UseZip64.Off;
 
-                string entryName = file.Name;
-                var entry = new ZipEntry(entryName)
+                foreach (var file in files)
                 {
-                    DateTime = DateTime.Now
-                };
+                    if (file is null || !file.Exists) continue;
 
-                zipStream.PutNextEntry(entry);
+                    var entry = new ZipEntry(file.Name) { DateTime = DateTime.Now };
+                    zipStream.PutNextEntry(entry);
 
-                using (var fs = file.OpenRead())
-                {
-                    fs?.CopyTo(zipStream);
+                    using var fs = file.OpenRead();
+                    if (fs != null) fs.CopyTo(zipStream);
+                    zipStream.CloseEntry();
                 }
 
-                zipStream.CloseEntry();
+                zipStream.Finish();
             }
-
-            zipStream.Finish();
-
         }
 
         return volumePaths.ToArray();
     }
 }
 
-// 分卷流核心（自动生成 .01.zip / .02.zip ...）
 /// <summary>
-/// 自动分卷流（自动切割并记录分卷路径）
+/// 修复版 SplitZipStream：增加状态检查，彻底解决 ObjectDisposedException
 /// </summary>
 public class SplitZipStream : Stream
 {
@@ -106,9 +84,10 @@ public class SplitZipStream : Stream
     private readonly long _maxVolumeSize;
     private readonly List<string> _volumeList;
 
-    private Stream _currentStream = null!; // 解决 CS8618
+    private FileStream? _currentStream;
     private long _currentSize;
     private int _volumeIndex = 1;
+    private bool _isDisposed = false;
 
     public SplitZipStream(string outputFolder, string baseFileName, long maxVolumeSize, List<string> volumeList)
     {
@@ -122,11 +101,22 @@ public class SplitZipStream : Stream
 
     private void CreateNewVolume()
     {
-        var fileName = $"{_baseFileName}.{_volumeIndex:D2}.zip";
-        var fullPath = Path.Combine(_outputFolder, fileName);
+        // 关闭上一个流（如果存在）
+        if (_currentStream != null)
+        {
+            _currentStream.Flush();
+            _currentStream.Dispose();
+            _currentStream = null;
+        }
 
-        _currentStream?.Dispose();
-        _currentStream = new FileStream(fullPath, FileMode.Create, FileAccess.Write);
+        string fileName = _volumeIndex == 1
+            ? $"{_baseFileName}.zip"
+            : $"{_baseFileName}.{_volumeIndex:D2}.zip";
+
+        string fullPath = Path.Combine(_outputFolder, fileName);
+
+        // 创建新流：使用 WriteThrough 确保实时写入
+        _currentStream = new FileStream(fullPath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, FileOptions.WriteThrough);
         _currentSize = 0;
 
         _volumeList.Add(fullPath);
@@ -135,27 +125,54 @@ public class SplitZipStream : Stream
 
     public override void Write(byte[] buffer, int offset, int count)
     {
+        CheckIfDisposed();
+
         int remaining = count;
         while (remaining > 0)
         {
-            long canWrite = _maxVolumeSize - _currentSize;
-            if (canWrite <= 0)
+            if (_currentStream == null || _currentSize >= _maxVolumeSize)
             {
                 CreateNewVolume();
-                canWrite = _maxVolumeSize;
             }
 
-            int writeLen = Math.Min(remaining, (int)canWrite);
-            _currentStream.Write(buffer, offset + count - remaining, writeLen);
+            long canWrite = _maxVolumeSize - _currentSize;
+            int writeLength = (int)Math.Min(remaining, canWrite);
 
-            _currentSize += writeLen;
-            remaining -= writeLen;
+            // 修复：正确的偏移计算
+            _currentStream.Write(buffer, offset + (count - remaining), writeLength);
+
+            _currentSize += writeLength;
+            remaining -= writeLength;
+        }
+    }
+
+    public override void Flush()
+    {
+        CheckIfDisposed();
+        _currentStream?.Flush();
+    }
+
+    private void CheckIfDisposed()
+    {
+        if (_isDisposed)
+        {
+            throw new ObjectDisposedException(nameof(SplitZipStream), "流已被释放，无法操作");
         }
     }
 
     protected override void Dispose(bool disposing)
     {
-        _currentStream?.Dispose();
+        if (disposing)
+        {
+            // 仅在托管资源释放时，执行一次清理
+            if (!_isDisposed)
+            {
+                _currentStream?.Flush();
+                _currentStream?.Dispose();
+                _currentStream = null;
+                _isDisposed = true;
+            }
+        }
         base.Dispose(disposing);
     }
 
@@ -165,8 +182,10 @@ public class SplitZipStream : Stream
     public override long Length => throw new NotSupportedException();
     public override long Position { get; set; }
 
-    public override void Flush() => _currentStream.Flush();
-    public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
-    public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
-    public override void SetLength(long value) => throw new NotSupportedException();
+    public override int Read(byte[] buffer, int offset, int count)
+        => throw new NotSupportedException();
+    public override long Seek(long offset, SeekOrigin origin)
+        => throw new NotSupportedException();
+    public override void SetLength(long value)
+        => throw new NotSupportedException();
 }
