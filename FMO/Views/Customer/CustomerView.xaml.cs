@@ -397,6 +397,7 @@ public partial class CustomerViewModel : EditableControlViewModelBase<Investor>,
             default:
                 break;
         }
+    }
 
     private void EntityType_PropertyChanged(object? sender, PropertyChangedEventArgs? e)
     {

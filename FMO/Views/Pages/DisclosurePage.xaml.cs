@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FMO.AMAC.Direct;
 using FMO.Logging;
 using FMO.Models;
 using FMO.Utilities;
@@ -35,7 +36,7 @@ public partial class DisclosurePageViewModel : ObservableObject
 
         debouncer = new Debouncer(() => Update());
 
-        clearDateMap = db.GetCollection<Fund>().Query().Select(x=> new {x.Code, x.ClearDate, x.Status}).ToArray().ToDictionary(x=> x.Code!, x=>x.Status == FundStatus.Normal ? DateOnly.MaxValue : x.ClearDate);
+        clearDateMap = db.GetCollection<Fund>().Query().Select(x => new { x.Code, x.ClearDate, x.Status }).ToArray().ToDictionary(x => x.Code!, x => x.Status == FundStatus.Normal ? DateOnly.MaxValue : x.ClearDate);
         MonthlySource.Filter += (s, e) => e.Accepted = Filter(e.Item as FundPeriodicReportViewModel);
         QuarterlySource.Filter += (s, e) => e.Accepted = Filter(e.Item as FundPeriodicReportViewModel);
         SemiAnnualSource.Filter += (s, e) => e.Accepted = Filter(e.Item as FundPeriodicReportViewModel);
@@ -44,12 +45,12 @@ public partial class DisclosurePageViewModel : ObservableObject
 
     private bool Filter(FundPeriodicReportViewModel? v)
     {
-        return !FilterClearedFund || ( v is not null && clearDateMap.TryGetValue(v.Code!, out var date) && date > v.PeriodEnd);
+        return !FilterClearedFund || (v is not null && clearDateMap.TryGetValue(v.Code!, out var date) && date > v.PeriodEnd);
     }
 
     public int[] Years { get; set; }
 
-    public Dictionary<string, DateOnly> clearDateMap { get; set; } 
+    public Dictionary<string, DateOnly> clearDateMap { get; set; }
 
     public FundReportType[] Types { get; } = [FundReportType.MonthlyReport, FundReportType.QuarterlyReport, FundReportType.QuarterlyUpdate, FundReportType.AnnualReport];
 
@@ -80,6 +81,7 @@ public partial class DisclosurePageViewModel : ObservableObject
     public CollectionViewSource AnnualSource { get; } = new();
 
 
+    public CollectionViewSource QuarterlyUpdateSource { get; } = new();
 
     private Debouncer debouncer;
 
@@ -103,7 +105,7 @@ public partial class DisclosurePageViewModel : ObservableObject
     partial void OnSelectedTypeChanged(FundReportType value) => debouncer.Invoke();
 
     partial void OnFilterClearedFundChanged(bool oldValue, bool newValue)
-    { 
+    {
         MonthlySource.View.Refresh();
         QuarterlySource.View.Refresh();
         SemiAnnualSource.View.Refresh();
@@ -115,7 +117,26 @@ public partial class DisclosurePageViewModel : ObservableObject
         using var db = DbHelper.Base();
         var reports = db.GetCollection<FundPeriodicReport>().Find(x => x.PeriodEnd.Year == SelectedYear && x.PeriodEnd.Month == SelectedMonth).ToArray();
         var dic = db.GetCollection<Fund>().Query().Select(x => new { x.Code, x.Name }).ToArray().ToDictionary(x => x.Code!, x => x.Name);
+        List<FundQuarterlyUpdate> qu = [];
+        if (SelectedMonth % 3 == 0)
+        {
+            qu = db.GetCollection<FundQuarterlyUpdate>().Find(x => x.PeriodEnd.Year == SelectedYear && x.PeriodEnd.Month == SelectedMonth).ToList();
 
+            // 补全没有的季度更新
+            var date = new DateOnly(SelectedYear!.Value, SelectedMonth!.Value, 1).AddMonths(1).AddDays(-1);
+            var lack = db.GetCollection<Fund>().Find(x => x.Status == FundStatus.Normal || x.ClearDate > date).ToList().ExceptBy(qu.Select(x => x.FundId), x => x.Id);
+            foreach (var item in lack)
+            {
+                var v = new FundQuarterlyUpdate
+                {
+                    FundId = item.Id,
+                    FundCode = item.Code,
+                    PeriodEnd = date
+                };
+                qu.Add(v);
+                db.GetCollection<FundQuarterlyUpdate>().Insert(v);
+            }
+        }
 
         var vm = reports.Select(x => new FundPeriodicReportViewModel(x) { FundName = dic[x.FundCode!] });
 
@@ -125,6 +146,7 @@ public partial class DisclosurePageViewModel : ObservableObject
             QuarterlySource.Source = vm.Where(x => x.Type == FundReportType.QuarterlyReport);
             SemiAnnualSource.Source = vm.Where(x => x.Type == FundReportType.SemiAnnualReport);
             AnnualSource.Source = vm.Where(x => x.Type == FundReportType.AnnualReport);
+            QuarterlyUpdateSource.Source = qu.Select(x => new FundQuarterlyUpdateViewModel(x, db.GetCollection<AmacProcessResult>().FindById(x.Id)) { FundName = dic[x.FundCode!] });
         });
 
     }
@@ -224,7 +246,7 @@ public partial class DisclosurePageViewModel : ObservableObject
     {    // Validate inputs
         if (SelectedMonth is null || SelectedYear <= 0 || SelectedMonth < 1 || SelectedMonth > 12)
             return;
-         
+
 
         using var ms = new FileStream(@$"temp\{SelectedYear}年{SelectedMonth}月报.zip", FileMode.Create);
         using ZipArchive archive = new ZipArchive(ms, ZipArchiveMode.Create);
