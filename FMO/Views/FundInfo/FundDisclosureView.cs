@@ -197,12 +197,12 @@ public partial class FundPeriodicReportViewModel : ObservableObject
         else
             HandyControl.Controls.Growl.Info($"校验异常");
 
-        if (result.ValidateCode == 0)
-        {
-            await Task.Delay(2000);
-            await DirectReporter.Submit(result, manager.Name, acc);
-            HandyControl.Controls.Growl.Info($"报告提交:{result.SubmitError}");
-        }
+        //if (result.ValidateCode == 0)
+        //{
+        //    await Task.Delay(2000);
+        //    await DirectReporter.Submit(result, manager.Name, acc);
+        //    HandyControl.Controls.Growl.Info($"报告提交:{result.SubmitError}");
+        //}
     }
 }
 
@@ -316,12 +316,14 @@ public partial class FundQuarterlyUpdateViewModel : ObservableObject
             OperationResult.Status = AmacDirectResultViewModel.State.Verify;
             OperationResult.IsSuccess = result.ValidateCode == 0;
         }
-        if (result.ValidateCode == 10) // 已完成
+
+        if (result.ValidateCode == 0 || result.ValidateCode == 10) // 已完成
         {
             result.SubmitCode = 0;
             OperationResult.Status = AmacDirectResultViewModel.State.Submit;
             OperationResult.IsSuccess = true;
             db.GetCollection<AmacProcessResult>().Update(result);
+            return;
         }
 
         if (result.ResultInfo?.Count > 0)
@@ -361,7 +363,7 @@ public partial class FundQuarterlyUpdateViewModel : ObservableObject
         var result = db.GetCollection<AmacProcessResult>().FindById(Id);
         var manager = db.GetCollection<Manager>().Query().First();
 
-        if (result.ValidateCode == 0 || MessageBox.Show($"季度更新存在警告或错误", "是否强制提交", button: System.Windows.MessageBoxButton.YesNo) == System.Windows.MessageBoxResult.Yes)
+        if (MessageBox.Show($"季度更新存在警告或错误", "是否强制提交", button: System.Windows.MessageBoxButton.YesNo) == System.Windows.MessageBoxResult.Yes)
         {
             //await Task.Delay(5000);
             await DirectReporter.Submit(result, manager.Name, acc);
