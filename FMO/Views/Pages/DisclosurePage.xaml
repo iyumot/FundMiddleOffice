@@ -493,9 +493,10 @@
                                 Style="{StaticResource ButtonIcon.Small}" />
 
                             <Button
-                                hc:IconElement.Geometry="{StaticResource f.box}"
-                                Command="{Binding GenerateMeishiAnnouncesCommand}"
-                                Style="{StaticResource ButtonIcon.Small}" />
+                                hc:IconElement.Geometry="{StaticResource f.cloud-arrow-up}"
+                                Command="{Binding UploadQuarterlyReportToMeiShiCommand}"
+                                Content="易私募"
+                                Style="{StaticResource ButtonDefault.Small}" />
                         </DockPanel>
                     </Expander.Header>
                     <ListBox

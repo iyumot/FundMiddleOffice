@@ -753,6 +753,9 @@ public class MeiShiAssit : ISigning
         // 上传文件
         var fileJson = await UploadFile(file, 131);
 
+        if (!fileJson.Contains("1008"))
+            return false;
+
         // 创建公告
        return await CreateDisclosure(fund.Id, fileJson, file, time, announceName);
 

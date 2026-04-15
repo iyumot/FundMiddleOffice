@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FMO.AMAC.Direct;
+using FMO.ESigning.MeiShi;
 using FMO.Logging;
 using FMO.Models;
 using FMO.Utilities;
@@ -297,5 +299,33 @@ public partial class DisclosurePageViewModel : ObservableObject
         });
     }
 
+
+    [RelayCommand]
+    public async Task UploadQuarterlyReportToMeiShi()
+    {
+        MeiShiAssit assit = new();
+
+        foreach (var item in QuarterlySource.View)
+        {
+            if (item is FundPeriodicReportViewModel v)
+            {
+                string[] quarters = ["一", "二", "三", "四"];
+                string q = quarters[(v.PeriodEnd.Month - 1) / 3];
+                if (v.Pdf?.Meta is not null)
+                {
+                    File.Copy(@$"files\hardlink\{v.Pdf.Meta.Id}", @$"temp\{v.FundName}-{SelectedYear}年{q}季度报告.pdf", true);
+                    try
+                    {
+                        bool r = await assit.UploadDisclosureFile(v.FundName!, v.Code!, "", DateTime.Now, $"{v.FundName}-{SelectedYear}年{q}季度报告", @$"temp\{v.FundName}-{SelectedYear}年{q}季度报告.pdf");
+                        if(!r) WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, $"Failed to upload {v.FundName} - {SelectedYear}年{q}季度报告"));
+                    }
+                    catch(Exception e)
+                    {
+                        WeakReferenceMessenger.Default.Send(new ToastMessage(LogLevel.Warning, $"Failed to upload {v.FundName} - {SelectedYear}年{q}季度报告"));
+                    }
+                }
+            }
+        }
+    }
 
 }
