@@ -13,7 +13,7 @@ using System.IO.Compression;
 var di = new DirectoryInfo(Directory.GetCurrentDirectory());
 Console.WriteLine($"Start {di.FullName}");
 
-while (di.Parent?.Name != "FMO")
+while (di.Parent?.Name != "FMO" && di.Parent?.Name != "FundMiddleOffice")
 {
     di = di.Parent ?? throw new DirectoryNotFoundException("Templates directory not found.");
 }

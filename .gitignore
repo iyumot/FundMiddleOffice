@@ -395,3 +395,5 @@ FodyWeavers.xsd
 /logs.db
 /laws
 /Test/TestProject1
+/FMO.TemplateBuilder.dll
+/publish-tpl.ps1

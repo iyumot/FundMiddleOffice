@@ -122,7 +122,7 @@ Parallel.ForEach(statuses, options, status =>
         return;
     }
 
-    var binDir = Path.Combine(projDir.FullName, "bin", "Debug", "net9.0");
+    var binDir = Path.Combine(projDir.FullName, "bin", "Debug", "net10.0");
     var dllPath = Path.Combine(binDir, $"{safeAssemblyName}.dll");
     var jsonPath = Path.Combine(binDir, "def.json");
 
