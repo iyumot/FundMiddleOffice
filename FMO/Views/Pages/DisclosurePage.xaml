@@ -109,7 +109,10 @@
                         <Border>
                             <DockPanel Margin="4">
                                 <DockPanel DockPanel.Dock="Top">
-                                    <TextBlock FontSize="15" Text="{Binding FundName}" />
+                                    <TextBlock
+                                        shared:MaskService.IsMask="True"
+                                        FontSize="15"
+                                        Text="{Binding FundName}" />
                                     <Button
                                         hc:IconElement.Geometry="{StaticResource f.upload}"
                                         Command="{Binding UploadCommand}"
@@ -171,7 +174,10 @@
                             <DockPanel Margin="4">
 
                                 <DockPanel DockPanel.Dock="Top">
-                                    <TextBlock FontSize="15" Text="{Binding FundName}" />
+                                    <TextBlock
+                                        shared:MaskService.IsMask="True"
+                                        FontSize="15"
+                                        Text="{Binding FundName}" />
                                     <Button
                                         hc:IconElement.Geometry="{StaticResource f.upload}"
                                         Command="{Binding UploadCommand}"
@@ -238,7 +244,10 @@
                         <Border>
                             <DockPanel Margin="4">
                                 <DockPanel DockPanel.Dock="Top">
-                                    <TextBlock FontSize="15" Text="{Binding FundName}" />
+                                    <TextBlock
+                                        shared:MaskService.IsMask="True"
+                                        FontSize="15"
+                                        Text="{Binding FundName}" />
                                     <Button
                                         hc:IconElement.Geometry="{StaticResource f.upload}"
                                         Command="{Binding UploadOperationCommand}"
