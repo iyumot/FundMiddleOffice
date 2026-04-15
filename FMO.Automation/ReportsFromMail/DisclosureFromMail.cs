@@ -160,7 +160,8 @@ public class DisclosureFromMailMission : MailMission
                                     break;
 
                                 case ".pdf":
-                                    fp.Pdf = new SimpleFile { File = FileMeta.Create(item.Stream, item.FileName) };
+                                    if (!Regex.IsMatch(item.FileName, "复核函")) // 避免把复核函当成报告正文
+                                        fp.Pdf = new SimpleFile { File = FileMeta.Create(item.Stream, item.FileName) };
                                     break;
                             }
                             item.Stream.Dispose();
