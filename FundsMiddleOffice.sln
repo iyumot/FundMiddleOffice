@@ -132,6 +132,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestMeiShi", "Tests\TestMei
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject1", "Test\TestProject1\TestProject1.csproj", "{7E2A8751-726D-4881-8265-7E03B57C4976}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMO.Disclosure", "FMO.Disclosure\FMO.Disclosure.csproj", "{54742C3A-018F-4822-AC68-9BAF7F593B76}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -350,6 +352,10 @@ Global
 		{7E2A8751-726D-4881-8265-7E03B57C4976}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E2A8751-726D-4881-8265-7E03B57C4976}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7E2A8751-726D-4881-8265-7E03B57C4976}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54742C3A-018F-4822-AC68-9BAF7F593B76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54742C3A-018F-4822-AC68-9BAF7F593B76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54742C3A-018F-4822-AC68-9BAF7F593B76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54742C3A-018F-4822-AC68-9BAF7F593B76}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
