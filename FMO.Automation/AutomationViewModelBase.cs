@@ -164,7 +164,7 @@ public partial class MissionViewModel<T> : AutomationViewModelBase where T : Mis
     public partial bool CanRunOnce { get; set; } = true;
 
 
-    public virtual void AfterRun() { }
+    //public virtual void AfterRun() { }
 
 
     [RelayCommand(CanExecute = nameof(CanRunOnce))]
@@ -174,7 +174,7 @@ public partial class MissionViewModel<T> : AutomationViewModelBase where T : Mis
         await Task.Run(() => Mission.Work());
         CanRunOnce = true;
 
-        try { AfterRun(); } catch(Exception e) { LogEx.Error(e); }
+        //try { AfterRun(); } catch(Exception e) { LogEx.Error(e); }
     }
 
 
