@@ -809,7 +809,7 @@
                         <DockPanel LastChildFill="False">
                             <hc:TextBox
                                 Width="240"
-                                hc:InfoElement.Placeholder="http://aaa.com:1123"
+                                hc:InfoElement.Placeholder="socks5://aaa.com:1123"
                                 Text="{Binding Address, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
 
                             <hc:TextBox
