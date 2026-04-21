@@ -1,16 +1,23 @@
-﻿namespace FMO.Models;
+﻿using System.Threading.Channels;
 
-public enum DisclosureResult
+namespace FMO.Disclosure;
+
+
+public class DisclosureResult
 {
+    /// <summary>
+    /// = DisclosureInstance.Id
+    /// </summary>
+    public required string Id { get; set; }
 
+    public DisclosureStatus Status { get; internal set; }
+
+    public DateTime StartedTime { get; internal set; }
+     
+
+    public DateTime CompletedTime { get; internal set; }
+
+
+    public string? Error { get; set; }
 }
 
-//帮我完善一下，我要做一下信批配置
-// 1. 信批类型：月报、季报、半年报、年报，月报、季报、半年报都有ecxcel和pdf两种格式，年报另外还有用印pdf格式
-// 2. 适用范围：全部产品，还是指定基金列表
-// 3. 信批通道：平台A、平台B等，每个平台的配置项可能不同
-// 4. 做一个配置UI，用户可以选择信批类型、适用范围和信批通道，并填写相应的配置项
-// 5. 通道例子：
-//    - 邮件通道：需要配置SMTP服务器地址、端口、发件人邮箱
-//    - pfid：
-//    - 其他通道：根据实际情况设计配置项

@@ -2,14 +2,14 @@
 
 internal class MeiShiDisclosureChannel : IDisclosureChannel
 {
-    public string Code => "meishi";
+    public string Code =>  DisclosureChannelCode.MeiShi;
 
-    public Task<DisclosureResult> Disclosre(IDisclosureReport report, IDisclosureChannelConfig config)
+    public Task<DisclosureResult> Disclosure(IDisclosureNotice Notice, IDisclosureChannelConfig config)
     {
         throw new NotImplementedException();
     }
 
-    public DisclosureResult VerifyReport(IDisclosureReport report)
+    public DisclosureResult VerifyNotice(IDisclosureNotice Notice)
     {
         throw new NotImplementedException();
     }

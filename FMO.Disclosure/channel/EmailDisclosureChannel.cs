@@ -2,14 +2,14 @@
 
 public class EmailDisclosureChannel : IDisclosureChannel
 {
-    public string Code => "email";
+    public string Code => DisclosureChannelCode.Email;
 
-    public Task<DisclosureResult> Disclosre(IDisclosureReport report, IDisclosureChannelConfig config)
+    public Task<DisclosureResult> Disclosure(IDisclosureNotice Notice, IDisclosureChannelConfig config)
     {
         throw new NotImplementedException();
     }
 
-    public DisclosureResult VerifyReport(IDisclosureReport report)
+    public DisclosureResult VerifyNotice(IDisclosureNotice Notice)
     {
         throw new NotImplementedException();
     }

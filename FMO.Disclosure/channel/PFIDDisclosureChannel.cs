@@ -2,14 +2,14 @@
 
 internal class PFIDDisclosureChannel : IDisclosureChannel
 {
-    public string Code => "pfid";
+    public string Code => DisclosureChannelCode.Pfid;
 
-    public Task<DisclosureResult> Disclosre(IDisclosureReport report, IDisclosureChannelConfig config)
+    public Task<DisclosureResult> Disclosure(IDisclosureNotice Notice, IDisclosureChannelConfig config)
     {
         throw new NotImplementedException();
     }
 
-    public DisclosureResult VerifyReport(IDisclosureReport report)
+    public DisclosureResult VerifyNotice(IDisclosureNotice Notice)
     {
         throw new NotImplementedException();
     }

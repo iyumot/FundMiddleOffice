@@ -11,4 +11,4 @@
 DisclosureWorkflow - 工作流配置
 
 调用流程
-先有一份IDisclosureReport, 然后遍历所有的DisclosureWorkflow，找到适用的工作流 -> 生成一份工作实例 -> 执行并记录日志
+先有一份IDisclosureNotice, 然后遍历所有的DisclosureWorkflow，找到适用的工作流 -> 生成一份工作实例 -> 执行并记录日志
